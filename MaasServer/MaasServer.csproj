@@ -20,10 +20,21 @@
     <SccProvider>SAK</SccProvider>
   </PropertyGroup>
   <ItemGroup>
-    <TypeScriptCompile Include="server.ts" />
+    <TypeScriptCompile Include="test_server.ts" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="node\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="package.json" />
+    <Content Include="resources\tdd.png" />
+    <Content Include="routes\counter.js" />
+    <Content Include="routes\list.js" />
+    <Content Include="routes\login.js" />
+    <Content Include="routes\menu.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="server.js" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
