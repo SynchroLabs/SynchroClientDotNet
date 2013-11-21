@@ -22,10 +22,12 @@
   <ItemGroup>
     <TypeScriptCompile Include="test_server.ts" />
   </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
-    <Folder Include="node\" />
-  </ItemGroup>
-  <ItemGroup>
+    <Content Include="node\express.d.ts" />
+    <Content Include="node\node.d.ts" />
+    <Content Include="node\require-dir.d.ts" />
+    <Content Include="objectMonitor.js" />
     <Content Include="package.json" />
     <Content Include="resources\tdd.png" />
     <Content Include="routes\counter.js" />

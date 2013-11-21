@@ -6,9 +6,9 @@ exports.View =
     Elements: 
     [
         { type: "image", resource: "resources/tdd.png" },
-        { type: "button", caption: "Login Sample", command: "login" },
-        { type: "button", caption: "Click Counter Sample", command: "counter" },
-        { type: "button", caption: "List Sample", command: "list" },
+        { type: "button", caption: "Login Sample", binding: "login" },
+        { type: "button", caption: "Click Counter Sample", binding: "counter" },
+        { type: "button", caption: "List Sample", binding: { onClick: "list" } },
     ]
 }
 
