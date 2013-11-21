@@ -13,7 +13,8 @@ namespace MaasClient
 {
     class StateManager
     {
-        string urlBase = "http://MACBOOKPRO-111C:3000";
+        //string urlBase = "http://MACBOOKPRO-111C:3000";
+        string urlBase = "http://localhost:3000";
 
         PageView pageView;
         HttpClient httpClient;
@@ -21,7 +22,7 @@ namespace MaasClient
 
         public StateManager()
         {
-            debug("Creating state manager");
+            Util.debug("Creating state manager");
             pageView = new PageView(this);
 
             cookieContainer = new CookieContainer();
@@ -35,11 +36,6 @@ namespace MaasClient
             {
                 return pageView;
             }
-        }
-
-        void debug(string str)
-        {
-            System.Diagnostics.Debug.WriteLine(str);
         }
 
         public Uri buildUri(string path)
@@ -56,7 +52,7 @@ namespace MaasClient
         {
             try
             {
-                debug("Loading JSON from " + urlBase + "/" + path);
+                Util.debug("Loading JSON from " + urlBase + "/" + path);
 
                 HttpResponseMessage response = null;
                 if (jsonPostBody != null)
@@ -72,41 +68,39 @@ namespace MaasClient
 
                 foreach (KeyValuePair<string, IEnumerable<string>> header in response.Headers)
                 {
-                    debug("Got header: " + header.Key);
+                    Util.debug("Got header: " + header.Key);
                     if (header.Key == "Set-Cookie")
                     {
                         foreach (string value in header.Value)
                         {
-                            debug("Cookie value: " + value);
+                            Util.debug("Cookie value: " + value);
                         }
                     }
                 }
 
-                debug("Number of cookies: " + cookieContainer.Count);
+                Util.debug("Number of cookies: " + cookieContainer.Count);
                 CookieCollection cookies = cookieContainer.GetCookies(buildUri(""));
                 foreach (Cookie cookie in cookies)
                 {
-                    debug("Found cookie - " + cookie.Name + ": " + cookie.Value);
+                    Util.debug("Found cookie - " + cookie.Name + ": " + cookie.Value);
                 }
 
                 var statusText = response.StatusCode + " " + response.ReasonPhrase + Environment.NewLine;
                 var responseBodyAsText = await response.Content.ReadAsStringAsync();
-                debug("Status: " + statusText);
-                debug("Body: " + responseBodyAsText);
+                Util.debug("Status: " + statusText);
+                Util.debug("Body: " + responseBodyAsText);
 
                 JObject responseAsJSON = JObject.Parse(responseBodyAsText);
 
                 if (responseAsJSON["BoundItems"] != null)
                 {
                     JObject jsonBoundItems = (JObject)responseAsJSON["BoundItems"];
-                    if (responseAsJSON["View"] != null)
-                    {
-                        pageView.newViewItems(jsonBoundItems);
-                    }
-                    else
-                    {
-                        pageView.updatedViewItems(jsonBoundItems);
-                    }
+                    pageView.newViewItems(jsonBoundItems);
+                }
+                else if (responseAsJSON["BoundItemUpdates"] != null)
+                {
+                    JToken jsonBoundItems = (JToken)responseAsJSON["BoundItemUpdates"];
+                    pageView.updatedViewItems(jsonBoundItems);
                 }
 
                 if (responseAsJSON["View"] != null)
@@ -125,7 +119,7 @@ namespace MaasClient
             }
             catch (HttpRequestException hre)
             {
-                debug("Request exception - " + hre.ToString());
+                Util.debug("Request exception - " + hre.ToString());
             }
         }
 
@@ -136,16 +130,16 @@ namespace MaasClient
 
         public async void processCommand(string command)
         {
-            debug("Process command: " + command);
+            Util.debug("Process command: " + command);
             var boundValues = new Dictionary<string, string>();
-            pageView.collectBoundItemValues((key, value) => boundValues.Add(key, value));
+            pageView.collectBoundItemValues((key, value) => boundValues[key] =  value);
 
             if (boundValues.Count > 0)
             {
                 var response = new Dictionary<string, object>();
                 response.Add("BoundItems", boundValues);
                 String json = JsonConvert.SerializeObject(response, Formatting.Indented);
-                debug("JSON: " + json);
+                Util.debug("JSON: " + json);
 
                 await handleRequest(this.pageView.Path + "?command=" + command, json);
             }

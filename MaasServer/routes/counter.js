@@ -5,12 +5,11 @@ exports.View =
     Title: "Click Counter",
     Elements: 
     [
-        { type: "text", value: "Count: {count}", fontsize: 24 },
-        { type: "button", caption: "Increment Count!", command: "increment" },
-        { type: "button", caption: "Decrement Count!", command: "decrement" },
-        { type: "button", caption: "Reset Count!", command: "reset" },
-        { type: "button", caption: "Return to menu!", command: "exit" },
-        { type: "text", value: "Color 2: {colors[1]}", fontsize: 24 },
+        { type: "text", value: "Count: {count}", foreground: "{color}", fontsize: 24, fontweight: "{weight}" },
+        { type: "button", caption: "Increment Count!", binding: "increment" },
+        { type: "button", caption: "Decrement Count!", binding: "decrement" },
+        { type: "button", caption: "Reset Count!", binding: "reset" },
+        { type: "button", caption: "Return to menu!", binding: "exit" },
     ]
 }
 
@@ -19,12 +18,24 @@ exports.InitializeBoundItems = function(state, session)
     var boundItems =
     {
         count: 0,
-        colors:
-        [
-            "red", "green", "blue"
-        ]
+        color: "Green",
+        weight: "Normal",
     }
     return boundItems;
+}
+
+exports.OnChange = function(state, session, boundItems, source, changes)
+{
+    if (boundItems.count < 10)
+    {
+        boundItems.color = "Green";
+        boundItems.weight = "Normal";
+    }
+    else
+    {
+        boundItems.color = "Red";
+        boundItems.weight = "Bold";
+    }
 }
 
 exports.Commands = 

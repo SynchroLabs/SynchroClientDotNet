@@ -6,11 +6,14 @@ exports.View =
     Elements: 
     [
         { type: "text", value: "Username", fontsize: 24 },
-        { type: "edit",  boundValue: "username" },
+        { type: "edit", binding: "username" },
         { type: "text", value: "Password", fontsize: 24 },
-        { type: "edit", boundValue: "password" },
-        { type: "button", caption: "Login", command: "login" },
-        { type: "button", caption: "Cancel", command: "cancel" },
+        { type: "edit", binding: { value: "password" } },
+        { type: "stackpanel", contents: [
+            { type: "button", caption: "Login", width: 100, binding: "login" },
+            { type: "button", caption: "Cancel", width: 100, binding: "cancel" },
+        ] },
+        { type: "text", value: "Current user name: {username}", fontsize: 24 },
     ]
 }
 
@@ -19,7 +22,7 @@ exports.InitializeBoundItems = function(state, session)
     var boundItems =
     {
         username: "test",
-        password: ""
+        password: "",
     }
     return boundItems;
 }
@@ -53,7 +56,7 @@ exports.Commands =
     {
         return navigateToView(state, "counter");
     },
-    cancel: function(state)
+    cancel: function(state, session, boundItems)
     {
         return navigateToView(state, "menu");
     },

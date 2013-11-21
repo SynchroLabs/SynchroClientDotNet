@@ -6,18 +6,16 @@ exports.View =
     Elements: 
     [
         { type: "text", value: "Your items", fontsize: 24 },
-        { type: "listbox", boundValue: "items" },
+        { type: "listbox", width: 250, binding: "items" },
 
         { type: "text", value: "New item", fontsize: 24 },
-        { type: "edit", boundValue: "itemToAdd" },
-        { type: "button", caption: "Add", command: "addItem" },
+        { type: "edit", binding: "colors[1].color" },
+        { type: "button", caption: "Add", binding: "addItem" },
 
-        { type: "button", caption: "Return to menu!", command: "exit" },
+        { type: "button", caption: "Return to menu!", binding: "exit" },
 
-        { type: "button", caption: "Binding test", binding: { onClick: "exit" } },
-
-        { type: "text", value: "{color}", fontsize: 24, binding: { foreach: "items" } },
-
+        { type: "text", value: "{$parent.$parent.$parent.caption}: {color}", fontsize: 24, binding: { foreach: "colors" } },
+        { type: "edit", fontsize: 24, binding: { foreach: "colors", value: "color"} },
     ]
 }
 
@@ -25,8 +23,10 @@ exports.InitializeBoundItems = function(state, session)
 {
     var boundItems =
     {
+        caption: "The Color",
         itemToAdd: "",
-        items:
+        items: [ "white", "black", "yellow" ],
+        colors:
         [
             { color: "red" }, { color: "green" }, { color: "blue" },
         ]

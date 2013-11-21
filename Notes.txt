@@ -1,0 +1,25 @@
+Mobile Application As A Service (MAAAS)
+==============================================
+
+Nomenclature - 
+    BoundItems -> ViewModel (?)
+    Request "state" -> context (?)
+
+Processing view model changes on client:
+
+    Apply add/remove differences
+
+    Rebinding to connect to new/changed data
+
+    Suspend change notification, update all changes, process bindings for all changes (look at tree for each)
+
+	For array bindings, update repeated items (remove all and re-add?), use stored template to create items
+
+Client side dynamic binding - example: slider bound to fontsize, only sync to server on command (if that)
+
+	On control value change - use ValueBinding to update view model, and also to trigger synchronization (based on binding config)
+
+Binding value types - currently all string, need to support boolean (and numeric?)
+    In the special case that an attribute string contains a single binding, such as visibility="{isVisible}"
+	Negation using !, such as visibility="{!isVisible}"
+

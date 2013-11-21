@@ -6,14 +6,17 @@ using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Windows.UI;
 using Windows.UI.Popups;
+using Windows.UI.Text;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 
 // Composite binding can be in any attribute.  Substitutes bound items, indicated by braces, into pattern strings.
 //    ! = negation of boolean value
-//    ? = One time binding (default is one way binding)
+//    ^ = One time binding (default is one way binding)
 //
 // binding = { value: "foo } is equivalent to the common shorthand: binding = "foo" (default attribute is "value")
 //
@@ -27,6 +30,14 @@ using Windows.UI.Xaml.Media.Imaging;
 
 // Each item has a binding context, which is determined before the item is created/processed by inspecting the "binding" attribute
 // to look for a "foreach" or "with" binding context specifier.
+//
+// The "binding" attribute can have tokens in it, but they are only evalutated when it is initially processed (binding
+// is only processed once).
+//
+// Each element type can have a default binding context, so that binding can be expressed with a simple value.  For example,
+// for an edit control, the default binding would be to "value", whereas for a button control the default binding would be
+// to "onClick".
+//
 
 
 
@@ -40,17 +51,11 @@ namespace MaasClient
 
         StateManager stateManager;
 
-        JObject boundItems;
-
+        ViewModel viewModel = new ViewModel();
 
         public PageView(StateManager stateManager)
         {
             this.stateManager = stateManager;
-        }
-
-        void debug(string str)
-        {
-            System.Diagnostics.Debug.WriteLine(str);
         }
 
         ElementMetaData getMetaData(FrameworkElement element)
@@ -71,16 +76,13 @@ namespace MaasClient
             metaData.BindingContext = bindingContext;
         }
 
-        Boolean processElementBoundValue(FrameworkElement element, string value, GetValue getValue, SetValue setValue)
+        Boolean processElementBoundValue(FrameworkElement element, JToken bindingContext, string value, GetValue getValue, SetValue setValue)
         {
             if (value != null)
             {
                 ElementMetaData metaData = getMetaData(element);
 
-                ValueBinding binding = new ValueBinding();
-                binding.BoundValue = value;
-                binding.GetValue = getValue;
-                binding.SetValue = setValue;
+                ValueBinding binding = this.viewModel.CreateValueBinding(bindingContext, value, getValue, setValue);
                 metaData.ValueBinding = binding;
                 return true;
             }
@@ -88,7 +90,7 @@ namespace MaasClient
             return false;
         }
 
-        void processElementProperty(FrameworkElement element, string value, SetValue setValue, string defaultValue = null)
+        void processElementProperty(FrameworkElement element, JToken bindingContext, string value, SetValue setValue, string defaultValue = null)
         {
             if (value == null)
             {
@@ -98,14 +100,11 @@ namespace MaasClient
                 }
                 return;
             }
-            else if (value.Contains("{"))
+            else if (BindingHelper.ContainsBindingTokens(value))
             {
                 // If value contains a binding, create a Binding and add it to metadata
                 ElementMetaData metaData = getMetaData(element);
-
-                PropertyBinding binding = new PropertyBinding();
-                binding.Content = value;
-                binding.SetValue = setValue;
+                PropertyBinding binding = this.viewModel.CreatePropertyBinding(bindingContext, value, setValue);
                 metaData.PropertyBindings.Add(binding);
             }
             else
@@ -113,6 +112,111 @@ namespace MaasClient
                 // Otherwise, just set the property value
                 setValue(value);
             }
+        }
+
+        // !!! Currently unused
+        public Boolean tokenToBoolean(JToken token)
+        {
+            Boolean result = false;
+
+            if (token != null)
+            {
+                switch (token.Type)
+                {
+                    case JTokenType.Boolean:
+                        result = (Boolean)token;
+                        break;
+                    case JTokenType.String:
+                        String str = (String)token;
+                        result = str.Length > 0;
+                        break;
+                    case JTokenType.Float:
+                        result = (float)token != 0;
+                        break;
+                    case JTokenType.Integer:
+                        result = (int)token != 0;
+                        break;
+                }
+            }
+            return result;
+        }
+
+        public delegate object ConvertValue(String value);
+
+        // This method allows us to do some runtime reflection to see if a property exists on an element, and if so, to bind to it.  This
+        // is needed because there are common properties of FrameworkElement instances that are repeated in different class trees.  For
+        // example, "IsEnabled" exists as a property on most instances of FrameworkElement objects, though it is not defined in a single
+        // common base class.
+        //
+        public void processElementPropertyIfPresent(FrameworkElement element, JToken bindingContext, string attributeValue, string propertyName, ConvertValue convertValue = null)
+        {
+            if (attributeValue != null)
+            {
+                if (convertValue == null)
+                {
+                    convertValue = value => value;
+                }
+                var property = element.GetType().GetRuntimeProperty(propertyName);
+                if (property != null)
+                {
+                    processElementProperty(element, bindingContext, attributeValue, value => property.SetValue(element, convertValue(value), null));
+                }
+            }
+        }
+
+        public SolidColorBrush ColorStringToBrush(string color)
+        {
+            if (color.StartsWith("#"))
+            {
+                color = color.Replace("#", "");
+                if (color.Length == 6)
+                {
+                    return new SolidColorBrush(ColorHelper.FromArgb(255,
+                        byte.Parse(color.Substring(0, 2), System.Globalization.NumberStyles.HexNumber),
+                        byte.Parse(color.Substring(2, 2), System.Globalization.NumberStyles.HexNumber),
+                        byte.Parse(color.Substring(4, 2), System.Globalization.NumberStyles.HexNumber)));
+                }
+            }
+            else
+            {
+                var property = typeof(Colors).GetRuntimeProperty(color);
+                if (property != null)
+                {
+                    return new SolidColorBrush((Color)property.GetValue(null));
+                }
+            }
+
+            return null;
+        }
+
+        public FontWeight GetFontWeight(string weight)
+        {
+            var property = typeof(FontWeights).GetRuntimeProperty(weight);
+            if (property != null)
+            {
+                return (FontWeight)property.GetValue(null);
+            }
+            return FontWeights.Normal;
+        }
+
+        public void processCommonFrameworkElementProperies(FrameworkElement element, JToken bindingContext, JObject controlSpec)
+        {
+            // !!! TODO: Margin (top, left, bottom, right), MinHeight/Width, MaxHeight/Width, Tooltip
+            //
+            Util.debug("Processing framework element properties");
+            processElementProperty(element, bindingContext, (string)controlSpec["name"], value => element.Name = value);
+            processElementProperty(element, bindingContext, (string)controlSpec["height"], value => element.Height = Convert.ToDouble(value));
+            processElementProperty(element, bindingContext, (string)controlSpec["width"], value => element.Width = Convert.ToDouble(value));
+            processElementProperty(element, bindingContext, (string)controlSpec["margin"], value => element.Margin = new Thickness(Convert.ToDouble(value)));
+            processElementProperty(element, bindingContext, (string)controlSpec["opacity"], value => element.Opacity = Convert.ToDouble(value));
+            processElementProperty(element, bindingContext, (string)controlSpec["visibility"], value => element.Visibility = Convert.ToBoolean(value) ? Visibility.Visible : Visibility.Collapsed);
+
+            // These elements are very common among derived classes, so we'll do some runtime reflection...
+            processElementPropertyIfPresent(element, bindingContext, (string)controlSpec["fontsize"], "FontSize", value => Convert.ToDouble(value));
+            processElementPropertyIfPresent(element, bindingContext, (string)controlSpec["fontweight"], "FontWeight", value => GetFontWeight(value));
+            processElementPropertyIfPresent(element, bindingContext, (string)controlSpec["enabled"], "IsEnabled", value => Convert.ToBoolean(value));
+            processElementPropertyIfPresent(element, bindingContext, (string)controlSpec["background"], "Background", value => ColorStringToBrush(value));
+            processElementPropertyIfPresent(element, bindingContext, (string)controlSpec["foreground"], "Foreground", value => ColorStringToBrush(value));
         }
 
         public FrameworkElement createControl(JToken bindingContext, JObject controlSpec)
@@ -126,37 +230,38 @@ namespace MaasClient
                 //
                 case "text":
                 {
-                    debug("Found text element with value of: " + controlSpec["value"]);
+                    Util.debug("Found text element with value of: " + controlSpec["value"]);
                     TextBlock textBlock = new TextBlock();
                     setBindingContext(textBlock, bindingContext);
-                    processElementProperty(textBlock, (string)controlSpec["value"], value => textBlock.Text = value);
-                    processElementProperty(textBlock, (string)controlSpec["fontsize"], value => textBlock.FontSize = Convert.ToDouble(value));
+                    processElementProperty(textBlock, bindingContext, (string)controlSpec["value"], value => textBlock.Text = value);
                     control = textBlock;
                 }
                 break;
 
                 case "edit":
                 {
-                    debug("Found text element with value of: " + controlSpec["value"]);
+                    Util.debug("Found text element with value of: " + controlSpec["value"]);
                     TextBox textBox = new TextBox();
                     setBindingContext(textBox, bindingContext);
-                    if (!processElementBoundValue(textBox, (string)controlSpec["boundValue"], () => { return textBox.Text; }, value => textBox.Text = value))
+                    JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "value");
+                    if (!processElementBoundValue(textBox, bindingContext, (string)bindingSpec["value"], () => { return textBox.Text; }, value => textBox.Text = value))
                     {
-                        processElementProperty(textBox, (string)controlSpec["value"], value => textBox.Text = value);
+                        processElementProperty(textBox, bindingContext, (string)controlSpec["value"], value => textBox.Text = value);
                     }
-                    processElementProperty(textBox, (string)controlSpec["fontsize"], value => textBox.FontSize = Convert.ToDouble(value));
+                    textBox.TextChanged += textBox_TextChanged;
                     control = textBox;
                 }
                 break;
 
                 case "button":
                 {
-                    debug("Found button element with caption of: " + controlSpec["caption"]);
+                    Util.debug("Found button element with caption of: " + controlSpec["caption"]);
                     Button button = new Button();
                     setBindingContext(button, bindingContext);
-                    processElementProperty(button, (string)controlSpec["caption"], value => button.Content = value);
+                    JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "onClick");
                     ElementMetaData metaData = getMetaData(button);
-                    metaData.Command = (string)controlSpec["command"];
+                    metaData.Command = (string)bindingSpec["onClick"];
+                    processElementProperty(button, bindingContext, (string)controlSpec["caption"], value => button.Content = value);
                     button.Click += button_Click;
                     control = button;
                 }
@@ -166,7 +271,7 @@ namespace MaasClient
                 {
                     // !!! Should support dynamic value (binding) for source
                     //
-                    debug("Found image element with caption of: " + controlSpec["caption"]);
+                    Util.debug("Found image element with caption of: " + controlSpec["caption"]);
                     Image image = new Image();
                     setBindingContext(image, bindingContext);
 
@@ -181,47 +286,52 @@ namespace MaasClient
 
                 case "listbox":
                 {
-                    debug("Found listbox element");
+                    Util.debug("Found listbox element");
                     ListBox listbox = new ListBox();
                     setBindingContext(listbox, bindingContext);
-                    listbox.Width = 200;
-                    listbox.Items.Add("Foo");
+                    JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "items");
+                    if ((bindingSpec != null) && (bindingSpec["items"] != null))
+                    {
+                        // !!! How is the ongoing binding going to work?
+                        Binding binding = BindingHelper.ResolveBinding(this.viewModel.BoundItems, bindingContext, (string)bindingSpec["items"]);
+                        JToken arrayBindingContext = binding.BoundToken;
+                        if ((arrayBindingContext != null) && (arrayBindingContext.Type == JTokenType.Array))
+                        {
+                            // !!! Default itemValue is "$data"
+                            foreach (JToken arrayElementBindingContext in (JArray)arrayBindingContext)
+                            {
+                                // !!! If $data (default), then we get the value of the binding context iteration items.
+                                //     Otherwise, if there is a non-default itemData binding, we apply that.
+                                listbox.Items.Add((string)arrayElementBindingContext);
+                            }
+                        }
+                    }
+
                     control = listbox;
                 }
                 break;
 
+                case "stackpanel":
+                {
+                    Util.debug("Found stackpanel element");
+                    StackPanel stackPanel = new StackPanel();
+                    setBindingContext(stackPanel, bindingContext);
+                    stackPanel.Orientation = Orientation.Horizontal; // !!! Should come from controlSpec (bound?)
+                    if (controlSpec["contents"] != null)
+                    {
+                        createControls(bindingContext, (JArray)controlSpec["contents"], childControl => stackPanel.Children.Add(childControl));
+                    }
+                    control = stackPanel;
+                }
+                break;
             }
-            return control;
-        }
 
-        Regex bindingTokensRE = new Regex(@"[$]([^$]*)[.]");
-
-        public JToken getBindingContext(JToken bindingContext, string bindingPath)
-        {
-            // Process path elements:
-            //  $root
-            //  $parent (and $parents[n]?)
-            //  $data
-            //  $index (inside foreach)
-            //  $parentContext
-            //
-            JToken bindingContextBase = bindingContext;
-            string relativeBindingPath = bindingTokensRE.Replace(bindingPath, delegate(Match m)
+            if (control != null)
             {
-                string pathElement = m.Groups[1].ToString();
-                debug("Found binding path element: " + pathElement);
-                if (pathElement == "root")
-                {
-                    bindingContextBase = this.boundItems;
-                }
-                else if (pathElement == "parent")
-                {
-                    bindingContextBase = bindingContextBase.Parent;
-                }
-                return ""; // Removing the path elements as they are processed
-            });
+                processCommonFrameworkElementProperies(control, bindingContext, controlSpec);
+            }
 
-            return bindingContextBase.SelectToken(relativeBindingPath);
+            return control;
         }
 
         public void createControls(JToken bindingContext, JArray controlList, Action<FrameworkElement> onAddControl)
@@ -233,28 +343,31 @@ namespace MaasClient
 
                 if ((element["binding"] != null) && (element["binding"].Type == JTokenType.Object))
                 {
-                    debug("Found binding object");
-                    JObject binding = (JObject)element["binding"];
-                    if (binding["foreach"] != null)
+                    Util.debug("Found binding object");
+                    JObject bindingSpec = (JObject)element["binding"];
+                    if (bindingSpec["foreach"] != null)
                     {
                         // !!! We need to save the element (spec) in case this context array grows/changes later
-                        string bindingPath = (string)binding["foreach"];
-                        debug("Found 'foreach' binding with path: " + bindingPath);
-                        JToken arrayBindingContext = getBindingContext(bindingContext, bindingPath);
+                        string bindingPath = (string)bindingSpec["foreach"];
+                        Util.debug("Found 'foreach' binding with path: " + bindingPath);
+                        Binding binding = BindingHelper.ResolveBinding(this.viewModel.BoundItems, bindingContext, bindingPath);
+                        JToken arrayBindingContext = binding.BoundToken;
                         if ((arrayBindingContext != null) && (arrayBindingContext.Type == JTokenType.Array))
                         {
                             foreach (JObject arrayElementBindingContext in (JArray)arrayBindingContext)
                             {
+                                Util.debug("foreach - creating control with binding context: " + arrayElementBindingContext.Path);
                                 onAddControl(createControl(arrayElementBindingContext, element));
                             }
                         }
                         controlCreated = true;
                     }
-                    else if (binding["with"] != null)
+                    else if (bindingSpec["with"] != null)
                     {
-                        string bindingPath = (string)binding["with"];
-                        debug("Found 'with' binding with path: " + bindingPath);
-                        controlBindingContext = getBindingContext(bindingContext, bindingPath);
+                        string bindingPath = (string)bindingSpec["with"];
+                        Util.debug("Found 'with' binding with path: " + bindingPath);
+                        Binding binding = BindingHelper.ResolveBinding(this.viewModel.BoundItems, bindingContext, bindingPath);
+                        controlBindingContext = binding.BoundToken;
                     }
                 }
 
@@ -278,7 +391,17 @@ namespace MaasClient
                 setPageTitle(pageTitle);
             }
 
-            createControls(this.boundItems, (JArray)pageView["Elements"], control => panel.Children.Add(control));
+            createControls(this.viewModel.BoundItems, (JArray)pageView["Elements"], control => panel.Children.Add(control));
+        }
+
+        void textBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            var textBox = sender as TextBox;
+            ElementMetaData metaData = textBox.Tag as ElementMetaData;
+            if ((metaData != null) && (metaData.ValueBinding != null))
+            {
+                metaData.ValueBinding.UpdateValue();
+            }
         }
 
         void button_Click(object sender, RoutedEventArgs e)
@@ -287,98 +410,86 @@ namespace MaasClient
             ElementMetaData metaData = button.Tag as ElementMetaData;
             if ((metaData != null) && (metaData.Command != null))
             {
-                debug("Button click with command: " + metaData.Command);
+                Util.debug("Button click with command: " + metaData.Command);
                 this.stateManager.processCommand(metaData.Command);
             }
             else
             {
-                debug("Button click with no action");
+                Util.debug("Button click with no action");
             }
         }
 
-        public void processBoundItems2(JObject obj)
+        /*
+         * Keeping this dead listener code around for now.
+         * 
+        void jsonObject_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            this.boundItems = obj;
-
-            IList<string> keys = obj.Properties().Select(p => p.Name).ToList();
-            foreach(string key in keys)
-            {
-                debug("Found key: " + key + " with value: " + obj[key] + " of type: " + obj[key].GetType());
-            }
+            JObject boundItems = (JObject)sender;
+            Util.debug("Property " + e.PropertyName + " changed to value: " + boundItems.GetValue(e.PropertyName));
         }
 
-        public void newViewItems(JObject boundItems)
+        void jsonArray_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
-            this.boundItems = boundItems;
+            Util.debug("collectionChanged: " + sender);
         }
 
-        public void updatedViewItems(JObject boundItems)
+        public void addChangeListeners(JObject boundItems)
         {
-            // !!! This should be incremental updates to existing boundItems, involving deep value copying.
-            //     - right now this just does top level properties (which will hammer over objects/lists at 
-            //       lower levels that may be in use as binding contexts in the view).
-            //
+            boundItems.PropertyChanged += jsonObject_PropertyChanged;
+
             IList<string> keys = boundItems.Properties().Select(p => p.Name).ToList();
             foreach (string key in keys)
             {
-                debug("Found key: " + key + " with value: " + boundItems[key] + " of type: " + boundItems[key].GetType());
-                this.boundItems[key] = boundItems[key];
+                if (boundItems[key].Type == JTokenType.Array)
+                {
+                    Util.debug("Found array at key: " + key + " and added listener");
+                    JArray boundArray = (JArray)boundItems[key];
+                    boundArray.CollectionChanged += jsonArray_CollectionChanged;
+                }
             }
         }
+         * 
+         */
 
-        Regex braceContentsRE = new Regex(@"{([^}]*)}");
-
-        string processTokenValue(JToken bindingContext, string tokenValue)
+        public void newViewItems(JObject boundItems)
         {
-            return braceContentsRE.Replace(tokenValue, delegate(Match m)
-            {
-                debug("Found binding: " + m.Groups[1]);
-                // !!! Use getBindingContext logic here (to process binding path tokens)
-                return (string)bindingContext.SelectToken(m.Groups[1].ToString());
-            });
+            this.viewModel.InitializeViewModelData(boundItems);
+        }
+
+        public void updatedViewItems(JToken boundItems)
+        {
+            this.viewModel.UpdateViewModelData(boundItems);
         }
 
         public void updateView()
         {
-            Panel panel = this.Content;
+            this.viewModel.UpdateView();
+        }
 
-            foreach (FrameworkElement control in panel.Children)
-            {
-                ElementMetaData metaData = control.Tag as ElementMetaData;
-                if (metaData != null)
-                {
-                    if ((metaData.ValueBinding != null) && (metaData.BindingContext[metaData.ValueBinding.BoundValue] != null))
-                    {
-                        metaData.ValueBinding.SetValue((string)metaData.BindingContext[metaData.ValueBinding.BoundValue]);
-                    }
-
-                    foreach(PropertyBinding binding in metaData.PropertyBindings)
-                    {
-                        binding.SetValue(processTokenValue(metaData.BindingContext, binding.Content));
-                    }
-                }
-            }
+        public void collectBoundItemValues(Action<string, string> setValue)
+        {
+            this.viewModel.CollectChangedValues(setValue);
         }
 
         private void MessageDialogCommandHandler(IUICommand command)
         {
-            debug("MessageBox Command invoked: " + command.Label);
+            Util.debug("MessageBox Command invoked: " + command.Label);
             if (command.Id != null)
             {
-                debug("MessageBox command: " + (string)command.Id);
+                Util.debug("MessageBox command: " + (string)command.Id);
                 this.stateManager.processCommand((string)command.Id); 
             }
         }
 
         public async void processMessageBox(JObject messageBox)
         {
-            string message = this.processTokenValue(this.boundItems, (string)messageBox["message"]);
+            string message = BindingHelper.ExpandBoundTokens(this.viewModel.BoundItems, this.viewModel.BoundItems, (string)messageBox["message"]);
 
             var messageDialog = new MessageDialog(message);
 
             if (messageBox["title"] != null)
             {
-                messageDialog.Title = this.processTokenValue(this.boundItems, (string)messageBox["title"]);
+                messageDialog.Title = BindingHelper.ExpandBoundTokens(this.viewModel.BoundItems, this.viewModel.BoundItems, (string)messageBox["title"]);
             }
 
             if (messageBox["options"] != null)
@@ -389,15 +500,15 @@ namespace MaasClient
                     if ((string)option["command"] != null)
                     {
                         messageDialog.Commands.Add(new UICommand(
-                            this.processTokenValue(this.boundItems, (string)option["label"]),
+                            BindingHelper.ExpandBoundTokens(this.viewModel.BoundItems, this.viewModel.BoundItems, (string)option["label"]),
                             new UICommandInvokedHandler(this.MessageDialogCommandHandler),
-                            this.processTokenValue(this.boundItems, (string)option["command"]))
+                            BindingHelper.ExpandBoundTokens(this.viewModel.BoundItems, this.viewModel.BoundItems, (string)option["command"]))
                             );
                     }
                     else
                     {
                         messageDialog.Commands.Add(new UICommand(
-                            this.processTokenValue(this.boundItems, (string)option["label"]),
+                            BindingHelper.ExpandBoundTokens(this.viewModel.BoundItems, this.viewModel.BoundItems, (string)option["label"]),
                             new UICommandInvokedHandler(this.MessageDialogCommandHandler))
                             );
                     }
@@ -405,29 +516,6 @@ namespace MaasClient
             }
 
             await messageDialog.ShowAsync();
-        }
-
-        // !!! This method assumes string values - needs to work with all types
-        //
-        public void collectBoundItemValues(Action<string, string> setValue)
-        {
-            // !!! We should just be getting the changed values (and marking them as unchanged now)
-            //
-            Panel panel = this.Content;
-
-            foreach (FrameworkElement control in panel.Children)
-            {
-                ElementMetaData metaData = control.Tag as ElementMetaData;
-                if (metaData != null)
-                {
-                    if (metaData.ValueBinding != null)
-                    {
-                        String value = metaData.ValueBinding.GetValue();
-                        debug("Collected bound item value for: " + metaData.ValueBinding.BoundValue + " of: " + value);
-                        setValue(metaData.ValueBinding.BoundValue, value);
-                    }
-                }
-            }
         }
     }
 }
