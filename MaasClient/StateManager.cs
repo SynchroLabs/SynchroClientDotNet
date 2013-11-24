@@ -131,7 +131,7 @@ namespace MaasClient
         public async void processCommand(string command)
         {
             Util.debug("Process command: " + command);
-            var boundValues = new Dictionary<string, string>();
+            var boundValues = new Dictionary<string, JToken>();
             pageView.collectBoundItemValues((key, value) => boundValues[key] =  value);
 
             if (boundValues.Count > 0)

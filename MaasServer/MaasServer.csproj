@@ -31,11 +31,13 @@
     <Content Include="package.json" />
     <Content Include="resources\tdd.png" />
     <Content Include="routes\counter.js" />
+    <Content Include="routes\hello.js" />
     <Content Include="routes\list.js" />
     <Content Include="routes\login.js" />
     <Content Include="routes\menu.js" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="routes\sandbox.js" />
     <Content Include="server.js" />
   </ItemGroup>
   <PropertyGroup>

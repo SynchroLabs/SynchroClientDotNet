@@ -53,29 +53,112 @@ namespace MaasClient
             {
                 foreach (JObject bindingChange in (JArray)boundItems)
                 {
-                    // !!! This only works for update really.  Need to think through add/remove cases.  Probably
-                    //     want to handle object changes in second pass (so all primitive values and added array elements
-                    //     are processed before we start updating (and triggering UX updates) for objects.
+                    // !!! Probably want to handle object changes in second pass (so all primitive values and added array
+                    //     elements are processed before we start updating (and triggering UX updates) for objects.
                     //
-                    // !!! For add - it should be the case that the parent item (object or array) exists, so we can back
-                    //     up one and set it.  This is different if it's an object versus array (pretty sure).
+                    // !!! May want to track paths of changes (so we can figure out who relied on changed items after the
+                    //     update and notify them, potentially after rebinding).
                     //
-                    // !!! For remove - similarly, the parent should exist, so we can back up and set it (object vs array
-                    //     differences still in play)
-                    //
+                    string path = (string)bindingChange["path"];
                     string changeType = (string)bindingChange["change"];
+
+                    Util.debug("Bound item change (" + changeType + ") for path: " + path);
                     if (changeType == "update")
                     {
-                        Util.debug("Found bound item change for path: " + bindingChange["path"]);
-                        JToken boundValue = _boundItems.SelectToken((string)bindingChange["path"]);
+                        JToken boundValue = _boundItems.SelectToken(path);
                         if (boundValue != null)
                         {
-                            Util.debug("Updating bound item change for path: " + boundValue.Path + " to value: " + bindingChange["value"]);
-                            boundValue.Replace(bindingChange["value"]);
-                            //Util.debug("Bound values after change update: " + this.boundItems);
+                            Util.debug("Updating bound item for path: " + path + " to value: " + bindingChange["value"]);
+                            // !!! Intitially, we tried:
+                            //
+                            //     boundValue.Replace(bindingChange["value"]);
+                            //
+                            //     That was fairly flexible (in terms of accepting any kind of JToken as a value), but it broke the
+                            //     binding by replaceing the JToken.  So now we do the below, which only works as long as we're only
+                            //     doing value updates (changes of value types on existing tokens).  So this is kind of fragile and
+                            //     needs some work.  The old way should work (including setting complex values) after rebinding is 
+                            //     implemented.
+                            //
+                            //     Right now, if you have a value foo: none and it get's changed to foo: ["one", "two"], this will
+                            //     fail (it will generate an "update" change where the new value is a JArray, which is not (and thus
+                            //     cannot be cast to) a JValue below.
+                            //
+                            ((JValue)boundValue).Value = ((JValue)bindingChange["value"]).Value;
+                        }
+                    }
+                    else if (changeType == "add")
+                    {
+                        Util.debug("Adding bound item for path: " + path + " with value: " + bindingChange["value"]);
+
+                        // First, double check to make sure the path doesn't actually exist
+                        JToken boundValue = _boundItems.SelectToken(path, false);
+                        if (boundValue != null)
+                        {
+                            // !!! Should we do something about this?  Just set the value?
+                            Util.debug("WARNING: Found existing value when processing add, something went wrong, path: " + path);
+                        }
+
+                        if (path.EndsWith("]"))
+                        {
+                            // This is an array element...
+                            string parentPath = path.Substring(0, path.LastIndexOf("["));
+                            JToken parentToken = _boundItems.SelectToken(parentPath);
+                            if ((parentToken != null) && (parentToken is JArray))
+                            {
+                                ((JArray)parentToken).Add(bindingChange["value"]);
+                            }
+                            else
+                            {
+                                // !!! Do something?
+                                Util.debug("ERROR: Attempt to add array member, but parent didn't exist or was not an array, parent path: " + parentPath);
+                            }
+                        }
+                        else if (path.Contains("."))
+                        {
+                            // This is an object property...
+                            string parentPath = path.Substring(0, path.LastIndexOf("."));
+                            string attributeName = path.Substring(path.LastIndexOf(".") + 1);
+                            JToken parentToken = _boundItems.SelectToken(parentPath);
+                            if ((parentToken != null) && (parentToken is JObject))
+                            {
+                                ((JObject)parentToken).Add(attributeName, bindingChange["value"]);
+                            }
+                            else
+                            {
+                                // !!! Do something?
+                                Util.debug("ERROR: Attempt to add object property, but parent didn't exist or was not a property, parent path: " + parentPath);
+                            }
+                        }
+                        else
+                        {
+                            // This is a root property...
+                            _boundItems.Add(path, bindingChange["value"]);
+                        }
+
+                    }
+                    else if (changeType == "remove")
+                    {
+                        JToken boundValue = _boundItems.SelectToken(path);
+                        if (boundValue != null)
+                        {
+                            Util.debug("Removing bound item for path: " + boundValue.Path);
+                            boundValue.Remove();
+                        }
+                        else
+                        {
+                            // !!! Do something?
+                            Util.debug("ERROR: Attempt to remove object property or array element, but it wasn't found, path: " + path);
                         }
                     }
                 }
+
+                // !!! It is worth noting that at this point (after updates) bindings may not be correct.  Tokens that are bound may no
+                //     longer be valid (because they were deleted or replaced) and paths that failed binding previously may now succeed
+                //     if re-attempted (as new items may have shown up that match those paths).  So this is where it might be good to
+                //     "re-bind" all bindings (use their full path to see if they would still bind to the same token, and if not, bind
+                //     them to the new token). 
+                //
+                Util.debug("Bound values after processing updates: " + this._boundItems);
             }
         }
 
@@ -93,7 +176,7 @@ namespace MaasClient
             // Update the value
             var value = getValue();
             Util.debug("Got value update: " + value);
-            ((JValue)binding.BoundToken).Value = value;
+            ((JValue)binding.BoundToken).Value = value; // !!! Fail on non-primitive value (like JArray from multi-select listbox)
 
             // Notify ValueBinding dependencies (except for the ValueBinding that triggered this)
             //
@@ -149,15 +232,15 @@ namespace MaasClient
             }
         }
 
-        public void CollectChangedValues(Action<string, string> setValue)
+        public void CollectChangedValues(Action<string, JToken> setValue)
         {
-            // !!! Right now this just gets all bound values that are capable of changing
+            // !!! Right now this just gets all bound values that are capable of changing (should just get the values that actually changed)
             //
             foreach (ValueBinding valueBinding in _valueBindings)
             {
                 // Remove base context path element ("BoundItems.") from beginning of path...
                 string path = valueBinding.Binding.BoundToken.Path.Remove(0, _boundItems.Path.Length + 1);
-                String value = valueBinding.GetViewValue();
+                JToken value = valueBinding.GetViewValue(); // !!! any
                 Util.debug("Bound item path: " + path + " - value: " + value);
                 setValue(path, value);
             }

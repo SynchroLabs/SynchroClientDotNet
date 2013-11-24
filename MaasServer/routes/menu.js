@@ -6,15 +6,21 @@ exports.View =
     Elements: 
     [
         { type: "image", resource: "resources/tdd.png" },
-        { type: "button", caption: "Login Sample", binding: "login" },
-        { type: "button", caption: "Click Counter Sample", binding: "counter" },
-        { type: "button", caption: "List Sample", binding: { onClick: "list" } },
+        { type: "button", caption: "Hello World", binding: "hello", margin: { top: 10 } },
+        { type: "button", caption: "Login Sample", binding: "login", margin: { top: 10 } },
+        { type: "button", caption: "Click Counter Sample", binding: "counter", margin: { top: 10 } },
+        { type: "button", caption: "List Sample", binding: "list", margin: { top: 10 } },
+        { type: "button", caption: "Sandbox", binding: "sandbox", margin: { top: 10 } },
     ]
 }
 
 exports.Commands = 
 {
-    login: function(state)
+    hello: function (state)
+    {
+        return navigateToView(state, "hello");
+    },
+    login: function (state)
     {
         return navigateToView(state, "login");
     },
@@ -25,5 +31,9 @@ exports.Commands =
     list: function(state)
     {
         return navigateToView(state, "list");
+    },
+    sandbox: function (state)
+    {
+        return navigateToView(state, "sandbox");
     },
 }

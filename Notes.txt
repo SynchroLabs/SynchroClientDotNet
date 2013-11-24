@@ -23,3 +23,8 @@ Binding value types - currently all string, need to support boolean (and numeric
     In the special case that an attribute string contains a single binding, such as visibility="{isVisible}"
 	Negation using !, such as visibility="{!isVisible}"
 
+Binding expression support
+
+    Mathematical (240 - charCount)
+	Logical (charCount >= 240)
+	Type conversion (str(240 - charCount))

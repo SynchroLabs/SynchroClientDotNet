@@ -57,6 +57,7 @@ namespace MaasClient
         }
 
         static Regex _braceContentsRE = new Regex(@"{([^}]*)}");
+        static Regex _onlyBraceContentsRE = new Regex(@"^{([^}]*)}$");
 
         public static bool ContainsBindingTokens(string value)
         {
@@ -77,15 +78,36 @@ namespace MaasClient
             return boundTokens;
         }
 
-        public static string ExpandBoundTokens(JToken rootBindingContext, JToken bindingContext, string value)
+        public static object ExpandBoundTokens(JToken rootBindingContext, JToken bindingContext, string value)
         {
-            return _braceContentsRE.Replace(value, delegate(Match m)
+            if (_onlyBraceContentsRE.IsMatch(value))
             {
-                Util.debug("Found binding: " + m.Groups[1]);
-                string token = m.Groups[1].ToString();
+                // If there is a binding containing exactly a single token, then that token may resolve to
+                // a value of any type (not just string), and we want to preserve that type, so we process
+                // that special case here...
+                //
+                string token = _onlyBraceContentsRE.Match(value).Groups[1].ToString();
+                Util.debug("Found binding that contained exactly one token: " + token);
                 Binding binding = BindingHelper.ResolveBinding(rootBindingContext, bindingContext, token);
-                return (string)binding.BoundToken;
-            });
+                return ((JValue)binding.BoundToken).Value;
+            }
+            else
+            {
+                // Otherwise we replace all tokens with their string values...
+                //
+                return _braceContentsRE.Replace(value, delegate(Match m)
+                {
+                    string token = m.Groups[1].ToString();
+                    Util.debug("Found token in composite binding: " + token);
+                    Binding binding = BindingHelper.ResolveBinding(rootBindingContext, bindingContext, token);
+                    return (string)binding.BoundToken;
+                });
+            }
+        }
+
+        public static string ExpandBoundTokensAsString(JToken rootBindingContext, JToken bindingContext, string value)
+        {
+            return (string)ExpandBoundTokens(rootBindingContext, bindingContext, value);
         }
 
         // Binding is specified in the "binding" attribute of an element.  For example, binding: { value: "foo" } will bind the "value"
@@ -143,8 +165,8 @@ namespace MaasClient
 
     }
 
-    public delegate void SetValue(String value);
-    public delegate String GetValue();
+    public delegate void SetValue(object value);
+    public delegate object GetValue();
 
     // For two-way binding of primary "value" property (binding to a single value only)
     //
@@ -170,14 +192,30 @@ namespace MaasClient
 
         public void UpdateView()
         {
-            _setValue((string)_binding.BoundToken);
+            _setValue(_binding.BoundToken);
+            //_setValue(((JValue)_binding.BoundToken).Value);
         }
 
-        public string GetViewValue()
+        public JToken GetViewValue()
         {
-            // The binding value is updated from the view and the updated binding value is returned.
-            ((JValue)_binding.BoundToken).Value = _getValue();
-            return (string)_binding.BoundToken;
+            object value = _getValue();
+            if (value is JArray)
+            {
+                // !!! This is kind of a cheat to update the contents of an array without breaking (changing) the
+                //     binding of the array.  It's not even clear this is working (and it assumes the current bound
+                //     token is an array)...
+                JArray array = value as JArray;
+                ((JArray)_binding.BoundToken).Clear();
+                foreach (var item in array.Values())
+                {
+                    ((JArray)_binding.BoundToken).Add(item);
+                }
+            }
+            else
+            {
+                ((JValue)_binding.BoundToken).Value = value;
+            }
+            return _binding.BoundToken;
         }
 
         public Binding Binding { get { return _binding; } }

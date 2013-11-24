@@ -55,6 +55,7 @@ function setObjectProperty(obj, propertyPath, value) {
     }
 
     if (obj) {
+        console.log("Updating bound item for property: " + propertyPath);
         obj[last] = value;
         return obj[last];
     }
@@ -70,15 +71,27 @@ function processPath(path, request, response) {
 
     var routeModule = routes[path];
     if (routeModule) {
+        var boundItemsAfterUpdate = null;
+
         console.log("Found route module for " + path);
 
         if (request.body && request.body.BoundItems) {
             console.log("BoundItems: " + request.session.BoundItems);
+
+            // Record the current state of bound items so we can diff it after apply the changes from the client,
+            // and use that diff to see if there were any changes, so that we can then pass them to the OnChange
+            // handler (for the "view" mode, indicating changes that were made by/on the view).
+            //
+            var boundItemsBeforeUpdate = JSON.parse(JSON.stringify(request.session.BoundItems));
+
             for (var key in request.body.BoundItems) {
-                console.log("Request body bound itemx - " + key + ": " + request.body.BoundItems[key]);
+                console.log("Request body bound item change from client - " + key + ": " + request.body.BoundItems[key]);
                 setObjectProperty(request.session.BoundItems, key, request.body.BoundItems[key]);
-                //request.session.BoundItems[key] = request.body.BoundItems[key];
             }
+
+            // Getting this here allows us to track any changes made by server logic (in change notifications or commands)
+            //
+            boundItemsAfterUpdate = JSON.parse(JSON.stringify(request.session.BoundItems));
 
             if (routeModule.OnChange) {
                 // !!! Pass changelist (consistent with command side changelist)
@@ -89,7 +102,11 @@ function processPath(path, request, response) {
         var command = request.query["command"];
         if (command) {
             console.log("Running command: " + command);
-            var originalBoundItems = JSON.parse(JSON.stringify(request.session.BoundItems));
+
+            if (!boundItemsAfterUpdate) {
+                boundItemsAfterUpdate = JSON.parse(JSON.stringify(request.session.BoundItems));
+            }
+
             if (!routeModule.Commands[command](state, request.session, request.session.BoundItems)) {
                 // !! This is a problem for non-default returns that route to the same page, such as MessageBox,
                 //    which also needs to get the bound item update...
@@ -105,7 +122,7 @@ function processPath(path, request, response) {
                     routeModule.OnChange(state, request.session, request.session.BoundItems, "command");
                 }
 
-                var boundItemUpdates = objectMonitor.getChangeList(null, originalBoundItems, request.session.BoundItems);
+                var boundItemUpdates = objectMonitor.getChangeList(null, boundItemsAfterUpdate, request.session.BoundItems);
                 response.send({ "BoundItemUpdates": boundItemUpdates });
             }
         } else {

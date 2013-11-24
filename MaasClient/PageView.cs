@@ -18,28 +18,17 @@ using Windows.UI.Xaml.Media.Imaging;
 //    ! = negation of boolean value
 //    ^ = One time binding (default is one way binding)
 //
-// binding = { value: "foo } is equivalent to the common shorthand: binding = "foo" (default attribute is "value")
+// Each item has a binding context, which is determined before the item is created/processed by inspecting the "binding" attribute
+// to look for a "foreach" or "with" binding context specifier.
 //
 //    foreach: foos (for each element in array "foos", create an instance of this element and set the binding context for
 //                   that element to the array element).
 //
 //    with: foo.bar (select the element foo.bar as the current binding context for the visual element, before apply any other binding).
 //
-//    event handlers - event: command - for example - onClick: incrementCounter 
-//
-
-// Each item has a binding context, which is determined before the item is created/processed by inspecting the "binding" attribute
-// to look for a "foreach" or "with" binding context specifier.
-//
 // The "binding" attribute can have tokens in it, but they are only evalutated when it is initially processed (binding
 // is only processed once).
 //
-// Each element type can have a default binding context, so that binding can be expressed with a simple value.  For example,
-// for an edit control, the default binding would be to "value", whereas for a button control the default binding would be
-// to "onClick".
-//
-
-
 
 namespace MaasClient
 {
@@ -76,14 +65,14 @@ namespace MaasClient
             metaData.BindingContext = bindingContext;
         }
 
-        Boolean processElementBoundValue(FrameworkElement element, JToken bindingContext, string value, GetValue getValue, SetValue setValue)
+        Boolean processElementBoundValue(FrameworkElement element, string attributeName, JToken bindingContext, string value, GetValue getValue, SetValue setValue)
         {
             if (value != null)
             {
                 ElementMetaData metaData = getMetaData(element);
 
                 ValueBinding binding = this.viewModel.CreateValueBinding(bindingContext, value, getValue, setValue);
-                metaData.ValueBinding = binding;
+                metaData.SetValueBinding(attributeName, binding);
                 return true;
             }
 
@@ -114,34 +103,48 @@ namespace MaasClient
             }
         }
 
-        // !!! Currently unused
-        public Boolean tokenToBoolean(JToken token)
+        public Boolean ConvertToBoolean(object value)
         {
             Boolean result = false;
 
-            if (token != null)
+            if (value is JToken)
             {
-                switch (token.Type)
+                var token = value as JToken;
+                if (token != null)
                 {
-                    case JTokenType.Boolean:
-                        result = (Boolean)token;
-                        break;
-                    case JTokenType.String:
-                        String str = (String)token;
-                        result = str.Length > 0;
-                        break;
-                    case JTokenType.Float:
-                        result = (float)token != 0;
-                        break;
-                    case JTokenType.Integer:
-                        result = (int)token != 0;
-                        break;
+                    switch (token.Type)
+                    {
+                        case JTokenType.Boolean:
+                            result = (Boolean)token;
+                            break;
+                        case JTokenType.String:
+                            String str = (String)token;
+                            result = str.Length > 0;
+                            break;
+                        case JTokenType.Float:
+                            result = (float)token != 0;
+                            break;
+                        case JTokenType.Integer:
+                            result = (int)token != 0;
+                            break;
+                    }
+                }
+            }
+            else
+            {
+                if (value is String)
+                {
+                    result = ((string)value).Length > 0;
+                }
+                else
+                {
+                    result = Convert.ToBoolean(value);
                 }
             }
             return result;
         }
 
-        public delegate object ConvertValue(String value);
+        public delegate object ConvertValue(object value);
 
         // This method allows us to do some runtime reflection to see if a property exists on an element, and if so, to bind to it.  This
         // is needed because there are common properties of FrameworkElement instances that are repeated in different class trees.  For
@@ -199,24 +202,159 @@ namespace MaasClient
             return FontWeights.Normal;
         }
 
+        public void processMarginProperty(FrameworkElement element, JToken bindingContext, JToken margin)
+        {
+            Thickness thickness = new Thickness();
+
+            if (margin is JValue)
+            {
+                processElementProperty(element, bindingContext, (string)margin, value => 
+                {
+                    double marginThickness = Convert.ToDouble(value);
+                    thickness.Left = marginThickness;
+                    thickness.Top = marginThickness;
+                    thickness.Right = marginThickness;
+                    thickness.Bottom = marginThickness;
+                    element.Margin = thickness; 
+                }, "0");
+            }
+            else if (margin is JObject)
+            {
+                JObject marginObject = margin as JObject;
+                processElementProperty(element, bindingContext, (string)marginObject.Property("left"), value =>
+                {
+                    thickness.Left = Convert.ToDouble(value);
+                    element.Margin = thickness;
+                }, "0");
+                processElementProperty(element, bindingContext, (string)marginObject.Property("top"), value =>
+                {
+                    thickness.Top = Convert.ToDouble(value);
+                    element.Margin = thickness;
+                }, "0");
+                processElementProperty(element, bindingContext, (string)marginObject.Property("right"), value =>
+                {
+                    thickness.Right = Convert.ToDouble(value);
+                    element.Margin = thickness;
+                }, "0");
+                processElementProperty(element, bindingContext, (string)marginObject.Property("bottom"), value =>
+                {
+                    thickness.Bottom = Convert.ToDouble(value);
+                    element.Margin = thickness;
+                }, "0");
+            }
+        }
+
         public void processCommonFrameworkElementProperies(FrameworkElement element, JToken bindingContext, JObject controlSpec)
         {
-            // !!! TODO: Margin (top, left, bottom, right), MinHeight/Width, MaxHeight/Width, Tooltip
+            // !!! TODO: MinHeight/Width, MaxHeight/Width, Tooltip
             //
+
             Util.debug("Processing framework element properties");
-            processElementProperty(element, bindingContext, (string)controlSpec["name"], value => element.Name = value);
+            processElementProperty(element, bindingContext, (string)controlSpec["name"], value => element.Name = (string)value);
             processElementProperty(element, bindingContext, (string)controlSpec["height"], value => element.Height = Convert.ToDouble(value));
             processElementProperty(element, bindingContext, (string)controlSpec["width"], value => element.Width = Convert.ToDouble(value));
-            processElementProperty(element, bindingContext, (string)controlSpec["margin"], value => element.Margin = new Thickness(Convert.ToDouble(value)));
             processElementProperty(element, bindingContext, (string)controlSpec["opacity"], value => element.Opacity = Convert.ToDouble(value));
-            processElementProperty(element, bindingContext, (string)controlSpec["visibility"], value => element.Visibility = Convert.ToBoolean(value) ? Visibility.Visible : Visibility.Collapsed);
+            processElementProperty(element, bindingContext, (string)controlSpec["visibility"], value => element.Visibility = this.ConvertToBoolean(value) ? Visibility.Visible : Visibility.Collapsed);
+            processMarginProperty(element, bindingContext, controlSpec["margin"]);
 
             // These elements are very common among derived classes, so we'll do some runtime reflection...
             processElementPropertyIfPresent(element, bindingContext, (string)controlSpec["fontsize"], "FontSize", value => Convert.ToDouble(value));
-            processElementPropertyIfPresent(element, bindingContext, (string)controlSpec["fontweight"], "FontWeight", value => GetFontWeight(value));
-            processElementPropertyIfPresent(element, bindingContext, (string)controlSpec["enabled"], "IsEnabled", value => Convert.ToBoolean(value));
-            processElementPropertyIfPresent(element, bindingContext, (string)controlSpec["background"], "Background", value => ColorStringToBrush(value));
-            processElementPropertyIfPresent(element, bindingContext, (string)controlSpec["foreground"], "Foreground", value => ColorStringToBrush(value));
+            processElementPropertyIfPresent(element, bindingContext, (string)controlSpec["fontweight"], "FontWeight", value => GetFontWeight((string)value));
+            processElementPropertyIfPresent(element, bindingContext, (string)controlSpec["enabled"], "IsEnabled", value => this.ConvertToBoolean(value));
+            processElementPropertyIfPresent(element, bindingContext, (string)controlSpec["background"], "Background", value => ColorStringToBrush((string)value));
+            processElementPropertyIfPresent(element, bindingContext, (string)controlSpec["foreground"], "Foreground", value => ColorStringToBrush((string)value));
+        }
+
+        public object getListboxContents(ListBox listbox)
+        {
+            Util.debug("Getting listbox contents");
+
+            string tokenStr = "[";
+            foreach (string item in listbox.Items)
+            {
+                Util.debug("Found listbox item: " + item);
+                tokenStr += "\"" + item + "\",";
+            }
+            tokenStr += "]";
+            return JToken.Parse(tokenStr);
+        }
+
+        public void setListboxContents(ListBox listbox, JToken contents)
+        {
+            Util.debug("Setting listbox contents");
+
+            // Keep track of currently selected item/items so we can restore after repopulating list
+            string[] selected = listbox.SelectedItems.OfType<string>().ToArray();
+
+            listbox.Items.Clear();
+            if ((contents != null) && (contents.Type == JTokenType.Array))
+            {
+                // !!! Default itemValue is "$data"
+                foreach (JToken arrayElementBindingContext in (JArray)contents)
+                {
+                    // !!! If $data (default), then we get the value of the binding context iteration items.
+                    //     Otherwise, if there is a non-default itemData binding, we apply that.
+                    string value = (string)arrayElementBindingContext;
+                    Util.debug("adding listbox item: " + value);
+                    listbox.Items.Add(value);
+                }
+
+                foreach (string selection in selected)
+                {
+                    Util.debug("Previous selection: " + selection);
+                    int n = listbox.Items.IndexOf(selection);
+                    if (n >= 0)
+                    {
+                        Util.debug("Found previous selection in list, selecting it!");
+                        if (listbox.SelectionMode == SelectionMode.Single)
+                        {
+                            // If we're single select, we have to select the item via a valid single
+                            // select method, like below.  If you try to do it the multi select way by
+                            // modifying SelectedItems in single select, you get a "catastrphic" freakout.
+                            //
+                            listbox.SelectedIndex = n;
+                            break;
+                        }
+                        else
+                        {
+                            listbox.SelectedItems.Add(listbox.Items[n]);
+                        }
+                    }
+                }
+            }
+
+        }
+
+        public object getListboxSelection(ListBox listbox)
+        {
+            if (listbox.SelectionMode == SelectionMode.Multiple)
+            {
+                string tokenStr = "[";
+                foreach (string item in listbox.SelectedItems)
+                {
+                    Util.debug("Found listbox item: " + item);
+                    tokenStr += "\"" + item + "\",";
+                }
+                tokenStr += "]";
+
+                return JToken.Parse(tokenStr);
+            }
+            else
+            {
+                return (string)listbox.SelectedItem;
+            }
+        }
+
+        public void setListboxSelection(ListBox listbox, JToken selection)
+        {
+            if (listbox.SelectionMode == SelectionMode.Multiple)
+            {
+                // !!! If selection is string, select it.  Else if array, iterate and select each
+            }
+            else
+            {
+                listbox.SelectedItem = (string)selection;
+            }
         }
 
         public FrameworkElement createControl(JToken bindingContext, JObject controlSpec)
@@ -233,23 +371,40 @@ namespace MaasClient
                     Util.debug("Found text element with value of: " + controlSpec["value"]);
                     TextBlock textBlock = new TextBlock();
                     setBindingContext(textBlock, bindingContext);
-                    processElementProperty(textBlock, bindingContext, (string)controlSpec["value"], value => textBlock.Text = value);
+                    processElementProperty(textBlock, bindingContext, (string)controlSpec["value"], value => textBlock.Text = (string)value);
                     control = textBlock;
                 }
                 break;
 
                 case "edit":
                 {
-                    Util.debug("Found text element with value of: " + controlSpec["value"]);
+                    Util.debug("Found edit element with value of: " + controlSpec["value"]);
                     TextBox textBox = new TextBox();
+                    textBox.HorizontalAlignment = HorizontalAlignment.Left; // !!! Defaults to center for some reason - remove when generic prop support added for alignment
                     setBindingContext(textBox, bindingContext);
                     JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "value");
-                    if (!processElementBoundValue(textBox, bindingContext, (string)bindingSpec["value"], () => { return textBox.Text; }, value => textBox.Text = value))
+                    if (!processElementBoundValue(textBox, "value", bindingContext, (string)bindingSpec["value"], () => { return textBox.Text; }, value => textBox.Text = value.ToString()))
                     {
-                        processElementProperty(textBox, bindingContext, (string)controlSpec["value"], value => textBox.Text = value);
+                        processElementProperty(textBox, bindingContext, (string)controlSpec["value"], value => textBox.Text = (string)value);
                     }
                     textBox.TextChanged += textBox_TextChanged;
                     control = textBox;
+                }
+                break;
+
+                case "password":
+                {
+                    Util.debug("Found password element with value of: " + controlSpec["value"]);
+                    PasswordBox passwordBox = new PasswordBox();
+                    passwordBox.HorizontalAlignment = HorizontalAlignment.Left; // !!! Defaults to center for some reason - remove when generic prop support added for alignment
+                    setBindingContext(passwordBox, bindingContext);
+                    JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "value");
+                    if (!processElementBoundValue(passwordBox, "value", bindingContext, (string)bindingSpec["value"], () => { return passwordBox.Password; }, value => passwordBox.Password = value.ToString()))
+                    {
+                        processElementProperty(passwordBox, bindingContext, (string)controlSpec["value"], value => passwordBox.Password = (string)value);
+                    }
+                    passwordBox.PasswordChanged += passwordBox_PasswordChanged;
+                    control = passwordBox;
                 }
                 break;
 
@@ -264,6 +419,29 @@ namespace MaasClient
                     processElementProperty(button, bindingContext, (string)controlSpec["caption"], value => button.Content = value);
                     button.Click += button_Click;
                     control = button;
+                }
+                break;
+
+                case "toggle":
+                {
+                    Util.debug("Found toggle element with caption of: " + controlSpec["caption"]);
+                    ToggleSwitch toggleSwitch = new ToggleSwitch();
+                    setBindingContext(toggleSwitch, bindingContext);
+                    JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "value");
+                    if (!processElementBoundValue(toggleSwitch, "value", bindingContext, (string)bindingSpec["value"], () => { return toggleSwitch.IsOn; }, value => toggleSwitch.IsOn = this.ConvertToBoolean(value)))
+                    {
+                        processElementProperty(toggleSwitch, bindingContext, (string)controlSpec["value"], value => toggleSwitch.IsOn = (bool)value);
+                    }
+                    if (bindingSpec["onToggle"] != null)
+                    {
+                        ElementMetaData metaData = getMetaData(toggleSwitch);
+                        metaData.Command = (string)bindingSpec["onToggle"];
+                    }
+                    processElementProperty(toggleSwitch, bindingContext, (string)controlSpec["header"], value => toggleSwitch.Header = value);
+                    processElementProperty(toggleSwitch, bindingContext, (string)controlSpec["onLabel"], value => toggleSwitch.OnContent = value);
+                    processElementProperty(toggleSwitch, bindingContext, (string)controlSpec["offLabel"], value => toggleSwitch.OffContent = value);
+                    toggleSwitch.Toggled += toggleSwitch_Toggled;
+                    control = toggleSwitch;
                 }
                 break;
 
@@ -290,23 +468,23 @@ namespace MaasClient
                     ListBox listbox = new ListBox();
                     setBindingContext(listbox, bindingContext);
                     JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "items");
-                    if ((bindingSpec != null) && (bindingSpec["items"] != null))
+                    if (bindingSpec != null)
                     {
-                        // !!! How is the ongoing binding going to work?
-                        Binding binding = BindingHelper.ResolveBinding(this.viewModel.BoundItems, bindingContext, (string)bindingSpec["items"]);
-                        JToken arrayBindingContext = binding.BoundToken;
-                        if ((arrayBindingContext != null) && (arrayBindingContext.Type == JTokenType.Array))
+                        if (bindingSpec["items"] != null)
                         {
-                            // !!! Default itemValue is "$data"
-                            foreach (JToken arrayElementBindingContext in (JArray)arrayBindingContext)
-                            {
-                                // !!! If $data (default), then we get the value of the binding context iteration items.
-                                //     Otherwise, if there is a non-default itemData binding, we apply that.
-                                listbox.Items.Add((string)arrayElementBindingContext);
-                            }
+                            processElementBoundValue(listbox, "items", bindingContext, (string)bindingSpec["items"], () => getListboxContents(listbox), value => this.setListboxContents(listbox, (JToken)value));
+                        }
+                        if (bindingSpec["selection"] != null)
+                        {
+                            processElementBoundValue(listbox, "selection", bindingContext, (string)bindingSpec["selection"], () => getListboxSelection(listbox), value => this.setListboxSelection(listbox, (JToken)value));
                         }
                     }
-
+                    // Get selection mode - single (default) or multiple - no dynamic values (we don't need this changing during execution).
+                    if ((controlSpec["select"] != null) && ((string)controlSpec["select"] == "multiple"))
+                    {
+                        listbox.SelectionMode = SelectionMode.Multiple;
+                    }
+                    listbox.SelectionChanged += listbox_SelectionChanged;
                     control = listbox;
                 }
                 break;
@@ -394,14 +572,30 @@ namespace MaasClient
             createControls(this.viewModel.BoundItems, (JArray)pageView["Elements"], control => panel.Children.Add(control));
         }
 
+        void updateValueBindingForAttribute(FrameworkElement element, string attributeName)
+        {
+            ElementMetaData metaData = element.Tag as ElementMetaData;
+            if (metaData != null)
+            {
+                ValueBinding binding = metaData.GetValueBinding(attributeName);
+                if (binding != null)
+                {
+                    // Update the local ViewModel from the element/control
+                    binding.UpdateValue();
+                }
+            }
+        }
+
         void textBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             var textBox = sender as TextBox;
-            ElementMetaData metaData = textBox.Tag as ElementMetaData;
-            if ((metaData != null) && (metaData.ValueBinding != null))
-            {
-                metaData.ValueBinding.UpdateValue();
-            }
+            updateValueBindingForAttribute(textBox, "value");
+        }
+
+        void passwordBox_PasswordChanged(object sender, RoutedEventArgs e)
+        {
+            var passwordBox = sender as PasswordBox;
+            updateValueBindingForAttribute(passwordBox, "value");
         }
 
         void button_Click(object sender, RoutedEventArgs e)
@@ -418,6 +612,25 @@ namespace MaasClient
                 Util.debug("Button click with no action");
             }
         }
+
+        void toggleSwitch_Toggled(object sender, RoutedEventArgs e)
+        {
+            var toggleSwitch = sender as ToggleSwitch;
+            updateValueBindingForAttribute(toggleSwitch, "value");
+            ElementMetaData metaData = toggleSwitch.Tag as ElementMetaData;
+            if ((metaData != null) && (metaData.Command != null))
+            {
+                Util.debug("ToggleSwitch toggled with command: " + metaData.Command);
+                this.stateManager.processCommand(metaData.Command);
+            }
+        }
+
+        void listbox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var listbox = sender as ListBox;
+            updateValueBindingForAttribute(listbox, "selection");
+        }
+
 
         /*
          * Keeping this dead listener code around for now.
@@ -466,7 +679,7 @@ namespace MaasClient
             this.viewModel.UpdateView();
         }
 
-        public void collectBoundItemValues(Action<string, string> setValue)
+        public void collectBoundItemValues(Action<string, JToken> setValue)
         {
             this.viewModel.CollectChangedValues(setValue);
         }
@@ -483,13 +696,13 @@ namespace MaasClient
 
         public async void processMessageBox(JObject messageBox)
         {
-            string message = BindingHelper.ExpandBoundTokens(this.viewModel.BoundItems, this.viewModel.BoundItems, (string)messageBox["message"]);
+            string message = BindingHelper.ExpandBoundTokensAsString(this.viewModel.BoundItems, this.viewModel.BoundItems, (string)messageBox["message"]);
 
             var messageDialog = new MessageDialog(message);
 
             if (messageBox["title"] != null)
             {
-                messageDialog.Title = BindingHelper.ExpandBoundTokens(this.viewModel.BoundItems, this.viewModel.BoundItems, (string)messageBox["title"]);
+                messageDialog.Title = BindingHelper.ExpandBoundTokensAsString(this.viewModel.BoundItems, this.viewModel.BoundItems, (string)messageBox["title"]);
             }
 
             if (messageBox["options"] != null)
@@ -500,7 +713,7 @@ namespace MaasClient
                     if ((string)option["command"] != null)
                     {
                         messageDialog.Commands.Add(new UICommand(
-                            BindingHelper.ExpandBoundTokens(this.viewModel.BoundItems, this.viewModel.BoundItems, (string)option["label"]),
+                            BindingHelper.ExpandBoundTokensAsString(this.viewModel.BoundItems, this.viewModel.BoundItems, (string)option["label"]),
                             new UICommandInvokedHandler(this.MessageDialogCommandHandler),
                             BindingHelper.ExpandBoundTokens(this.viewModel.BoundItems, this.viewModel.BoundItems, (string)option["command"]))
                             );
@@ -508,7 +721,7 @@ namespace MaasClient
                     else
                     {
                         messageDialog.Commands.Add(new UICommand(
-                            BindingHelper.ExpandBoundTokens(this.viewModel.BoundItems, this.viewModel.BoundItems, (string)option["label"]),
+                            BindingHelper.ExpandBoundTokensAsString(this.viewModel.BoundItems, this.viewModel.BoundItems, (string)option["label"]),
                             new UICommandInvokedHandler(this.MessageDialogCommandHandler))
                             );
                     }

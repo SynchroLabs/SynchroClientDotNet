@@ -9,18 +9,26 @@ namespace MaasClient
 {
     public class ElementMetaData
     {
-        List<PropertyBinding> _propertyBindings;
+        Dictionary<string, ValueBinding> _valueBindings = new Dictionary<string, ValueBinding>();
+        List<PropertyBinding> _propertyBindings = new List<PropertyBinding>();
 
         public ElementMetaData()
         {
-            _propertyBindings = new List<PropertyBinding>();
         }
 
         public String Command { get; set; }
 
         public JToken BindingContext { get; set; }
 
-        public ValueBinding ValueBinding { get; set; }
+        public void SetValueBinding(string attribute, ValueBinding valueBinding)
+        {
+            _valueBindings[attribute] = valueBinding;
+        }
+
+        public ValueBinding GetValueBinding(string attribute)
+        {
+            return _valueBindings[attribute];
+        }
 
         public List<PropertyBinding> PropertyBindings
         {

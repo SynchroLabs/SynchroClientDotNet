@@ -6,14 +6,15 @@ exports.View =
     Elements: 
     [
         { type: "text", value: "Username", fontsize: 24 },
-        { type: "edit", binding: "username" },
+        { type: "edit", binding: "username", width: 200 },
         { type: "text", value: "Password", fontsize: 24 },
-        { type: "edit", binding: { value: "password" } },
+        { type: "password", binding: "password", width: 200 },
         { type: "stackpanel", contents: [
             { type: "button", caption: "Login", width: 100, binding: "login" },
             { type: "button", caption: "Cancel", width: 100, binding: "cancel" },
         ] },
-        { type: "text", value: "Current user name: {username}", fontsize: 24 },
+        { type: "toggle", binding: "showPassword", header: "Show Password", onLabel: "Showing", offLabel: "Hiding", fontsize: 24 },
+        { type: "text", value: "Current entered password: {password}", fontsize: 24, visibility: "{showPassword}" },
     ]
 }
 
@@ -23,6 +24,7 @@ exports.InitializeBoundItems = function(state, session)
     {
         username: "test",
         password: "",
+        showPassword: false
     }
     return boundItems;
 }
@@ -31,7 +33,6 @@ exports.Commands =
 {
     login: function(state, session, boundItems)
     {
-        console.log("Login command - username: " + boundItems.username + ", password: " + boundItems.password);
         if (boundItems.username && (boundItems.username == boundItems.password))
         {
             session.username = boundItems.username;
