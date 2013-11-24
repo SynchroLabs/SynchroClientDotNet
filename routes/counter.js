@@ -7,7 +7,7 @@ exports.View =
     [
         { type: "text", value: "Count: {count}", foreground: "{color}", fontsize: 24, fontweight: "{weight}" },
         { type: "button", caption: "Increment Count!", binding: "increment" },
-        { type: "button", caption: "Decrement Count!", binding: "decrement" },
+        { type: "button", caption: "Decrement Count!", binding: "decrement", enabled: "{count}" },
         { type: "button", caption: "Reset Count!", binding: "reset" },
         { type: "button", caption: "Return to menu!", binding: "exit" },
     ]

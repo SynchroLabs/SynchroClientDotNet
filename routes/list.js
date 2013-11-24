@@ -5,17 +5,21 @@ exports.View =
     Title: "List example",
     Elements: 
     [
-        { type: "text", value: "Your items", fontsize: 24 },
-        { type: "listbox", width: 250, binding: "items" },
+        { type: "stackpanel", contents: [
+            { type: "text", value: "New item:", fontsize: 24 },
+            { type: "edit", binding: "itemToAdd" },
+            { type: "button", caption: "Add", binding: "add", enabled: "{itemToAdd}" },
+        ] },
 
-        { type: "text", value: "New item", fontsize: 24 },
-        { type: "edit", binding: "colors[1].color" },
-        { type: "button", caption: "Add", binding: "addItem" },
+        { type: "text", value: "Your items", fontsize: 24 },
+        { type: "listbox", width: 250, binding: { items: "items", selection: "selectedItem" } },
+
+        { type: "stackpanel", contents: [
+            { type: "button", caption: "Remove", binding: "remove", enabled: "{selectedItem}" },
+            { type: "button", caption: "Sort", binding: "sort" },
+        ] },
 
         { type: "button", caption: "Return to menu!", binding: "exit" },
-
-        { type: "text", value: "{$parent.$parent.$parent.caption}: {color}", fontsize: 24, binding: { foreach: "colors" } },
-        { type: "edit", fontsize: 24, binding: { foreach: "colors", value: "color"} },
     ]
 }
 
@@ -23,28 +27,30 @@ exports.InitializeBoundItems = function(state, session)
 {
     var boundItems =
     {
-        caption: "The Color",
         itemToAdd: "",
         items: [ "white", "black", "yellow" ],
-        colors:
-        [
-            { color: "red" }, { color: "green" }, { color: "blue" },
-        ]
+        selectedItem: "black",
     }
     return boundItems;
 }
 
 exports.Commands = 
 {
-    addItem: function(state, session, boundItems)
+    add: function(state, session, boundItems)
     {
-        if (boundItems.itemToAdd != "")
-        {
-            boundItems.items.push(boundItems.itemToAdd);
-            boundItems.itemToAdd = "";
-        }
+        boundItems.items.push(boundItems.itemToAdd);
+        boundItems.itemToAdd = "";
     },
-    exit: function(state)
+    sort: function (state, session, boundItems)
+    {
+        boundItems.items.sort();
+    },
+    remove: function (state, session, boundItems)
+    {
+        boundItems.items.remove(boundItems.selectedItem);
+        boundItems.selectedItem = "";
+    },
+    exit: function (state)
     {
         return navigateToView(state, "menu");
     },
