@@ -20,23 +20,25 @@
     <SccProvider>SAK</SccProvider>
   </PropertyGroup>
   <ItemGroup>
-    <Content Include="package.json" />
+    <Content Include="nodedist\objectMonitor.js" />
+    <Content Include="nodedist\resources\tdd.png" />
+    <Content Include="nodedist\routes\counter.js" />
+    <Content Include="nodedist\routes\hello.js" />
+    <Content Include="nodedist\routes\list.js" />
+    <Content Include="nodedist\routes\login.js" />
+    <Content Include="nodedist\routes\menu.js" />
+    <Content Include="nodedist\routes\sandbox.js" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="node\express.d.ts" />
     <Content Include="node\node.d.ts" />
     <Content Include="node\require-dir.d.ts" />
-    <Content Include="objectMonitor.js" />
-    <Content Include="resources\tdd.png" />
-    <Content Include="routes\counter.js" />
-    <Content Include="routes\hello.js" />
-    <Content Include="routes\list.js" />
-    <Content Include="routes\login.js" />
-    <Content Include="routes\menu.js" />
-    <Content Include="routes\sandbox.js" />
   </ItemGroup>
   <ItemGroup>
-    <TypeScriptCompile Include="server.ts" />
+    <Content Include="nodedist\package.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <TypeScriptCompile Include="nodedist\server.ts" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
