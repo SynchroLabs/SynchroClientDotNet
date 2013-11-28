@@ -1,6 +1,6 @@
-///<reference path='node\node.d.ts' />
-///<reference path='node\express.d.ts' />
-///<reference path='node\require-dir.d.ts' />
+///<reference path='..\node\node.d.ts' />
+///<reference path='..\node\express.d.ts' />
+///<reference path='..\node\require-dir.d.ts' />
 
 import express = require("express");
 import requireDir = require('require-dir');
