@@ -16,14 +16,16 @@ namespace MaasClient
         //string urlBase = "http://MACBOOKPRO-111C:3000";
         string urlBase = "http://localhost:3000";
 
-        PageView pageView;
         HttpClient httpClient;
         CookieContainer cookieContainer;
 
+        PageView pageView;
+        ViewModel viewModel;
+
         public StateManager()
         {
-            Util.debug("Creating state manager");
-            pageView = new PageView(this);
+            viewModel = new ViewModel();
+            pageView = new PageView(this, viewModel);
 
             cookieContainer = new CookieContainer();
             var handler = new HttpClientHandler() { CookieContainer = cookieContainer };
@@ -40,6 +42,10 @@ namespace MaasClient
 
         public Uri buildUri(string path)
         {
+            if (path.StartsWith("http://") || path.StartsWith("https://"))
+            {
+                return new Uri(path);
+            }
             return new Uri(urlBase + "/" + path);
         }
 
@@ -95,12 +101,12 @@ namespace MaasClient
                 if (responseAsJSON["BoundItems"] != null)
                 {
                     JObject jsonBoundItems = (JObject)responseAsJSON["BoundItems"];
-                    pageView.newViewItems(jsonBoundItems);
+                    this.viewModel.InitializeViewModelData(jsonBoundItems);
                 }
                 else if (responseAsJSON["BoundItemUpdates"] != null)
                 {
                     JToken jsonBoundItems = (JToken)responseAsJSON["BoundItemUpdates"];
-                    pageView.updatedViewItems(jsonBoundItems);
+                    this.viewModel.UpdateViewModelData(jsonBoundItems);
                 }
 
                 if (responseAsJSON["View"] != null)
@@ -109,7 +115,7 @@ namespace MaasClient
                     pageView.processPageView(jsonPageView);
                 }
 
-                pageView.updateView();
+                this.viewModel.UpdateView();
 
                 if (responseAsJSON["MessageBox"] != null)
                 {
@@ -132,7 +138,7 @@ namespace MaasClient
         {
             Util.debug("Process command: " + command);
             var boundValues = new Dictionary<string, JToken>();
-            pageView.collectBoundItemValues((key, value) => boundValues[key] =  value);
+            this.viewModel.CollectChangedValues((key, value) => boundValues[key] =  value);
 
             if (boundValues.Count > 0)
             {

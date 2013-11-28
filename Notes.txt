@@ -2,29 +2,79 @@ Mobile Application As A Service (MAAAS)
 ==============================================
 
 Nomenclature - 
-    BoundItems -> ViewModel (?)
-    Request "state" -> context (?)
+    BoundItems -> ViewModelState
 
 Processing view model changes on client:
 
-    Apply add/remove differences
+    Rebinding to connect to new/changed data.  
+	
+	Maybe we should just always use the root and path to get the node (eliminating need to rebind).  
+	   Check performance of SelectPath.
+	   Investigate maintaining path/parentage on replaced tokens.
+	   How do binding tokens ($root, $parent, etc) fit in to this?
 
-    Rebinding to connect to new/changed data
+	   If "resolved binding" (taking into consideration the binding context, which can include binding tokens) exists
+	   at the time of initial binding, a valid path can be constructed.  If not, this binding would have to be 
+	   re-attempted each time the client view model changes (from the server?) to see if the binding can then be
+	   established.  Do we really need to support that (binding contexts that aren't available in the initial state)?
 
-    Suspend change notification, update all changes, process bindings for all changes (look at tree for each)
+    Suspend change notification, update all changes, process bindings for all changes (look at path for each, for ancestor changes)
 
-	For array bindings, update repeated items (remove all and re-add?), use stored template to create items
+	For array bindings, update repeated items (remove all and re-add?), use stored template to create items (?)
 
-Client side dynamic binding - example: slider bound to fontsize, only sync to server on command (if that)
+Binding value types - value, array, or object (right now just value types)
 
-	On control value change - use ValueBinding to update view model, and also to trigger synchronization (based on binding config)
+Property binding expressions/directives:
 
-Binding value types - currently all string, need to support boolean (and numeric?)
-    In the special case that an attribute string contains a single binding, such as visibility="{isVisible}"
 	Negation using !, such as visibility="{!isVisible}"
+	One time using ^
 
-Binding expression support
+    Real expression support:
 
-    Mathematical (240 - charCount)
-	Logical (charCount >= 240)
-	Type conversion (str(240 - charCount))
+		Mathematical (240 - charCount)
+		Logical (charCount >= 240)
+		Type conversion (str(240 - charCount))
+
+Controls - http://msdn.microsoft.com/en-us/library/windows/apps/hh465351.aspx
+
+	AppBar/CommandBar and buttons (app bar button for round app bar buttons that can be used anywhere)
+
+	Border
+
+	Canvas (child elements have positioning properties)
+
+		{ type: "canvas", contents: [
+		    { type: "text", value: "Somevalue", top: 10, left: 25 },
+		] };
+
+	Checkbox/radio buttons
+
+	Dropdown combo
+
+	Date/time
+
+	Flip view
+
+	Flyout (not really a control)
+
+	Grid / VariableSizeWrapGrid (child elements have row/col properties)
+
+		{ type: "grid", columns: [100, 100], rows: [50, 50], contents: [
+		    { type: "text", value: "Somevalue", row: 1, column: 1 },
+		] };
+
+	GridView/ListView
+
+	Hub
+
+	Media
+
+	Progress bar / slider (both "range" controls with similar interface)
+
+	Progress ring
+
+	Semantic zoom
+
+	Web view
+
+	Windows contracts?  Sharing, settings, search...

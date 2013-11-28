@@ -26,10 +26,18 @@ namespace MaasClient
         public BasicPage()
         {
             this.InitializeComponent();
+            this.backButton.Click += backButton_Click;
+
             stateManager.PageView.Path = "menu";
             stateManager.PageView.setPageTitle = title => this.pageTitle.Text = title;
+            stateManager.PageView.setBackEnabled = isEnabled => this.backButton.IsEnabled = isEnabled;
             stateManager.PageView.Content = (Panel)this.mainStack;
             stateManager.loadLayout();
+        }
+
+        void backButton_Click(object sender, RoutedEventArgs e)
+        {
+            stateManager.PageView.OnBackCommand(sender, e);
         }
 
         /// <summary>

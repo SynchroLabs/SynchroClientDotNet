@@ -168,7 +168,7 @@ namespace MaasClient
     public delegate void SetValue(object value);
     public delegate object GetValue();
 
-    // For two-way binding of primary "value" property (binding to a single value only)
+    // For two-way binding (typically of primary "value" property) - binding to a single value only
     //
     public class ValueBinding
     {
@@ -192,8 +192,7 @@ namespace MaasClient
 
         public void UpdateView()
         {
-            _setValue(_binding.BoundToken);
-            //_setValue(((JValue)_binding.BoundToken).Value);
+            _setValue(_binding.BoundToken); // This is required for values that are arrays (list support)
         }
 
         public JToken GetViewValue()

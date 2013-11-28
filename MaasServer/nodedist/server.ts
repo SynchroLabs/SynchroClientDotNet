@@ -11,7 +11,7 @@ var routes = requireDir("routes");
 for (var routePath in routes) {
     console.log("Found route processor for: " + routePath);
     var route = routes[routePath];
-    route.View["Path"] = routePath;
+    route.View["path"] = routePath;
 }
 
 var app = express();
@@ -81,7 +81,7 @@ function setObjectProperty(obj, propertyPath, value)
 function processPath(path, request, response)
 {
     console.log("Processing path " + path);
-    var state =
+    var context =
     {
         path: path,
         request: request,
@@ -120,7 +120,7 @@ function processPath(path, request, response)
             if (routeModule.OnChange)
             {
                 // !!! Pass changelist (consistent with command side changelist)
-                routeModule.OnChange(state, request.session, request.session.BoundItems, "view");
+                routeModule.OnChange(context, request.session, request.session.BoundItems, "view");
             }
         }
 
@@ -139,7 +139,7 @@ function processPath(path, request, response)
                 boundItemsAfterUpdate = JSON.parse(JSON.stringify(request.session.BoundItems));
             }
 
-            if (!routeModule.Commands[command](state, request.session, request.session.BoundItems))
+            if (!routeModule.Commands[command](context, request.session, request.session.BoundItems))
             {
                 // !! This is a problem for non-default returns that route to the same page, such as MessageBox,
                 //    which also needs to get the bound item update...
@@ -154,7 +154,7 @@ function processPath(path, request, response)
                     // !!! We might need to call getChangeList here also, to determine if there were any changes,
                     //     and to construct the changelist for the handler.
                     // !!! Pass changelist (consistent with view side changelist)
-                    routeModule.OnChange(state, request.session, request.session.BoundItems, "command");
+                    routeModule.OnChange(context, request.session, request.session.BoundItems, "command");
                 }
 
                 var boundItemUpdates = objectMonitor.getChangeList(null, boundItemsAfterUpdate, request.session.BoundItems);
@@ -164,10 +164,10 @@ function processPath(path, request, response)
         else
         {
             request.session.BoundItems = {};
-            if (routeModule.InitializeBoundItems)
+            if (routeModule.InitializeViewModelState)
             {
-                console.log("Initializing bound items");
-                request.session.BoundItems = routeModule.InitializeBoundItems(state, request.session);
+                console.log("Initializing view model state");
+                request.session.BoundItems = routeModule.InitializeViewModelState(context, request.session);
             }
             response.send({ "BoundItems": request.session.BoundItems, "View": routeModule.View });
         }
@@ -182,19 +182,19 @@ function fnShowMessage(state, messageBox)
 declare var showMessage: any;
 showMessage = fnShowMessage;
 
-function fnNavigateToView(state, route)
+function fnNavigateToView(context, route)
 {
     var routeModule = routes[route];
     if (routeModule)
     {
         console.log("Found route module for " + route);
-        state.request.session.BoundItems = {};
-        if (routeModule.InitializeBoundItems)
+        context.request.session.BoundItems = {};
+        if (routeModule.InitializeViewModelState)
         {
-            console.log("Initializing bound items (on nav)");
-            state.request.session.BoundItems = routeModule.InitializeBoundItems(state, state.request.session);
+            console.log("Initializing view model state (on nav)");
+            context.request.session.BoundItems = routeModule.InitializeViewModelState(context, context.request.session);
         }
-        state.response.send({ "BoundItems": state.request.session.BoundItems, "View": routeModule.View });
+        context.response.send({ "BoundItems": context.request.session.BoundItems, "View": routeModule.View });
     }
 
     return true;
