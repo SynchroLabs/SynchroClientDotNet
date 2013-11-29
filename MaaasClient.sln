@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio 2013
+VisualStudioVersion = 12.0.21005.1
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MaasClient", "MaasClient\MaasClient.csproj", "{B80825FA-E75B-4E55-86F8-08D5FA0954B9}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MaasServer", "MaasServer\MaasServer.csproj", "{E0BE528B-1298-4F2C-9BE5-7FF35B669A2B}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{B6E5B653-1586-4159-96BC-CEAE61E1BA1F}"
 	ProjectSection(SolutionItems) = preProject
@@ -46,16 +46,6 @@ Global
 		{B80825FA-E75B-4E55-86F8-08D5FA0954B9}.Release|x86.ActiveCfg = Release|x86
 		{B80825FA-E75B-4E55-86F8-08D5FA0954B9}.Release|x86.Build.0 = Release|x86
 		{B80825FA-E75B-4E55-86F8-08D5FA0954B9}.Release|x86.Deploy.0 = Release|x86
-		{E0BE528B-1298-4F2C-9BE5-7FF35B669A2B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E0BE528B-1298-4F2C-9BE5-7FF35B669A2B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E0BE528B-1298-4F2C-9BE5-7FF35B669A2B}.Debug|ARM.ActiveCfg = Debug|Any CPU
-		{E0BE528B-1298-4F2C-9BE5-7FF35B669A2B}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{E0BE528B-1298-4F2C-9BE5-7FF35B669A2B}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{E0BE528B-1298-4F2C-9BE5-7FF35B669A2B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E0BE528B-1298-4F2C-9BE5-7FF35B669A2B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E0BE528B-1298-4F2C-9BE5-7FF35B669A2B}.Release|ARM.ActiveCfg = Release|Any CPU
-		{E0BE528B-1298-4F2C-9BE5-7FF35B669A2B}.Release|x64.ActiveCfg = Release|Any CPU
-		{E0BE528B-1298-4F2C-9BE5-7FF35B669A2B}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

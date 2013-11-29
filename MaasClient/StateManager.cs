@@ -7,6 +7,7 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.Networking.Sockets;
 using Windows.UI.Xaml.Controls;
 
 namespace MaasClient
@@ -14,7 +15,8 @@ namespace MaasClient
     class StateManager
     {
         //string urlBase = "http://MACBOOKPRO-111C:3000";
-        string urlBase = "http://localhost:3000";
+        //string urlBase = "http://localhost:1337/api";
+        string urlBase = "http://maaas.azurewebsites.net/api";
 
         HttpClient httpClient;
         CookieContainer cookieContainer;
@@ -27,9 +29,13 @@ namespace MaasClient
             viewModel = new ViewModel();
             pageView = new PageView(this, viewModel);
 
+            //MessageWebSocket ws = new MessageWebSocket();
+
             cookieContainer = new CookieContainer();
             var handler = new HttpClientHandler() { CookieContainer = cookieContainer };
             this.httpClient = new HttpClient(handler);
+            httpClient.DefaultRequestHeaders.ExpectContinue = false;       // !!! Not clear if this does anything (100-continue case doesn't always repro)
+            httpClient.DefaultRequestHeaders.Connection.Add("Keep-Alive"); // !!! This definitely doesn't do anything
         }
 
         public PageView PageView 
@@ -54,6 +60,28 @@ namespace MaasClient
             await handleRequest(path, null);
         }
 
+        public async Task<HttpResponseMessage> KeepAliveRequest(HttpMethod method, string path, HttpContent content = null)
+        {
+            var request = new HttpRequestMessage()
+            {
+                RequestUri = buildUri(path),
+                Method = method,
+                Content = content,
+            };
+
+            if (content != null)
+            {
+                content.Headers.Add("Keep-Alive", "true"); // !!! This adds a header, but not Connection: Keep-Alive
+            }
+            else 
+            {
+                request.Headers.Add("Connection", new string[] { "Keep-Alive" }); // !!! Not sure this ever works
+            }
+            Util.debug("Added Keep-Alive");
+
+            return await this.httpClient.SendAsync(request);
+        }
+
         async Task handleRequest(string path, string jsonPostBody)
         {
             try
@@ -64,11 +92,15 @@ namespace MaasClient
                 if (jsonPostBody != null)
                 {
                     StringContent jsonContent = new StringContent(jsonPostBody, System.Text.Encoding.UTF8, "application/json"); 
-                    response = await httpClient.PostAsync(buildUri(path), jsonContent);
+                    //response = await httpClient.PostAsync(buildUri(path), jsonContent);
+                    Util.debug("Post request to: " + urlBase + "/" + path);
+                    response = await KeepAliveRequest(HttpMethod.Post, path, jsonContent);
                 }
                 else
                 {
-                    response = await httpClient.GetAsync(buildUri(path));
+                    //response = await httpClient.GetAsync(buildUri(path));
+                    Util.debug("Get request to: " + urlBase + "/" + path);
+                    response = await KeepAliveRequest(HttpMethod.Get, path);
                 }
                 response.EnsureSuccessStatusCode();
 
