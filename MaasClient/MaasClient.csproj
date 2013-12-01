@@ -114,6 +114,7 @@
       <DependentUpon>BasicPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Binding.cs" />
+    <Compile Include="TransportHttp.cs" />
     <Compile Include="ViewModel.cs" />
     <Compile Include="Common\BindableBase.cs" />
     <Compile Include="Common\BooleanNegationConverter.cs" />
@@ -129,6 +130,7 @@
     <Compile Include="PageView.cs" />
     <Compile Include="StateManager.cs" />
     <Compile Include="Util.cs" />
+    <Compile Include="TransportWs.cs" />
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">

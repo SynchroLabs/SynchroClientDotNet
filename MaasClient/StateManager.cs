@@ -2,6 +2,7 @@
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -14,12 +15,11 @@ namespace MaasClient
 {
     class StateManager
     {
-        //string urlBase = "http://MACBOOKPRO-111C:3000";
-        //string urlBase = "http://localhost:1337/api";
-        string urlBase = "http://maaas.azurewebsites.net/api";
+        //static string host = "localhost:1337";
+        static string host = "maaas.azurewebsites.net";
 
-        HttpClient httpClient;
-        CookieContainer cookieContainer;
+        //TransportHttp transport = new TransportHttp(host + "/api");
+        TransportWs transport = new TransportWs(host);
 
         PageView pageView;
         ViewModel viewModel;
@@ -28,14 +28,6 @@ namespace MaasClient
         {
             viewModel = new ViewModel();
             pageView = new PageView(this, viewModel);
-
-            //MessageWebSocket ws = new MessageWebSocket();
-
-            cookieContainer = new CookieContainer();
-            var handler = new HttpClientHandler() { CookieContainer = cookieContainer };
-            this.httpClient = new HttpClient(handler);
-            httpClient.DefaultRequestHeaders.ExpectContinue = false;       // !!! Not clear if this does anything (100-continue case doesn't always repro)
-            httpClient.DefaultRequestHeaders.Connection.Add("Keep-Alive"); // !!! This definitely doesn't do anything
         }
 
         public PageView PageView 
@@ -46,145 +38,82 @@ namespace MaasClient
             }
         }
 
+        // This is used by the page view to resolve resource URIs
         public Uri buildUri(string path)
         {
             if (path.StartsWith("http://") || path.StartsWith("https://"))
             {
                 return new Uri(path);
             }
-            return new Uri(urlBase + "/" + path);
+            return new Uri("http://" + host + "/api/" + path);
         }
 
-        async Task handleRequest(string path)
+        void ProcessJsonResponse(JObject responseAsJSON)
         {
-            await handleRequest(path, null);
-        }
-
-        public async Task<HttpResponseMessage> KeepAliveRequest(HttpMethod method, string path, HttpContent content = null)
-        {
-            var request = new HttpRequestMessage()
+            Util.debug("Got response: " + responseAsJSON);
+            if (responseAsJSON["ViewModel"] != null)
             {
-                RequestUri = buildUri(path),
-                Method = method,
-                Content = content,
-            };
-
-            if (content != null)
-            {
-                content.Headers.Add("Keep-Alive", "true"); // !!! This adds a header, but not Connection: Keep-Alive
+                JObject jsonViewModel = (JObject)responseAsJSON["ViewModel"];
+                this.viewModel.InitializeViewModelData(jsonViewModel);
             }
-            else 
+            else if (responseAsJSON["ViewModelDeltas"] != null)
             {
-                request.Headers.Add("Connection", new string[] { "Keep-Alive" }); // !!! Not sure this ever works
+                JToken jsonViewModelDeltas = (JToken)responseAsJSON["ViewModelDeltas"];
+                this.viewModel.UpdateViewModelData(jsonViewModelDeltas);
             }
-            Util.debug("Added Keep-Alive");
 
-            return await this.httpClient.SendAsync(request);
-        }
-
-        async Task handleRequest(string path, string jsonPostBody)
-        {
-            try
+            if (responseAsJSON["View"] != null)
             {
-                Util.debug("Loading JSON from " + urlBase + "/" + path);
-
-                HttpResponseMessage response = null;
-                if (jsonPostBody != null)
-                {
-                    StringContent jsonContent = new StringContent(jsonPostBody, System.Text.Encoding.UTF8, "application/json"); 
-                    //response = await httpClient.PostAsync(buildUri(path), jsonContent);
-                    Util.debug("Post request to: " + urlBase + "/" + path);
-                    response = await KeepAliveRequest(HttpMethod.Post, path, jsonContent);
-                }
-                else
-                {
-                    //response = await httpClient.GetAsync(buildUri(path));
-                    Util.debug("Get request to: " + urlBase + "/" + path);
-                    response = await KeepAliveRequest(HttpMethod.Get, path);
-                }
-                response.EnsureSuccessStatusCode();
-
-                foreach (KeyValuePair<string, IEnumerable<string>> header in response.Headers)
-                {
-                    Util.debug("Got header: " + header.Key);
-                    if (header.Key == "Set-Cookie")
-                    {
-                        foreach (string value in header.Value)
-                        {
-                            Util.debug("Cookie value: " + value);
-                        }
-                    }
-                }
-
-                Util.debug("Number of cookies: " + cookieContainer.Count);
-                CookieCollection cookies = cookieContainer.GetCookies(buildUri(""));
-                foreach (Cookie cookie in cookies)
-                {
-                    Util.debug("Found cookie - " + cookie.Name + ": " + cookie.Value);
-                }
-
-                var statusText = response.StatusCode + " " + response.ReasonPhrase + Environment.NewLine;
-                var responseBodyAsText = await response.Content.ReadAsStringAsync();
-                Util.debug("Status: " + statusText);
-                Util.debug("Body: " + responseBodyAsText);
-
-                JObject responseAsJSON = JObject.Parse(responseBodyAsText);
-
-                if (responseAsJSON["BoundItems"] != null)
-                {
-                    JObject jsonBoundItems = (JObject)responseAsJSON["BoundItems"];
-                    this.viewModel.InitializeViewModelData(jsonBoundItems);
-                }
-                else if (responseAsJSON["BoundItemUpdates"] != null)
-                {
-                    JToken jsonBoundItems = (JToken)responseAsJSON["BoundItemUpdates"];
-                    this.viewModel.UpdateViewModelData(jsonBoundItems);
-                }
-
-                if (responseAsJSON["View"] != null)
-                {
-                    JObject jsonPageView = (JObject)responseAsJSON["View"];
-                    pageView.processPageView(jsonPageView);
-                }
-
-                this.viewModel.UpdateView();
-
-                if (responseAsJSON["MessageBox"] != null)
-                {
-                    JObject jsonMessageBox = (JObject)responseAsJSON["MessageBox"];
-                    pageView.processMessageBox(jsonMessageBox);
-                }
+                JObject jsonPageView = (JObject)responseAsJSON["View"];
+                pageView.processPageView(jsonPageView);
             }
-            catch (HttpRequestException hre)
+
+            this.viewModel.UpdateView();
+
+            if (responseAsJSON["MessageBox"] != null)
             {
-                Util.debug("Request exception - " + hre.ToString());
+                JObject jsonMessageBox = (JObject)responseAsJSON["MessageBox"];
+                pageView.processMessageBox(jsonMessageBox);
             }
         }
 
         public async void loadLayout()
         {
-            await handleRequest(this.pageView.Path);
+            Util.debug("Load layout for path: " + this.pageView.Path);
+
+            JObject requestObject = new JObject(
+                new JProperty("Path", this.pageView.Path)
+            );
+
+            await this.transport.sendMessage(requestObject, this.ProcessJsonResponse);
         }
 
         public async void processCommand(string command)
         {
-            Util.debug("Process command: " + command);
+            Util.debug("Process command: " + command + " for path: " + this.pageView.Path);
+
+            JObject requestObject = new JObject(
+                new JProperty("Path", this.pageView.Path),
+                new JProperty("Command", command)
+            );
+
             var boundValues = new Dictionary<string, JToken>();
             this.viewModel.CollectChangedValues((key, value) => boundValues[key] =  value);
 
             if (boundValues.Count > 0)
             {
-                var response = new Dictionary<string, object>();
-                response.Add("BoundItems", boundValues);
-                String json = JsonConvert.SerializeObject(response, Formatting.Indented);
-                Util.debug("JSON: " + json);
+                requestObject.Add("ViewModelDeltas", 
+                    new JArray(
+                        from delta in boundValues
+                        select new JObject(
+                            new JProperty("path", delta.Key),
+                            new JProperty("value", delta.Value)
+                        )
+                    )
+                );
+            }
 
-                await handleRequest(this.pageView.Path + "?command=" + command, json);
-            }
-            else
-            {
-                await handleRequest(this.pageView.Path + "?command=" + command);
-            }
+            await this.transport.sendMessage(requestObject, this.ProcessJsonResponse);
         }
     }
 }
