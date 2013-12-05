@@ -74,7 +74,7 @@ namespace MaasClient
             metaData.BindingContext = bindingContext;
         }
 
-        Boolean processElementBoundValue(FrameworkElement element, string attributeName, JToken bindingContext, string value, GetValue getValue, SetValue setValue)
+        Boolean processElementBoundValue(FrameworkElement element, string attributeName, JToken bindingContext, string value, GetViewValue getValue, SetViewValue setValue)
         {
             if (value != null)
             {
@@ -88,7 +88,7 @@ namespace MaasClient
             return false;
         }
 
-        void processElementProperty(FrameworkElement element, JToken bindingContext, string value, SetValue setValue, string defaultValue = null)
+        void processElementProperty(FrameworkElement element, JToken bindingContext, string value, SetViewValue setValue, string defaultValue = null)
         {
             if (value == null)
             {
@@ -112,56 +112,6 @@ namespace MaasClient
             }
         }
 
-        public Double ConvertToDouble(object value)
-        {
-            if (value is JValue)
-            {
-                var jvalue = value as JValue;
-                return (double)jvalue;
-            }
-            return Convert.ToDouble(value);
-        }
-
-        public Boolean ConvertToBoolean(object value)
-        {
-            Boolean result = false;
-
-            if (value is JToken)
-            {
-                var token = value as JToken;
-                if (token != null)
-                {
-                    switch (token.Type)
-                    {
-                        case JTokenType.Boolean:
-                            result = (Boolean)token;
-                            break;
-                        case JTokenType.String:
-                            String str = (String)token;
-                            result = str.Length > 0;
-                            break;
-                        case JTokenType.Float:
-                            result = (float)token != 0;
-                            break;
-                        case JTokenType.Integer:
-                            result = (int)token != 0;
-                            break;
-                    }
-                }
-            }
-            else
-            {
-                if (value is String)
-                {
-                    result = ((string)value).Length > 0;
-                }
-                else
-                {
-                    result = Convert.ToBoolean(value);
-                }
-            }
-            return result;
-        }
 
         public delegate object ConvertValue(object value);
 
@@ -186,41 +136,6 @@ namespace MaasClient
             }
         }
 
-        public SolidColorBrush ColorStringToBrush(string color)
-        {
-            if (color.StartsWith("#"))
-            {
-                color = color.Replace("#", "");
-                if (color.Length == 6)
-                {
-                    return new SolidColorBrush(ColorHelper.FromArgb(255,
-                        byte.Parse(color.Substring(0, 2), System.Globalization.NumberStyles.HexNumber),
-                        byte.Parse(color.Substring(2, 2), System.Globalization.NumberStyles.HexNumber),
-                        byte.Parse(color.Substring(4, 2), System.Globalization.NumberStyles.HexNumber)));
-                }
-            }
-            else
-            {
-                var property = typeof(Colors).GetRuntimeProperty(color);
-                if (property != null)
-                {
-                    return new SolidColorBrush((Color)property.GetValue(null));
-                }
-            }
-
-            return null;
-        }
-
-        public FontWeight GetFontWeight(string weight)
-        {
-            var property = typeof(FontWeights).GetRuntimeProperty(weight);
-            if (property != null)
-            {
-                return (FontWeight)property.GetValue(null);
-            }
-            return FontWeights.Normal;
-        }
-
         public void processMarginProperty(FrameworkElement element, JToken bindingContext, JToken margin)
         {
             Thickness thickness = new Thickness();
@@ -229,7 +144,7 @@ namespace MaasClient
             {
                 processElementProperty(element, bindingContext, (string)margin, value => 
                 {
-                    double marginThickness = ConvertToDouble(value);
+                    double marginThickness = Converter.ToDouble(value);
                     thickness.Left = marginThickness;
                     thickness.Top = marginThickness;
                     thickness.Right = marginThickness;
@@ -242,22 +157,22 @@ namespace MaasClient
                 JObject marginObject = margin as JObject;
                 processElementProperty(element, bindingContext, (string)marginObject.Property("left"), value =>
                 {
-                    thickness.Left = ConvertToDouble(value);
+                    thickness.Left = Converter.ToDouble(value);
                     element.Margin = thickness;
                 }, "0");
                 processElementProperty(element, bindingContext, (string)marginObject.Property("top"), value =>
                 {
-                    thickness.Top = ConvertToDouble(value);
+                    thickness.Top = Converter.ToDouble(value);
                     element.Margin = thickness;
                 }, "0");
                 processElementProperty(element, bindingContext, (string)marginObject.Property("right"), value =>
                 {
-                    thickness.Right = ConvertToDouble(value);
+                    thickness.Right = Converter.ToDouble(value);
                     element.Margin = thickness;
                 }, "0");
                 processElementProperty(element, bindingContext, (string)marginObject.Property("bottom"), value =>
                 {
-                    thickness.Bottom = ConvertToDouble(value);
+                    thickness.Bottom = Converter.ToDouble(value);
                     element.Margin = thickness;
                 }, "0");
             }
@@ -280,22 +195,22 @@ namespace MaasClient
             //
 
             Util.debug("Processing framework element properties");
-            processElementProperty(element, bindingContext, (string)controlSpec["name"], value => element.Name = (string)value);
-            processElementProperty(element, bindingContext, (string)controlSpec["height"], value => element.Height = ConvertToDouble(value));
-            processElementProperty(element, bindingContext, (string)controlSpec["width"], value => element.Width = ConvertToDouble(value));
-            processElementProperty(element, bindingContext, (string)controlSpec["opacity"], value => element.Opacity = ConvertToDouble(value));
-            processElementProperty(element, bindingContext, (string)controlSpec["visibility"], value => element.Visibility = ConvertToBoolean(value) ? Visibility.Visible : Visibility.Collapsed);
+            processElementProperty(element, bindingContext, (string)controlSpec["name"], value => element.Name = Converter.ToString(value));
+            processElementProperty(element, bindingContext, (string)controlSpec["height"], value => element.Height = Converter.ToDouble(value));
+            processElementProperty(element, bindingContext, (string)controlSpec["width"], value => element.Width = Converter.ToDouble(value));
+            processElementProperty(element, bindingContext, (string)controlSpec["opacity"], value => element.Opacity = Converter.ToDouble(value));
+            processElementProperty(element, bindingContext, (string)controlSpec["visibility"], value => element.Visibility = Converter.ToBoolean(value) ? Visibility.Visible : Visibility.Collapsed);
             processMarginProperty(element, bindingContext, controlSpec["margin"]);
 
             // These elements are very common among derived classes, so we'll do some runtime reflection...
-            processElementPropertyIfPresent(element, bindingContext, (string)controlSpec["fontsize"], "FontSize", value => ConvertToDouble(value));
-            processElementPropertyIfPresent(element, bindingContext, (string)controlSpec["fontweight"], "FontWeight", value => GetFontWeight((string)value));
-            processElementPropertyIfPresent(element, bindingContext, (string)controlSpec["enabled"], "IsEnabled", value => ConvertToBoolean(value));
-            processElementPropertyIfPresent(element, bindingContext, (string)controlSpec["background"], "Background", value => ColorStringToBrush((string)value));
-            processElementPropertyIfPresent(element, bindingContext, (string)controlSpec["foreground"], "Foreground", value => ColorStringToBrush((string)value));
+            processElementPropertyIfPresent(element, bindingContext, (string)controlSpec["fontsize"], "FontSize", value => Converter.ToDouble(value));
+            processElementPropertyIfPresent(element, bindingContext, (string)controlSpec["fontweight"], "FontWeight", value => Converter.ToFontWeight(value));
+            processElementPropertyIfPresent(element, bindingContext, (string)controlSpec["enabled"], "IsEnabled", value => Converter.ToBoolean(value));
+            processElementPropertyIfPresent(element, bindingContext, (string)controlSpec["background"], "Background", value => Converter.ToBrush(value));
+            processElementPropertyIfPresent(element, bindingContext, (string)controlSpec["foreground"], "Foreground", value => Converter.ToBrush(value));
         }
 
-        public object getListboxContents(ListBox listbox)
+        public JToken getListboxContents(ListBox listbox)
         {
             Util.debug("Getting listbox contents");
 
@@ -352,10 +267,9 @@ namespace MaasClient
                     }
                 }
             }
-
         }
 
-        public object getListboxSelection(ListBox listbox)
+        public JToken getListboxSelection(ListBox listbox)
         {
             if (listbox.SelectionMode == SelectionMode.Multiple)
             {
@@ -371,7 +285,7 @@ namespace MaasClient
             }
             else
             {
-                return (string)listbox.SelectedItem;
+                return new JValue(listbox.SelectedItem);
             }
         }
 
@@ -379,11 +293,23 @@ namespace MaasClient
         {
             if (listbox.SelectionMode == SelectionMode.Multiple)
             {
-                // !!! If selection is string, select it.  Else if array, iterate and select each
+                if (selection is JArray)
+                {
+                    listbox.SelectedItems.Clear();
+                    JArray array = selection as JArray;
+                    foreach (JToken item in array.Values())
+                    {
+                        listbox.SelectedItems.Add(Converter.ToString(item));
+                    }
+                }
+                else
+                {
+                    listbox.SelectedItem = Converter.ToString(selection);
+                }
             }
             else
             {
-                listbox.SelectedItem = (string)selection;
+                listbox.SelectedItem = Converter.ToString(selection);
             }
         }
 
@@ -402,7 +328,7 @@ namespace MaasClient
                     TextBlock textBlock = new TextBlock();
                     applyFrameworkElementDefaults(textBlock);
                     setBindingContext(textBlock, bindingContext);
-                    processElementProperty(textBlock, bindingContext, (string)controlSpec["value"], value => textBlock.Text = (string)value);
+                    processElementProperty(textBlock, bindingContext, (string)controlSpec["value"], value => textBlock.Text = Converter.ToString(value));
                     control = textBlock;
                 }
                 break;
@@ -414,9 +340,9 @@ namespace MaasClient
                     applyFrameworkElementDefaults(textBox);
                     setBindingContext(textBox, bindingContext);
                     JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "value");
-                    if (!processElementBoundValue(textBox, "value", bindingContext, (string)bindingSpec["value"], () => { return textBox.Text; }, value => textBox.Text = value.ToString()))
+                    if (!processElementBoundValue(textBox, "value", bindingContext, (string)bindingSpec["value"], () => { return textBox.Text; }, value => textBox.Text = Converter.ToString(value)))
                     {
-                        processElementProperty(textBox, bindingContext, (string)controlSpec["value"], value => textBox.Text = (string)value);
+                        processElementProperty(textBox, bindingContext, (string)controlSpec["value"], value => textBox.Text = Converter.ToString(value));
                     }
                     textBox.TextChanged += textBox_TextChanged;
                     control = textBox;
@@ -430,9 +356,9 @@ namespace MaasClient
                     applyFrameworkElementDefaults(passwordBox);
                     setBindingContext(passwordBox, bindingContext);
                     JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "value");
-                    if (!processElementBoundValue(passwordBox, "value", bindingContext, (string)bindingSpec["value"], () => { return passwordBox.Password; }, value => passwordBox.Password = value.ToString()))
+                    if (!processElementBoundValue(passwordBox, "value", bindingContext, (string)bindingSpec["value"], () => { return passwordBox.Password; }, value => passwordBox.Password = Converter.ToString(value)))
                     {
-                        processElementProperty(passwordBox, bindingContext, (string)controlSpec["value"], value => passwordBox.Password = (string)value);
+                        processElementProperty(passwordBox, bindingContext, (string)controlSpec["value"], value => passwordBox.Password = Converter.ToString(value));
                     }
                     passwordBox.PasswordChanged += passwordBox_PasswordChanged;
                     control = passwordBox;
@@ -448,7 +374,7 @@ namespace MaasClient
                     JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "onClick");
                     ElementMetaData metaData = getMetaData(button);
                     metaData.Command = (string)bindingSpec["onClick"];
-                    processElementProperty(button, bindingContext, (string)controlSpec["caption"], value => button.Content = value);
+                    processElementProperty(button, bindingContext, (string)controlSpec["caption"], value => button.Content = Converter.ToString(value));
                     button.Click += button_Click;
                     control = button;
                 }
@@ -461,18 +387,18 @@ namespace MaasClient
                     applyFrameworkElementDefaults(toggleSwitch);
                     setBindingContext(toggleSwitch, bindingContext);
                     JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "value");
-                    if (!processElementBoundValue(toggleSwitch, "value", bindingContext, (string)bindingSpec["value"], () => { return toggleSwitch.IsOn; }, value => toggleSwitch.IsOn = this.ConvertToBoolean(value)))
+                    if (!processElementBoundValue(toggleSwitch, "value", bindingContext, (string)bindingSpec["value"], () => { return toggleSwitch.IsOn; }, value => toggleSwitch.IsOn = Converter.ToBoolean(value)))
                     {
-                        processElementProperty(toggleSwitch, bindingContext, (string)controlSpec["value"], value => toggleSwitch.IsOn = (bool)value);
+                        processElementProperty(toggleSwitch, bindingContext, (string)controlSpec["value"], value => toggleSwitch.IsOn = Converter.ToBoolean(value));
                     }
                     if (bindingSpec["onToggle"] != null)
                     {
                         ElementMetaData metaData = getMetaData(toggleSwitch);
                         metaData.Command = (string)bindingSpec["onToggle"];
                     }
-                    processElementProperty(toggleSwitch, bindingContext, (string)controlSpec["header"], value => toggleSwitch.Header = value);
-                    processElementProperty(toggleSwitch, bindingContext, (string)controlSpec["onLabel"], value => toggleSwitch.OnContent = value);
-                    processElementProperty(toggleSwitch, bindingContext, (string)controlSpec["offLabel"], value => toggleSwitch.OffContent = value);
+                    processElementProperty(toggleSwitch, bindingContext, (string)controlSpec["header"], value => toggleSwitch.Header = Converter.ToString(value));
+                    processElementProperty(toggleSwitch, bindingContext, (string)controlSpec["onLabel"], value => toggleSwitch.OnContent = Converter.ToString(value));
+                    processElementProperty(toggleSwitch, bindingContext, (string)controlSpec["offLabel"], value => toggleSwitch.OffContent = Converter.ToString(value));
                     toggleSwitch.Toggled += toggleSwitch_Toggled;
                     control = toggleSwitch;
                 }
@@ -486,7 +412,7 @@ namespace MaasClient
                     setBindingContext(image, bindingContext);
                     image.Height = 128; // Sizes will be overriden by the generic height/width property handlers, but
                     image.Width = 128;  // we have to set these here (as defaults) in case the sizes aren't specified. 
-                    processElementProperty(image, bindingContext, (string)controlSpec["resource"], value => image.Source = new BitmapImage(this.stateManager.buildUri((string)value)));
+                    processElementProperty(image, bindingContext, (string)controlSpec["resource"], value => image.Source = new BitmapImage(this.stateManager.buildUri(Converter.ToString(value))));
                     control = image;
                 }
                 break;
@@ -550,13 +476,13 @@ namespace MaasClient
                     applyFrameworkElementDefaults(slider);
                     setBindingContext(slider, bindingContext);
                     JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "value");
-                    if (!processElementBoundValue(slider, "value", bindingContext, (string)bindingSpec["value"], () => { return slider.Value; }, value => slider.Value = ConvertToDouble(value)))
+                    if (!processElementBoundValue(slider, "value", bindingContext, (string)bindingSpec["value"], () => { return slider.Value; }, value => slider.Value = Converter.ToDouble(value)))
                     {
-                        processElementProperty(slider, bindingContext, (string)controlSpec["value"], value => slider.Value = ConvertToDouble(value));
+                        processElementProperty(slider, bindingContext, (string)controlSpec["value"], value => slider.Value = Converter.ToDouble(value));
                     }
 
-                    processElementProperty(slider, bindingContext, (string)controlSpec["minimum"], value => slider.Minimum = ConvertToDouble(value));
-                    processElementProperty(slider, bindingContext, (string)controlSpec["maximum"], value => slider.Maximum = ConvertToDouble(value));
+                    processElementProperty(slider, bindingContext, (string)controlSpec["minimum"], value => slider.Minimum = Converter.ToDouble(value));
+                    processElementProperty(slider, bindingContext, (string)controlSpec["maximum"], value => slider.Maximum = Converter.ToDouble(value));
 
                     slider.ValueChanged += slider_ValueChanged;  
                     control = slider;
@@ -588,8 +514,8 @@ namespace MaasClient
                         // !!! We need to save the element (spec) in case this context array grows/changes later
                         string bindingPath = (string)bindingSpec["foreach"];
                         Util.debug("Found 'foreach' binding with path: " + bindingPath);
-                        Binding binding = BindingHelper.ResolveBinding(this.viewModel.BoundItems, bindingContext, bindingPath);
-                        JToken arrayBindingContext = binding.BoundToken;
+                        Binding binding = BindingHelper.ResolveBinding(bindingPath, this.viewModel.RootBindingContext, bindingContext);
+                        JToken arrayBindingContext = binding.GetValue();
                         if ((arrayBindingContext != null) && (arrayBindingContext.Type == JTokenType.Array))
                         {
                             foreach (JObject arrayElementBindingContext in (JArray)arrayBindingContext)
@@ -604,8 +530,8 @@ namespace MaasClient
                     {
                         string bindingPath = (string)bindingSpec["with"];
                         Util.debug("Found 'with' binding with path: " + bindingPath);
-                        Binding binding = BindingHelper.ResolveBinding(this.viewModel.BoundItems, bindingContext, bindingPath);
-                        controlBindingContext = binding.BoundToken;
+                        Binding binding = BindingHelper.ResolveBinding(bindingPath, this.viewModel.RootBindingContext, bindingContext);
+                        controlBindingContext = binding.GetValue();
                     }
                 }
 
@@ -632,7 +558,7 @@ namespace MaasClient
                 setPageTitle(pageTitle);
             }
 
-            createControls(this.viewModel.BoundItems, (JArray)pageView["elements"], control => panel.Children.Add(control));
+            createControls(this.viewModel.RootBindingContext, (JArray)pageView["elements"], control => panel.Children.Add(control));
         }
 
         void updateValueBindingForAttribute(FrameworkElement element, string attributeName)
@@ -644,21 +570,42 @@ namespace MaasClient
                 if (binding != null)
                 {
                     // Update the local ViewModel from the element/control
-                    binding.UpdateValue();
+                    binding.UpdateViewModelFromView();
                 }
             }
         }
 
+        //
+        // Control update handlers
+        //
+
         void textBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             var textBox = sender as TextBox;
-            updateValueBindingForAttribute(textBox, "value");
+
+            // Edit controls have a bad habit of posting a text changed event, and there are cases where 
+            // this event is generated based on programmatic setting of text and comes in asynchronously
+            // after that programmatic action, making it difficult to distinguish actual user changes.
+            // This shortcut will help a lot of the time, but there are still cases where this will be 
+            // signalled incorrectly (such as in the case where a control with focus is the target of
+            // an update from the server), so we'll do some downstream delta checking as well, but this
+            // check will cut down most of the chatter.
+            //
+            if (textBox.FocusState != FocusState.Unfocused)
+            {
+                updateValueBindingForAttribute(textBox, "value");
+            }
         }
 
         void passwordBox_PasswordChanged(object sender, RoutedEventArgs e)
         {
             var passwordBox = sender as PasswordBox;
-            updateValueBindingForAttribute(passwordBox, "value");
+
+            // See giant comment in textBox_TextChanged (above).
+            if (passwordBox.FocusState != FocusState.Unfocused)
+            {
+                updateValueBindingForAttribute(passwordBox, "value");
+            }
         }
 
         void button_Click(object sender, RoutedEventArgs e)
@@ -716,13 +663,13 @@ namespace MaasClient
 
         public async void processMessageBox(JObject messageBox)
         {
-            string message = BindingHelper.ExpandBoundTokensAsString(this.viewModel.BoundItems, this.viewModel.BoundItems, (string)messageBox["message"]);
+            string message = BindingHelper.ExpandBoundTokensAsString((string)messageBox["message"], this.viewModel.RootBindingContext);
 
             var messageDialog = new MessageDialog(message);
 
             if (messageBox["title"] != null)
             {
-                messageDialog.Title = BindingHelper.ExpandBoundTokensAsString(this.viewModel.BoundItems, this.viewModel.BoundItems, (string)messageBox["title"]);
+                messageDialog.Title = BindingHelper.ExpandBoundTokensAsString((string)messageBox["title"], this.viewModel.RootBindingContext);
             }
 
             if (messageBox["options"] != null)
@@ -733,15 +680,15 @@ namespace MaasClient
                     if ((string)option["command"] != null)
                     {
                         messageDialog.Commands.Add(new UICommand(
-                            BindingHelper.ExpandBoundTokensAsString(this.viewModel.BoundItems, this.viewModel.BoundItems, (string)option["label"]),
+                            BindingHelper.ExpandBoundTokensAsString((string)option["label"], this.viewModel.RootBindingContext),
                             new UICommandInvokedHandler(this.MessageDialogCommandHandler),
-                            BindingHelper.ExpandBoundTokens(this.viewModel.BoundItems, this.viewModel.BoundItems, (string)option["command"]))
+                            BindingHelper.ExpandBoundTokensAsString((string)option["command"], this.viewModel.RootBindingContext))
                             );
                     }
                     else
                     {
                         messageDialog.Commands.Add(new UICommand(
-                            BindingHelper.ExpandBoundTokensAsString(this.viewModel.BoundItems, this.viewModel.BoundItems, (string)option["label"]),
+                            BindingHelper.ExpandBoundTokensAsString((string)option["label"], this.viewModel.RootBindingContext),
                             new UICommandInvokedHandler(this.MessageDialogCommandHandler))
                             );
                     }

@@ -15,8 +15,8 @@ namespace MaasClient
 {
     class StateManager
     {
-        //static string host = "localhost:1337";
-        static string host = "maaas.azurewebsites.net";
+        static string host = "localhost:1337";
+        //static string host = "maaas.azurewebsites.net";
 
         //TransportHttp transport = new TransportHttp(host + "/api");
         TransportWs transport = new TransportWs(host);
@@ -55,20 +55,20 @@ namespace MaasClient
             {
                 JObject jsonViewModel = (JObject)responseAsJSON["ViewModel"];
                 this.viewModel.InitializeViewModelData(jsonViewModel);
+
+                if (responseAsJSON["View"] != null)
+                {
+                    JObject jsonPageView = (JObject)responseAsJSON["View"];
+                    pageView.processPageView(jsonPageView);
+                }
+
+                this.viewModel.UpdateViewFromViewModel();
             }
             else if (responseAsJSON["ViewModelDeltas"] != null)
             {
                 JToken jsonViewModelDeltas = (JToken)responseAsJSON["ViewModelDeltas"];
                 this.viewModel.UpdateViewModelData(jsonViewModelDeltas);
             }
-
-            if (responseAsJSON["View"] != null)
-            {
-                JObject jsonPageView = (JObject)responseAsJSON["View"];
-                pageView.processPageView(jsonPageView);
-            }
-
-            this.viewModel.UpdateView();
 
             if (responseAsJSON["MessageBox"] != null)
             {
@@ -97,14 +97,14 @@ namespace MaasClient
                 new JProperty("Command", command)
             );
 
-            var boundValues = new Dictionary<string, JToken>();
-            this.viewModel.CollectChangedValues((key, value) => boundValues[key] =  value);
+            var vmDeltas = new Dictionary<string, JToken>();
+            this.viewModel.CollectChangedValues((key, value) => vmDeltas[key] = value);
 
-            if (boundValues.Count > 0)
+            if (vmDeltas.Count > 0)
             {
                 requestObject.Add("ViewModelDeltas", 
                     new JArray(
-                        from delta in boundValues
+                        from delta in vmDeltas
                         select new JObject(
                             new JProperty("path", delta.Key),
                             new JProperty("value", delta.Value)

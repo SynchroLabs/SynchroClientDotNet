@@ -1,28 +1,33 @@
 Mobile Application As A Service (MAAAS)
 ==============================================
 
-Nomenclature - 
-    BoundItems -> ViewModelState
+Binding token directives - work on $parent (needs to get to the actual containing object context in one jump)
 
-Processing view model changes on client:
+Command parameters
 
-    Rebinding to connect to new/changed data.  
+Navigation with parameters (passed to IntitialzeViewModelState?)
+
+Rebinding
+
+	If "resolved binding" (taking into consideration the binding context, which can include binding tokens) exists
+	at the time of initial binding, a valid path can be constructed.  If not, this binding would have to be 
+	re-attempted each time the client view model changes (from the server?) to see if the binding can then be
+	established.  Do we really need to support that (binding contexts that aren't available in the initial state)?
+
+        - What if a control binds to an item that is not present on the origina view model, but shows up later?
+        - What if a control binds to an item on the view model, and that item goes away later?
 	
-	Maybe we should just always use the root and path to get the node (eliminating need to rebind).  
-	   Check performance of SelectPath.
-	   Investigate maintaining path/parentage on replaced tokens.
-	   How do binding tokens ($root, $parent, etc) fit in to this?
-
-	   If "resolved binding" (taking into consideration the binding context, which can include binding tokens) exists
-	   at the time of initial binding, a valid path can be constructed.  If not, this binding would have to be 
-	   re-attempted each time the client view model changes (from the server?) to see if the binding can then be
-	   established.  Do we really need to support that (binding contexts that aren't available in the initial state)?
-
-    Suspend change notification, update all changes, process bindings for all changes (look at path for each, for ancestor changes)
+	Investigate maintaining path/parentage on replaced tokens.
+	How do binding tokens ($root, $parent, etc) fit in to this?
 
 	For array bindings, update repeated items (remove all and re-add?), use stored template to create items (?)
 
-Binding value types - value, array, or object (right now just value types)
+On server 
+    Persistent client state
+        Use cookies?  homegrown cookie-like method?.  Needs to work with any driver.
+    Cache
+        View cache - negotiate view cache state so that server knows whether you need a given view or have it
+    Hotloading (test for new, later will always load/hotload as needed)
 
 Property binding expressions/directives:
 

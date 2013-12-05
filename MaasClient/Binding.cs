@@ -12,23 +12,40 @@ namespace MaasClient
     {
         string _bindingPath; // By storing the binding path, this give us the opportunity to "rebind" if needed (if changes
                              // to object/array values in the object state cause originally bound tokens to become invalid).
+        JToken _boundToken;
 
         public Binding(JToken boundToken)
         {
             _bindingPath = boundToken.Path;
-            BoundToken = boundToken;
-            Util.debug("Creating binding with path: " + _bindingPath + " and current value of: " + boundToken);
+            _boundToken = boundToken;
+            Util.debug("Creating binding with path: " + _bindingPath + " and current value of: " + _boundToken);
         }
 
         public string BindingPath { get { return _bindingPath; } }
-        public JToken BoundToken { get; set; }
+
+        public JToken GetValue()
+        {
+            return _boundToken;
+        }
+
+        // Return boolean indicating whether the bound token was changed (and rebinding needs to be triggered)
+        //
+        public Boolean SetValue(object value)
+        {
+            return ViewModel.UpdateTokenValue(ref _boundToken, value);
+        }
+
+        public void Rebind(JToken rootBindingContext)
+        {
+            _boundToken = rootBindingContext.SelectToken(_bindingPath);
+        }
     }
 
     static class BindingHelper
     {
         static Regex _bindingTokensRE = new Regex(@"[$]([^$]*)[.]");
 
-        public static Binding ResolveBinding(JToken rootBindingContext, JToken bindingContext, string bindingPath)
+        public static Binding ResolveBinding(string bindingPath, JToken rootBindingContext, JToken bindingContext)
         {
             // Process path elements:
             //  $root
@@ -64,22 +81,27 @@ namespace MaasClient
             return value.Contains("{");
         }
 
-        public static List<Binding> GetBoundTokens(JToken rootBindingContext, JToken bindingContext, string value)
+        public static List<Binding> GetBoundTokens(string value, JToken rootBindingContext, JToken bindingContext)
         {
             List<Binding> boundTokens = new List<Binding>();
             _braceContentsRE.Replace(value, delegate(Match m)
             {
                 Util.debug("Found boundtoken: " + m.Groups[1]);
                 string token = m.Groups[1].ToString();
-                boundTokens.Add(BindingHelper.ResolveBinding(rootBindingContext, bindingContext, token));
+                boundTokens.Add(BindingHelper.ResolveBinding(token, rootBindingContext, bindingContext));
                 return null;
             });
 
             return boundTokens;
         }
 
-        public static object ExpandBoundTokens(JToken rootBindingContext, JToken bindingContext, string value)
+        public static object ExpandBoundTokens(string value, JToken rootBindingContext, JToken bindingContext = null)
         {
+            if (bindingContext == null)
+            {
+                bindingContext = rootBindingContext;
+            }
+
             if (_onlyBraceContentsRE.IsMatch(value))
             {
                 // If there is a binding containing exactly a single token, then that token may resolve to
@@ -88,8 +110,8 @@ namespace MaasClient
                 //
                 string token = _onlyBraceContentsRE.Match(value).Groups[1].ToString();
                 Util.debug("Found binding that contained exactly one token: " + token);
-                Binding binding = BindingHelper.ResolveBinding(rootBindingContext, bindingContext, token);
-                return ((JValue)binding.BoundToken).Value;
+                Binding binding = BindingHelper.ResolveBinding(token, rootBindingContext, bindingContext);
+                return binding.GetValue();
             }
             else
             {
@@ -99,15 +121,15 @@ namespace MaasClient
                 {
                     string token = m.Groups[1].ToString();
                     Util.debug("Found token in composite binding: " + token);
-                    Binding binding = BindingHelper.ResolveBinding(rootBindingContext, bindingContext, token);
-                    return (string)binding.BoundToken;
+                    Binding binding = BindingHelper.ResolveBinding(token, rootBindingContext, bindingContext);
+                    return (string)binding.GetValue();
                 });
             }
         }
 
-        public static string ExpandBoundTokensAsString(JToken rootBindingContext, JToken bindingContext, string value)
+        public static string ExpandBoundTokensAsString(string value, JToken rootBindingContext, JToken bindingContext = null)
         {
-            return (string)ExpandBoundTokens(rootBindingContext, bindingContext, value);
+            return (string)ExpandBoundTokens(value, rootBindingContext, bindingContext);
         }
 
         // Binding is specified in the "binding" attribute of an element.  For example, binding: { value: "foo" } will bind the "value"
@@ -165,8 +187,8 @@ namespace MaasClient
 
     }
 
-    public delegate void SetValue(object value);
-    public delegate object GetValue();
+    public delegate void SetViewValue(object value);
+    public delegate object GetViewValue();
 
     // For two-way binding (typically of primary "value" property) - binding to a single value only
     //
@@ -174,47 +196,28 @@ namespace MaasClient
     {
         ViewModel _viewModel;
         Binding _binding;
-        GetValue _getValue;
-        SetValue _setValue;
+        GetViewValue _getViewValue;
+        SetViewValue _setViewValue;
 
-        public ValueBinding(ViewModel viewModel, JToken rootBindingContext, JToken bindingContext, string value, GetValue getValue, SetValue setValue)
+        public Boolean IsDirty { get; set; }
+
+        public ValueBinding(ViewModel viewModel, JToken rootBindingContext, JToken bindingContext, string value, GetViewValue getViewValue, SetViewValue setViewValue)
         {
             _viewModel = viewModel;
-            _binding = BindingHelper.ResolveBinding(rootBindingContext, bindingContext, value);
-            _getValue = getValue;
-            _setValue = setValue;
+            _binding = BindingHelper.ResolveBinding(value, rootBindingContext, bindingContext);
+            _getViewValue = getViewValue;
+            _setViewValue = setViewValue;
+            IsDirty = false;
         }
 
-        public void UpdateValue()
+        public void UpdateViewModelFromView()
         {
-            _viewModel.UpdateValue(_binding, _getValue);
+            _viewModel.UpdateViewModelFromView(_binding, _getViewValue);
         }
 
-        public void UpdateView()
+        public void UpdateViewFromViewModel()
         {
-            _setValue(_binding.BoundToken); // This is required for values that are arrays (list support)
-        }
-
-        public JToken GetViewValue()
-        {
-            object value = _getValue();
-            if (value is JArray)
-            {
-                // !!! This is kind of a cheat to update the contents of an array without breaking (changing) the
-                //     binding of the array.  It's not even clear this is working (and it assumes the current bound
-                //     token is an array)...
-                JArray array = value as JArray;
-                ((JArray)_binding.BoundToken).Clear();
-                foreach (var item in array.Values())
-                {
-                    ((JArray)_binding.BoundToken).Add(item);
-                }
-            }
-            else
-            {
-                ((JValue)_binding.BoundToken).Value = value;
-            }
-            return _binding.BoundToken;
+            _setViewValue(_binding.GetValue());
         }
 
         public Binding Binding { get { return _binding; } }
@@ -228,20 +231,20 @@ namespace MaasClient
         JToken _bindingContext;
         string _rawValue;
         List<Binding> _bindings = new List<Binding>();
-        SetValue _setValue;
+        SetViewValue _setViewValue;
 
-        public PropertyBinding(JToken rootBindingContext, JToken bindingContext, string value, SetValue setValue)
+        public PropertyBinding(JToken rootBindingContext, JToken bindingContext, string value, SetViewValue setViewValue)
         {
             _rootBindingContext = rootBindingContext;
             _bindingContext = bindingContext;
             _rawValue = value;
-            _bindings = BindingHelper.GetBoundTokens(_rootBindingContext, _bindingContext, _rawValue);
-            _setValue = setValue;
+            _bindings = BindingHelper.GetBoundTokens(_rawValue, _rootBindingContext, _bindingContext);
+            _setViewValue = setViewValue;
         }
 
-        public void UpdateView()
+        public void UpdateViewFromViewModel()
         {
-            this._setValue(BindingHelper.ExpandBoundTokens(_rootBindingContext, _bindingContext, _rawValue));
+            this._setViewValue(BindingHelper.ExpandBoundTokens(_rawValue, _rootBindingContext, _bindingContext));
         }
 
         public List<Binding> Bindings { get { return _bindings; } }
