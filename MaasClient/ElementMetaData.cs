@@ -27,7 +27,11 @@ namespace MaasClient
 
         public ValueBinding GetValueBinding(string attribute)
         {
-            return _valueBindings[attribute];
+            if (_valueBindings.ContainsKey(attribute))
+            {
+                return _valueBindings[attribute];
+            }
+            return null;
         }
 
         public List<PropertyBinding> PropertyBindings

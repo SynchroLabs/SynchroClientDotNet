@@ -16,7 +16,21 @@ namespace MaasClient
 
         public Binding(JToken boundToken)
         {
+            // This is clearly kind of a hack.  Because of where "ViewModel" is in the JSON structure of the response
+            // message, all elements in that structure have a root path that starts with "ViewModel", which we don't
+            // want - in no small part because we need the path without that part in order to find by path from the
+            // view model root using SelectToken.  So We'll just remove the "ViewModel." prefix the hard way here.
+            //
+            // !!! Ok, this is actually a little worse than that.  "Sometimes" (on initial load from the ViewModel) the
+            //     path has this prefix, and other times (ad hoc bindings, not sure when else) the prefix is not there.
+            //     Need a broader solution that doesn't rely on binding to the actual token in the ViewModel, but rather
+            //     just uses paths (I think).
+            //
             _bindingPath = boundToken.Path;
+            if (_bindingPath.StartsWith("ViewModel."))
+            {
+                _bindingPath = _bindingPath.Remove(0, "ViewModel.".Length);
+            }
             _boundToken = boundToken;
             Util.debug("Creating binding with path: " + _bindingPath + " and current value of: " + _boundToken);
         }
@@ -69,6 +83,16 @@ namespace MaasClient
                 }
                 return ""; // Removing the path elements as they are processed
             });
+
+            // !!! Probably should resolve $data and $index at time of resolution and not here (particularly as
+            //     $index resolves to a value and not a binding context).
+            //
+            // !!! For $index -> ((JArray)bindingContext.Parent).IndexOf(bindingContext)
+            //
+            if (relativeBindingPath.CompareTo("$data") == 0)
+            {
+                return new Binding(bindingContext);
+            }
 
             return new Binding(bindingContextBase.SelectToken(relativeBindingPath));
         }

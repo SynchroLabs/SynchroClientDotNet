@@ -188,16 +188,21 @@ namespace MaasClient
 
         public void processCommonFrameworkElementProperies(FrameworkElement element, JToken bindingContext, JObject controlSpec)
         {
-            // !!! TODO: MinHeight/Width, MaxHeight/Width, Tooltip
+            // !!! TODO:
             //
             //           VerticalAlignment [ Top, Center, Bottom, Stretch ]
             //           HorizontalAlignment [ Left, Center, Right, Stretch ] 
+            //           Maring, padding, border, etc.
             //
 
             Util.debug("Processing framework element properties");
             processElementProperty(element, bindingContext, (string)controlSpec["name"], value => element.Name = Converter.ToString(value));
             processElementProperty(element, bindingContext, (string)controlSpec["height"], value => element.Height = Converter.ToDouble(value));
             processElementProperty(element, bindingContext, (string)controlSpec["width"], value => element.Width = Converter.ToDouble(value));
+            processElementProperty(element, bindingContext, (string)controlSpec["minheight"], value => element.MinHeight = Converter.ToDouble(value));
+            processElementProperty(element, bindingContext, (string)controlSpec["minwidth"], value => element.MinWidth = Converter.ToDouble(value));
+            processElementProperty(element, bindingContext, (string)controlSpec["maxheight"], value => element.MaxHeight = Converter.ToDouble(value));
+            processElementProperty(element, bindingContext, (string)controlSpec["maxwidth"], value => element.MaxWidth = Converter.ToDouble(value));
             processElementProperty(element, bindingContext, (string)controlSpec["opacity"], value => element.Opacity = Converter.ToDouble(value));
             processElementProperty(element, bindingContext, (string)controlSpec["visibility"], value => element.Visibility = Converter.ToBoolean(value) ? Visibility.Visible : Visibility.Collapsed);
             processMarginProperty(element, bindingContext, controlSpec["margin"]);
@@ -310,6 +315,136 @@ namespace MaasClient
             else
             {
                 listbox.SelectedItem = Converter.ToString(selection);
+            }
+        }
+
+        public JToken getListViewContents(ListView listbox)
+        {
+            Util.debug("Get listview contents - NOOP");
+            throw new NotImplementedException();
+        }
+
+        public void setListViewContents(ListView listview, JObject itemTemplate, JToken contents)
+        {
+            Util.debug("Setting listview contents");
+
+            if ((contents != null) && (contents.Type == JTokenType.Array))
+            {
+                JArray contentsArray = contents as JArray;
+
+                if (listview.Items.Count < contentsArray.Count)
+                {
+                    // Items need to be added to the end of the list
+                    //
+                    for (int index = listview.Items.Count; index < contentsArray.Count; index++)
+                    {
+                        FrameworkElement control = createControl(contentsArray[index], itemTemplate);
+                        listview.Items.Add(control);
+                    }
+                }
+                else if (listview.Items.Count > contentsArray.Count)
+                {
+                    // Items need to be removed from the end of the list
+                    //
+                    for (int index = listview.Items.Count; index > contentsArray.Count; index--)
+                    {
+                        FrameworkElement control = (FrameworkElement)listview.Items[index-1];
+
+                        // !!! Since we are removing this element, we need to unregister its bindings (and this
+                        //     needs to be recursive if it has children).
+                        listview.Items.RemoveAt(index-1);
+                    }
+                }
+            }
+
+            // This notification that the list backing this view has changed happens after the underlying bound values, and thus the list
+            // view items themselves, have been updated.  We need to maintain the selection state, but that is difficult as items may
+            // have "moved" list positions without any specific notification (other than this broad notification that the list itself changed).
+            //
+            // To address this, we get the "selection" binding for this list view, if any, and force a view update to reset the selection
+            // state from the view model whenever the list bound to the list view changes (and after we've processed any adds/removes above).
+            //
+            ValueBinding selectionBinding = getMetaData(listview).GetValueBinding("selection");
+            if (selectionBinding != null)
+            {
+                selectionBinding.UpdateViewFromViewModel();
+            }
+        }
+
+        // ListView selection stuff below currently not functional
+        //
+        // When producing the selection, get the ElementData.BindingContext and apply any selectionItem path (!!! TODO)
+        //
+        // To determine if an item should selected, get an item from the list, get the ElementMetaData.BindingContext.  Apply any
+        // selectionItem to the binding context, resolve that and compare it to the selection (in the case where the selectionItem
+        // is not provided or is $data, the selection should equal the value at the binding context.
+        //
+        public JToken getListViewSelection(ListView listview)
+        {
+            if (listview.SelectionMode == ListViewSelectionMode.Multiple)
+            {
+                return new JArray(
+                    from FrameworkElement control in listview.SelectedItems
+                    select getMetaData(control).BindingContext // !!! I don't think we need to clone here - verify with testing
+                );
+            }
+            else
+            {
+                FrameworkElement control = (FrameworkElement)listview.SelectedItem;
+                if (control != null)
+                {
+                    // !!! We need to clone the item so we don't destroy the original link to the item in the list (since the
+                    //     item we're getting in SelectedItem is the list item and we're putting it into the selection binding).
+                    //     
+                    // return getMetaData(control).BindingContext;
+                    //
+                    return getMetaData(control).BindingContext.DeepClone();
+                }
+                return new JValue(false); // This is a "null" selection
+            }
+        }
+
+        public void setListViewSelection(ListView listview, JToken selection)
+        {
+            if (listview.SelectionMode == ListViewSelectionMode.Multiple)
+            {
+                listview.SelectedItems.Clear();
+
+                foreach (FrameworkElement control in listview.Items)
+                {
+                    if (selection is JArray)
+                    {
+                        JArray array = selection as JArray;
+                        foreach (JToken item in array.Values())
+                        {
+                            if (JToken.DeepEquals(item, getMetaData(control).BindingContext))
+                            {
+                                listview.SelectedItems.Add(control);
+                                break;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (JToken.DeepEquals(selection, getMetaData(control).BindingContext))
+                        {
+                            listview.SelectedItems.Add(control);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                listview.SelectedItem = null;
+
+                foreach (FrameworkElement control in listview.Items)
+                {
+                    if (JToken.DeepEquals(selection, getMetaData(control).BindingContext))
+                    {
+                        listview.SelectedItem = control;
+                        break;
+                    }
+                }
             }
         }
 
@@ -442,6 +577,46 @@ namespace MaasClient
                     }
                     listbox.SelectionChanged += listbox_SelectionChanged;
                     control = listbox;
+                }
+                break;
+
+                case "listview":
+                {
+                    Util.debug("Found listview element");
+                    ListView listView = new ListView();
+                    applyFrameworkElementDefaults(listView);
+                    setBindingContext(listView, bindingContext);
+                    JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "items");
+                    if (bindingSpec != null)
+                    {
+                        if (bindingSpec["items"] != null)
+                        {
+                            processElementBoundValue(
+                                listView, 
+                                "items", 
+                                bindingContext, 
+                                (string)bindingSpec["items"], 
+                                () => getListViewContents(listView), 
+                                value => this.setListViewContents(listView, (JObject)controlSpec["itemTemplate"], (JToken)value));
+                        }
+                        if (bindingSpec["selection"] != null)
+                        {
+                            processElementBoundValue(
+                                listView, 
+                                "selection",
+                                bindingContext, 
+                                (string)bindingSpec["selection"], 
+                                () => getListViewSelection(listView), 
+                                value => this.setListViewSelection(listView, (JToken)value));
+                        }
+                    }
+                    // Get selection mode - single (default) or multiple - no dynamic values (we don't need this changing during execution).
+                    if ((controlSpec["select"] != null) && ((string)controlSpec["select"] == "multiple"))
+                    {
+                        listView.SelectionMode = ListViewSelectionMode.Multiple;
+                    }
+                    listView.SelectionChanged += listView_SelectionChanged;
+                    control = listView;
                 }
                 break;
 
@@ -639,6 +814,12 @@ namespace MaasClient
         {
             var listbox = sender as ListBox;
             updateValueBindingForAttribute(listbox, "selection");
+        }
+
+        void listView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var listView = sender as ListView;
+            updateValueBindingForAttribute(listView, "selection");
         }
 
         private void slider_ValueChanged(object sender, Windows.UI.Xaml.Controls.Primitives.RangeBaseValueChangedEventArgs e)

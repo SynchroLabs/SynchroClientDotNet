@@ -67,6 +67,9 @@ namespace MaasClient
                             JArray array = token as JArray;
                             result = array.Count > 0;
                             break;
+                        case JTokenType.Object:
+                            result = true;
+                            break;
                     }
                 }
             }

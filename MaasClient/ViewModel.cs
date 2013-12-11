@@ -91,16 +91,12 @@ namespace MaasClient
                 // or it is an ancestor, so this binding needs to be updated.
                 return true;
             }
-            else if (updatedTokenPath.StartsWith(binding.BindingPath))
-            {
-                // The updated token is a child of the token that this binding is bound to,
-                // so the binding needs to be updated.
-                return true;
-            }
 
             return false;
         }
 
+        // This object represents a binding update (that path of the bound item and and indication of whether rebinding is required)
+        //
         public class BindingUpdate
         {
             public string BindingPath { get; set; }
@@ -114,7 +110,7 @@ namespace MaasClient
         }
 
         // If bindingUpdates is provided, any binding other than an optionally specified sourceBinding
-        // that is impacted by a token in bindingUpdates will have it's view updated.  If no bindingUpdates
+        // that is impacted by a token in bindingUpdates will have its view updated.  If no bindingUpdates
         // is provided, all bindings will have their view updated.  
         //
         // If bindingUpdates is provided, and binding impacted by a path for which rebinding is indicated
@@ -224,7 +220,15 @@ namespace MaasClient
                     string changeType = (string)viewModelDelta["change"];
 
                     Util.debug("View model item change (" + changeType + ") for path: " + path);
-                    if (changeType == "update")
+                    if (changeType == "object")
+                    {
+                        // For "object" changes, this just means that an existing object had a property added/updated/removed or
+                        // an array had items added/updated/removed.  We don't need to actually do any updates for this notification,
+                        // we just need to make sure any bound elements get their views updated appropriately.
+                        //
+                        bindingUpdates.Add(new BindingUpdate(path, false));
+                    }
+                    else if (changeType == "update")
                     {
                         JToken vmItemValue = _viewModel.SelectToken(path);
                         if (vmItemValue != null)
@@ -232,7 +236,7 @@ namespace MaasClient
                             Util.debug("Updating view model item for path: " + path + " to value: " + viewModelDelta["value"]);
 
                             bool rebindRequired = UpdateTokenValue(ref vmItemValue, viewModelDelta["value"]);
-                            bindingUpdates.Add(new BindingUpdate("ViewModel." + path, rebindRequired));
+                            bindingUpdates.Add(new BindingUpdate(path, rebindRequired));
                         }
                         else
                         {
@@ -243,7 +247,7 @@ namespace MaasClient
                     else if (changeType == "add")
                     {
                         Util.debug("Adding bound item for path: " + path + " with value: " + viewModelDelta["value"]);
-                        bindingUpdates.Add(new BindingUpdate("ViewModel." + path, true));
+                        bindingUpdates.Add(new BindingUpdate(path, true));
 
                         // First, double check to make sure the path doesn't actually exist
                         JToken vmItemValue = _viewModel.SelectToken(path, false);
@@ -295,7 +299,7 @@ namespace MaasClient
                     else if (changeType == "remove")
                     {
                         Util.debug("Removing bound item for path: " + path);
-                        bindingUpdates.Add(new BindingUpdate("ViewModel." + path, true));
+                        bindingUpdates.Add(new BindingUpdate(path, true));
 
                         JToken vmItemValue = _viewModel.SelectToken(path);
                         if (vmItemValue != null)
@@ -315,7 +319,15 @@ namespace MaasClient
                 // Remove all tokens indicated as removed
                 foreach (JToken vmItemValue in removals)
                 {
-                    vmItemValue.Remove();
+                    if ((vmItemValue.Parent is JProperty) && (vmItemValue is JValue))
+                    {
+                        // Cannot remove a property, so we set its value to null (!!! Verify - esp. on obj with all props removed)
+                        ((JValue)vmItemValue).Value = null;
+                    }
+                    else 
+                    {
+                        vmItemValue.Remove();
+                    }
                 }
 
                 Util.debug("View model after processing updates: " + this._viewModel);
@@ -381,8 +393,7 @@ namespace MaasClient
             {
                 if (valueBinding.IsDirty)
                 {
-                    // Remove base context path element ("ViewModel.") from beginning of path...
-                    string path = valueBinding.Binding.BindingPath.Remove(0, _viewModel.Path.Length + 1);
+                    string path = valueBinding.Binding.BindingPath;
                     JToken value = valueBinding.Binding.GetValue();
                     Util.debug("Changed view model item - path: " + path + " - value: " + value);
                     setValue(path, value);

@@ -1,5 +1,6 @@
-Mobile Application As A Service (MAAAS)
-==============================================
+
+Mobile Application As A Service (MAAAS) - Client
+=================================================
 
 Binding token directives - work on $parent (needs to get to the actual containing object context in one jump)
 
@@ -7,7 +8,35 @@ Command parameters
 
 Navigation with parameters (passed to IntitialzeViewModelState?)
 
+List bindings
+    "items" - context for list of items - should be an array
+    "item"  - binding for individual list item (be default, just array element - $data?)
+    "selection" - need to be able to specify an item id context (?) - need to be able to r/t selection - selectionId (?) - if empty, use list element value
+
+    Look at how updates are mananger - if not simple string array contents, may want to manage like ListView
+
+ListView
+    "items" binding
+    "itemTemplate" - layout description for each item 
+
+    How do we track/restore selection state (has to be easily serializeable)?  Using an "id" attribute in the itemTemplate?
+
+        selectionId: "itemId" <default>
+        itemTemplate --> itemId: "{someValue}" (defaults to $index?)
+            - By defaulting to "index" the default selected binding value would just be an int or array of ints representing the position
+              of selected items (matching the array indexes, so reasonably meaningful on the server side, at least as a default)
+
+        We'd need to make a property binding for itemId and store that somewhere (ElementMetaData) so we could match it back up when getting/setting the selection list
+
+        We could have a mode where the objects themselves get reported as the selected items (this might be nice for binding, so for example, I could bind to a property
+        of the currently selected item).  You could combine this with a "uniqueIdProperty" to use for restoring selection, failing that, just compare objects (?).
+
+
 Rebinding
+
+    The problem is that bindings are established using the tokens from the viewmodel.  So it is currently
+    impossible to create a binding for which the token doesn't exist (and this same issue would be a problem
+    when any intermeidate binding context isn't represented by a token).
 
 	If "resolved binding" (taking into consideration the binding context, which can include binding tokens) exists
 	at the time of initial binding, a valid path can be constructed.  If not, this binding would have to be 
