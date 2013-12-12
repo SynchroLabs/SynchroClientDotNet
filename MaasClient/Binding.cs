@@ -172,40 +172,98 @@ namespace MaasClient
         //
         //       binding: "username"
         //
-        //           becomes
+        //         becomes
         //
         //       binding: {value: "username"}
         //
-        public static JObject GetCanonicalBindingSpec(JObject controlSpec, string defaultBindingAttribute)
+        //     For commands:
+        //
+        //       binding: "doSomething"
+        //
+        //         becomes
+        //
+        //       binding: { onClick: "doSomething" }
+        //
+        //         becomes
+        //
+        //       binding: { onClick: { command: "doSomething" } }
+        //
+        //     Also (default binding atttribute is 'onClick', which is also in command attributes list):
+        //
+        //       binding: { command: "doSomething" value: "theValue" }
+        //
+        //         becomes
+        //
+        //       binding: { onClick: { command: "doSomething", value: "theValue" } }
+        //
+        public static JObject GetCanonicalBindingSpec(JObject controlSpec, string defaultBindingAttribute, string[] commandAttributes = null)
         {
             JObject bindingObject = null;
 
-            if (controlSpec["binding"] != null)
+            bool defaultAttributeIsCommand = false;
+            if (commandAttributes != null)
             {
-                if (controlSpec["binding"].Type == JTokenType.Object)
+                defaultAttributeIsCommand = commandAttributes.Contains(defaultBindingAttribute);
+            }
+
+            JToken bindingSpec = controlSpec["binding"];
+
+            if (bindingSpec != null)
+            {
+                if (bindingSpec.Type == JTokenType.Object)
                 {
-                    // Value for binding was an object - return it
-                    bindingObject = (JObject)controlSpec["binding"];
-                }
-                else if (controlSpec["binding"].Type == JTokenType.String)
-                {
-                    // Standalone string value in binding - compose binding object
-                    string bindingString = "{ " + defaultBindingAttribute + ": \"" + (string)controlSpec["binding"] + "\" }";
-                    bindingObject = JObject.Parse(bindingString);
+                    // Encountered an object spec, return that (subject to further processing below)
+                    //
+                    bindingObject = (JObject)bindingSpec.DeepClone();
+
+                    if (defaultAttributeIsCommand && (bindingObject["command"] != null))
+                    {
+                        // Top-level binding spec object contains "command", and the default binding attribute is a command, so
+                        // promote { command: "doSomething" } to { defaultBindingAttribute: { command: "doSomething" } }
+                        //
+                        bindingObject = new JObject(
+                            new JProperty(defaultBindingAttribute, bindingObject)
+                            );
+                    }
                 }
                 else
                 {
-                    // Standalone non-string value in binding - compose binding object
-                    string bindingString = "{ " + defaultBindingAttribute + ": " + controlSpec["binding"].ToString(Newtonsoft.Json.Formatting.None) + " }";
-                    bindingObject = JObject.Parse(bindingString);
+                    // Top level binding spec was not an object (was an array or value), so promote that value to be the value
+                    // of the default binding attribute
+                    //
+                    bindingObject = new JObject(
+                        new JProperty(defaultBindingAttribute, bindingSpec.DeepClone())
+                        );
+                }
+
+                // Now that we've handled the default binding attribute cases, let's look for commands that need promotion...
+                //
+                if (commandAttributes != null)
+                {
+                    foreach (var attribute in bindingObject)
+                    {
+                        if (commandAttributes.Contains(attribute.Key))
+                        {
+                            // Processing a command (attribute name corresponds to a command)
+                            //
+                            if (attribute.Value is JValue)
+                            {
+                                // If attribute value is simple value type, promote "attributeValue" to { command: "attributeValue" }
+                                //
+                                attribute.Value.Replace(new JObject(new JProperty("command", attribute.Value)));
+                            }
+                        }
+                    }
                 }
 
                 Util.debug("Found binding object: " + bindingObject);
             }
             else
             {
+                // No binding spec
                 bindingObject = new JObject();
             }
+
             return bindingObject;
         }
 

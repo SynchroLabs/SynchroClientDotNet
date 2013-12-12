@@ -4,33 +4,48 @@ Mobile Application As A Service (MAAAS) - Client
 
 Binding token directives - work on $parent (needs to get to the actual containing object context in one jump)
 
-Command parameters
-
-Navigation with parameters (passed to IntitialzeViewModelState?)
-
 List bindings
     "items" - context for list of items - should be an array
     "item"  - binding for individual list item (be default, just array element - $data?)
     "selection" - need to be able to specify an item id context (?) - need to be able to r/t selection - selectionId (?) - if empty, use list element value
 
-    Look at how updates are mananger - if not simple string array contents, may want to manage like ListView
+    Look at how updates are mananged - if not simple string array contents, may want to manage like ListView
 
 ListView
+
     "items" binding
+    "selection" binding
     "itemTemplate" - layout description for each item 
+    "onItemClick" command
 
-    How do we track/restore selection state (has to be easily serializeable)?  Using an "id" attribute in the itemTemplate?
+    ToDo - "item" (defaults to $data) - This is applied to each parent list item to determined the child item to be added to the list (this allows the list item
+    to be a context other than the top level enumerated item).
 
-        selectionId: "itemId" <default>
-        itemTemplate --> itemId: "{someValue}" (defaults to $index?)
-            - By defaulting to "index" the default selected binding value would just be an int or array of ints representing the position
-              of selected items (matching the array indexes, so reasonably meaningful on the server side, at least as a default)
+    ToDo - "selectionItem" (defaults to $data) - This is what is placed into "selection" (per item) and this is applied to each item in "items" for the purpose
+    of matching list view item with selection items when setting selection state for the list view.  For example, if the selectionItem was "{itemId}", then the
+    selection binding would be one or more elements of the "{itemId}" applied to the selected items.  When resetting item selection, "{itemId}" will be applied
+    to each list item, and the result will be compared with the value(s) in "selection" to see if the item should be selected.  In the case of the default, the
+    selection list will contain deep copies of the list view items, and the selection comparison will be a deep compare of those items with the list view items.
 
-        We'd need to make a property binding for itemId and store that somewhere (ElementMetaData) so we could match it back up when getting/setting the selection list
+    Example (onItemClicked):
 
-        We could have a mode where the objects themselves get reported as the selected items (this might be nice for binding, so for example, I could bind to a property
-        of the currently selected item).  You could combine this with a "uniqueIdProperty" to use for restoring selection, failing that, just compare objects (?).
+        { type: "listview", select: "none", binding: { items: "contacts", selection: "selectedContacts", onItemClick: { command: "itemClicked", item: "{$data}" } }, itemTemplate:
+            { type: "stackpanel", orientation: "horizontal", contents: [
+                { type: "image", resource: "resources/user.png", height: 50, width: 50 },
+                { type: "stackpanel", orientation: "vertical", contents: [
+                    { type: "text", value: "{first}" },
+                    { type: "text", value: "{last}" },
+                ] },
+            ] },
+        },
 
+        exports.Commands = 
+        {
+            itemClicked: function(context, session, viewModel, params)
+            {
+                console.log("Item clicked, first name: " + params.item.first + ", last name: " + params.item.last);
+            },
+        }
 
 Rebinding
 

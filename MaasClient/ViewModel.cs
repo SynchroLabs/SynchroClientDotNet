@@ -95,7 +95,7 @@ namespace MaasClient
             return false;
         }
 
-        // This object represents a binding update (that path of the bound item and and indication of whether rebinding is required)
+        // This object represents a binding update (the path of the bound item and an indication of whether rebinding is required)
         //
         public class BindingUpdate
         {
@@ -360,7 +360,7 @@ namespace MaasClient
             {
                 // Only record changes and update dependant UX objects for actual value changes - some programmatic 
                 // changes to set the view to the view model state will trigger otherwise unidentifiable change events,
-                // and this check will weed those out (if the got by the _updatingView check above).
+                // and this check will weed those out (if they got by the _updatingView check above).
                 //
                 return;
             }

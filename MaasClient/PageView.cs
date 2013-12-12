@@ -388,7 +388,7 @@ namespace MaasClient
                     select getMetaData(control).BindingContext // !!! I don't think we need to clone here - verify with testing
                 );
             }
-            else
+            else if (listview.SelectionMode == ListViewSelectionMode.Single)
             {
                 FrameworkElement control = (FrameworkElement)listview.SelectedItem;
                 if (control != null)
@@ -402,8 +402,14 @@ namespace MaasClient
                 }
                 return new JValue(false); // This is a "null" selection
             }
+
+            return null;
         }
 
+        // !!! This gets triggered when selection changes come in from the server (including when the selection is initially set),
+        //     and it also gets triggered when the list itself changes (including when the contents are intially set).  At least
+        //     in the initial list/selection set case, this gets called twice.  Investigate.
+        // 
         public void setListViewSelection(ListView listview, JToken selection)
         {
             if (listview.SelectionMode == ListViewSelectionMode.Multiple)
@@ -415,7 +421,7 @@ namespace MaasClient
                     if (selection is JArray)
                     {
                         JArray array = selection as JArray;
-                        foreach (JToken item in array.Values())
+                        foreach (JToken item in array.Children())
                         {
                             if (JToken.DeepEquals(item, getMetaData(control).BindingContext))
                             {
@@ -433,7 +439,7 @@ namespace MaasClient
                     }
                 }
             }
-            else
+            else if (listview.SelectionMode == ListViewSelectionMode.Single)
             {
                 listview.SelectedItem = null;
 
@@ -444,6 +450,30 @@ namespace MaasClient
                         listview.SelectedItem = control;
                         break;
                     }
+                }
+            }
+        }
+
+        void processCommands(ElementMetaData metaData, JObject bindingSpec, string[] commands)
+        {
+            foreach (string command in commands)
+            {
+                JObject commandSpec = bindingSpec[command] as JObject;
+                if (commandSpec != null)
+                {
+                    CommandInstance commandInstance = new CommandInstance((string)commandSpec["command"]);
+                    foreach (var property in commandSpec)
+                    {
+                        if (property.Key != "command")
+                        {
+                            // !!! property.Value is a JToken and could be any kind of token - not sure what to
+                            //     do about that (it might be nice to be able to pass other value types as params,
+                            //     but how do we deal with that?).
+                            //
+                            commandInstance.SetParameter(property.Key, (string)property.Value);
+                        }
+                    }
+                    metaData.SetCommand(command, commandInstance);
                 }
             }
         }
@@ -506,11 +536,16 @@ namespace MaasClient
                     Button button = new Button();
                     applyFrameworkElementDefaults(button);
                     setBindingContext(button, bindingContext);
-                    JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "onClick");
-                    ElementMetaData metaData = getMetaData(button);
-                    metaData.Command = (string)bindingSpec["onClick"];
                     processElementProperty(button, bindingContext, (string)controlSpec["caption"], value => button.Content = Converter.ToString(value));
-                    button.Click += button_Click;
+
+                    ElementMetaData metaData = getMetaData(button);
+                    JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "onClick", new string[] {"onClick"});
+                    processCommands(metaData, bindingSpec, new string[] {"onClick"});
+                    if (metaData.GetCommand("onClick") != null)
+                    {
+                        button.Click += button_Click;
+                    }
+
                     control = button;
                 }
                 break;
@@ -521,20 +556,24 @@ namespace MaasClient
                     ToggleSwitch toggleSwitch = new ToggleSwitch();
                     applyFrameworkElementDefaults(toggleSwitch);
                     setBindingContext(toggleSwitch, bindingContext);
-                    JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "value");
+                    JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "value", new string[] {"onToggle"});
                     if (!processElementBoundValue(toggleSwitch, "value", bindingContext, (string)bindingSpec["value"], () => { return toggleSwitch.IsOn; }, value => toggleSwitch.IsOn = Converter.ToBoolean(value)))
                     {
                         processElementProperty(toggleSwitch, bindingContext, (string)controlSpec["value"], value => toggleSwitch.IsOn = Converter.ToBoolean(value));
                     }
-                    if (bindingSpec["onToggle"] != null)
-                    {
-                        ElementMetaData metaData = getMetaData(toggleSwitch);
-                        metaData.Command = (string)bindingSpec["onToggle"];
-                    }
+
                     processElementProperty(toggleSwitch, bindingContext, (string)controlSpec["header"], value => toggleSwitch.Header = Converter.ToString(value));
                     processElementProperty(toggleSwitch, bindingContext, (string)controlSpec["onLabel"], value => toggleSwitch.OnContent = Converter.ToString(value));
                     processElementProperty(toggleSwitch, bindingContext, (string)controlSpec["offLabel"], value => toggleSwitch.OffContent = Converter.ToString(value));
+
+                    ElementMetaData metaData = getMetaData(toggleSwitch);
+                    processCommands(metaData, bindingSpec, new string[] { "onToggle" });
+                    
+                    // Since the Toggled handler both updates the view model (locally) and may potentially have a command associated, 
+                    // we have to add handler in all cases (even when there is no command).
+                    //
                     toggleSwitch.Toggled += toggleSwitch_Toggled;
+ 
                     control = toggleSwitch;
                 }
                 break;
@@ -586,7 +625,7 @@ namespace MaasClient
                     ListView listView = new ListView();
                     applyFrameworkElementDefaults(listView);
                     setBindingContext(listView, bindingContext);
-                    JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "items");
+                    JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "items", new string[] {"onItemClick"});
                     if (bindingSpec != null)
                     {
                         if (bindingSpec["items"] != null)
@@ -610,12 +649,34 @@ namespace MaasClient
                                 value => this.setListViewSelection(listView, (JToken)value));
                         }
                     }
+
                     // Get selection mode - single (default) or multiple - no dynamic values (we don't need this changing during execution).
                     if ((controlSpec["select"] != null) && ((string)controlSpec["select"] == "multiple"))
                     {
                         listView.SelectionMode = ListViewSelectionMode.Multiple;
                     }
-                    listView.SelectionChanged += listView_SelectionChanged;
+                    else if ((controlSpec["select"] != null) && ((string)controlSpec["select"] == "none"))
+                    {
+                        listView.SelectionMode = ListViewSelectionMode.None;
+                    }
+                    else
+                    {
+                        listView.SelectionMode = ListViewSelectionMode.Single;
+                    }
+
+                    if (listView.SelectionMode != ListViewSelectionMode.None)
+                    {
+                        listView.SelectionChanged += listView_SelectionChanged;
+                    }
+
+                    ElementMetaData metaData = getMetaData(listView);
+                    processCommands(metaData, bindingSpec, new string[] { "onItemClick" });
+                    if (metaData.GetCommand("onItemClick") != null)
+                    {
+                        listView.IsItemClickEnabled = true;
+                        listView.ItemClick += listView_ItemClick;
+                    }
+
                     control = listView;
                 }
                 break;
@@ -786,27 +847,61 @@ namespace MaasClient
         void button_Click(object sender, RoutedEventArgs e)
         {
             var button = sender as Button;
+            CommandInstance command = null;
+
             ElementMetaData metaData = button.Tag as ElementMetaData;
-            if ((metaData != null) && (metaData.Command != null))
+            if (metaData != null)
             {
-                Util.debug("Button click with command: " + metaData.Command);
-                this.stateManager.processCommand(metaData.Command);
+                command = metaData.GetCommand("onClick");
+                if (command != null)
+                {
+                    Util.debug("Button click with command: " + command);
+                    this.stateManager.processCommand(command.Command, command.GetResolvedParameters(this.viewModel.RootBindingContext, metaData.BindingContext));
+                }
             }
-            else
+        }
+
+        void listView_ItemClick(object sender, ItemClickEventArgs e)
+        {
+            var listView = sender as ListView;
+            CommandInstance command = null;
+
+            ElementMetaData metaData = listView.Tag as ElementMetaData;
+            if (metaData != null)
             {
-                Util.debug("Button click with no action");
+                command = metaData.GetCommand("onItemClick");
+            }
+
+            if (command != null)
+            {
+                Util.debug("ListView item click with command: " + command);
+
+                // The item click command handler resolves its tokens relative to the item clicked (not the list view).
+                //
+                ElementMetaData itemMetaData = ((FrameworkElement)e.ClickedItem).Tag as ElementMetaData;
+                if (itemMetaData != null)
+                {
+                    this.stateManager.processCommand(command.Command, command.GetResolvedParameters(this.viewModel.RootBindingContext, itemMetaData.BindingContext));
+                }
             }
         }
 
         void toggleSwitch_Toggled(object sender, RoutedEventArgs e)
         {
             var toggleSwitch = sender as ToggleSwitch;
+            CommandInstance command = null;
+
             updateValueBindingForAttribute(toggleSwitch, "value");
+
             ElementMetaData metaData = toggleSwitch.Tag as ElementMetaData;
-            if ((metaData != null) && (metaData.Command != null))
+            if (metaData != null)
             {
-                Util.debug("ToggleSwitch toggled with command: " + metaData.Command);
-                this.stateManager.processCommand(metaData.Command);
+                command = metaData.GetCommand("onToggle");
+                if (command != null)
+                {
+                    Util.debug("ToggleSwitch toggled with command: " + command);
+                    this.stateManager.processCommand(command.Command, command.GetResolvedParameters(this.viewModel.RootBindingContext, metaData.BindingContext));
+                }
             }
         }
 

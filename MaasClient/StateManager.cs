@@ -88,7 +88,7 @@ namespace MaasClient
             await this.transport.sendMessage(requestObject, this.ProcessJsonResponse);
         }
 
-        public async void processCommand(string command)
+        public async void processCommand(string command, JObject parameters = null)
         {
             Util.debug("Process command: " + command + " for path: " + this.pageView.Path);
 
@@ -96,6 +96,11 @@ namespace MaasClient
                 new JProperty("Path", this.pageView.Path),
                 new JProperty("Command", command)
             );
+
+            if (parameters != null)
+            {
+                requestObject["Parameters"] = parameters;
+            }
 
             var vmDeltas = new Dictionary<string, JToken>();
             this.viewModel.CollectChangedValues((key, value) => vmDeltas[key] = value);
