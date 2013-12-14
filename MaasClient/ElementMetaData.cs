@@ -19,7 +19,7 @@ namespace MaasClient
         {
         }
 
-        public JToken BindingContext { get; set; }
+        public BindingContext BindingContext { get; set; }
 
         public void SetCommand(string attribute, CommandInstance command)
         {

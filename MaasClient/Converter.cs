@@ -29,7 +29,11 @@ namespace MaasClient
 
         public static String ToString(object value)
         {
-            if (value is JToken)
+            if (value == null)
+            {
+                return "";
+            }
+            else if (value is JToken)
             {
                 return (string)(JToken)value;
             }

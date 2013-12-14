@@ -53,8 +53,8 @@ namespace MaasClient
             Util.debug("Got response: " + responseAsJSON);
             if (responseAsJSON["ViewModel"] != null)
             {
-                JObject jsonViewModel = (JObject)responseAsJSON["ViewModel"];
-                this.viewModel.InitializeViewModelData(jsonViewModel);
+                JObject jsonViewModel = responseAsJSON["ViewModel"] as JObject;
+                this.viewModel.InitializeViewModelData((JObject)jsonViewModel);
 
                 if (responseAsJSON["View"] != null)
                 {

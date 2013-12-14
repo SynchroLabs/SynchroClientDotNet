@@ -114,6 +114,7 @@
       <DependentUpon>BasicPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Binding.cs" />
+    <Compile Include="BindingContext.cs" />
     <Compile Include="CommandInstance.cs" />
     <Compile Include="Converter.cs" />
     <Compile Include="TransportHttp.cs" />

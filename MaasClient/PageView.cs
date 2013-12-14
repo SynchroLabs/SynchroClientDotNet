@@ -68,19 +68,20 @@ namespace MaasClient
             return metaData;
         }
 
-        void setBindingContext(FrameworkElement element, JToken bindingContext)
+        void setBindingContext(FrameworkElement element, BindingContext bindingContext)
         {
             ElementMetaData metaData = getMetaData(element);
             metaData.BindingContext = bindingContext;
         }
 
-        Boolean processElementBoundValue(FrameworkElement element, string attributeName, JToken bindingContext, string value, GetViewValue getValue, SetViewValue setValue)
+        Boolean processElementBoundValue(FrameworkElement element, string attributeName, BindingContext bindingContext, string value, GetViewValue getValue, SetViewValue setValue)
         {
             if (value != null)
             {
                 ElementMetaData metaData = getMetaData(element);
 
-                ValueBinding binding = this.viewModel.CreateValueBinding(bindingContext, value, getValue, setValue);
+                BindingContext valueBindingContext = bindingContext.Select(value);
+                ValueBinding binding = this.viewModel.CreateValueBinding(valueBindingContext, value, getValue, setValue);
                 metaData.SetValueBinding(attributeName, binding);
                 return true;
             }
@@ -88,7 +89,7 @@ namespace MaasClient
             return false;
         }
 
-        void processElementProperty(FrameworkElement element, JToken bindingContext, string value, SetViewValue setValue, string defaultValue = null)
+        void processElementProperty(FrameworkElement element, BindingContext bindingContext, string value, SetViewValue setValue, string defaultValue = null)
         {
             if (value == null)
             {
@@ -98,7 +99,7 @@ namespace MaasClient
                 }
                 return;
             }
-            else if (BindingHelper.ContainsBindingTokens(value))
+            else if (PropertyValue.ContainsBindingTokens(value))
             {
                 // If value contains a binding, create a Binding and add it to metadata
                 ElementMetaData metaData = getMetaData(element);
@@ -120,7 +121,7 @@ namespace MaasClient
         // example, "IsEnabled" exists as a property on most instances of FrameworkElement objects, though it is not defined in a single
         // common base class.
         //
-        public void processElementPropertyIfPresent(FrameworkElement element, JToken bindingContext, string attributeValue, string propertyName, ConvertValue convertValue = null)
+        public void processElementPropertyIfPresent(FrameworkElement element, BindingContext bindingContext, string attributeValue, string propertyName, ConvertValue convertValue = null)
         {
             if (attributeValue != null)
             {
@@ -136,7 +137,7 @@ namespace MaasClient
             }
         }
 
-        public void processMarginProperty(FrameworkElement element, JToken bindingContext, JToken margin)
+        public void processMarginProperty(FrameworkElement element, BindingContext bindingContext, JToken margin)
         {
             Thickness thickness = new Thickness();
 
@@ -186,9 +187,9 @@ namespace MaasClient
             element.HorizontalAlignment = HorizontalAlignment.Left;
         }
 
-        public void processCommonFrameworkElementProperies(FrameworkElement element, JToken bindingContext, JObject controlSpec)
+        public void processCommonFrameworkElementProperies(FrameworkElement element, BindingContext bindingContext, JObject controlSpec)
         {
-            // !!! TODO:
+            // !!! TODO: more common framework element properties...
             //
             //           VerticalAlignment [ Top, Center, Bottom, Stretch ]
             //           HorizontalAlignment [ Left, Center, Right, Stretch ] 
@@ -324,36 +325,33 @@ namespace MaasClient
             throw new NotImplementedException();
         }
 
-        public void setListViewContents(ListView listview, JObject itemTemplate, JToken contents)
+        public void setListViewContents(ListView listview, JObject itemTemplate, BindingContext bindingContext, string itemSelector)
         {
             Util.debug("Setting listview contents");
 
-            if ((contents != null) && (contents.Type == JTokenType.Array))
+            List<BindingContext> itemContexts = bindingContext.SelectEach(itemSelector);
+
+            if (listview.Items.Count < itemContexts.Count)
             {
-                JArray contentsArray = contents as JArray;
-
-                if (listview.Items.Count < contentsArray.Count)
+                // New items are added to the end of the list
+                //
+                for (int index = listview.Items.Count; index < itemContexts.Count; index++)
                 {
-                    // Items need to be added to the end of the list
-                    //
-                    for (int index = listview.Items.Count; index < contentsArray.Count; index++)
-                    {
-                        FrameworkElement control = createControl(contentsArray[index], itemTemplate);
-                        listview.Items.Add(control);
-                    }
+                    FrameworkElement control = createControl(itemContexts[index], itemTemplate);
+                    listview.Items.Add(control);
                 }
-                else if (listview.Items.Count > contentsArray.Count)
+            }
+            else if (listview.Items.Count > itemContexts.Count)
+            {
+                // Items need to be removed from the end of the list
+                //
+                for (int index = listview.Items.Count; index > itemContexts.Count; index--)
                 {
-                    // Items need to be removed from the end of the list
-                    //
-                    for (int index = listview.Items.Count; index > contentsArray.Count; index--)
-                    {
-                        FrameworkElement control = (FrameworkElement)listview.Items[index-1];
+                    FrameworkElement control = (FrameworkElement)listview.Items[index-1];
 
-                        // !!! Since we are removing this element, we need to unregister its bindings (and this
-                        //     needs to be recursive if it has children).
-                        listview.Items.RemoveAt(index-1);
-                    }
+                    // !!! Since we are removing this element, we need to unregister its bindings (and this
+                    //     needs to be recursive if it has children).
+                    listview.Items.RemoveAt(index-1);
                 }
             }
 
@@ -385,7 +383,7 @@ namespace MaasClient
             {
                 return new JArray(
                     from FrameworkElement control in listview.SelectedItems
-                    select getMetaData(control).BindingContext // !!! I don't think we need to clone here - verify with testing
+                    select getMetaData(control).BindingContext.GetValue() 
                 );
             }
             else if (listview.SelectionMode == ListViewSelectionMode.Single)
@@ -393,12 +391,10 @@ namespace MaasClient
                 FrameworkElement control = (FrameworkElement)listview.SelectedItem;
                 if (control != null)
                 {
-                    // !!! We need to clone the item so we don't destroy the original link to the item in the list (since the
-                    //     item we're getting in SelectedItem is the list item and we're putting it into the selection binding).
+                    // We need to clone the item so we don't destroy the original link to the item in the list (since the
+                    // item we're getting in SelectedItem is the list item and we're putting it into the selection binding).
                     //     
-                    // return getMetaData(control).BindingContext;
-                    //
-                    return getMetaData(control).BindingContext.DeepClone();
+                    return getMetaData(control).BindingContext.GetValue().DeepClone();
                 }
                 return new JValue(false); // This is a "null" selection
             }
@@ -423,7 +419,7 @@ namespace MaasClient
                         JArray array = selection as JArray;
                         foreach (JToken item in array.Children())
                         {
-                            if (JToken.DeepEquals(item, getMetaData(control).BindingContext))
+                            if (JToken.DeepEquals(item, getMetaData(control).BindingContext.GetValue()))
                             {
                                 listview.SelectedItems.Add(control);
                                 break;
@@ -432,7 +428,7 @@ namespace MaasClient
                     }
                     else
                     {
-                        if (JToken.DeepEquals(selection, getMetaData(control).BindingContext))
+                        if (JToken.DeepEquals(selection, getMetaData(control).BindingContext.GetValue()))
                         {
                             listview.SelectedItems.Add(control);
                         }
@@ -445,7 +441,7 @@ namespace MaasClient
 
                 foreach (FrameworkElement control in listview.Items)
                 {
-                    if (JToken.DeepEquals(selection, getMetaData(control).BindingContext))
+                    if (JToken.DeepEquals(selection, getMetaData(control).BindingContext.GetValue()))
                     {
                         listview.SelectedItem = control;
                         break;
@@ -468,7 +464,8 @@ namespace MaasClient
                         {
                             // !!! property.Value is a JToken and could be any kind of token - not sure what to
                             //     do about that (it might be nice to be able to pass other value types as params,
-                            //     but how do we deal with that?).
+                            //     but how do we deal with that?).  If we allowed passing more complex types as
+                            //     params, how would we deal with token expansion (in an object property, for example).
                             //
                             commandInstance.SetParameter(property.Key, (string)property.Value);
                         }
@@ -478,7 +475,7 @@ namespace MaasClient
             }
         }
 
-        public FrameworkElement createControl(JToken bindingContext, JObject controlSpec)
+        public FrameworkElement createControl(BindingContext bindingContext, JObject controlSpec)
         {
             FrameworkElement control = null;
 
@@ -630,13 +627,24 @@ namespace MaasClient
                     {
                         if (bindingSpec["items"] != null)
                         {
+                            // !!! This is a little weird, but what the listview needs to update its contents is actually not the "value",
+                            //     but the binding context and the item selector value
+                            //
+                            BindingContext valueBindingContext = bindingContext.Select((string)bindingSpec["items"]);
+                            string itemSelector = (string)bindingSpec["item"];
+                            if (itemSelector == null)
+                            {
+                                itemSelector = "$data";
+                            }
+
                             processElementBoundValue(
                                 listView, 
                                 "items", 
                                 bindingContext, 
                                 (string)bindingSpec["items"], 
                                 () => getListViewContents(listView), 
-                                value => this.setListViewContents(listView, (JObject)controlSpec["itemTemplate"], (JToken)value));
+                                // value => this.setListViewContents(listView, (JObject)controlSpec["itemTemplate"], (JToken)value));
+                                value => this.setListViewContents(listView, (JObject)controlSpec["itemTemplate"], valueBindingContext, itemSelector));
                         }
                         if (bindingSpec["selection"] != null)
                         {
@@ -734,31 +742,32 @@ namespace MaasClient
             return control;
         }
 
-        public void createControls(JToken bindingContext, JArray controlList, Action<FrameworkElement> onAddControl)
+        public void createControls(BindingContext bindingContext, JArray controlList, Action<FrameworkElement> onAddControl)
         {
             foreach (JObject element in controlList)
             {
-                JToken controlBindingContext = bindingContext;
+                BindingContext controlBindingContext = bindingContext;
                 Boolean controlCreated = false;
 
                 if ((element["binding"] != null) && (element["binding"].Type == JTokenType.Object))
                 {
+                    // !!! Should we support "foreach" and "with" together?  Probably.
+                    //
                     Util.debug("Found binding object");
                     JObject bindingSpec = (JObject)element["binding"];
                     if (bindingSpec["foreach"] != null)
                     {
-                        // !!! We need to save the element (spec) in case this context array grows/changes later
+                        // First we create a BindingContext for the foreach path
                         string bindingPath = (string)bindingSpec["foreach"];
                         Util.debug("Found 'foreach' binding with path: " + bindingPath);
-                        Binding binding = BindingHelper.ResolveBinding(bindingPath, this.viewModel.RootBindingContext, bindingContext);
-                        JToken arrayBindingContext = binding.GetValue();
-                        if ((arrayBindingContext != null) && (arrayBindingContext.Type == JTokenType.Array))
+                        BindingContext forEachBindingContext = bindingContext.Select(bindingPath);
+
+                        // Then we get the elements at the foreach binding to create the controls
+                        List<BindingContext> bindingContexts = forEachBindingContext.SelectEach("$data"); // !!! Test with this blank (should work the same)
+                        foreach (var elementBindingContext in bindingContexts)
                         {
-                            foreach (JObject arrayElementBindingContext in (JArray)arrayBindingContext)
-                            {
-                                Util.debug("foreach - creating control with binding context: " + arrayElementBindingContext.Path);
-                                onAddControl(createControl(arrayElementBindingContext, element));
-                            }
+                            Util.debug("foreach - creating control with binding context: " + elementBindingContext.BindingPath);
+                            onAddControl(createControl(elementBindingContext, element));
                         }
                         controlCreated = true;
                     }
@@ -766,8 +775,7 @@ namespace MaasClient
                     {
                         string bindingPath = (string)bindingSpec["with"];
                         Util.debug("Found 'with' binding with path: " + bindingPath);
-                        Binding binding = BindingHelper.ResolveBinding(bindingPath, this.viewModel.RootBindingContext, bindingContext);
-                        controlBindingContext = binding.GetValue();
+                        controlBindingContext = bindingContext.Select(bindingPath);
                     }
                 }
 
@@ -856,7 +864,7 @@ namespace MaasClient
                 if (command != null)
                 {
                     Util.debug("Button click with command: " + command);
-                    this.stateManager.processCommand(command.Command, command.GetResolvedParameters(this.viewModel.RootBindingContext, metaData.BindingContext));
+                    this.stateManager.processCommand(command.Command, command.GetResolvedParameters(metaData.BindingContext));
                 }
             }
         }
@@ -881,7 +889,7 @@ namespace MaasClient
                 ElementMetaData itemMetaData = ((FrameworkElement)e.ClickedItem).Tag as ElementMetaData;
                 if (itemMetaData != null)
                 {
-                    this.stateManager.processCommand(command.Command, command.GetResolvedParameters(this.viewModel.RootBindingContext, itemMetaData.BindingContext));
+                    this.stateManager.processCommand(command.Command, command.GetResolvedParameters(itemMetaData.BindingContext));
                 }
             }
         }
@@ -900,7 +908,7 @@ namespace MaasClient
                 if (command != null)
                 {
                     Util.debug("ToggleSwitch toggled with command: " + command);
-                    this.stateManager.processCommand(command.Command, command.GetResolvedParameters(this.viewModel.RootBindingContext, metaData.BindingContext));
+                    this.stateManager.processCommand(command.Command, command.GetResolvedParameters(metaData.BindingContext));
                 }
             }
         }
@@ -939,13 +947,13 @@ namespace MaasClient
 
         public async void processMessageBox(JObject messageBox)
         {
-            string message = BindingHelper.ExpandBoundTokensAsString((string)messageBox["message"], this.viewModel.RootBindingContext);
+            string message = PropertyValue.ExpandAsString((string)messageBox["message"], this.viewModel.RootBindingContext);
 
             var messageDialog = new MessageDialog(message);
 
             if (messageBox["title"] != null)
             {
-                messageDialog.Title = BindingHelper.ExpandBoundTokensAsString((string)messageBox["title"], this.viewModel.RootBindingContext);
+                messageDialog.Title = PropertyValue.ExpandAsString((string)messageBox["title"], this.viewModel.RootBindingContext);
             }
 
             if (messageBox["options"] != null)
@@ -956,15 +964,15 @@ namespace MaasClient
                     if ((string)option["command"] != null)
                     {
                         messageDialog.Commands.Add(new UICommand(
-                            BindingHelper.ExpandBoundTokensAsString((string)option["label"], this.viewModel.RootBindingContext),
+                            PropertyValue.ExpandAsString((string)option["label"], this.viewModel.RootBindingContext),
                             new UICommandInvokedHandler(this.MessageDialogCommandHandler),
-                            BindingHelper.ExpandBoundTokensAsString((string)option["command"], this.viewModel.RootBindingContext))
+                            PropertyValue.ExpandAsString((string)option["command"], this.viewModel.RootBindingContext))
                             );
                     }
                     else
                     {
                         messageDialog.Commands.Add(new UICommand(
-                            BindingHelper.ExpandBoundTokensAsString((string)option["label"], this.viewModel.RootBindingContext),
+                            PropertyValue.ExpandAsString((string)option["label"], this.viewModel.RootBindingContext),
                             new UICommandInvokedHandler(this.MessageDialogCommandHandler))
                             );
                     }

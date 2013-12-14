@@ -33,13 +33,13 @@ namespace MaasClient
 
         public string Command { get { return _command; } }
 
-        public JObject GetResolvedParameters(JToken rootBindingContext, JToken currentBindingContext)
+        public JObject GetResolvedParameters(BindingContext bindingContext)
         {
             return new JObject(
                 from parameter in _parameters
                 select new JProperty(
                     parameter.Key,
-                    BindingHelper.ExpandBoundTokens(parameter.Value, rootBindingContext, currentBindingContext)
+                    PropertyValue.Expand(parameter.Value, bindingContext)
                     )
                 );
         }

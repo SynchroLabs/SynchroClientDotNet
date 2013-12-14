@@ -12,7 +12,8 @@ namespace MaasClient
     //
     public sealed class ViewModel
     {
-        JObject _viewModel;
+        BindingContext _rootBindingContext;
+        JObject _rootObject;
         Boolean _updatingView = false;
 
         List<ValueBinding> _valueBindings = new List<ValueBinding>();
@@ -20,29 +21,53 @@ namespace MaasClient
 
         public ViewModel()
         {
+            _rootBindingContext = new BindingContext(this);
         }
 
-        public JObject RootBindingContext { get { return _viewModel; } }
+        public BindingContext RootBindingContext { get { return _rootBindingContext; } }
 
-        public ValueBinding CreateValueBinding(JToken bindingContext, string value, GetViewValue getValue, SetViewValue setValue)
+        public JObject RootObject { get { return _rootObject; } }
+
+        public ValueBinding CreateValueBinding(BindingContext bindingContext, string value, GetViewValue getValue, SetViewValue setValue)
         {
-            ValueBinding valueBinding = new ValueBinding(this, _viewModel, bindingContext, value, getValue, setValue);
+            ValueBinding valueBinding = new ValueBinding(this, bindingContext, value, getValue, setValue);
             _valueBindings.Add(valueBinding);
             return valueBinding;
         }
 
-        public PropertyBinding CreatePropertyBinding(JToken bindingContext, string value, SetViewValue setValue)
+        public PropertyBinding CreatePropertyBinding(BindingContext bindingContext, string value, SetViewValue setValue)
         {
-            PropertyBinding propertyBinding = new PropertyBinding(_viewModel, bindingContext, value, setValue);
+            PropertyBinding propertyBinding = new PropertyBinding(bindingContext, value, setValue);
             _propertyBindings.Add(propertyBinding);
             return propertyBinding;
         }
 
+        // Tokens in the view model have a "ViewModel." prefix (as the view model itself is a child node of a larger
+        // JSON response).  We need to prune that off so future SelectToken operations will work when applied to the
+        // root binding context (the context associated with the "ViewModel" JSON object).
+        //
+        public static string GetTokenPath(JToken token)
+        {
+            string path = token.Path;
+
+            if (path.StartsWith("ViewModel."))
+            {
+                path = path.Remove(0, "ViewModel.".Length);
+            }
+
+            return path;
+        }
+
         public void InitializeViewModelData(JObject viewModel)
         {
-            _viewModel = viewModel;
+            if (viewModel == null)
+            {
+                viewModel = new JObject();
+            }
+            _rootObject = viewModel;
             _valueBindings.Clear();
             _propertyBindings.Clear();
+            _rootBindingContext.Rebind();
         }
 
         // If a complex assignment takes place, then the token itself will be replaced.  In that case, this method
@@ -83,9 +108,9 @@ namespace MaasClient
 
         // Given a Binding and a path to a changed token, determine if the binding is impacted.
         //
-        static Boolean IsBindingUpdated(Binding binding, string updatedTokenPath)
+        static Boolean IsBindingUpdated(BindingContext bindingContext, string updatedTokenPath)
         {
-            if (binding.BindingPath.StartsWith(updatedTokenPath))
+            if (bindingContext.BindingPath.StartsWith(updatedTokenPath))
             {
                 // The updated token is either the same token that the binding is bound to, 
                 // or it is an ancestor, so this binding needs to be updated.
@@ -121,13 +146,13 @@ namespace MaasClient
         //    On update view model - pass list containing all updates 
         //    On update view (from ux) - pass list containing the single update, and the sourceBinding (that triggered the update)
         //
-        public void UpdateViewFromViewModel(List<BindingUpdate> bindingUpdates = null, Binding sourceBinding = null)
+        public void UpdateViewFromViewModel(List<BindingUpdate> bindingUpdates = null, BindingContext sourceBinding = null)
         {
             _updatingView = true;
 
             foreach (ValueBinding valueBinding in _valueBindings)
             {
-                if (valueBinding.Binding != sourceBinding)
+                if (valueBinding.BindingContext != sourceBinding)
                 {
                     bool isUpdateRequired = (bindingUpdates == null);
                     bool isBindingDirty = false;
@@ -135,7 +160,7 @@ namespace MaasClient
                     {
                         foreach (BindingUpdate update in bindingUpdates)
                         {
-                            if (IsBindingUpdated(valueBinding.Binding, update.BindingPath))
+                            if (IsBindingUpdated(valueBinding.BindingContext, update.BindingPath))
                             {
                                 isUpdateRequired = true;
                                 if (update.RebindRequired)
@@ -149,8 +174,8 @@ namespace MaasClient
 
                     if (isBindingDirty)
                     {
-                        Util.debug("Rebind value binding with path: " + valueBinding.Binding.BindingPath);
-                        valueBinding.Binding.Rebind(this.RootBindingContext);
+                        Util.debug("Rebind value binding with path: " + valueBinding.BindingContext.BindingPath);
+                        valueBinding.BindingContext.Rebind();
                     }
 
                     if (isUpdateRequired)
@@ -164,7 +189,7 @@ namespace MaasClient
             {
                 var isUpdateRequired = (bindingUpdates == null);
 
-                foreach (Binding propBinding in propertyBinding.Bindings)
+                foreach (BindingContext propBinding in propertyBinding.BindingContexts)
                 {
                     bool isBindingDirty = false;
                     if (bindingUpdates != null)
@@ -186,7 +211,7 @@ namespace MaasClient
                     if (isBindingDirty)
                     {
                         Util.debug("Rebind property binding with path: " + propBinding.BindingPath);
-                        propBinding.Rebind(this.RootBindingContext);
+                        propBinding.Rebind();
                     }
                 }
 
@@ -230,7 +255,7 @@ namespace MaasClient
                     }
                     else if (changeType == "update")
                     {
-                        JToken vmItemValue = _viewModel.SelectToken(path);
+                        JToken vmItemValue = _rootObject.SelectToken(path);
                         if (vmItemValue != null)
                         {
                             Util.debug("Updating view model item for path: " + path + " to value: " + viewModelDelta["value"]);
@@ -240,8 +265,7 @@ namespace MaasClient
                         }
                         else
                         {
-                            // !!! Should we do something about this?  Try an add?
-                            Util.debug("WARNING: Unable to find existing value when processing update, something went wrong, path: " + path);
+                            Util.debug("VIEW MODEL SYNC WARNING: Unable to find existing value when processing update, something went wrong, path: " + path);
                         }
                     }
                     else if (changeType == "add")
@@ -250,22 +274,21 @@ namespace MaasClient
                         bindingUpdates.Add(new BindingUpdate(path, true));
 
                         // First, double check to make sure the path doesn't actually exist
-                        JToken vmItemValue = _viewModel.SelectToken(path, false);
+                        JToken vmItemValue = _rootObject.SelectToken(path, false);
                         if (vmItemValue == null)
                         {
                             if (path.EndsWith("]"))
                             {
                                 // This is an array element...
                                 string parentPath = path.Substring(0, path.LastIndexOf("["));
-                                JToken parentToken = _viewModel.SelectToken(parentPath);
+                                JToken parentToken = _rootObject.SelectToken(parentPath);
                                 if ((parentToken != null) && (parentToken is JArray))
                                 {
                                     ((JArray)parentToken).Add(viewModelDelta["value"]);
                                 }
                                 else
                                 {
-                                    // !!! Do something?
-                                    Util.debug("ERROR: Attempt to add array member, but parent didn't exist or was not an array, parent path: " + parentPath);
+                                    Util.debug("VIEW MODEL SYNC WARNING: Attempt to add array member, but parent didn't exist or was not an array, parent path: " + parentPath);
                                 }
                             }
                             else if (path.Contains("."))
@@ -273,27 +296,25 @@ namespace MaasClient
                                 // This is an object property...
                                 string parentPath = path.Substring(0, path.LastIndexOf("."));
                                 string attributeName = path.Substring(path.LastIndexOf(".") + 1);
-                                JToken parentToken = _viewModel.SelectToken(parentPath);
+                                JToken parentToken = _rootObject.SelectToken(parentPath);
                                 if ((parentToken != null) && (parentToken is JObject))
                                 {
                                     ((JObject)parentToken).Add(attributeName, viewModelDelta["value"]);
                                 }
                                 else
                                 {
-                                    // !!! Do something?
-                                    Util.debug("ERROR: Attempt to add object property, but parent didn't exist or was not a property, parent path: " + parentPath);
+                                    Util.debug("VIEW MODEL SYNC WARNING: Attempt to add object property, but parent didn't exist or was not an object, parent path: " + parentPath);
                                 }
                             }
                             else
                             {
                                 // This is a root property...
-                                _viewModel.Add(path, viewModelDelta["value"]);
+                                _rootObject.Add(path, viewModelDelta["value"]);
                             }
                         }
                         else
                         {
-                            // !!! Should we do something about this?  Just set the value?
-                            Util.debug("WARNING: Found existing value when processing add, something went wrong, path: " + path);
+                            Util.debug("VIEW MODEL SYNC WARNING: Found existing value when processing add, something went wrong, path: " + path);
                         }
                     }
                     else if (changeType == "remove")
@@ -301,7 +322,7 @@ namespace MaasClient
                         Util.debug("Removing bound item for path: " + path);
                         bindingUpdates.Add(new BindingUpdate(path, true));
 
-                        JToken vmItemValue = _viewModel.SelectToken(path);
+                        JToken vmItemValue = _rootObject.SelectToken(path);
                         if (vmItemValue != null)
                         {
                             Util.debug("Removing bound item for path: " + vmItemValue.Path);
@@ -310,8 +331,7 @@ namespace MaasClient
                         }
                         else
                         {
-                            // !!! Do something?
-                            Util.debug("ERROR: Attempt to remove object property or array element, but it wasn't found, path: " + path);
+                            Util.debug("VIEW MODEL SYNC WARNING: Attempt to remove object property or array element, but it wasn't found, path: " + path);
                         }
                     }
                 }
@@ -330,7 +350,7 @@ namespace MaasClient
                     }
                 }
 
-                Util.debug("View model after processing updates: " + this._viewModel);
+                Util.debug("View model after processing updates: " + this._rootObject);
             }
 
             UpdateViewFromViewModel(bindingUpdates);
@@ -341,7 +361,7 @@ namespace MaasClient
         // update any binding that depends on this value.  This is the mechanism that allows for "client side
         // dynamic binding".
         //
-        public void UpdateViewModelFromView(Binding binding, GetViewValue getValue)
+        public void UpdateViewModelFromView(BindingContext bindingContext, GetViewValue getValue)
         { 
             if (_updatingView)
             {
@@ -355,7 +375,7 @@ namespace MaasClient
             }
 
             var newValue = getValue();
-            var currentValue = binding.GetValue();
+            var currentValue = bindingContext.GetValue();
             if (newValue == currentValue)
             {
                 // Only record changes and update dependant UX objects for actual value changes - some programmatic 
@@ -367,15 +387,15 @@ namespace MaasClient
 
             // Update the view model
             //
-            var rebindRequired = binding.SetValue(newValue);
+            var rebindRequired = bindingContext.SetValue(newValue);
 
             // Find the ValueBinding that triggered this update and mark it as dirty...
             //
             foreach (ValueBinding valueBinding in _valueBindings)
             {
-                if (valueBinding.Binding == binding)
+                if (valueBinding.BindingContext == bindingContext)
                 {
-                    Util.debug("Marking dirty - binding with path: " + binding.BindingPath);
+                    Util.debug("Marking dirty - binding with path: " + bindingContext.BindingPath);
                     valueBinding.IsDirty = true;
                 }
             }
@@ -383,8 +403,8 @@ namespace MaasClient
             // Process all of the rest of the bindings (rebind and update view as needed)...
             //
             List<BindingUpdate> bindingUpdates = new List<BindingUpdate>();
-            bindingUpdates.Add(new BindingUpdate(binding.BindingPath, rebindRequired));
-            UpdateViewFromViewModel(bindingUpdates, binding);
+            bindingUpdates.Add(new BindingUpdate(bindingContext.BindingPath, rebindRequired));
+            UpdateViewFromViewModel(bindingUpdates, bindingContext);
         }
 
         public void CollectChangedValues(Action<string, JToken> setValue)
@@ -393,8 +413,8 @@ namespace MaasClient
             {
                 if (valueBinding.IsDirty)
                 {
-                    string path = valueBinding.Binding.BindingPath;
-                    JToken value = valueBinding.Binding.GetValue();
+                    string path = valueBinding.BindingContext.BindingPath;
+                    JToken value = valueBinding.BindingContext.GetValue();
                     Util.debug("Changed view model item - path: " + path + " - value: " + value);
                     setValue(path, value);
                     valueBinding.IsDirty = false;

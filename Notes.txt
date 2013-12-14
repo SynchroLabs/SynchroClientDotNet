@@ -2,11 +2,9 @@
 Mobile Application As A Service (MAAAS) - Client
 =================================================
 
-Binding token directives - work on $parent (needs to get to the actual containing object context in one jump)
-
 List bindings
     "items" - context for list of items - should be an array
-    "item"  - binding for individual list item (be default, just array element - $data?)
+    "item"  - binding for individual list item (by default, just array element - $data?)
     "selection" - need to be able to specify an item id context (?) - need to be able to r/t selection - selectionId (?) - if empty, use list element value
 
     Look at how updates are mananged - if not simple string array contents, may want to manage like ListView
@@ -27,6 +25,8 @@ ListView
     to each list item, and the result will be compared with the value(s) in "selection" to see if the item should be selected.  In the case of the default, the
     selection list will contain deep copies of the list view items, and the selection comparison will be a deep compare of those items with the list view items.
 
+    What about list view header/footer (sections before/after the items)?
+
     Example (onItemClicked):
 
         { type: "listview", select: "none", binding: { items: "contacts", selection: "selectedContacts", onItemClick: { command: "itemClicked", item: "{$data}" } }, itemTemplate:
@@ -46,6 +46,13 @@ ListView
                 console.log("Item clicked, first name: " + params.item.first + ", last name: " + params.item.last);
             },
         }
+
+Framework element binding (unregistration)
+
+    Since framework elements can be removed (such as when list view items are removed), and since those framework elements can include
+    other framework elements (and so on), we need to maintain a framework element heirarchy, probably via a list of children managed
+    in ElementMetaData. We then need an UnregisterBindings method that will recursively unregister from the view model all bindings
+    (value and property) that correspond to a framework element and its descendants.
 
 Rebinding
 
