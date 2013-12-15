@@ -104,6 +104,24 @@ namespace MaasClient
             this.attemptToBindTokenIfNeeded();
         }
 
+        //
+        // Public interface starts here...
+        //
+
+        // Given a path to a changed view model element, determine if the binding is impacted.
+        //
+        public Boolean IsBindingUpdated(string updatedElementPath)
+        {
+            if (_bindingPath.StartsWith(updatedElementPath))
+            {
+                // The updated token is either the same token that the binding is bound to, 
+                // or it is an ancestor, so this binding needs to be updated.
+                return true;
+            }
+
+            return false;
+        }
+
         public BindingContext Select(string bindingPath)
         {
             return new BindingContext(this, bindingPath);

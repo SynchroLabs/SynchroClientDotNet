@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.UI.Xaml;
 
 namespace MaasClient
 {
@@ -14,6 +15,8 @@ namespace MaasClient
         Dictionary<string, ValueBinding> _valueBindings = new Dictionary<string, ValueBinding>();
 
         List<PropertyBinding> _propertyBindings = new List<PropertyBinding>();
+
+        List<FrameworkElement> _childElements = new List<FrameworkElement>();
 
         public ElementMetaData()
         {
@@ -49,9 +52,11 @@ namespace MaasClient
             return null;
         }
 
-        public List<PropertyBinding> PropertyBindings
-        {
-            get { return _propertyBindings; }
-        }
+        // This is a read-only list (effectively), so callers changing it will be disappointed
+        public List<ValueBinding> ValueBindings { get { return new List<ValueBinding>(_valueBindings.Values); } }
+
+        public List<PropertyBinding> PropertyBindings { get { return _propertyBindings; } }
+
+        public List<FrameworkElement> ChildElements { get { return _childElements; } }
     }
 }

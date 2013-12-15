@@ -26,20 +26,30 @@ namespace MaasClient
 
         public BindingContext RootBindingContext { get { return _rootBindingContext; } }
 
-        public JObject RootObject { get { return _rootObject; } }
+        public JObject RootObject { get { return _rootObject; } } // Only used by BindingContext - "internal"?
 
-        public ValueBinding CreateValueBinding(BindingContext bindingContext, string value, GetViewValue getValue, SetViewValue setValue)
+        public ValueBinding CreateAndRegisterValueBinding(BindingContext bindingContext, string value, GetViewValue getValue, SetViewValue setValue)
         {
             ValueBinding valueBinding = new ValueBinding(this, bindingContext, value, getValue, setValue);
             _valueBindings.Add(valueBinding);
             return valueBinding;
         }
 
-        public PropertyBinding CreatePropertyBinding(BindingContext bindingContext, string value, SetViewValue setValue)
+        public void UnregisterValueBinding(ValueBinding valueBinding)
+        {
+            _valueBindings.Remove(valueBinding);
+        }
+
+        public PropertyBinding CreateAndRegisterPropertyBinding(BindingContext bindingContext, string value, SetViewValue setValue)
         {
             PropertyBinding propertyBinding = new PropertyBinding(bindingContext, value, setValue);
             _propertyBindings.Add(propertyBinding);
             return propertyBinding;
+        }
+
+        public void UnregisterPropertyBinding(PropertyBinding propertyBinding)
+        {
+            _propertyBindings.Remove(propertyBinding);
         }
 
         // Tokens in the view model have a "ViewModel." prefix (as the view model itself is a child node of a larger
@@ -106,20 +116,6 @@ namespace MaasClient
             return false; // Rebinding is not required (value-only change, or no change)
         }
 
-        // Given a Binding and a path to a changed token, determine if the binding is impacted.
-        //
-        static Boolean IsBindingUpdated(BindingContext bindingContext, string updatedTokenPath)
-        {
-            if (bindingContext.BindingPath.StartsWith(updatedTokenPath))
-            {
-                // The updated token is either the same token that the binding is bound to, 
-                // or it is an ancestor, so this binding needs to be updated.
-                return true;
-            }
-
-            return false;
-        }
-
         // This object represents a binding update (the path of the bound item and an indication of whether rebinding is required)
         //
         public class BindingUpdate
@@ -160,7 +156,7 @@ namespace MaasClient
                     {
                         foreach (BindingUpdate update in bindingUpdates)
                         {
-                            if (IsBindingUpdated(valueBinding.BindingContext, update.BindingPath))
+                            if (valueBinding.BindingContext.IsBindingUpdated(update.BindingPath))
                             {
                                 isUpdateRequired = true;
                                 if (update.RebindRequired)
@@ -196,7 +192,7 @@ namespace MaasClient
                     {
                         foreach (BindingUpdate update in bindingUpdates)
                         {
-                            if (IsBindingUpdated(propBinding, update.BindingPath))
+                            if (propBinding.IsBindingUpdated(update.BindingPath))
                             {
                                 isUpdateRequired = true;
                                 if (update.RebindRequired)

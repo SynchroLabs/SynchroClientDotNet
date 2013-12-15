@@ -81,7 +81,7 @@ namespace MaasClient
                 ElementMetaData metaData = getMetaData(element);
 
                 BindingContext valueBindingContext = bindingContext.Select(value);
-                ValueBinding binding = this.viewModel.CreateValueBinding(valueBindingContext, value, getValue, setValue);
+                ValueBinding binding = this.viewModel.CreateAndRegisterValueBinding(valueBindingContext, value, getValue, setValue);
                 metaData.SetValueBinding(attributeName, binding);
                 return true;
             }
@@ -103,7 +103,7 @@ namespace MaasClient
             {
                 // If value contains a binding, create a Binding and add it to metadata
                 ElementMetaData metaData = getMetaData(element);
-                PropertyBinding binding = this.viewModel.CreatePropertyBinding(bindingContext, value, setValue);
+                PropertyBinding binding = this.viewModel.CreateAndRegisterPropertyBinding(bindingContext, value, setValue);
                 metaData.PropertyBindings.Add(binding);
             }
             else
@@ -333,24 +333,26 @@ namespace MaasClient
 
             if (listview.Items.Count < itemContexts.Count)
             {
-                // New items are added to the end of the list
+                // New items are added (to the end of the list)
                 //
                 for (int index = listview.Items.Count; index < itemContexts.Count; index++)
                 {
-                    FrameworkElement control = createControl(itemContexts[index], itemTemplate);
+                    FrameworkElement control = createControl(listview, itemContexts[index], itemTemplate);
                     listview.Items.Add(control);
                 }
             }
             else if (listview.Items.Count > itemContexts.Count)
             {
-                // Items need to be removed from the end of the list
+                // Items need to be removed (from the end of the list)
                 //
                 for (int index = listview.Items.Count; index > itemContexts.Count; index--)
                 {
                     FrameworkElement control = (FrameworkElement)listview.Items[index-1];
 
-                    // !!! Since we are removing this element, we need to unregister its bindings (and this
-                    //     needs to be recursive if it has children).
+                    // Unregister any bindings for this element or any descendants
+                    //
+                    this.OnRemoveElement(control);
+
                     listview.Items.RemoveAt(index-1);
                 }
             }
@@ -475,7 +477,32 @@ namespace MaasClient
             }
         }
 
-        public FrameworkElement createControl(BindingContext bindingContext, JObject controlSpec)
+        // When we remove an element, we need to unbind it and its descendants (by unregistering all bindings
+        // from the view model).  This is important as often times an element is removed when the underlying
+        // bound values go away, such as when an array element is removed, causing a cooresponding (bound) list
+        // or list view element to be removed.
+        //
+        private void OnRemoveElement(FrameworkElement element)
+        {
+            ElementMetaData metaData = getMetaData(element);
+
+            foreach (ValueBinding valueBinding in metaData.ValueBindings)
+            {
+                this.viewModel.UnregisterValueBinding(valueBinding);
+            }
+
+            foreach (PropertyBinding propertyBinding in metaData.PropertyBindings)
+            {
+                this.viewModel.UnregisterPropertyBinding(propertyBinding);
+            }
+
+            foreach(FrameworkElement childElement in metaData.ChildElements)
+            {
+                this.OnRemoveElement(childElement);
+            }
+        }
+
+        public FrameworkElement createControl(FrameworkElement parent, BindingContext bindingContext, JObject controlSpec)
         {
             FrameworkElement control = null;
 
@@ -707,7 +734,7 @@ namespace MaasClient
 
                     if (controlSpec["contents"] != null)
                     {
-                        createControls(bindingContext, (JArray)controlSpec["contents"], childControl => stackPanel.Children.Add(childControl));
+                        createControls(stackPanel, bindingContext, (JArray)controlSpec["contents"], childControl => stackPanel.Children.Add(childControl));
                     }
                     control = stackPanel;
                 }
@@ -737,12 +764,15 @@ namespace MaasClient
             if (control != null)
             {
                 processCommonFrameworkElementProperies(control, bindingContext, controlSpec);
+
+                ElementMetaData parentMetaData = getMetaData(parent);
+                parentMetaData.ChildElements.Add(control);
             }
 
             return control;
         }
 
-        public void createControls(BindingContext bindingContext, JArray controlList, Action<FrameworkElement> onAddControl)
+        public void createControls(FrameworkElement parent, BindingContext bindingContext, JArray controlList, Action<FrameworkElement> onAddControl)
         {
             foreach (JObject element in controlList)
             {
@@ -767,7 +797,7 @@ namespace MaasClient
                         foreach (var elementBindingContext in bindingContexts)
                         {
                             Util.debug("foreach - creating control with binding context: " + elementBindingContext.BindingPath);
-                            onAddControl(createControl(elementBindingContext, element));
+                            onAddControl(createControl(parent, elementBindingContext, element));
                         }
                         controlCreated = true;
                     }
@@ -781,7 +811,7 @@ namespace MaasClient
 
                 if (!controlCreated)
                 {
-                    onAddControl(createControl(controlBindingContext, element));
+                    onAddControl(createControl(parent, controlBindingContext, element));
                 }
             }
         }
@@ -802,9 +832,15 @@ namespace MaasClient
                 setPageTitle(pageTitle);
             }
 
-            createControls(this.viewModel.RootBindingContext, (JArray)pageView["elements"], control => panel.Children.Add(control));
+            createControls(panel, this.viewModel.RootBindingContext, (JArray)pageView["elements"], control => panel.Children.Add(control));
         }
 
+        //
+        // Control update handlers
+        //
+
+        // This helper is used by control update handlers below.
+        //
         void updateValueBindingForAttribute(FrameworkElement element, string attributeName)
         {
             ElementMetaData metaData = element.Tag as ElementMetaData;
@@ -818,10 +854,6 @@ namespace MaasClient
                 }
             }
         }
-
-        //
-        // Control update handlers
-        //
 
         void textBox_TextChanged(object sender, TextChangedEventArgs e)
         {

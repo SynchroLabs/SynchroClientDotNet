@@ -47,13 +47,6 @@ ListView
             },
         }
 
-Framework element binding (unregistration)
-
-    Since framework elements can be removed (such as when list view items are removed), and since those framework elements can include
-    other framework elements (and so on), we need to maintain a framework element heirarchy, probably via a list of children managed
-    in ElementMetaData. We then need an UnregisterBindings method that will recursively unregister from the view model all bindings
-    (value and property) that correspond to a framework element and its descendants.
-
 Rebinding
 
     The problem is that bindings are established using the tokens from the viewmodel.  So it is currently
