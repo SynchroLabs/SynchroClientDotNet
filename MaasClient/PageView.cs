@@ -14,6 +14,8 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 
+// !!! Move these docs somewhere more appropriate...
+//
 // Composite binding can be in any attribute.  Substitutes bound items, indicated by braces, into pattern strings.
 //    ! = negation of boolean value
 //    ^ = One time binding (default is one way binding)
@@ -480,7 +482,7 @@ namespace MaasClient
         // When we remove an element, we need to unbind it and its descendants (by unregistering all bindings
         // from the view model).  This is important as often times an element is removed when the underlying
         // bound values go away, such as when an array element is removed, causing a cooresponding (bound) list
-        // or list view element to be removed.
+        // or list view framework element to be removed.
         //
         private void OnRemoveElement(FrameworkElement element)
         {
@@ -781,19 +783,28 @@ namespace MaasClient
 
                 if ((element["binding"] != null) && (element["binding"].Type == JTokenType.Object))
                 {
-                    // !!! Should we support "foreach" and "with" together?  Probably.
-                    //
                     Util.debug("Found binding object");
                     JObject bindingSpec = (JObject)element["binding"];
                     if (bindingSpec["foreach"] != null)
                     {
-                        // First we create a BindingContext for the foreach path
+                        // First we create a BindingContext for the "foreach" path (a context to the elements to be iterated)
                         string bindingPath = (string)bindingSpec["foreach"];
                         Util.debug("Found 'foreach' binding with path: " + bindingPath);
                         BindingContext forEachBindingContext = bindingContext.Select(bindingPath);
 
-                        // Then we get the elements at the foreach binding to create the controls
-                        List<BindingContext> bindingContexts = forEachBindingContext.SelectEach("$data"); // !!! Test with this blank (should work the same)
+                        // Then we determine the bindingPath to use on each element
+                        string withPath = "$data";
+                        if (bindingSpec["with"] != null)
+                        {
+                            // It is possible to use "foreach" and "with" together - in which case "foreach" is applied first
+                            // and "with" is applied to each element in the foreach array.  This allows for path navigation
+                            // both up to, and then after, the context to be iterated.
+                            //
+                            withPath = (string)bindingSpec["with"];
+                        }
+
+                        // Then we get each element at the foreach binding, apply the element path, and create the controls
+                        List<BindingContext> bindingContexts = forEachBindingContext.SelectEach(withPath);
                         foreach (var elementBindingContext in bindingContexts)
                         {
                             Util.debug("foreach - creating control with binding context: " + elementBindingContext.BindingPath);
@@ -803,9 +814,9 @@ namespace MaasClient
                     }
                     else if (bindingSpec["with"] != null)
                     {
-                        string bindingPath = (string)bindingSpec["with"];
-                        Util.debug("Found 'with' binding with path: " + bindingPath);
-                        controlBindingContext = bindingContext.Select(bindingPath);
+                        string withBindingPath = (string)bindingSpec["with"];
+                        Util.debug("Found 'with' binding with path: " + withBindingPath);
+                        controlBindingContext = bindingContext.Select(withBindingPath);
                     }
                 }
 
