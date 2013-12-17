@@ -12,34 +12,33 @@ namespace MaasClient
     public class CommandInstance
     {
         string _command;
-        Dictionary<string, string> _parameters = new Dictionary<string, string>();
+        Dictionary<string, JToken> _parameters = new Dictionary<string, JToken>();
 
-        public CommandInstance(string command, Dictionary<string, string> parameters = null)
+        public CommandInstance(string command)
         {
             _command = command;
-            if (parameters != null)
-            {
-                foreach (var parameterName in parameters.Keys)
-                {
-                    _parameters[parameterName] = parameters[parameterName];
-                }
-            }
         }
 
-        public void SetParameter(string parameterName, string parameterValue)
+        public void SetParameter(string parameterName, JToken parameterValue)
         {
             _parameters[parameterName] = parameterValue;
         }
 
         public string Command { get { return _command; } }
 
+        // If a parameter is not a string type, then that parameter is passed directly.  This allows for parameters to
+        // be boolean, numeric, or even objects.  If a parameter is a string, it will be evaluated to see if it has
+        // any property bindings, and if so, those bindings will be expanded.  This allows for parameters that vary
+        // based on the current context, for example, and also allows for complex values (such as property bindings
+        // that refer to a single value of a type other than string, such as an object).
+        //
         public JObject GetResolvedParameters(BindingContext bindingContext)
         {
             return new JObject(
                 from parameter in _parameters
                 select new JProperty(
                     parameter.Key,
-                    PropertyValue.Expand(parameter.Value, bindingContext)
+                    parameter.Value.Type == JTokenType.String ? PropertyValue.Expand((string)parameter.Value, bindingContext) : parameter.Value
                     )
                 );
         }

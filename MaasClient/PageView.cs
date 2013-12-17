@@ -14,24 +14,6 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 
-// !!! Move these docs somewhere more appropriate...
-//
-// Composite binding can be in any attribute.  Substitutes bound items, indicated by braces, into pattern strings.
-//    ! = negation of boolean value
-//    ^ = One time binding (default is one way binding)
-//
-// Each item has a binding context, which is determined before the item is created/processed by inspecting the "binding" attribute
-// to look for a "foreach" or "with" binding context specifier.
-//
-//    foreach: foos (for each element in array "foos", create an instance of this element and set the binding context for
-//                   that element to the array element).
-//
-//    with: foo.bar (select the element foo.bar as the current binding context for the visual element, before apply any other binding).
-//
-// The "binding" attribute can have tokens in it, but they are only evalutated when it is initially processed (binding
-// is only processed once).
-//
-
 namespace MaasClient
 {
     class PageView
@@ -218,6 +200,12 @@ namespace MaasClient
             processElementPropertyIfPresent(element, bindingContext, (string)controlSpec["foreground"], "Foreground", value => Converter.ToBrush(value));
         }
 
+        //
+        // Listbox
+        //
+        // !!! Rework to use the same mechanism as List View (particularly with respect to item and selectionItem binding attributes?)
+        //
+
         public JToken getListboxContents(ListBox listbox)
         {
             Util.debug("Getting listbox contents");
@@ -321,6 +309,10 @@ namespace MaasClient
             }
         }
 
+        //
+        // List View
+        //
+
         public JToken getListViewContents(ListView listbox)
         {
             Util.debug("Get listview contents - NOOP");
@@ -373,21 +365,17 @@ namespace MaasClient
             }
         }
 
-        // ListView selection stuff below currently not functional
-        //
-        // When producing the selection, get the ElementData.BindingContext and apply any selectionItem path (!!! TODO)
-        //
         // To determine if an item should selected, get an item from the list, get the ElementMetaData.BindingContext.  Apply any
-        // selectionItem to the binding context, resolve that and compare it to the selection (in the case where the selectionItem
-        // is not provided or is $data, the selection should equal the value at the binding context.
+        // selectionItem to the binding context, resolve that and compare it to the selection (selectionItem will always be provided
+        // here, and will default to "$data").
         //
-        public JToken getListViewSelection(ListView listview)
+        public JToken getListViewSelection(ListView listview, string selectionItem)
         {
             if (listview.SelectionMode == ListViewSelectionMode.Multiple)
             {
                 return new JArray(
                     from FrameworkElement control in listview.SelectedItems
-                    select getMetaData(control).BindingContext.GetValue() 
+                    select getMetaData(control).BindingContext.Select(selectionItem).GetValue() 
                 );
             }
             else if (listview.SelectionMode == ListViewSelectionMode.Single)
@@ -398,7 +386,7 @@ namespace MaasClient
                     // We need to clone the item so we don't destroy the original link to the item in the list (since the
                     // item we're getting in SelectedItem is the list item and we're putting it into the selection binding).
                     //     
-                    return getMetaData(control).BindingContext.GetValue().DeepClone();
+                    return getMetaData(control).BindingContext.Select(selectionItem).GetValue().DeepClone();
                 }
                 return new JValue(false); // This is a "null" selection
             }
@@ -406,11 +394,14 @@ namespace MaasClient
             return null;
         }
 
-        // !!! This gets triggered when selection changes come in from the server (including when the selection is initially set),
-        //     and it also gets triggered when the list itself changes (including when the contents are intially set).  At least
-        //     in the initial list/selection set case, this gets called twice.  Investigate.
+        // This gets triggered when selection changes come in from the server (including when the selection is initially set),
+        // and it also gets triggered when the list itself changes (including when the list contents are intially set).  So 
+        // in the initial list/selection set case, this gets called twice.  On subsequent updates it's possible that this will
+        // be triggered by either a list change or a selection change from the server, or both.  There is no easy way currerntly
+        // to detect the "both" case (without exposing a lot more information here).  We're going to go ahead and live with the
+        // multiple calls.  It shouldn't hurt anything (they should produce the same result), it's just slightly inefficient.
         // 
-        public void setListViewSelection(ListView listview, JToken selection)
+        public void setListViewSelection(ListView listview, string selectionItem, JToken selection)
         {
             if (listview.SelectionMode == ListViewSelectionMode.Multiple)
             {
@@ -423,7 +414,7 @@ namespace MaasClient
                         JArray array = selection as JArray;
                         foreach (JToken item in array.Children())
                         {
-                            if (JToken.DeepEquals(item, getMetaData(control).BindingContext.GetValue()))
+                            if (JToken.DeepEquals(item, getMetaData(control).BindingContext.Select(selectionItem).GetValue()))
                             {
                                 listview.SelectedItems.Add(control);
                                 break;
@@ -432,7 +423,7 @@ namespace MaasClient
                     }
                     else
                     {
-                        if (JToken.DeepEquals(selection, getMetaData(control).BindingContext.GetValue()))
+                        if (JToken.DeepEquals(selection, getMetaData(control).BindingContext.Select(selectionItem).GetValue()))
                         {
                             listview.SelectedItems.Add(control);
                         }
@@ -445,7 +436,7 @@ namespace MaasClient
 
                 foreach (FrameworkElement control in listview.Items)
                 {
-                    if (JToken.DeepEquals(selection, getMetaData(control).BindingContext.GetValue()))
+                    if (JToken.DeepEquals(selection, getMetaData(control).BindingContext.Select(selectionItem).GetValue()))
                     {
                         listview.SelectedItem = control;
                         break;
@@ -454,6 +445,8 @@ namespace MaasClient
             }
         }
 
+        // Process and record any commands in a binding spec
+        //
         void processCommands(ElementMetaData metaData, JObject bindingSpec, string[] commands)
         {
             foreach (string command in commands)
@@ -461,17 +454,14 @@ namespace MaasClient
                 JObject commandSpec = bindingSpec[command] as JObject;
                 if (commandSpec != null)
                 {
+                    // A command spec contains an attribute called "command".  All other attributes are considered parameters.
+                    //
                     CommandInstance commandInstance = new CommandInstance((string)commandSpec["command"]);
                     foreach (var property in commandSpec)
                     {
                         if (property.Key != "command")
                         {
-                            // !!! property.Value is a JToken and could be any kind of token - not sure what to
-                            //     do about that (it might be nice to be able to pass other value types as params,
-                            //     but how do we deal with that?).  If we allowed passing more complex types as
-                            //     params, how would we deal with token expansion (in an object property, for example).
-                            //
-                            commandInstance.SetParameter(property.Key, (string)property.Value);
+                            commandInstance.SetParameter(property.Key, property.Value);
                         }
                     }
                     metaData.SetCommand(command, commandInstance);
@@ -651,39 +641,48 @@ namespace MaasClient
                     ListView listView = new ListView();
                     applyFrameworkElementDefaults(listView);
                     setBindingContext(listView, bindingContext);
+                    ElementMetaData metaData = getMetaData(listView);
                     JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "items", new string[] {"onItemClick"});
                     if (bindingSpec != null)
                     {
                         if (bindingSpec["items"] != null)
                         {
-                            // !!! This is a little weird, but what the listview needs to update its contents is actually not the "value",
-                            //     but the binding context and the item selector value
-                            //
-                            BindingContext valueBindingContext = bindingContext.Select((string)bindingSpec["items"]);
                             string itemSelector = (string)bindingSpec["item"];
                             if (itemSelector == null)
                             {
                                 itemSelector = "$data";
                             }
 
+                            // This is a little unusual, but what the list view needs to update its contents is actually not the "value" (which would
+                            // be the array of content items based on the "items" binding), but the binding context representing where those values are
+                            // in the view model.  It needs the binding context in part so that it can apply itemSelector to the iterated bindings to
+                            // produce the actual item binding contexts.  And of course it also needs the itemSelector value.  So we'll pass both of those
+                            // in the delegate (and ignore "value" altogether).  This is all perfectly fine, it's just not the normal "jam the value into
+                            // the control" kind of delegate, so it seemed prudent to note that here.
+                            //
                             processElementBoundValue(
                                 listView, 
                                 "items", 
                                 bindingContext, 
                                 (string)bindingSpec["items"], 
                                 () => getListViewContents(listView), 
-                                // value => this.setListViewContents(listView, (JObject)controlSpec["itemTemplate"], (JToken)value));
-                                value => this.setListViewContents(listView, (JObject)controlSpec["itemTemplate"], valueBindingContext, itemSelector));
+                                value => this.setListViewContents(listView, (JObject)controlSpec["itemTemplate"], metaData.GetValueBinding("items").BindingContext, itemSelector));
                         }
                         if (bindingSpec["selection"] != null)
                         {
+                            string selectionItem = (string)bindingSpec["selectionItem"];
+                            if (selectionItem == null)
+                            {
+                                selectionItem = "$data";
+                            }
+
                             processElementBoundValue(
                                 listView, 
                                 "selection",
                                 bindingContext, 
                                 (string)bindingSpec["selection"], 
-                                () => getListViewSelection(listView), 
-                                value => this.setListViewSelection(listView, (JToken)value));
+                                () => getListViewSelection(listView, selectionItem), 
+                                value => this.setListViewSelection(listView, selectionItem, (JToken)value));
                         }
                     }
 
@@ -706,7 +705,6 @@ namespace MaasClient
                         listView.SelectionChanged += listView_SelectionChanged;
                     }
 
-                    ElementMetaData metaData = getMetaData(listView);
                     processCommands(metaData, bindingSpec, new string[] { "onItemClick" });
                     if (metaData.GetCommand("onItemClick") != null)
                     {
@@ -718,9 +716,6 @@ namespace MaasClient
                 }
                 break;
 
-                // !!! When we do the grid/canvas containers, they are going to need to look at each child control and be able to pull off
-                //     positioning attributes (top, left for canvas - row, column for grid).
-                //
                 case "stackpanel":
                 {
                     Util.debug("Found stackpanel element");
@@ -736,9 +731,32 @@ namespace MaasClient
 
                     if (controlSpec["contents"] != null)
                     {
-                        createControls(stackPanel, bindingContext, (JArray)controlSpec["contents"], childControl => stackPanel.Children.Add(childControl));
+                        createControls(stackPanel, bindingContext, (JArray)controlSpec["contents"], (element, childControl) => stackPanel.Children.Add(childControl));
                     }
                     control = stackPanel;
+                }
+                break;
+
+                case "canvas":
+                {
+                    Util.debug("Found canvas element");
+                    Canvas canvas = new Canvas();
+                    applyFrameworkElementDefaults(canvas);
+                    setBindingContext(canvas, bindingContext);
+
+                    if (controlSpec["contents"] != null)
+                    {
+                        createControls(canvas, bindingContext, (JArray)controlSpec["contents"], (element, childControl) => 
+                        {
+                            // We need to capture and potentially bind some attributes on the added child controls here in the context of the parent...
+                            //
+                            processElementProperty(childControl, bindingContext, (string)element["top"], value => Canvas.SetTop(childControl, Converter.ToDouble(value)));
+                            processElementProperty(childControl, bindingContext, (string)element["left"], value => Canvas.SetLeft(childControl, Converter.ToDouble(value)));
+                            processElementProperty(childControl, bindingContext, (string)element["zindex"], value => Canvas.SetZIndex(childControl, (int)Converter.ToDouble(value)));
+                            canvas.Children.Add(childControl);
+                        });
+                    }
+                    control = canvas;
                 }
                 break;
 
@@ -774,7 +792,7 @@ namespace MaasClient
             return control;
         }
 
-        public void createControls(FrameworkElement parent, BindingContext bindingContext, JArray controlList, Action<FrameworkElement> onAddControl)
+        public void createControls(FrameworkElement parent, BindingContext bindingContext, JArray controlList, Action<JObject, FrameworkElement> onAddControl)
         {
             foreach (JObject element in controlList)
             {
@@ -808,7 +826,7 @@ namespace MaasClient
                         foreach (var elementBindingContext in bindingContexts)
                         {
                             Util.debug("foreach - creating control with binding context: " + elementBindingContext.BindingPath);
-                            onAddControl(createControl(parent, elementBindingContext, element));
+                            onAddControl(element, createControl(parent, elementBindingContext, element));
                         }
                         controlCreated = true;
                     }
@@ -822,7 +840,7 @@ namespace MaasClient
 
                 if (!controlCreated)
                 {
-                    onAddControl(createControl(parent, controlBindingContext, element));
+                    onAddControl(element, createControl(parent, controlBindingContext, element));
                 }
             }
         }
@@ -843,7 +861,7 @@ namespace MaasClient
                 setPageTitle(pageTitle);
             }
 
-            createControls(panel, this.viewModel.RootBindingContext, (JArray)pageView["elements"], control => panel.Children.Add(control));
+            createControls(panel, this.viewModel.RootBindingContext, (JArray)pageView["elements"], (element, control) => panel.Children.Add(control));
         }
 
         //

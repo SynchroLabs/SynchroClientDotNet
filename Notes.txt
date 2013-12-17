@@ -2,30 +2,35 @@
 Mobile Application As A Service (MAAAS) - Client
 =================================================
 
-List bindings
+List binding attributes
+
     "items" - context for list of items - should be an array
     "item"  - binding for individual list item (by default, just array element - $data?)
-    "selection" - need to be able to specify an item id context (?) - need to be able to r/t selection - selectionId (?) - if empty, use list element value
+    "selection" 
+    "selectionItem"
 
-    Look at how updates are mananged - if not simple string array contents, may want to manage like ListView
+    ToDo - implement item/selectionItem, generally refactor to work like ListView
 
-ListView
 
-    "items" binding
-    "selection" binding
-    "itemTemplate" - layout description for each item 
-    "onItemClick" command
+ListView binding attributes
 
-    ToDo - "item" (defaults to $data) - This is applied to each parent list item to determined the child item to be added to the list (this allows the list item
-    to be a context other than the top level enumerated item).
+    "items" binding - the array of elements to add to the list view.
+    "item" binding - a path applied to each "items" element to determine the context to be added to list view (defaults to $data).  This allows for the list
+        view item to be a context other than the top-level enumerated element.
+    "itemTemplate" - layout specification for each item (must be a single element, though that element can be a container that contains other layout elements). 
 
-    ToDo - "selectionItem" (defaults to $data) - This is what is placed into "selection" (per item) and this is applied to each item in "items" for the purpose
+    "selection" binding - indicated an array to synchronize the selected item/items
+
+    "selectionItem" (defaults to $data) - This is what is placed into "selection" (per item) and this is applied to each item in "items" for the purpose
     of matching list view item with selection items when setting selection state for the list view.  For example, if the selectionItem was "{itemId}", then the
     selection binding would be one or more elements of the "{itemId}" applied to the selected items.  When resetting item selection, "{itemId}" will be applied
     to each list item, and the result will be compared with the value(s) in "selection" to see if the item should be selected.  In the case of the default, the
     selection list will contain deep copies of the list view items, and the selection comparison will be a deep compare of those items with the list view items.
 
-    What about list view header/footer (sections before/after the items)?
+    "onItemClick" command
+
+
+    ToDo - What about list view header/footer (sections before/after the items)?
 
     Example (onItemClicked):
 
@@ -73,10 +78,27 @@ On server
         View cache - negotiate view cache state so that server knows whether you need a given view or have it
     Hotloading (test for new, later will always load/hotload as needed)
 
+
+Binding context specifiers
+
+    Each item has a binding context, which is determined before the item is created/processed by inspecting the
+    "binding" attribute to look for a "foreach" or "with" binding context specifier.
+
+        foreach: "foos" (for each element in array "foos", create an instance of this visual element and set the
+                         binding context for the visual element to the array element).
+
+        with: "foo.bar" (select the element foo.bar from the current binding context as then new binding context
+                         for the visual element).
+
+        Note that it is possible to use "foreach" and "with" together - in which case "foreach" is applied first
+        and "with" is applied to each element in the foreach array.  This allows for path navigation both up to,
+        and then after, the context to be iterated.
+
+
 Property binding expressions/directives:
 
 	Negation using !, such as visibility="{!isVisible}"
-	One time using ^
+	One time using ^ (default is one way binding)
 
     Real expression support:
 

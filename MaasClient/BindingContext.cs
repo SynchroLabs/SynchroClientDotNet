@@ -16,8 +16,9 @@ namespace MaasClient
 
         string _bindingPath;
         JToken _boundToken;
+        bool _isIndex = false;
 
-        // Creates the root binding context, from which all other binding contexts will be created
+        // Creates the root binding context, from which all other binding contexts will be created (only created from ViewModel)
         //
         public BindingContext(ViewModel viewModel)
         {
@@ -26,18 +27,26 @@ namespace MaasClient
             _boundToken = viewModel.RootObject;
         }
 
+        private void attemptToBindTokenIfNeeded()
+        {
+            if (_boundToken == null)
+            {
+                _boundToken = _viewModel.RootObject.SelectToken(_bindingPath);
+            }
+        }
+
         private static Regex _bindingTokensRE = new Regex(@"[$]([^.]*)"); // Token starts with $, separated by dot
 
-        private static string resolveBinding(string parentPath, string bindingPath)
+        private void resolveBinding(string parentPath, string bindingPath)
         {
             // Process path elements:
             //
             //  $root
             //  $parent
             //  $data
-            //  $index (inside foreach) !!! TODO
+            //  $index
             //
-            bindingPath = _bindingTokensRE.Replace(bindingPath, delegate(Match m)
+            _bindingPath = _bindingTokensRE.Replace(bindingPath, delegate(Match m)
             {
                 string pathElement = m.Groups[1].ToString();
                 Util.debug("Found binding path element: " + pathElement);
@@ -66,41 +75,35 @@ namespace MaasClient
                 {
                     // We're going to treat $data as a noop
                 }
+                else if (pathElement == "index")
+                {
+                    _isIndex = true;
+                }
 
                 return ""; // Removing the path elements as they are processed
             });
 
-            if ((parentPath.Length > 0) && (bindingPath.Length > 0))
+            if ((parentPath.Length > 0) && (_bindingPath.Length > 0))
             {
-                bindingPath = parentPath + "." + bindingPath; ;
+                _bindingPath = parentPath + "." + _bindingPath; ;
             }
             else if (parentPath.Length > 0)
             {
-                bindingPath = parentPath;
-            }
-
-            return bindingPath;
-        }
-
-        private void attemptToBindTokenIfNeeded()
-        {
-            if (_boundToken == null)
-            {
-                _boundToken = _viewModel.RootObject.SelectToken(_bindingPath);
+                _bindingPath = parentPath;
             }
         }
 
         private BindingContext(BindingContext context, string bindingPath)
         {
             _viewModel = context._viewModel;
-            _bindingPath = BindingContext.resolveBinding(context._bindingPath, bindingPath);
+            resolveBinding(context._bindingPath, bindingPath);
             this.attemptToBindTokenIfNeeded();
         }
 
         private BindingContext(BindingContext context, JToken parentToken, string bindingPath)
         {
             _viewModel = context._viewModel;
-            _bindingPath = BindingContext.resolveBinding(ViewModel.GetTokenPath(parentToken), bindingPath);
+            resolveBinding(ViewModel.GetTokenPath(parentToken), bindingPath);
             this.attemptToBindTokenIfNeeded();
         }
 
@@ -149,7 +152,31 @@ namespace MaasClient
             this.attemptToBindTokenIfNeeded();
             if (_boundToken != null)
             {
-                return _boundToken;
+                if (_isIndex)
+                {
+                    // Find first ancestor that is an array and get the position of that ancestor's child
+                    //
+                    JToken child = _boundToken;
+                    JToken parent = child.Parent;
+
+                    while (parent != null)
+                    {
+                        JArray parentArray = parent as JArray;
+                        if (parentArray != null)
+                        {
+                            return new JValue(parentArray.IndexOf(child));
+                        }
+                        else
+                        {
+                            child = parent;
+                            parent = child.Parent;
+                        }
+                    }
+                }
+                else
+                {
+                    return _boundToken;
+                }
             }
 
             // !!! Token could not be bound at this time (no corresponding view model item) - no value returned!
@@ -163,7 +190,10 @@ namespace MaasClient
             this.attemptToBindTokenIfNeeded();
             if (_boundToken != null)
             {
-                return ViewModel.UpdateTokenValue(ref _boundToken, value);
+                if (!_isIndex)
+                {
+                    return ViewModel.UpdateTokenValue(ref _boundToken, value);
+                }
             }
 
             // !!! Token could not be bound at this time (no corresponding view model item) - value not set!
