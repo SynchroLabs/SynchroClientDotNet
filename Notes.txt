@@ -6,6 +6,7 @@ List binding attributes
 
     "items" - context for list of items - should be an array
     "item"  - binding for individual list item (by default, just array element - $data?)
+    "itemValue" ? (equiv of itemTemplate) Property Value spec for item string construction - {$index - $last, $first}
     "selection" 
     "selectionItem"
 
