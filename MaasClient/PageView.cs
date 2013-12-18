@@ -1,4 +1,5 @@
 ﻿using MaasClient.Controls;
+using MaasClient.Core;
 using Newtonsoft.Json.Linq;
 using System;
 using Windows.UI.Popups;
@@ -9,7 +10,6 @@ namespace MaasClient
 {
     class PageView
     {
-        public String Path { get; set; }
         public Action<string> setPageTitle { get; set; }
         public Action<bool> setBackEnabled { get; set; }
         public Panel Content { get; set; }
@@ -35,8 +35,6 @@ namespace MaasClient
         {
             Panel panel = this.Content;
             panel.Children.Clear();
-
-            this.Path = (string)pageView["path"];
 
             this.onBackCommand = (string)pageView["onBack"];
             this.setBackEnabled(this.onBackCommand != null);

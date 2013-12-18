@@ -13,9 +13,9 @@ using Windows.Web;
 
 // WebSocket transport
 //
-namespace MaasClient
+namespace MaasClient.Core
 {
-    class TransportWs
+    class TransportWs : Transport
     {
         private MessageWebSocket _ws;
         private DataWriter _messageWriter;

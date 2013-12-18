@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MaasClient.Core;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -21,23 +22,33 @@ namespace MaasClient
     /// </summary>
     public sealed partial class BasicPage : MaasClient.Common.LayoutAwarePage
     {
-        StateManager stateManager = new StateManager();
+        static string _host = "localhost:1337";
+        //static string _host = "maaas.azurewebsites.net";
+
+        StateManager _stateManager;
+        PageView _pageView;
 
         public BasicPage()
         {
+            _stateManager = new StateManager(_host);
+            _pageView = new PageView(_stateManager, _stateManager.ViewModel);
+
             this.InitializeComponent();
             this.backButton.Click += backButton_Click;
 
-            stateManager.PageView.Path = "menu";
-            stateManager.PageView.setPageTitle = title => this.pageTitle.Text = title;
-            stateManager.PageView.setBackEnabled = isEnabled => this.backButton.IsEnabled = isEnabled;
-            stateManager.PageView.Content = (Panel)this.mainStack;
-            stateManager.loadLayout();
+            _stateManager.Path = "menu";
+
+            _pageView.setPageTitle = title => this.pageTitle.Text = title;
+            _pageView.setBackEnabled = isEnabled => this.backButton.IsEnabled = isEnabled;
+            _pageView.Content = (Panel)this.mainStack;
+
+            _stateManager.SetProcessingHandlers(json => _pageView.processPageView(json), json => _pageView.processMessageBox(json));
+            _stateManager.loadLayout();
         }
 
         void backButton_Click(object sender, RoutedEventArgs e)
         {
-            stateManager.PageView.OnBackCommand(sender, e);
+            _pageView.OnBackCommand(sender, e);
         }
 
         /// <summary>

@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using MaasClient.Core;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,14 +22,14 @@ namespace MaasClient.Controls
             applyFrameworkElementDefaults(toggleSwitch);
 
             JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "value", new string[] { "onToggle" });
-            if (!processElementBoundValue("value", (string)bindingSpec["value"], () => { return toggleSwitch.IsOn; }, value => toggleSwitch.IsOn = Converter.ToBoolean(value)))
+            if (!processElementBoundValue("value", (string)bindingSpec["value"], () => { return toggleSwitch.IsOn; }, value => toggleSwitch.IsOn = ToBoolean(value)))
             {
-                processElementProperty((string)controlSpec["value"], value => toggleSwitch.IsOn = Converter.ToBoolean(value));
+                processElementProperty((string)controlSpec["value"], value => toggleSwitch.IsOn = ToBoolean(value));
             }
 
-            processElementProperty((string)controlSpec["header"], value => toggleSwitch.Header = Converter.ToString(value));
-            processElementProperty((string)controlSpec["onLabel"], value => toggleSwitch.OnContent = Converter.ToString(value));
-            processElementProperty((string)controlSpec["offLabel"], value => toggleSwitch.OffContent = Converter.ToString(value));
+            processElementProperty((string)controlSpec["header"], value => toggleSwitch.Header = ToString(value));
+            processElementProperty((string)controlSpec["onLabel"], value => toggleSwitch.OnContent = ToString(value));
+            processElementProperty((string)controlSpec["offLabel"], value => toggleSwitch.OffContent = ToString(value));
 
             ProcessCommands(bindingSpec, new string[] { "onToggle" });
 

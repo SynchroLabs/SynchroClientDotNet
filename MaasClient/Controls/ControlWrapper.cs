@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using MaasClient.Core;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -64,6 +65,84 @@ namespace MaasClient.Controls
                 return _valueBindings[attribute];
             }
             return null;
+        }
+
+        //
+        // Value conversion helpers
+        //
+
+        public static Double ToDouble(object value)
+        {
+            if (value is JValue)
+            {
+                var jvalue = value as JValue;
+                return (double)jvalue;
+            }
+            return Convert.ToDouble(value);
+        }
+
+        public static String ToString(object value)
+        {
+            if (value == null)
+            {
+                return "";
+            }
+            else if (value is JToken)
+            {
+                return (string)(JToken)value;
+            }
+            else
+            {
+                return (string)value;
+            }
+        }
+
+        public static Boolean ToBoolean(object value)
+        {
+            Boolean result = false;
+
+            if (value is JToken)
+            {
+                var token = value as JToken;
+                if (token != null)
+                {
+                    switch (token.Type)
+                    {
+                        case JTokenType.Boolean:
+                            result = (Boolean)token;
+                            break;
+                        case JTokenType.String:
+                            String str = (String)token;
+                            result = str.Length > 0;
+                            break;
+                        case JTokenType.Float:
+                            result = (float)token != 0;
+                            break;
+                        case JTokenType.Integer:
+                            result = (int)token != 0;
+                            break;
+                        case JTokenType.Array:
+                            JArray array = token as JArray;
+                            result = array.Count > 0;
+                            break;
+                        case JTokenType.Object:
+                            result = true;
+                            break;
+                    }
+                }
+            }
+            else
+            {
+                if (value is String)
+                {
+                    result = ((string)value).Length > 0;
+                }
+                else
+                {
+                    result = Convert.ToBoolean(value);
+                }
+            }
+            return result;
         }
 
         // Process a value binding on an element.  If a value is supplied, a value binding to that binding context will be created.

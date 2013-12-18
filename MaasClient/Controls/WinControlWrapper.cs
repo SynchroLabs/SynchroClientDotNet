@@ -1,11 +1,15 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using MaasClient.Core;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.UI;
+using Windows.UI.Text;
 using Windows.UI.Xaml;
+using Windows.UI.Xaml.Media;
 
 namespace MaasClient.Controls
 {
@@ -24,6 +28,44 @@ namespace MaasClient.Controls
             base(parent, bindingContext)
         {
             _control = control;
+        }
+
+        public static SolidColorBrush ToBrush(object value)
+        {
+            String color = ToString(value);
+            if (color.StartsWith("#"))
+            {
+                color = color.Replace("#", "");
+                if (color.Length == 6)
+                {
+                    return new SolidColorBrush(ColorHelper.FromArgb(255,
+                        byte.Parse(color.Substring(0, 2), System.Globalization.NumberStyles.HexNumber),
+                        byte.Parse(color.Substring(2, 2), System.Globalization.NumberStyles.HexNumber),
+                        byte.Parse(color.Substring(4, 2), System.Globalization.NumberStyles.HexNumber)));
+                }
+            }
+            else
+            {
+                var property = typeof(Colors).GetRuntimeProperty(color);
+                if (property != null)
+                {
+                    return new SolidColorBrush((Color)property.GetValue(null));
+                }
+            }
+
+            return null;
+        }
+
+        public static FontWeight ToFontWeight(object value)
+        {
+            String weight = ToString(value);
+
+            var property = typeof(FontWeights).GetRuntimeProperty(weight);
+            if (property != null)
+            {
+                return (FontWeight)property.GetValue(null);
+            }
+            return FontWeights.Normal;
         }
 
         public delegate object ConvertValue(object value);
@@ -57,7 +99,7 @@ namespace MaasClient.Controls
             {
                 processElementProperty((string)margin, value =>
                 {
-                    double marginThickness = Converter.ToDouble(value);
+                    double marginThickness = ToDouble(value);
                     thickness.Left = marginThickness;
                     thickness.Top = marginThickness;
                     thickness.Right = marginThickness;
@@ -70,22 +112,22 @@ namespace MaasClient.Controls
                 JObject marginObject = margin as JObject;
                 processElementProperty((string)marginObject.Property("left"), value =>
                 {
-                    thickness.Left = Converter.ToDouble(value);
+                    thickness.Left = ToDouble(value);
                     this.Control.Margin = thickness;
                 }, "0");
                 processElementProperty((string)marginObject.Property("top"), value =>
                 {
-                    thickness.Top = Converter.ToDouble(value);
+                    thickness.Top = ToDouble(value);
                     this.Control.Margin = thickness;
                 }, "0");
                 processElementProperty((string)marginObject.Property("right"), value =>
                 {
-                    thickness.Right = Converter.ToDouble(value);
+                    thickness.Right = ToDouble(value);
                     this.Control.Margin = thickness;
                 }, "0");
                 processElementProperty((string)marginObject.Property("bottom"), value =>
                 {
-                    thickness.Bottom = Converter.ToDouble(value);
+                    thickness.Bottom = ToDouble(value);
                     this.Control.Margin = thickness;
                 }, "0");
             }
@@ -109,23 +151,23 @@ namespace MaasClient.Controls
             //
 
             Util.debug("Processing framework element properties");
-            processElementProperty((string)controlSpec["name"], value => this.Control.Name = Converter.ToString(value));
-            processElementProperty((string)controlSpec["height"], value => this.Control.Height = Converter.ToDouble(value));
-            processElementProperty((string)controlSpec["width"], value => this.Control.Width = Converter.ToDouble(value));
-            processElementProperty((string)controlSpec["minheight"], value => this.Control.MinHeight = Converter.ToDouble(value));
-            processElementProperty((string)controlSpec["minwidth"], value => this.Control.MinWidth = Converter.ToDouble(value));
-            processElementProperty((string)controlSpec["maxheight"], value => this.Control.MaxHeight = Converter.ToDouble(value));
-            processElementProperty((string)controlSpec["maxwidth"], value => this.Control.MaxWidth = Converter.ToDouble(value));
-            processElementProperty((string)controlSpec["opacity"], value => this.Control.Opacity = Converter.ToDouble(value));
-            processElementProperty((string)controlSpec["visibility"], value => this.Control.Visibility = Converter.ToBoolean(value) ? Visibility.Visible : Visibility.Collapsed);
+            processElementProperty((string)controlSpec["name"], value => this.Control.Name = ToString(value));
+            processElementProperty((string)controlSpec["height"], value => this.Control.Height = ToDouble(value));
+            processElementProperty((string)controlSpec["width"], value => this.Control.Width = ToDouble(value));
+            processElementProperty((string)controlSpec["minheight"], value => this.Control.MinHeight = ToDouble(value));
+            processElementProperty((string)controlSpec["minwidth"], value => this.Control.MinWidth = ToDouble(value));
+            processElementProperty((string)controlSpec["maxheight"], value => this.Control.MaxHeight = ToDouble(value));
+            processElementProperty((string)controlSpec["maxwidth"], value => this.Control.MaxWidth = ToDouble(value));
+            processElementProperty((string)controlSpec["opacity"], value => this.Control.Opacity = ToDouble(value));
+            processElementProperty((string)controlSpec["visibility"], value => this.Control.Visibility = ToBoolean(value) ? Visibility.Visible : Visibility.Collapsed);
             processMarginProperty(controlSpec["margin"]);
 
             // These elements are very common among derived classes, so we'll do some runtime reflection...
-            processElementPropertyIfPresent((string)controlSpec["fontsize"], "FontSize", value => Converter.ToDouble(value));
-            processElementPropertyIfPresent((string)controlSpec["fontweight"], "FontWeight", value => Converter.ToFontWeight(value));
-            processElementPropertyIfPresent((string)controlSpec["enabled"], "IsEnabled", value => Converter.ToBoolean(value));
-            processElementPropertyIfPresent((string)controlSpec["background"], "Background", value => Converter.ToBrush(value));
-            processElementPropertyIfPresent((string)controlSpec["foreground"], "Foreground", value => Converter.ToBrush(value));
+            processElementPropertyIfPresent((string)controlSpec["fontsize"], "FontSize", value => ToDouble(value));
+            processElementPropertyIfPresent((string)controlSpec["fontweight"], "FontWeight", value => ToFontWeight(value));
+            processElementPropertyIfPresent((string)controlSpec["enabled"], "IsEnabled", value => ToBoolean(value));
+            processElementPropertyIfPresent((string)controlSpec["background"], "Background", value => ToBrush(value));
+            processElementPropertyIfPresent((string)controlSpec["foreground"], "Foreground", value => ToBrush(value));
         }
 
         public static WinControlWrapper getControlWrapper(FrameworkElement control)

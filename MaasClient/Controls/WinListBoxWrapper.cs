@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using MaasClient.Core;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -128,17 +129,17 @@ namespace MaasClient.Controls
                     JArray array = selection as JArray;
                     foreach (JToken item in array.Values())
                     {
-                        listbox.SelectedItems.Add(Converter.ToString(item));
+                        listbox.SelectedItems.Add(ToString(item));
                     }
                 }
                 else
                 {
-                    listbox.SelectedItem = Converter.ToString(selection);
+                    listbox.SelectedItem = ToString(selection);
                 }
             }
             else
             {
-                listbox.SelectedItem = Converter.ToString(selection);
+                listbox.SelectedItem = ToString(selection);
             }
         }
 

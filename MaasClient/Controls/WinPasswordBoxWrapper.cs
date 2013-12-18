@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using MaasClient.Core;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,9 +22,9 @@ namespace MaasClient.Controls
             applyFrameworkElementDefaults(passwordBox);
 
             JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "value");
-            if (!processElementBoundValue("value", (string)bindingSpec["value"], () => { return passwordBox.Password; }, value => passwordBox.Password = Converter.ToString(value)))
+            if (!processElementBoundValue("value", (string)bindingSpec["value"], () => { return passwordBox.Password; }, value => passwordBox.Password = ToString(value)))
             {
-                processElementProperty((string)controlSpec["value"], value => passwordBox.Password = Converter.ToString(value));
+                processElementProperty((string)controlSpec["value"], value => passwordBox.Password = ToString(value));
             }
             passwordBox.PasswordChanged += passwordBox_PasswordChanged;
         }

@@ -6,7 +6,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace MaasClient
+namespace MaasClient.Core
 {
     // Corresponds to a specific location in the view model (which may or may not exist at the time the BindingContext is created).
     //

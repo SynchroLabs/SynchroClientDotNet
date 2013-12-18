@@ -2,39 +2,41 @@
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Net;
-using System.Net.Http;
 using System.Text;
-using System.Threading.Tasks;
-using Windows.Networking.Sockets;
 
-namespace MaasClient
+namespace MaasClient.Core
 {
     class StateManager
     {
-        static string host = "localhost:1337";
-        //static string host = "maaas.azurewebsites.net";
+        string _host;
+        Transport _transport;
+        ViewModel _viewModel;
+        Action<JObject> _onProcessPageView;
+        Action<JObject> _onProcessMessageBox;
 
-        //TransportHttp transport = new TransportHttp(host + "/api");
-        TransportWs transport = new TransportWs(host);
-
-        PageView pageView;
-        ViewModel viewModel;
-
-        public StateManager()
+        public StateManager(string host, string transport = "websocket")
         {
-            viewModel = new ViewModel();
-            pageView = new PageView(this, viewModel);
+            _viewModel = new ViewModel();
+            _host = host;
+
+            if (transport == "websocket")
+            {
+                 _transport = new TransportWs(host);
+            }
+            else
+            {
+                _transport = new TransportHttp(host + "/api");
+            }
         }
 
-        public PageView PageView 
+        public String Path { get; set; }
+        public ViewModel ViewModel { get { return _viewModel; } }
+
+        public void SetProcessingHandlers(Action<JObject> OnProcessPageView, Action<JObject> OnProcessMessageBox)
         {
-            get
-            {
-                return pageView;
-            }
+            _onProcessPageView = OnProcessPageView;
+            _onProcessMessageBox = OnProcessMessageBox;
         }
 
         // This is used by the page view to resolve resource URIs
@@ -44,7 +46,7 @@ namespace MaasClient
             {
                 return new Uri(path);
             }
-            return new Uri("http://" + host + "/api/" + path);
+            return new Uri("http://" + _host + "/api/" + path);
         }
 
         void ProcessJsonResponse(JObject responseAsJSON)
@@ -53,46 +55,47 @@ namespace MaasClient
             if (responseAsJSON["ViewModel"] != null)
             {
                 JObject jsonViewModel = responseAsJSON["ViewModel"] as JObject;
-                this.viewModel.InitializeViewModelData((JObject)jsonViewModel);
+                this._viewModel.InitializeViewModelData((JObject)jsonViewModel);
 
                 if (responseAsJSON["View"] != null)
                 {
                     JObject jsonPageView = (JObject)responseAsJSON["View"];
-                    pageView.processPageView(jsonPageView);
+                    this.Path = (string)jsonPageView["path"];
+                    _onProcessPageView(jsonPageView);
                 }
 
-                this.viewModel.UpdateViewFromViewModel();
+                this._viewModel.UpdateViewFromViewModel();
             }
             else if (responseAsJSON["ViewModelDeltas"] != null)
             {
                 JToken jsonViewModelDeltas = (JToken)responseAsJSON["ViewModelDeltas"];
-                this.viewModel.UpdateViewModelData(jsonViewModelDeltas);
+                this._viewModel.UpdateViewModelData(jsonViewModelDeltas);
             }
 
             if (responseAsJSON["MessageBox"] != null)
             {
                 JObject jsonMessageBox = (JObject)responseAsJSON["MessageBox"];
-                pageView.processMessageBox(jsonMessageBox);
+                _onProcessMessageBox(jsonMessageBox);
             }
         }
 
         public async void loadLayout()
         {
-            Util.debug("Load layout for path: " + this.pageView.Path);
+            Util.debug("Load layout for path: " + this.Path);
 
             JObject requestObject = new JObject(
-                new JProperty("Path", this.pageView.Path)
+                new JProperty("Path", this.Path)
             );
 
-            await this.transport.sendMessage(requestObject, this.ProcessJsonResponse);
+            await _transport.sendMessage(requestObject, this.ProcessJsonResponse);
         }
 
         public async void processCommand(string command, JObject parameters = null)
         {
-            Util.debug("Process command: " + command + " for path: " + this.pageView.Path);
+            Util.debug("Process command: " + command + " for path: " + this.Path);
 
             JObject requestObject = new JObject(
-                new JProperty("Path", this.pageView.Path),
+                new JProperty("Path", this.Path),
                 new JProperty("Command", command)
             );
 
@@ -102,7 +105,7 @@ namespace MaasClient
             }
 
             var vmDeltas = new Dictionary<string, JToken>();
-            this.viewModel.CollectChangedValues((key, value) => vmDeltas[key] = value);
+            this._viewModel.CollectChangedValues((key, value) => vmDeltas[key] = value);
 
             if (vmDeltas.Count > 0)
             {
@@ -117,7 +120,7 @@ namespace MaasClient
                 );
             }
 
-            await this.transport.sendMessage(requestObject, this.ProcessJsonResponse);
+            await _transport.sendMessage(requestObject, this.ProcessJsonResponse);
         }
     }
 }

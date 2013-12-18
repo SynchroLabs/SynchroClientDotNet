@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using MaasClient.Core;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,7 +20,7 @@ namespace MaasClient.Controls
 
             applyFrameworkElementDefaults(textBlock);
 
-            processElementProperty((string)controlSpec["value"], value => textBlock.Text = Converter.ToString(value));
+            processElementProperty((string)controlSpec["value"], value => textBlock.Text = ToString(value));
         }
     }
 }

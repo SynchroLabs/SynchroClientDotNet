@@ -6,9 +6,9 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MaasClient
+namespace MaasClient.Core
 {
-    class TransportHttp
+    class TransportHttp : Transport
     {
         private HttpClient _httpClient;
         private Uri _uri;

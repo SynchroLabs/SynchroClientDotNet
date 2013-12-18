@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using MaasClient.Core;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,7 +21,7 @@ namespace MaasClient.Controls
 
             applyFrameworkElementDefaults(button);
  
-            processElementProperty((string)controlSpec["caption"], value => button.Content = Converter.ToString(value));
+            processElementProperty((string)controlSpec["caption"], value => button.Content = ToString(value));
 
             JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "onClick", new string[] { "onClick" });
             ProcessCommands(bindingSpec, new string[] { "onClick" });

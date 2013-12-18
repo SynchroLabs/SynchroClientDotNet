@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using MaasClient.Core;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,13 +21,13 @@ namespace MaasClient.Controls
             applyFrameworkElementDefaults(slider);
 
             JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "value");
-            if (!processElementBoundValue("value", (string)bindingSpec["value"], () => { return slider.Value; }, value => slider.Value = Converter.ToDouble(value)))
+            if (!processElementBoundValue("value", (string)bindingSpec["value"], () => { return slider.Value; }, value => slider.Value = ToDouble(value)))
             {
-                processElementProperty((string)controlSpec["value"], value => slider.Value = Converter.ToDouble(value));
+                processElementProperty((string)controlSpec["value"], value => slider.Value = ToDouble(value));
             }
 
-            processElementProperty((string)controlSpec["minimum"], value => slider.Minimum = Converter.ToDouble(value));
-            processElementProperty((string)controlSpec["maximum"], value => slider.Maximum = Converter.ToDouble(value));
+            processElementProperty((string)controlSpec["minimum"], value => slider.Minimum = ToDouble(value));
+            processElementProperty((string)controlSpec["maximum"], value => slider.Maximum = ToDouble(value));
 
             slider.ValueChanged += slider_ValueChanged;  
         }

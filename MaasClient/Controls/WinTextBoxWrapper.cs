@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using MaasClient.Core;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,9 +22,9 @@ namespace MaasClient.Controls
             applyFrameworkElementDefaults(textBox);
 
             JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "value");
-            if (!processElementBoundValue("value", (string)bindingSpec["value"], () => { return textBox.Text; }, value => textBox.Text = Converter.ToString(value)))
+            if (!processElementBoundValue("value", (string)bindingSpec["value"], () => { return textBox.Text; }, value => textBox.Text = ToString(value)))
             {
-                processElementProperty((string)controlSpec["value"], value => textBox.Text = Converter.ToString(value));
+                processElementProperty((string)controlSpec["value"], value => textBox.Text = ToString(value));
             }
             textBox.TextChanged += textBox_TextChanged;
         }
