@@ -1,5 +1,5 @@
-﻿using MaasClient.Controls;
-using MaasClient.Core;
+﻿using MaaasCore;
+using MaasClient.Controls;
 using Newtonsoft.Json.Linq;
 using System;
 using Windows.UI.Popups;

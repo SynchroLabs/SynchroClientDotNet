@@ -1,14 +1,13 @@
-﻿using MaasClient.Core;
-using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MaasClient.Controls
+namespace MaaasCore
 {
-    class ControlWrapper
+    public class ControlWrapper
     {
         StateManager _stateManager;
         ViewModel _viewModel;
@@ -33,8 +32,8 @@ namespace MaasClient.Controls
             _bindingContext = bindingContext;
         }
 
-        protected StateManager StateManager { get { return _stateManager; } }
-        protected ViewModel ViewModel { get { return _viewModel; } }
+        public StateManager StateManager { get { return _stateManager; } }
+        public ViewModel ViewModel { get { return _viewModel; } }
 
         public BindingContext BindingContext { get { return _bindingContext; } }
         public List<ControlWrapper> ChildControls { get { return _childControls; } }

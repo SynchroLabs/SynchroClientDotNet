@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MaasClient.Core
+namespace MaaasCore
 {
     // This class corresponds to an instance of a command in a view
     //

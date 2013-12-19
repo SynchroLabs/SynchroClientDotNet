@@ -1,4 +1,4 @@
-﻿using MaasClient.Core;
+﻿using MaaasCore;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;

@@ -5,9 +5,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace MaasClient.Core
+namespace MaaasCore
 {
-    class StateManager
+    public class StateManager
     {
         string _host;
         Transport _transport;
@@ -20,6 +20,8 @@ namespace MaasClient.Core
             _viewModel = new ViewModel();
             _host = host;
 
+            /* !!! Refactor - Need to pass transport in from client - always use http for now...
+             * 
             if (transport == "websocket")
             {
                  _transport = new TransportWs(host);
@@ -28,6 +30,9 @@ namespace MaasClient.Core
             {
                 _transport = new TransportHttp(host + "/api");
             }
+            */
+            _transport = new TransportHttp(host + "/api");
+
         }
 
         public String Path { get; set; }

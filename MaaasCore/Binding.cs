@@ -6,9 +6,9 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace MaasClient.Core
+namespace MaaasCore
 {
-    static class BindingHelper
+    public static class BindingHelper
     {
         // Binding is specified in the "binding" attribute of an element.  For example, binding: { value: "foo" } will bind the "value"
         // property of the control to the "foo" value in the current binding context.  For controls that can call commands, the command

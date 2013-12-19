@@ -7,8 +7,8 @@
     <ProjectGuid>{B80825FA-E75B-4E55-86F8-08D5FA0954B9}</ProjectGuid>
     <OutputType>AppContainerExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>MaasClient</RootNamespace>
-    <AssemblyName>MaasClient</AssemblyName>
+    <RootNamespace>MaaasClientWin</RootNamespace>
+    <AssemblyName>MaaasClientWin</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{BC8A1FFA-BEE3-4634-8014-F334798102B3};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -113,10 +113,6 @@
     <Compile Include="BasicPage.xaml.cs">
       <DependentUpon>BasicPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Core\Binding.cs" />
-    <Compile Include="Core\BindingContext.cs" />
-    <Compile Include="Core\CommandInstance.cs" />
-    <Compile Include="Controls\ControlWrapper.cs" />
     <Compile Include="Controls\WinButtonWrapper.cs" />
     <Compile Include="Controls\WinCanvasWrapper.cs" />
     <Compile Include="Controls\WinImageWrapper.cs" />
@@ -129,9 +125,6 @@
     <Compile Include="Controls\WinListViewWrapper.cs" />
     <Compile Include="Controls\WinControlWrapper.cs" />
     <Compile Include="Controls\WinToggleSwitchWrapper.cs" />
-    <Compile Include="Core\Transport.cs" />
-    <Compile Include="Core\TransportHttp.cs" />
-    <Compile Include="Core\ViewModel.cs" />
     <Compile Include="Common\BindableBase.cs" />
     <Compile Include="Common\BooleanNegationConverter.cs" />
     <Compile Include="Common\BooleanToVisibilityConverter.cs" />
@@ -140,8 +133,6 @@
     <Compile Include="Common\SuspensionManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PageView.cs" />
-    <Compile Include="Core\StateManager.cs" />
-    <Compile Include="Core\Util.cs" />
     <Compile Include="Core\TransportWs.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -176,14 +167,31 @@
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\packages\Newtonsoft.Json.5.0.8\lib\netcore45\Newtonsoft.Json.dll</HintPath>
     </Reference>
+    <Reference Include="System.Net.Http.Extensions">
+      <HintPath>..\packages\Microsoft.Net.Http.2.2.18\lib\win8\System.Net.Http.Extensions.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Net.Http.Primitives">
+      <HintPath>..\packages\Microsoft.Net.Http.2.2.18\lib\win8\System.Net.Http.Primitives.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Service References\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MaaasCore\MaaasCore.csproj">
+      <Project>{bc8cc23d-347f-4357-ba2e-5c6f01889a6e}</Project>
+      <Name>MaaasCore</Name>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '12.0' ">
     <VisualStudioVersion>12.0</VisualStudioVersion>
   </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\WindowsXaml\v$(VisualStudioVersion)\Microsoft.Windows.UI.Xaml.CSharp.targets" />
+  <Import Project="..\packages\Microsoft.Bcl.Build.1.0.13\tools\Microsoft.Bcl.Build.targets" Condition="Exists('..\packages\Microsoft.Bcl.Build.1.0.13\tools\Microsoft.Bcl.Build.targets')" />
+  <Target Name="EnsureBclBuildImported" BeforeTargets="BeforeBuild" Condition="'$(BclBuildImported)' == ''">
+    <Error Condition="!Exists('..\packages\Microsoft.Bcl.Build.1.0.13\tools\Microsoft.Bcl.Build.targets')" Text="This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=317567." HelpKeyword="BCLBUILD2001" />
+    <Error Condition="Exists('..\packages\Microsoft.Bcl.Build.1.0.13\tools\Microsoft.Bcl.Build.targets')" Text="The build restored NuGet packages. Build the project again to include these packages in the build. For more information, see http://go.microsoft.com/fwlink/?LinkID=317568." HelpKeyword="BCLBUILD2002" />
+  </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

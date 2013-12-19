@@ -1,4 +1,4 @@
-﻿using MaasClient.Core;
+﻿using MaaasCore;
 using System;
 using System.Collections.Generic;
 using System.IO;

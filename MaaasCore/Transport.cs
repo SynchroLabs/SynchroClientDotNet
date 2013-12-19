@@ -5,9 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MaasClient.Core
+namespace MaaasCore
 {
-    interface Transport
+    public interface Transport
     {
         Task sendMessage(JObject requestObject, Action<JObject> responseHandler);
     }
