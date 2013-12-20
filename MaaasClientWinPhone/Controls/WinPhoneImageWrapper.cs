@@ -5,14 +5,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Media.Imaging;
+using System.Windows.Controls;
+using System.Windows.Media.Imaging;
 
-namespace MaaasClientWin.Controls
+namespace MaaasClientWinPhone.Controls
 {
-    class WinImageWrapper : WinControlWrapper
+    class WinPhoneImageWrapper : WinPhoneControlWrapper
     {
-        public WinImageWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
+        public WinPhoneImageWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
             Util.debug("Creating image element with caption of: " + controlSpec["caption"]);

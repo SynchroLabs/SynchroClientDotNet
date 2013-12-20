@@ -5,13 +5,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Windows.UI.Xaml.Controls;
+using System.Windows.Controls;
 
-namespace MaaasClientWin.Controls
+namespace MaaasClientWinPhone.Controls
 {
-    class WinStackPanelWrapper : WinControlWrapper
+    class WinPhoneStackPanelWrapper : WinPhoneControlWrapper
     {
-        public WinStackPanelWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
+        public WinPhoneStackPanelWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
             Util.debug("Creating stackpanel element");

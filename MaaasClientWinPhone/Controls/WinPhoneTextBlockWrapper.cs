@@ -5,13 +5,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Windows.UI.Xaml.Controls;
+using System.Windows.Controls;
 
-namespace MaaasClientWin.Controls
+namespace MaaasClientWinPhone.Controls
 {
-    class WinTextBlockWrapper : WinControlWrapper
+    class WinPhoneTextBlockWrapper : WinPhoneControlWrapper
     {
-        public WinTextBlockWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
+        public WinPhoneTextBlockWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
             Util.debug("Creating text element with value of: " + controlSpec["value"]);
@@ -24,4 +24,3 @@ namespace MaaasClientWin.Controls
         }
     }
 }
-

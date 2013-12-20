@@ -5,14 +5,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
+using System.Windows;
+using System.Windows.Controls;
 
-namespace MaaasClientWin.Controls
+
+namespace MaaasClientWinPhone.Controls
 {
-    class WinPasswordBoxWrapper : WinControlWrapper
+    class WinPhonePasswordBoxWrapper : WinPhoneControlWrapper
     {
-        public WinPasswordBoxWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
+        public WinPhonePasswordBoxWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
             Util.debug("Creating password box element with value of: " + controlSpec["value"]);
@@ -41,7 +42,7 @@ namespace MaaasClientWin.Controls
             // an update from the server), so we'll do some downstream delta checking as well, but this
             // check will cut down most of the chatter.
             //
-            if (passwordBox.FocusState != FocusState.Unfocused)
+            // !!! if (passwordBox.FocusState != FocusState.Unfocused)
             {
                 updateValueBindingForAttribute("value");
             }

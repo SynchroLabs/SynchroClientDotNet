@@ -6,25 +6,25 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-using Windows.UI;
-using Windows.UI.Text;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Media;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media;
 
-namespace MaaasClientWin.Controls
+
+namespace MaaasClientWinPhone.Controls
 {
-    class WinControlWrapper : ControlWrapper
+    class WinPhoneControlWrapper : ControlWrapper
     {
         protected FrameworkElement _control;
         public FrameworkElement Control { get { return _control; } }
 
-        public WinControlWrapper(StateManager stateManager, ViewModel viewModel, BindingContext bindingContext, FrameworkElement control) :
+        public WinPhoneControlWrapper(StateManager stateManager, ViewModel viewModel, BindingContext bindingContext, FrameworkElement control) :
             base(stateManager, viewModel, bindingContext)
         {
             _control = control;
         }
 
-        public WinControlWrapper(ControlWrapper parent, BindingContext bindingContext, FrameworkElement control = null) :
+        public WinPhoneControlWrapper(ControlWrapper parent, BindingContext bindingContext, FrameworkElement control = null) :
             base(parent, bindingContext)
         {
             _control = control;
@@ -38,7 +38,7 @@ namespace MaaasClientWin.Controls
                 color = color.Replace("#", "");
                 if (color.Length == 6)
                 {
-                    return new SolidColorBrush(ColorHelper.FromArgb(255,
+                    return new SolidColorBrush(Color.FromArgb(255,
                         byte.Parse(color.Substring(0, 2), System.Globalization.NumberStyles.HexNumber),
                         byte.Parse(color.Substring(2, 2), System.Globalization.NumberStyles.HexNumber),
                         byte.Parse(color.Substring(4, 2), System.Globalization.NumberStyles.HexNumber)));
@@ -170,54 +170,54 @@ namespace MaaasClientWin.Controls
             processElementPropertyIfPresent((string)controlSpec["foreground"], "Foreground", value => ToBrush(value));
         }
 
-        public static WinControlWrapper getControlWrapper(FrameworkElement control)
+        public static WinPhoneControlWrapper getControlWrapper(FrameworkElement control)
         {
-            return (WinControlWrapper)control.Tag;
+            return (WinPhoneControlWrapper)control.Tag;
         }
 
-        public static WinControlWrapper WrapControl(StateManager stateManager, ViewModel viewModel, BindingContext bindingContext, FrameworkElement control)
+        public static WinPhoneControlWrapper WrapControl(StateManager stateManager, ViewModel viewModel, BindingContext bindingContext, FrameworkElement control)
         {
-            return new WinControlWrapper(stateManager, viewModel, bindingContext, control);
+            return new WinPhoneControlWrapper(stateManager, viewModel, bindingContext, control);
         }
 
-        public static WinControlWrapper CreateControl(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec)
+        public static WinPhoneControlWrapper CreateControl(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec)
         {
-            WinControlWrapper controlWrapper = null;
+            WinPhoneControlWrapper controlWrapper = null;
 
             switch ((string)controlSpec["type"])
             {
                 case "text":
-                    controlWrapper = new WinTextBlockWrapper(parent, bindingContext, controlSpec);
+                    controlWrapper = new WinPhoneTextBlockWrapper(parent, bindingContext, controlSpec);
                     break;
                 case "edit":
-                    controlWrapper = new WinTextBoxWrapper(parent, bindingContext, controlSpec);
+                    controlWrapper = new WinPhoneTextBoxWrapper(parent, bindingContext, controlSpec);
                     break;
                 case "password":
-                    controlWrapper = new WinPasswordBoxWrapper(parent, bindingContext, controlSpec);
+                    controlWrapper = new WinPhonePasswordBoxWrapper(parent, bindingContext, controlSpec);
                     break;
                 case "button":
-                    controlWrapper = new WinButtonWrapper(parent, bindingContext, controlSpec);
+                    controlWrapper = new WinPhoneButtonWrapper(parent, bindingContext, controlSpec);
                     break;
                 case "image":
-                    controlWrapper = new WinImageWrapper(parent, bindingContext, controlSpec);
+                    controlWrapper = new WinPhoneImageWrapper(parent, bindingContext, controlSpec);
                     break;
                 case "listbox":
-                    controlWrapper = new WinListBoxWrapper(parent, bindingContext, controlSpec);
+                    controlWrapper = new WinPhoneListBoxWrapper(parent, bindingContext, controlSpec);
                     break;
                 case "listview":
-                    controlWrapper = new WinListViewWrapper(parent, bindingContext, controlSpec);
+                    // !!! controlWrapper = new WinPhoneListViewWrapper(parent, bindingContext, controlSpec);
                     break;
                 case "toggle":
-                    controlWrapper = new WinToggleSwitchWrapper(parent, bindingContext, controlSpec);
+                    controlWrapper = new WinPhoneToggleSwitchWrapper(parent, bindingContext, controlSpec);
                     break;
                 case "slider":
-                    controlWrapper = new WinSliderWrapper(parent, bindingContext, controlSpec);
+                    controlWrapper = new WinPhoneSliderWrapper(parent, bindingContext, controlSpec);
                     break;
                 case "canvas":
-                    controlWrapper = new WinCanvasWrapper(parent, bindingContext, controlSpec);
+                    controlWrapper = new WinPhoneCanvasWrapper(parent, bindingContext, controlSpec);
                     break;
                 case "stackpanel":
-                    controlWrapper = new WinStackPanelWrapper(parent, bindingContext, controlSpec);
+                    controlWrapper = new WinPhoneStackPanelWrapper(parent, bindingContext, controlSpec);
                     break;
             }
 
@@ -231,11 +231,11 @@ namespace MaaasClientWin.Controls
             return controlWrapper;
         }
 
-        public void createControls(JArray controlList, Action<JObject, WinControlWrapper> OnCreateControl = null)
+        public void createControls(JArray controlList, Action<JObject, WinPhoneControlWrapper> OnCreateControl = null)
         {
             base.createControls(this.BindingContext, controlList, (controlContext, controlSpec) => 
             {
-                WinControlWrapper controlWrapper = CreateControl(this, controlContext, controlSpec);
+                WinPhoneControlWrapper controlWrapper = CreateControl(this, controlContext, controlSpec);
                 if (OnCreateControl != null)
                 {
                     OnCreateControl(controlSpec, controlWrapper);

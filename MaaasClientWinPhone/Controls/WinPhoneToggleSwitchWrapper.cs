@@ -1,18 +1,18 @@
 ﻿using MaaasCore;
+using Microsoft.Phone.Controls;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
+using System.Windows;
 
-namespace MaaasClientWin.Controls
+namespace MaaasClientWinPhone.Controls
 {
-    class WinToggleSwitchWrapper : WinControlWrapper
+    class WinPhoneToggleSwitchWrapper : WinPhoneControlWrapper
     {
-        public WinToggleSwitchWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
+        public WinPhoneToggleSwitchWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
             Util.debug("Creating toggle element with caption of: " + controlSpec["caption"]);
@@ -22,21 +22,32 @@ namespace MaaasClientWin.Controls
             applyFrameworkElementDefaults(toggleSwitch);
 
             JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "value", new string[] { "onToggle" });
-            if (!processElementBoundValue("value", (string)bindingSpec["value"], () => { return toggleSwitch.IsOn; }, value => toggleSwitch.IsOn = ToBoolean(value)))
+            if (!processElementBoundValue("value", (string)bindingSpec["value"], () => { return toggleSwitch.IsChecked; }, value => toggleSwitch.IsChecked = ToBoolean(value)))
             {
-                processElementProperty((string)controlSpec["value"], value => toggleSwitch.IsOn = ToBoolean(value));
+                processElementProperty((string)controlSpec["value"], value => toggleSwitch.IsChecked = ToBoolean(value));
             }
 
             processElementProperty((string)controlSpec["header"], value => toggleSwitch.Header = ToString(value));
-            processElementProperty((string)controlSpec["onLabel"], value => toggleSwitch.OnContent = ToString(value));
-            processElementProperty((string)controlSpec["offLabel"], value => toggleSwitch.OffContent = ToString(value));
+            // !!! processElementProperty((string)controlSpec["onLabel"], value => toggleSwitch.OnContent = ToString(value));
+            // !!! processElementProperty((string)controlSpec["offLabel"], value => toggleSwitch.OffContent = ToString(value));
 
             ProcessCommands(bindingSpec, new string[] { "onToggle" });
 
             // Since the Toggled handler both updates the view model (locally) and may potentially have a command associated, 
             // we have to add handler in all cases (even when there is no command).
             //
-            toggleSwitch.Toggled += toggleSwitch_Toggled;
+            toggleSwitch.Checked += toggleSwitch_Checked;
+            toggleSwitch.Unchecked += toggleSwitch_Unchecked;
+        }
+
+        void toggleSwitch_Unchecked(object sender, RoutedEventArgs e)
+        {
+            toggleSwitch_Toggled(sender, e);
+        }
+
+        void toggleSwitch_Checked(object sender, RoutedEventArgs e)
+        {
+            toggleSwitch_Toggled(sender, e);
         }
 
         void toggleSwitch_Toggled(object sender, RoutedEventArgs e)

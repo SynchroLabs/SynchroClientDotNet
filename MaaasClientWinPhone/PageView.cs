@@ -1,12 +1,11 @@
 ﻿using MaaasCore;
-using MaaasClientWin.Controls;
+using MaaasClientWinPhone.Controls;
 using Newtonsoft.Json.Linq;
 using System;
-using Windows.UI.Popups;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
+using System.Windows.Controls;
+using System.Windows;
 
-namespace MaaasClientWin
+namespace MaaasClientWinPhone
 {
     class PageView
     {
@@ -25,7 +24,7 @@ namespace MaaasClientWin
             _viewModel = viewModel;
         }
 
-        public void OnBackCommand(object sender, RoutedEventArgs e)
+        public void OnBackCommand()
         {
             Util.debug("Back button click with command: " + onBackCommand);
             _stateManager.processCommand(onBackCommand);
@@ -37,7 +36,10 @@ namespace MaaasClientWin
             panel.Children.Clear();
 
             this.onBackCommand = (string)pageView["onBack"];
-            this.setBackEnabled(this.onBackCommand != null);
+            if (this.setBackEnabled != null)
+            {
+                this.setBackEnabled(this.onBackCommand != null);
+            }
 
             string pageTitle = (string)pageView["title"];
             if (pageTitle != null)
@@ -45,7 +47,7 @@ namespace MaaasClientWin
                 setPageTitle(pageTitle);
             }
 
-            WinControlWrapper controlWrapper = WinControlWrapper.WrapControl(_stateManager, _viewModel, _viewModel.RootBindingContext, panel);
+            WinPhoneControlWrapper controlWrapper = WinPhoneControlWrapper.WrapControl(_stateManager, _viewModel, _viewModel.RootBindingContext, panel);
             controlWrapper.createControls((JArray)pageView["elements"], (childControlSpec, childControlWrapper) =>
             {
                 panel.Children.Add(childControlWrapper.Control);
@@ -56,13 +58,19 @@ namespace MaaasClientWin
         // MessageBox stuff...
         //
 
+        public void processMessageBox(JObject messageBox)
+        {
+            string message = PropertyValue.ExpandAsString((string)messageBox["message"], _viewModel.RootBindingContext);
+        }
+
+        /* !!!
         private void MessageDialogCommandHandler(IUICommand command)
         {
             Util.debug("MessageBox Command invoked: " + command.Label);
             if (command.Id != null)
             {
                 Util.debug("MessageBox command: " + (string)command.Id);
-                _stateManager.processCommand((string)command.Id); 
+                _stateManager.processCommand((string)command.Id);
             }
         }
 
@@ -102,5 +110,7 @@ namespace MaaasClientWin
 
             await messageDialog.ShowAsync();
         }
+        */
     }
 }
+

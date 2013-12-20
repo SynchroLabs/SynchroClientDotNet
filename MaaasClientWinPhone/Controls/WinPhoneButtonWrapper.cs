@@ -5,22 +5,24 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
+using System.Windows;
+using System.Windows.Controls;
 
-namespace MaaasClientWin.Controls
+namespace MaaasClientWinPhone.Controls
 {
-    class WinButtonWrapper : WinControlWrapper
+    class WinPhoneButtonWrapper : WinPhoneControlWrapper
     {
-        public WinButtonWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
+        public WinPhoneButtonWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
             Util.debug("Creating button element with caption of: " + controlSpec["caption"]);
             Button button = new Button();
             this._control = button;
 
+            button.Height = 75; // !!!
+
             applyFrameworkElementDefaults(button);
- 
+
             processElementProperty((string)controlSpec["caption"], value => button.Content = ToString(value));
 
             JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "onClick", new string[] { "onClick" });

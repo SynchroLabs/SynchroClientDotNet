@@ -5,19 +5,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Windows.UI.Xaml.Controls;
+using System.Windows.Controls;
 
-namespace MaaasClientWin.Controls
+namespace MaaasClientWinPhone.Controls
 {
-    class WinSliderWrapper : WinControlWrapper
+    class WinPhoneSliderWrapper : WinPhoneControlWrapper
     {
-        public WinSliderWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
+        public WinPhoneSliderWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
             Util.debug("Creating slider element");
             Slider slider = new Slider();
             this._control = slider;
-            
+
             applyFrameworkElementDefaults(slider);
 
             JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "value");
@@ -29,10 +29,10 @@ namespace MaaasClientWin.Controls
             processElementProperty((string)controlSpec["minimum"], value => slider.Minimum = ToDouble(value));
             processElementProperty((string)controlSpec["maximum"], value => slider.Maximum = ToDouble(value));
 
-            slider.ValueChanged += slider_ValueChanged;  
+            slider.ValueChanged += slider_ValueChanged;
         }
 
-        private void slider_ValueChanged(object sender, Windows.UI.Xaml.Controls.Primitives.RangeBaseValueChangedEventArgs e)
+        private void slider_ValueChanged(object sender, System.Windows.RoutedPropertyChangedEventArgs<double> e)
         {
             updateValueBindingForAttribute("value");
         }

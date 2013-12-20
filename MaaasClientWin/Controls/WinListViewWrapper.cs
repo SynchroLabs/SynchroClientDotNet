@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
-namespace MaasClient.Controls
+namespace MaaasClientWin.Controls
 {
     class WinListViewWrapper : WinControlWrapper
     {

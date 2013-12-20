@@ -5,13 +5,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Windows.UI.Xaml.Controls;
+using System.Windows.Controls;
 
-namespace MaaasClientWin.Controls
+namespace MaaasClientWinPhone.Controls
 {
-    class WinListBoxWrapper : WinControlWrapper
+    class WinPhoneListBoxWrapper : WinPhoneControlWrapper
     {
-        public WinListBoxWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
+        public WinPhoneListBoxWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
             Util.debug("Creating listbox element");
@@ -149,3 +149,4 @@ namespace MaaasClientWin.Controls
         }
     }
 }
+

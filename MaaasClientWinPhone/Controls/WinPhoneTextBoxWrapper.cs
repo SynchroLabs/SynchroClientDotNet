@@ -5,33 +5,32 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
+using System.Windows.Controls;
 
-namespace MaaasClientWin.Controls
+namespace MaaasClientWinPhone.Controls
 {
-    class WinPasswordBoxWrapper : WinControlWrapper
+    class WinPhoneTextBoxWrapper : WinPhoneControlWrapper
     {
-        public WinPasswordBoxWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
+        public WinPhoneTextBoxWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
-            Util.debug("Creating password box element with value of: " + controlSpec["value"]);
-            PasswordBox passwordBox = new PasswordBox();
-            this._control = passwordBox;
+            Util.debug("Creating text box element with value of: " + controlSpec["value"]);
+            TextBox textBox = new TextBox();
+            this._control = textBox;
 
-            applyFrameworkElementDefaults(passwordBox);
+            applyFrameworkElementDefaults(textBox);
 
             JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "value");
-            if (!processElementBoundValue("value", (string)bindingSpec["value"], () => { return passwordBox.Password; }, value => passwordBox.Password = ToString(value)))
+            if (!processElementBoundValue("value", (string)bindingSpec["value"], () => { return textBox.Text; }, value => textBox.Text = ToString(value)))
             {
-                processElementProperty((string)controlSpec["value"], value => passwordBox.Password = ToString(value));
+                processElementProperty((string)controlSpec["value"], value => textBox.Text = ToString(value));
             }
-            passwordBox.PasswordChanged += passwordBox_PasswordChanged;
+            textBox.TextChanged += textBox_TextChanged;
         }
 
-        void passwordBox_PasswordChanged(object sender, RoutedEventArgs e)
+        void textBox_TextChanged(object sender, TextChangedEventArgs e)
         {
-            var passwordBox = sender as PasswordBox;
+            var textBox = sender as TextBox;
 
             // Edit controls have a bad habit of posting a text changed event, and there are cases where 
             // this event is generated based on programmatic setting of text and comes in asynchronously
@@ -41,10 +40,11 @@ namespace MaaasClientWin.Controls
             // an update from the server), so we'll do some downstream delta checking as well, but this
             // check will cut down most of the chatter.
             //
-            if (passwordBox.FocusState != FocusState.Unfocused)
+            // !!! if (textBox.FocusState != FocusState.Unfocused)
             {
                 updateValueBindingForAttribute("value");
             }
         }
     }
 }
+
