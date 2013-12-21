@@ -98,6 +98,7 @@
     <Compile Include="Controls\WinPhoneControlWrapper.cs" />
     <Compile Include="Controls\WinPhoneImageWrapper.cs" />
     <Compile Include="Controls\WinPhoneListBoxWrapper.cs" />
+    <Compile Include="Controls\WinPhoneListViewWrapper.cs" />
     <Compile Include="Controls\WinPhonePasswordBoxWrapper.cs" />
     <Compile Include="Controls\WinPhoneSliderWrapper.cs" />
     <Compile Include="Controls\WinPhoneStackPanelWrapper.cs" />
