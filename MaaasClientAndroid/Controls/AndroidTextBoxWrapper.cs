@@ -20,10 +20,16 @@ namespace MaaasClientAndroid.Controls
         public AndroidTextBoxWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
-            Util.debug("Creating text box element with caption of: " + controlSpec["caption"]);
+            Util.debug("Creating text box element with value of: " + controlSpec["value"]);
 
             EditText editText = new EditText(((AndroidControlWrapper)parent).Control.Context);
             this._control = editText;
+
+            if ((string)controlSpec["type"] == "password")
+            {
+                // You have to tell it it's text (in addition to password) or the password doesn't work...
+                editText.InputType = InputTypes.ClassText | InputTypes.TextVariationPassword;
+            }
 
             applyFrameworkElementDefaults(editText);
 

@@ -15,7 +15,7 @@ namespace MaaasClientWin.Controls
         public WinImageWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
-            Util.debug("Creating image element with caption of: " + controlSpec["caption"]);
+            Util.debug("Creating image element");
             Image image = new Image();
             this._control = image;
 

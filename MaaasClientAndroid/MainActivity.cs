@@ -10,7 +10,7 @@ using MaaasCore;
 
 namespace MaaasClientAndroid
 {
-    [Activity(Label = "Loading...", MainLauncher = true, Icon = "@drawable/icon")]
+    [Activity(Label = "Loading...", MainLauncher = true, Icon = "@drawable/icon", Theme = "@android:style/Theme.Holo")]
     public class MainActivity : Activity
     {
         static string _host = "192.168.1.109:1337"; // "localhost:1337";
@@ -24,7 +24,7 @@ namespace MaaasClientAndroid
         protected override void OnCreate(Bundle bundle)
         {
             _stateManager = new StateManager(_host);
-            _pageView = new PageView(_stateManager, _stateManager.ViewModel);
+            _pageView = new PageView(_stateManager, _stateManager.ViewModel, this);
 
             base.OnCreate(bundle);
 
@@ -54,7 +54,7 @@ namespace MaaasClientAndroid
             {
                 this.Finish();
             }
-        }        
+        }
     }
 }
 

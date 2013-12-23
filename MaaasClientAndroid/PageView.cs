@@ -23,13 +23,15 @@ namespace MaaasClientAndroid
 
         StateManager _stateManager;
         ViewModel _viewModel;
+        Activity _activity;
 
         string onBackCommand = null;
 
-        public PageView(StateManager stateManager, ViewModel viewModel)
+        public PageView(StateManager stateManager, ViewModel viewModel, Activity activity)
         {
             _stateManager = stateManager;
             _viewModel = viewModel;
+            _activity = activity;
         }
 
         public void OnBackCommand()
@@ -68,7 +70,95 @@ namespace MaaasClientAndroid
 
         public void processMessageBox(JObject messageBox)
         {
-            string message = PropertyValue.ExpandAsString((string)messageBox["message"], _viewModel.RootBindingContext);
+            AlertDialog.Builder builder = new AlertDialog.Builder(_activity);
+            AlertDialog dialog = builder.Create();
+
+            dialog.SetMessage(PropertyValue.ExpandAsString((string)messageBox["message"], _viewModel.RootBindingContext));
+            if (messageBox["title"] != null)
+            {
+                dialog.SetTitle(PropertyValue.ExpandAsString((string)messageBox["title"], _viewModel.RootBindingContext));
+            }
+
+            if (messageBox["options"] != null)
+            {
+                JArray options = (JArray)messageBox["options"];
+                if (options.Count > 0)
+                {
+                    JObject option = (JObject)options[0];
+
+                    string label = PropertyValue.ExpandAsString((string)option["label"], _viewModel.RootBindingContext);
+                    string command = null;
+                    if ((string)option["command"] != null)
+                    {
+                        command = PropertyValue.ExpandAsString((string)option["command"], _viewModel.RootBindingContext);
+                    }
+
+                    dialog.SetButton(label, (s, ev) =>
+                    {
+                        Util.debug("MessageBox Command invoked: " + label);
+                        if (command != null)
+                        {
+                            Util.debug("MessageBox command: " + command);
+                            _stateManager.processCommand(command);
+                        }
+                    });
+                }
+
+                if (options.Count > 1)
+                {
+                    JObject option = (JObject)options[1];
+
+                    string label = PropertyValue.ExpandAsString((string)option["label"], _viewModel.RootBindingContext);
+                    string command = null;
+                    if ((string)option["command"] != null)
+                    {
+                        command = PropertyValue.ExpandAsString((string)option["command"], _viewModel.RootBindingContext);
+                    }
+
+                    dialog.SetButton2(label, (s, ev) =>
+                    {
+                        Util.debug("MessageBox Command invoked: " + label);
+                        if (command != null)
+                        {
+                            Util.debug("MessageBox command: " + command);
+                            _stateManager.processCommand(command);
+                        }
+                    });
+                }
+
+                if (options.Count > 2)
+                {
+                    JObject option = (JObject)options[2];
+
+                    string label = PropertyValue.ExpandAsString((string)option["label"], _viewModel.RootBindingContext);
+                    string command = null;
+                    if ((string)option["command"] != null)
+                    {
+                        command = PropertyValue.ExpandAsString((string)option["command"], _viewModel.RootBindingContext);
+                    }
+
+                    dialog.SetButton3(label, (s, ev) =>
+                    {
+                        Util.debug("MessageBox Command invoked: " + label);
+                        if (command != null)
+                        {
+                            Util.debug("MessageBox command: " + command);
+                            _stateManager.processCommand(command);
+                        }
+                    });
+                }
+            }
+            else
+            {
+                // Not commands - add default "close"
+                //
+                dialog.SetButton("Close", (s, ev) =>
+                {
+                    Util.debug("MessageBox default close button clicked");
+                });
+            }
+
+            dialog.Show();
         }
     }
 }

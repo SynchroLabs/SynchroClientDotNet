@@ -236,7 +236,11 @@ namespace MaaasClientWin.Controls
             base.createControls(this.BindingContext, controlList, (controlContext, controlSpec) => 
             {
                 WinControlWrapper controlWrapper = CreateControl(this, controlContext, controlSpec);
-                if (OnCreateControl != null)
+                if (controlWrapper == null)
+                {
+                    Util.debug("WARNING: Unable to create control of type: " + controlSpec["type"]);
+                }
+                else if (OnCreateControl != null)
                 {
                     OnCreateControl(controlSpec, controlWrapper);
                 }

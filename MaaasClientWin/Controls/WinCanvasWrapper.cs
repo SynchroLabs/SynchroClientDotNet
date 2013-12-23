@@ -32,7 +32,6 @@ namespace MaaasClientWin.Controls
                     canvas.Children.Add(childControlWrapper.Control);
                 });
             }
-
         }
     }
 }
