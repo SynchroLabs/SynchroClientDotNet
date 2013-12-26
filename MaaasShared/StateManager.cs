@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace MaaasCore
 {
@@ -15,7 +16,7 @@ namespace MaaasCore
         Action<JObject> _onProcessPageView;
         Action<JObject> _onProcessMessageBox;
 
-        public StateManager(string host, string transport = "websocket")
+        public StateManager(string host, Transport transport)
         {
             _viewModel = new ViewModel();
             _host = host;
@@ -31,7 +32,7 @@ namespace MaaasCore
                 _transport = new TransportHttp(host + "/api");
             }
             */
-            _transport = new TransportHttp(host + "/api");
+            _transport = transport;
 
         }
 
@@ -84,7 +85,7 @@ namespace MaaasCore
             }
         }
 
-        public async void loadLayout()
+        public async Task loadLayout()
         {
             Util.debug("Load layout for path: " + this.Path);
 

@@ -7,6 +7,7 @@ using Android.Views;
 using Android.Widget;
 using Android.OS;
 using MaaasCore;
+using MaaasShared;
 
 namespace MaaasClientAndroid
 {
@@ -21,9 +22,9 @@ namespace MaaasClientAndroid
 
         bool _isAppBackEnabled = false;
 
-        protected override void OnCreate(Bundle bundle)
+        async protected override void OnCreate(Bundle bundle)
         {
-            _stateManager = new StateManager(_host);
+            _stateManager = new StateManager(_host, new TransportHttp(_host + "/api"));
             _pageView = new PageView(_stateManager, _stateManager.ViewModel, this);
 
             base.OnCreate(bundle);
@@ -37,11 +38,10 @@ namespace MaaasClientAndroid
             _pageView.setBackEnabled = isEnabled => _isAppBackEnabled = isEnabled;
 
             _pageView.Content = layout;
+            SetContentView(layout);
 
             _stateManager.SetProcessingHandlers(json => _pageView.processPageView(json), json => _pageView.processMessageBox(json));
-            _stateManager.loadLayout();
-
-            SetContentView(layout);
+            await _stateManager.loadLayout();
         }
 
         public override void OnBackPressed()

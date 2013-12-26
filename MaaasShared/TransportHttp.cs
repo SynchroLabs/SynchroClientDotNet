@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using MaaasCore;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,7 +7,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MaaasCore
+namespace MaaasShared
 {
     class TransportHttp : Transport
     {
@@ -28,13 +29,18 @@ namespace MaaasCore
 
         public async Task sendMessage(JObject requestObject, Action<JObject> responseHandler)
         {
-            StringContent jsonContent = new StringContent(requestObject.ToString(), System.Text.Encoding.UTF8, "application/json"); 
+            StringContent jsonContent = new StringContent(requestObject.ToString(), System.Text.Encoding.UTF8, "application/json");
             var response = await _httpClient.PostAsync(_uri, jsonContent);
             response.EnsureSuccessStatusCode();
 
             var responseMessage = await response.Content.ReadAsStringAsync();
             JObject responseObject = JObject.Parse(responseMessage);
             responseHandler(responseObject);
+        }
+
+        public static Transport getTransport(string host)
+        {
+            return new TransportHttp(host);
         }
     }
 }

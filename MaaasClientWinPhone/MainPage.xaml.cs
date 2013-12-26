@@ -9,6 +9,7 @@ using Microsoft.Phone.Controls;
 using Microsoft.Phone.Shell;
 using MaaasClientWinPhone.Resources;
 using MaaasCore;
+using MaaasShared;
 
 namespace MaaasClientWinPhone
 {
@@ -27,11 +28,12 @@ namespace MaaasClientWinPhone
         {
             InitializeComponent();
 
-            _stateManager = new StateManager(_host);
+            _stateManager = new StateManager(_host, new TransportHttp(_host + "/api"));
             _pageView = new PageView(_stateManager, _stateManager.ViewModel);
 
             this.InitializeComponent();
             this.BackKeyPress += MainPage_BackKeyPress;
+            this.Loaded += MainPage_Loaded;
 
             _stateManager.Path = "menu";
 
@@ -41,10 +43,14 @@ namespace MaaasClientWinPhone
             _pageView.Content = (Panel)this.mainStack;
 
             _stateManager.SetProcessingHandlers(json => _pageView.processPageView(json), json => _pageView.processMessageBox(json));
-            _stateManager.loadLayout();
 
             // Sample code to localize the ApplicationBar
             //BuildLocalizedApplicationBar();
+        }
+
+        async void MainPage_Loaded(object sender, RoutedEventArgs e)
+        {
+            await _stateManager.loadLayout();
         }
 
         void MainPage_BackKeyPress(object sender, System.ComponentModel.CancelEventArgs e)

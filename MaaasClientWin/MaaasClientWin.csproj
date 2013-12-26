@@ -108,6 +108,33 @@
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="..\MaaasShared\Binding.cs">
+      <Link>Linked\Binding.cs</Link>
+    </Compile>
+    <Compile Include="..\MaaasShared\BindingContext.cs">
+      <Link>Linked\BindingContext.cs</Link>
+    </Compile>
+    <Compile Include="..\MaaasShared\CommandInstance.cs">
+      <Link>Linked\CommandInstance.cs</Link>
+    </Compile>
+    <Compile Include="..\MaaasShared\ControlWrapper.cs">
+      <Link>Linked\ControlWrapper.cs</Link>
+    </Compile>
+    <Compile Include="..\MaaasShared\StateManager.cs">
+      <Link>Linked\StateManager.cs</Link>
+    </Compile>
+    <Compile Include="..\MaaasShared\Transport.cs">
+      <Link>Linked\Transport.cs</Link>
+    </Compile>
+    <Compile Include="..\MaaasShared\TransportHttp.cs">
+      <Link>Linked\TransportHttp.cs</Link>
+    </Compile>
+    <Compile Include="..\MaaasShared\Util.cs">
+      <Link>Linked\Util.cs</Link>
+    </Compile>
+    <Compile Include="..\MaaasShared\ViewModel.cs">
+      <Link>Linked\ViewModel.cs</Link>
+    </Compile>
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
@@ -173,12 +200,6 @@
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Service References\" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\MaaasCore\MaaasCore.csproj">
-      <Project>{bc8cc23d-347f-4357-ba2e-5c6f01889a6e}</Project>
-      <Name>MaaasCore</Name>
-    </ProjectReference>
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '12.0' ">
     <VisualStudioVersion>12.0</VisualStudioVersion>

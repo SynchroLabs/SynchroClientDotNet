@@ -17,6 +17,12 @@ namespace MaaasClientAndroid.Controls
     // !!! Android has no dedicated listbox - will have to use ListView (do we still want to maintain a simplem listbox implementation
     //     with ListView underneath for platform parity?
     //
+    // http://theopentutorials.com/tutorials/android/listview/android-custom-listview-with-image-and-text-using-baseadapter/
+    //
+    // http://developer.android.com/reference/android/widget/Adapter.html#getItemId(int)
+    //
+    // http://android-pro.blogspot.com/2010/04/android-selection-controls.html
+    //
     class AndroidListBoxWrapper : AndroidControlWrapper
     {
         public AndroidListBoxWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :

@@ -1,4 +1,5 @@
 ﻿using MaaasCore;
+using MaaasShared;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -30,20 +31,25 @@ namespace MaaasClientWin
 
         public BasicPage()
         {
-            _stateManager = new StateManager(_host);
+            _stateManager = new StateManager(_host, new TransportHttp(_host + "/api"));
             _pageView = new PageView(_stateManager, _stateManager.ViewModel);
+            _stateManager.Path = "menu";
 
             this.InitializeComponent();
-            this.backButton.Click += backButton_Click;
 
-            _stateManager.Path = "menu";
+            this.Loaded += BasicPage_Loaded; 
+            this.backButton.Click += backButton_Click;
 
             _pageView.setPageTitle = title => this.pageTitle.Text = title;
             _pageView.setBackEnabled = isEnabled => this.backButton.IsEnabled = isEnabled;
             _pageView.Content = (Panel)this.mainStack;
 
             _stateManager.SetProcessingHandlers(json => _pageView.processPageView(json), json => _pageView.processMessageBox(json));
-            _stateManager.loadLayout();
+        }
+
+        async void BasicPage_Loaded(object sender, RoutedEventArgs e)
+        {
+            await _stateManager.loadLayout();
         }
 
         void backButton_Click(object sender, RoutedEventArgs e)
