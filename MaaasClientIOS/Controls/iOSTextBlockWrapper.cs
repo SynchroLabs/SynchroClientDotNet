@@ -22,7 +22,7 @@ namespace MaaasClientIOS.Controls
             this._control = textBlock;
 
             processElementDimensions(controlSpec, 150, 50);
-            textBlock.AutoresizingMask = UIViewAutoresizing.FlexibleWidth | UIViewAutoresizing.FlexibleTopMargin | UIViewAutoresizing.FlexibleBottomMargin;
+            //textBlock.AutoresizingMask = UIViewAutoresizing.FlexibleWidth | UIViewAutoresizing.FlexibleTopMargin | UIViewAutoresizing.FlexibleBottomMargin;
 
             applyFrameworkElementDefaults(textBlock);
 

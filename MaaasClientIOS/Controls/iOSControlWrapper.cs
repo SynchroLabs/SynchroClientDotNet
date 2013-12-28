@@ -65,8 +65,19 @@ namespace MaaasClientIOS.Controls
             //processElementProperty((string)controlSpec["maxheight"], value => this.Control.MaxHeight = ToDouble(value));
             //processElementProperty((string)controlSpec["maxwidth"], value => this.Control.MaxWidth = ToDouble(value));
             //processElementProperty((string)controlSpec["opacity"], value => this.Control.Opacity = ToDouble(value));
+
             processElementProperty((string)controlSpec["visibility"], value => this.Control.Hidden = !ToBoolean(value));
-            processElementProperty((string)controlSpec["enabled"], value => this.Control.UserInteractionEnabled = ToBoolean(value));
+
+            if (this.Control is UIControl)
+            {
+                processElementProperty((string)controlSpec["enabled"], value => ((UIControl)this.Control).Enabled = ToBoolean(value));
+            }
+            else
+            {
+                processElementProperty((string)controlSpec["enabled"], value => this.Control.UserInteractionEnabled = ToBoolean(value));
+            }
+
+            // !!! ((UIControl)this.Control).enabled
             //processMarginProperty(controlSpec["margin"]);
 
             // These elements are very common among derived classes, so we'll do some runtime reflection...
@@ -77,10 +88,17 @@ namespace MaaasClientIOS.Controls
             //processElementPropertyIfPresent((string)controlSpec["foreground"], "Foreground", value => ToBrush(value));
         }
 
-        public static iOSControlWrapper getControlWrapper(UIView control)
+        public iOSControlWrapper getChildControlWrapper(UIView control)
         {
-            // !!! Need a way to get control wrapper from control...
-            // !!! return ((WrapperHolder)control.Tag).Value;
+            // Find the child control wrapper whose control matches the supplied value...
+            foreach (iOSControlWrapper child in this.ChildControls)
+            {
+                if (child.Control == control)
+                {
+                    return child;
+                }
+            }
+
             return null;
         }
 
@@ -114,8 +132,6 @@ namespace MaaasClientIOS.Controls
             {
                 controlWrapper.processCommonFrameworkElementProperies(controlSpec);
                 parent.ChildControls.Add(controlWrapper);
-                // !!! Need some way to stash wrapper in control...
-                // controlWrapper.Control.Tag = new WrapperHolder(controlWrapper);
             }
 
             return controlWrapper;

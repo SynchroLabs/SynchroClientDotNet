@@ -11,26 +11,6 @@ using System.Drawing;
 
 namespace MaaasClientIOS.Controls
 {
-    interface MaaasUIView
-    {
-        iOSControlWrapper GetControlWrapper();
-    }
-
-    class MaaasButton : UIButton, MaaasUIView
-    {
-        iOSButtonWrapper _wrapper;
-
-        public MaaasButton(iOSButtonWrapper wrapper, UIButtonType type) : base(type)
-        {
-            _wrapper = wrapper;
-        }
-
-        public iOSControlWrapper GetControlWrapper()
-        {
-            return _wrapper;
-        }
-    }
-
     class iOSButtonWrapper : iOSControlWrapper
     {
         public iOSButtonWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
@@ -38,13 +18,11 @@ namespace MaaasClientIOS.Controls
         {
             Util.debug("Creating button element with caption of: " + controlSpec["caption"]);
 
-            //MaaasButton maaasButton = new MaaasButton(this, UIButtonType.RoundedRect);
-
             UIButton button = UIButton.FromType(UIButtonType.RoundedRect);
             this._control = button;
 
             processElementDimensions(controlSpec, 150, 50);
-            button.AutoresizingMask = UIViewAutoresizing.FlexibleWidth | UIViewAutoresizing.FlexibleTopMargin | UIViewAutoresizing.FlexibleBottomMargin;
+            //button.AutoresizingMask = UIViewAutoresizing.FlexibleWidth | UIViewAutoresizing.FlexibleTopMargin | UIViewAutoresizing.FlexibleBottomMargin;
 
             applyFrameworkElementDefaults(button);
 

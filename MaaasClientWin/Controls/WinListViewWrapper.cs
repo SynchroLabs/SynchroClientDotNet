@@ -118,7 +118,7 @@ namespace MaaasClientWin.Controls
                 for (int index = listview.Items.Count; index > itemContexts.Count; index--)
                 {
                     FrameworkElement control = (FrameworkElement)listview.Items[index - 1];
-                    ControlWrapper wrapper = WinControlWrapper.getControlWrapper(control);
+                    ControlWrapper wrapper = this.getChildControlWrapper(control);
 
                     // Unregister any bindings for this element or any descendants
                     //
@@ -152,7 +152,7 @@ namespace MaaasClientWin.Controls
             {
                 return new JArray(
                     from FrameworkElement control in listview.SelectedItems
-                    select WinControlWrapper.getControlWrapper(control).BindingContext.Select(selectionItem).GetValue()
+                    select this.getChildControlWrapper(control).BindingContext.Select(selectionItem).GetValue()
                 );
             }
             else if (listview.SelectionMode == ListViewSelectionMode.Single)
@@ -163,7 +163,7 @@ namespace MaaasClientWin.Controls
                     // We need to clone the item so we don't destroy the original link to the item in the list (since the
                     // item we're getting in SelectedItem is the list item and we're putting it into the selection binding).
                     //     
-                    return WinControlWrapper.getControlWrapper(control).BindingContext.Select(selectionItem).GetValue().DeepClone();
+                    return this.getChildControlWrapper(control).BindingContext.Select(selectionItem).GetValue().DeepClone();
                 }
                 return new JValue(false); // This is a "null" selection
             }
@@ -191,7 +191,7 @@ namespace MaaasClientWin.Controls
                         JArray array = selection as JArray;
                         foreach (JToken item in array.Children())
                         {
-                            if (JToken.DeepEquals(item, WinControlWrapper.getControlWrapper(control).BindingContext.Select(selectionItem).GetValue()))
+                            if (JToken.DeepEquals(item, this.getChildControlWrapper(control).BindingContext.Select(selectionItem).GetValue()))
                             {
                                 listview.SelectedItems.Add(control);
                                 break;
@@ -200,7 +200,7 @@ namespace MaaasClientWin.Controls
                     }
                     else
                     {
-                        if (JToken.DeepEquals(selection, WinControlWrapper.getControlWrapper(control).BindingContext.Select(selectionItem).GetValue()))
+                        if (JToken.DeepEquals(selection, this.getChildControlWrapper(control).BindingContext.Select(selectionItem).GetValue()))
                         {
                             listview.SelectedItems.Add(control);
                         }
@@ -213,7 +213,7 @@ namespace MaaasClientWin.Controls
 
                 foreach (FrameworkElement control in listview.Items)
                 {
-                    if (JToken.DeepEquals(selection, WinControlWrapper.getControlWrapper(control).BindingContext.Select(selectionItem).GetValue()))
+                    if (JToken.DeepEquals(selection, this.getChildControlWrapper(control).BindingContext.Select(selectionItem).GetValue()))
                     {
                         listview.SelectedItem = control;
                         break;
@@ -236,7 +236,7 @@ namespace MaaasClientWin.Controls
 
                 // The item click command handler resolves its tokens relative to the item clicked (not the list view).
                 //
-                ControlWrapper wrapper = WinControlWrapper.getControlWrapper((FrameworkElement)e.ClickedItem);
+                ControlWrapper wrapper = this.getChildControlWrapper((FrameworkElement)e.ClickedItem);
                 if (wrapper != null)
                 {
                     StateManager.processCommand(command.Command, command.GetResolvedParameters(wrapper.BindingContext));

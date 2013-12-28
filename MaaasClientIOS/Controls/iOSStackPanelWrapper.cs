@@ -28,8 +28,8 @@ namespace MaaasClientIOS.Controls
             this._control = _view;
 
             // !!! Sizing/position of stack panel needs some work...
-            processElementDimensions(controlSpec, 150, 50);
-            _view.AutoresizingMask = UIViewAutoresizing.FlexibleWidth | UIViewAutoresizing.FlexibleTopMargin | UIViewAutoresizing.FlexibleBottomMargin;
+            processElementDimensions(controlSpec, 0, 0);
+            //_view.AutoresizingMask = UIViewAutoresizing.FlexibleWidth | UIViewAutoresizing.FlexibleTopMargin | UIViewAutoresizing.FlexibleBottomMargin;
 
             applyFrameworkElementDefaults(_view);
 
@@ -46,9 +46,12 @@ namespace MaaasClientIOS.Controls
                 createControls((JArray)controlSpec["contents"], (childControlSpec, childControlWrapper) =>
                 {
                     // !!! Worlds worst stackpanel
-                    RectangleF frame = childControlWrapper.Control.Frame;
-                    frame.X = _currLeft;
-                    frame.Y = _currTop;
+
+                    // Add the child control, update current stackpanel position info
+                    //
+                    RectangleF childFrame = childControlWrapper.Control.Frame;
+                    childFrame.X = _currLeft;
+                    childFrame.Y = _currTop;
                     if (_isHorizontal)
                     {
                         _currLeft += childControlWrapper.Control.Bounds.Width + _padding;
@@ -57,9 +60,23 @@ namespace MaaasClientIOS.Controls
                     {
                         _currTop += childControlWrapper.Control.Bounds.Height + _padding;
                     }
-                    childControlWrapper.Control.Frame = frame;
-
+                    childControlWrapper.Control.Frame = childFrame;
                     _view.AddSubview(childControlWrapper.Control);
+
+                    // Resize the stackpanel to contain the new control
+                    //
+                    SizeF panelSize = _view.Frame.Size;
+                    if ((childFrame.X + childFrame.Width) > _view.Bounds.Width)
+                    {
+                        panelSize.Width = childFrame.X + childFrame.Width;
+                    }
+                    if ((childFrame.Y + childFrame.Height) > _view.Bounds.Height)
+                    {
+                        panelSize.Height = childFrame.Y + childFrame.Height;
+                    }
+                    RectangleF panelFrame = _view.Frame;
+                    panelFrame.Size = panelSize;
+                    _view.Frame = panelFrame;
                 });
             }
         }

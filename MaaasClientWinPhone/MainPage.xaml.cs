@@ -29,9 +29,8 @@ namespace MaaasClientWinPhone
             InitializeComponent();
 
             _stateManager = new StateManager(_host, new TransportHttp(_host + "/api"));
-            _pageView = new PageView(_stateManager, _stateManager.ViewModel);
+            _pageView = new WinPhonePageView(_stateManager, _stateManager.ViewModel, (Panel)this.mainStack);
 
-            this.InitializeComponent();
             this.BackKeyPress += MainPage_BackKeyPress;
             this.Loaded += MainPage_Loaded;
 
@@ -40,9 +39,7 @@ namespace MaaasClientWinPhone
             _pageView.setPageTitle = title => this.pageTitle.Text = title;
             _pageView.setBackEnabled = isEnabled => _isAppBackEnabled = isEnabled;
 
-            _pageView.Content = (Panel)this.mainStack;
-
-            _stateManager.SetProcessingHandlers(json => _pageView.processPageView(json), json => _pageView.processMessageBox(json));
+            _stateManager.SetProcessingHandlers(json => _pageView.ProcessPageView(json), json => _pageView.ProcessMessageBox(json));
 
             // Sample code to localize the ApplicationBar
             //BuildLocalizedApplicationBar();

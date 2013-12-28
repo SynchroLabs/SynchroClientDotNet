@@ -40,6 +40,7 @@
     <Compile Include="BindingContext.cs" />
     <Compile Include="CommandInstance.cs" />
     <Compile Include="ControlWrapper.cs" />
+    <Compile Include="PageView.cs" />
     <Compile Include="StateManager.cs" />
     <Compile Include="Transport.cs" />
     <Compile Include="TransportHttp.cs" />

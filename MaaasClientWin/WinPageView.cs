@@ -1,55 +1,46 @@
-﻿using MaaasCore;
-using MaaasClientWin.Controls;
+﻿using MaaasClientWin.Controls;
+using MaaasCore;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using Windows.UI.Popups;
-using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
 namespace MaaasClientWin
 {
-    class PageView
+    class WinPageView : PageView
     {
-        public Action<string> setPageTitle { get; set; }
-        public Action<bool> setBackEnabled { get; set; }
-        public Panel Content { get; set; }
+        WinControlWrapper _rootControlWrapper;
 
-        StateManager _stateManager;
-        ViewModel _viewModel;
-
-        string onBackCommand = null;
-
-        public PageView(StateManager stateManager, ViewModel viewModel)
+        public WinPageView(StateManager stateManager, ViewModel viewModel, Panel panel) :
+            base(stateManager, viewModel)
         {
-            _stateManager = stateManager;
-            _viewModel = viewModel;
+            _rootControlWrapper = new WinControlWrapper(_stateManager, _viewModel, _viewModel.RootBindingContext, panel);
         }
 
-        public void OnBackCommand(object sender, RoutedEventArgs e)
+        public override ControlWrapper CreateRootContainerControl(JObject controlSpec)
         {
-            Util.debug("Back button click with command: " + onBackCommand);
-            _stateManager.processCommand(onBackCommand);
+            return WinControlWrapper.CreateControl(_rootControlWrapper, _viewModel.RootBindingContext, controlSpec);
         }
 
-        public void processPageView(JObject pageView)
+        public override void ClearContent()
         {
-            Panel panel = this.Content;
+            Panel panel = (Panel)_rootControlWrapper.Control;
             panel.Children.Clear();
+            _rootControlWrapper.ChildControls.Clear();
+        }
 
-            this.onBackCommand = (string)pageView["onBack"];
-            this.setBackEnabled(this.onBackCommand != null);
-
-            string pageTitle = (string)pageView["title"];
-            if (pageTitle != null)
+        public override void SetContent(ControlWrapper content)
+        {
+            Panel panel = (Panel)_rootControlWrapper.Control;
+            if (content != null)
             {
-                setPageTitle(pageTitle);
+                panel.Children.Add(((WinControlWrapper)content).Control);
             }
-
-            WinControlWrapper controlWrapper = WinControlWrapper.WrapControl(_stateManager, _viewModel, _viewModel.RootBindingContext, panel);
-            controlWrapper.createControls((JArray)pageView["elements"], (childControlSpec, childControlWrapper) =>
-            {
-                panel.Children.Add(childControlWrapper.Control);
-            });
+            _rootControlWrapper.ChildControls.Add(content);
         }
 
         //
@@ -62,11 +53,11 @@ namespace MaaasClientWin
             if (command.Id != null)
             {
                 Util.debug("MessageBox command: " + (string)command.Id);
-                _stateManager.processCommand((string)command.Id); 
+                _stateManager.processCommand((string)command.Id);
             }
         }
 
-        public async void processMessageBox(JObject messageBox)
+        public override async void ProcessMessageBox(JObject messageBox)
         {
             string message = PropertyValue.ExpandAsString((string)messageBox["message"], _viewModel.RootBindingContext);
 

@@ -79,6 +79,9 @@
     <Compile Include="..\MaaasShared\ControlWrapper.cs">
       <Link>Linked\ControlWrapper.cs</Link>
     </Compile>
+    <Compile Include="..\MaaasShared\PageView.cs">
+      <Link>Linked\PageView.cs</Link>
+    </Compile>
     <Compile Include="..\MaaasShared\StateManager.cs">
       <Link>Linked\StateManager.cs</Link>
     </Compile>
@@ -94,6 +97,7 @@
     <Compile Include="..\MaaasShared\ViewModel.cs">
       <Link>Linked\ViewModel.cs</Link>
     </Compile>
+    <Compile Include="AndroidPageView.cs" />
     <Compile Include="Controls\AndroidButtonWrapper.cs" />
     <Compile Include="Controls\AndroidCanvasWrapper.cs" />
     <Compile Include="Controls\AndroidControlWrapper.cs" />
@@ -105,7 +109,6 @@
     <Compile Include="Controls\AndroidTextBoxWrapper.cs" />
     <Compile Include="Controls\AndroidToggleSwitchWrapper.cs" />
     <Compile Include="MainActivity.cs" />
-    <Compile Include="PageView.cs" />
     <Compile Include="Resources\Resource.Designer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

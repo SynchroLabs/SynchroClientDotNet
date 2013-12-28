@@ -76,9 +76,18 @@ namespace MaaasClientAndroid.Controls
             //processElementPropertyIfPresent((string)controlSpec["foreground"], "Foreground", value => ToBrush(value));
         }
 
-        public static AndroidControlWrapper getControlWrapper(View control)
+        public AndroidControlWrapper getChildControlWrapper(View control)
         {
-            return ((WrapperHolder)control.Tag).Value;
+            // Find the child control wrapper whose control matches the supplied value...
+            foreach (AndroidControlWrapper child in this.ChildControls)
+            {
+                if (child.Control == control)
+                {
+                    return child;
+                }
+            }
+
+            return null;
         }
 
         public static AndroidControlWrapper WrapControl(StateManager stateManager, ViewModel viewModel, BindingContext bindingContext, View control)

@@ -10,65 +10,50 @@ using Android.Runtime;
 using Android.Views;
 using Android.Widget;
 using MaaasCore;
-using Newtonsoft.Json.Linq;
 using MaaasClientAndroid.Controls;
+using Newtonsoft.Json.Linq;
 
 namespace MaaasClientAndroid
 {
-    class PageView
+    class AndroidPageView  : PageView
     {
-        public Action<string> setPageTitle { get; set; }
-        public Action<bool> setBackEnabled { get; set; }
-        public ViewGroup Content { get; set; }
-
-        StateManager _stateManager;
-        ViewModel _viewModel;
         Activity _activity;
+        AndroidControlWrapper _rootControlWrapper;
 
-        string onBackCommand = null;
-
-        public PageView(StateManager stateManager, ViewModel viewModel, Activity activity)
+        public AndroidPageView(StateManager stateManager, ViewModel viewModel, Activity activity, ViewGroup panel) :
+            base(stateManager, viewModel)
         {
-            _stateManager = stateManager;
-            _viewModel = viewModel;
             _activity = activity;
+            _rootControlWrapper = new AndroidControlWrapper(_stateManager, _viewModel, _viewModel.RootBindingContext, panel);
         }
 
-        public void OnBackCommand()
+        public override ControlWrapper CreateRootContainerControl(JObject controlSpec)
         {
-            Util.debug("Back button click with command: " + onBackCommand);
-            _stateManager.processCommand(onBackCommand);
+            return AndroidControlWrapper.CreateControl(_rootControlWrapper, _viewModel.RootBindingContext, controlSpec);
         }
 
-        public void processPageView(JObject pageView)
+        public override void ClearContent()
         {
-            ViewGroup panel = this.Content;
-            panel.RemoveAllViews();
+            ViewGroup panel = (ViewGroup)_rootControlWrapper.Control;
+            panel.RemoveAllViews(); 
+            _rootControlWrapper.ChildControls.Clear();
+        }
 
-            this.onBackCommand = (string)pageView["onBack"];
-            if (this.setBackEnabled != null)
+        public override void SetContent(ControlWrapper content)
+        {
+            ViewGroup panel = (ViewGroup)_rootControlWrapper.Control;
+            if (content != null)
             {
-                this.setBackEnabled(this.onBackCommand != null);
+                panel.AddView(((AndroidControlWrapper)content).Control);
             }
-
-            string pageTitle = (string)pageView["title"];
-            if (pageTitle != null)
-            {
-                setPageTitle(pageTitle);
-            }
-
-            AndroidControlWrapper controlWrapper = AndroidControlWrapper.WrapControl(_stateManager, _viewModel, _viewModel.RootBindingContext, panel);
-            controlWrapper.createControls((JArray)pageView["elements"], (childControlSpec, childControlWrapper) =>
-            {
-                panel.AddView(childControlWrapper.Control);
-            });
+            _rootControlWrapper.ChildControls.Add(content);
         }
 
         //
         // MessageBox stuff...
         //
 
-        public void processMessageBox(JObject messageBox)
+        public override void ProcessMessageBox(JObject messageBox)
         {
             AlertDialog.Builder builder = new AlertDialog.Builder(_activity);
             AlertDialog dialog = builder.Create();
@@ -162,4 +147,3 @@ namespace MaaasClientAndroid
         }
     }
 }
-

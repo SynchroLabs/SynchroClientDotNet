@@ -91,6 +91,9 @@
     <Compile Include="..\MaaasShared\ControlWrapper.cs">
       <Link>Linked\ControlWrapper.cs</Link>
     </Compile>
+    <Compile Include="..\MaaasShared\PageView.cs">
+      <Link>Linked\PageView.cs</Link>
+    </Compile>
     <Compile Include="..\MaaasShared\StateManager.cs">
       <Link>Linked\StateManager.cs</Link>
     </Compile>
@@ -111,10 +114,10 @@
     <Compile Include="Controls\iOSStackPanelWrapper.cs" />
     <Compile Include="Controls\iOSTextBlockWrapper.cs" />
     <Compile Include="Controls\iOSTextBoxWrapper.cs" />
+    <Compile Include="iOSPageView.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="AppDelegate.cs" />
     <None Include="Info.plist" />
-    <Compile Include="PageView.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <None Include="packages.config" />
   </ItemGroup>

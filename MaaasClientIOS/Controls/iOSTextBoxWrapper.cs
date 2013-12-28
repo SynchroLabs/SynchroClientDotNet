@@ -29,7 +29,7 @@ namespace MaaasClientIOS.Controls
             textBox.BorderStyle = UITextBorderStyle.RoundedRect;
 
             processElementDimensions(controlSpec, 150, 50);
-            textBox.AutoresizingMask = UIViewAutoresizing.FlexibleWidth | UIViewAutoresizing.FlexibleTopMargin | UIViewAutoresizing.FlexibleBottomMargin;
+            //textBox.AutoresizingMask = UIViewAutoresizing.FlexibleWidth | UIViewAutoresizing.FlexibleTopMargin | UIViewAutoresizing.FlexibleBottomMargin;
 
             applyFrameworkElementDefaults(textBox);
 

@@ -170,9 +170,18 @@ namespace MaaasClientWinPhone.Controls
             processElementPropertyIfPresent((string)controlSpec["foreground"], "Foreground", value => ToBrush(value));
         }
 
-        public static WinPhoneControlWrapper getControlWrapper(FrameworkElement control)
+        public WinPhoneControlWrapper getChildControlWrapper(FrameworkElement control)
         {
-            return (WinPhoneControlWrapper)control.Tag;
+            // Find the child control wrapper whose control matches the supplied value...
+            foreach (WinPhoneControlWrapper child in this.ChildControls)
+            {
+                if (child.Control == control)
+                {
+                    return child;
+                }
+            }
+
+            return null;
         }
 
         public static WinPhoneControlWrapper WrapControl(StateManager stateManager, ViewModel viewModel, BindingContext bindingContext, FrameworkElement control)
@@ -225,7 +234,6 @@ namespace MaaasClientWinPhone.Controls
             {
                 controlWrapper.processCommonFrameworkElementProperies(controlSpec);
                 parent.ChildControls.Add(controlWrapper);
-                controlWrapper.Control.Tag = controlWrapper;
             }
 
             return controlWrapper;

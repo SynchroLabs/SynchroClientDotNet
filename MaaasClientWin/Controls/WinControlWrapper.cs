@@ -170,9 +170,18 @@ namespace MaaasClientWin.Controls
             processElementPropertyIfPresent((string)controlSpec["foreground"], "Foreground", value => ToBrush(value));
         }
 
-        public static WinControlWrapper getControlWrapper(FrameworkElement control)
+        public WinControlWrapper getChildControlWrapper(FrameworkElement control)
         {
-            return (WinControlWrapper)control.Tag;
+            // Find the child control wrapper whose control matches the supplied value...
+            foreach (WinControlWrapper child in this.ChildControls)
+            {
+                if (child.Control == control)
+                {
+                    return child;
+                }
+            }
+
+            return null;
         }
 
         public static WinControlWrapper WrapControl(StateManager stateManager, ViewModel viewModel, BindingContext bindingContext, FrameworkElement control)
@@ -225,7 +234,6 @@ namespace MaaasClientWin.Controls
             {
                 controlWrapper.processCommonFrameworkElementProperies(controlSpec);
                 parent.ChildControls.Add(controlWrapper);
-                controlWrapper.Control.Tag = controlWrapper;
             }
 
             return controlWrapper;

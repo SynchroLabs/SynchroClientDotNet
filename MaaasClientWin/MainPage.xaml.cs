@@ -31,20 +31,19 @@ namespace MaaasClientWin
 
         public BasicPage()
         {
-            _stateManager = new StateManager(_host, new TransportHttp(_host + "/api"));
-            _pageView = new PageView(_stateManager, _stateManager.ViewModel);
-            _stateManager.Path = "menu";
-
             this.InitializeComponent();
+
+            _stateManager = new StateManager(_host, new TransportHttp(_host + "/api"));
+            _pageView = new WinPageView(_stateManager, _stateManager.ViewModel, (Panel)this.mainStack);
+            _stateManager.Path = "menu";
 
             this.Loaded += BasicPage_Loaded; 
             this.backButton.Click += backButton_Click;
 
             _pageView.setPageTitle = title => this.pageTitle.Text = title;
             _pageView.setBackEnabled = isEnabled => this.backButton.IsEnabled = isEnabled;
-            _pageView.Content = (Panel)this.mainStack;
 
-            _stateManager.SetProcessingHandlers(json => _pageView.processPageView(json), json => _pageView.processMessageBox(json));
+            _stateManager.SetProcessingHandlers(json => _pageView.ProcessPageView(json), json => _pageView.ProcessMessageBox(json));
         }
 
         async void BasicPage_Loaded(object sender, RoutedEventArgs e)
@@ -54,7 +53,7 @@ namespace MaaasClientWin
 
         void backButton_Click(object sender, RoutedEventArgs e)
         {
-            _pageView.OnBackCommand(sender, e);
+            _pageView.OnBackCommand();
         }
 
         /// <summary>

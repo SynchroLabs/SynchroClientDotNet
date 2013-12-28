@@ -23,21 +23,16 @@ namespace MaaasClientIOS
         {
             base.ViewDidLoad();
 
-            _stateManager = new StateManager(_host, new TransportHttp(_host + "/api"));
-            _pageView = new PageView(_stateManager, _stateManager.ViewModel);
-
             View.Frame = UIScreen.MainScreen.Bounds;
             View.BackgroundColor = UIColor.White;
             View.AutoresizingMask = UIViewAutoresizing.FlexibleWidth | UIViewAutoresizing.FlexibleHeight;
 
+            _stateManager = new StateManager(_host, new TransportHttp(_host + "/api"));
+            _pageView = new iOSPageView(_stateManager, _stateManager.ViewModel, View);
+
             _stateManager.Path = "menu";
 
-            _pageView.setPageTitle = title => Util.debug("!!! I should probably set the title to: " + title);
-            _pageView.setBackEnabled = isEnabled => Util.debug("!!! I should probably remember that back enabled got set to: " + isEnabled);
-
-            _pageView.Content = View;
-
-            _stateManager.SetProcessingHandlers(json => _pageView.processPageView(json), json => _pageView.processMessageBox(json));
+            _stateManager.SetProcessingHandlers(json => _pageView.ProcessPageView(json), json => _pageView.ProcessMessageBox(json));
             await _stateManager.loadLayout();
         }
     }

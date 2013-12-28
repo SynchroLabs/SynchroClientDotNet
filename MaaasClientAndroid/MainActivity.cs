@@ -24,23 +24,22 @@ namespace MaaasClientAndroid
 
         async protected override void OnCreate(Bundle bundle)
         {
-            _stateManager = new StateManager(_host, new TransportHttp(_host + "/api"));
-            _pageView = new PageView(_stateManager, _stateManager.ViewModel, this);
-
             base.OnCreate(bundle);
 
             var layout = new LinearLayout(this);
             layout.Orientation = Orientation.Vertical;
+
+            _stateManager = new StateManager(_host, new TransportHttp(_host + "/api"));
+            _pageView = new AndroidPageView(_stateManager, _stateManager.ViewModel, this, layout);
 
             _stateManager.Path = "menu";
 
             _pageView.setPageTitle = title => this.ActionBar.Title = title;
             _pageView.setBackEnabled = isEnabled => _isAppBackEnabled = isEnabled;
 
-            _pageView.Content = layout;
             SetContentView(layout);
 
-            _stateManager.SetProcessingHandlers(json => _pageView.processPageView(json), json => _pageView.processMessageBox(json));
+            _stateManager.SetProcessingHandlers(json => _pageView.ProcessPageView(json), json => _pageView.ProcessMessageBox(json));
             await _stateManager.loadLayout();
         }
 
