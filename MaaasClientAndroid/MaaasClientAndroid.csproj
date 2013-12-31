@@ -103,6 +103,7 @@
     <Compile Include="Controls\AndroidControlWrapper.cs" />
     <Compile Include="Controls\AndroidImageWrapper.cs" />
     <Compile Include="Controls\AndroidListBoxWrapper.cs" />
+    <Compile Include="Controls\AndroidRectangleWrapper.cs" />
     <Compile Include="Controls\AndroidSliderWrapper.cs" />
     <Compile Include="Controls\AndroidStackPanelWrapper.cs" />
     <Compile Include="Controls\AndroidTextBlockWrapper.cs" />

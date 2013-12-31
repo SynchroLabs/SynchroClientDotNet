@@ -12,6 +12,7 @@ using Android.Widget;
 using MaaasCore;
 using Newtonsoft.Json.Linq;
 using Android.Util;
+using Android.Graphics;
 
 namespace MaaasClientAndroid.Controls
 {
@@ -42,6 +43,35 @@ namespace MaaasClientAndroid.Controls
             _control = control;
         }
 
+        protected static float AndroidDpFromMaaasUnits(float maaasUnits)
+        {
+            // A MaaasUnit is 1/160 of an inch.  An Android DP (device-independant pixel) is 1/160 of an inch.
+            // 
+            return maaasUnits;
+        }
+
+        public static float AndroidDpFromTypographicPoints(float typographicPoints)
+        {
+            // A typographic point is 1/72 of an inch.  An Android DP (Device-independant Pixel) is 1/160 of an inch.  Note that the
+            // returned value may be used either as a DP (specifying an exact size) or as an SP (scale-independant pixel) that will
+            // specify a size that will produce a scaled value based on screen density, user preferences (such as font sizes), etc.
+            //
+            return typographicPoints * 160f / 72f;
+        }
+
+        public static Color ToColor(object value)
+        {
+            ColorARGB color = ControlWrapper.getColor(ToString(value));
+            if (color != null)
+            {
+                return Color.Argb(color.a, color.r, color.g, color.b);
+            }
+            else
+            {
+                return Color.Transparent;
+            }
+        }
+
         protected void applyFrameworkElementDefaults(View element)
         {
             // !!! This could be a little more thourough ;)
@@ -67,7 +97,7 @@ namespace MaaasClientAndroid.Controls
             TextView textView = this.Control as TextView;
             if (textView != null)
             {
-                processElementProperty((string)controlSpec["fontsize"], value => textView.TextSize = (float)ToDouble(value) * 160/72);
+                processElementProperty((string)controlSpec["fontsize"], value => textView.TextSize = AndroidDpFromTypographicPoints((float)ToDouble(value)));
                 //processElementPropertyIfPresent((string)controlSpec["fontweight"], "FontWeight", value => ToFontWeight(value));
             }
 
@@ -125,6 +155,9 @@ namespace MaaasClientAndroid.Controls
                     break;
                 case "slider":
                     controlWrapper = new AndroidSliderWrapper(parent, bindingContext, controlSpec);
+                    break;
+                case "rectangle":
+                    controlWrapper = new AndroidRectangleWrapper(parent, bindingContext, controlSpec);
                     break;
             }
 

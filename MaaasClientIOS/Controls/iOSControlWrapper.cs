@@ -28,6 +28,39 @@ namespace MaaasClientIOS.Controls
             _control = control;
         }
 
+        protected static float iosPointsFromMaaasUnits(float maaasUnits)
+        {
+            // A MaaasUnit is 1/160 of an inch.  An iOS point is 1/163 of an inch on a small form factor device (iPhone or
+            // iPad mini), and 1/132 of an inch on a large form factor device (iPad).  Using the 163 value in all cases works
+            // well (causing things to be somewhat physically larger on the large format screens, which is fine).  Since these
+            // values are very close, and the iOS point is not an exact value in the first place, we'll just treat the Maaas
+            // units as iOS units.
+            //
+            return maaasUnits;
+        }
+
+        protected static float iosPointsFromTypographicPoints(float typographicPoints)
+        {
+            // A typographic point is 1/72 of an inch.  An iOS point is 1/163 of an inch on a small form factor device (iPhone or
+            // iPad mini), and 1/132 of an inch on a large form factor device (iPad).  Using the 163 value in all cases works
+            // well (causing things to be somewhat physically larger on the large format screens, which is fine).
+            //
+            return typographicPoints * 163f / 72f;
+        }
+
+        protected static UIColor ToColor(object value)
+        {
+            ColorARGB color = ControlWrapper.getColor(ToString(value));
+            if (color != null)
+            {
+                return UIColor.FromRGBA(color.r, color.g, color.b, color.a);
+            }
+            else
+            {
+                return null;
+            }
+        }
+
         protected void applyFrameworkElementDefaults(UIView element)
         {
             // !!! This could be a little more thourough ;)
@@ -66,6 +99,13 @@ namespace MaaasClientIOS.Controls
             //processElementProperty((string)controlSpec["maxwidth"], value => this.Control.MaxWidth = ToDouble(value));
             //processElementProperty((string)controlSpec["opacity"], value => this.Control.Opacity = ToDouble(value));
 
+            processElementProperty((string)controlSpec["background"], value =>
+            {
+                ColorARGB colorArgb = ControlWrapper.getColor(ToString(value));
+                UIColor color = UIColor.FromRGBA(colorArgb.r, colorArgb.g, colorArgb.b, colorArgb.a);
+                this.Control.BackgroundColor = color;
+            });
+
             processElementProperty((string)controlSpec["visibility"], value => this.Control.Hidden = !ToBoolean(value));
 
             if (this.Control is UIControl)
@@ -84,8 +124,7 @@ namespace MaaasClientIOS.Controls
             //
             // processElementProperty((string)controlSpec["fontsize"], value => textView.TextSize = (float)ToDouble(value) * 160/72);
             // processElementPropertyIfPresent((string)controlSpec["fontweight"], "FontWeight", value => ToFontWeight(value));
-            //processElementPropertyIfPresent((string)controlSpec["background"], "Background", value => ToBrush(value));
-            //processElementPropertyIfPresent((string)controlSpec["foreground"], "Foreground", value => ToBrush(value));
+            // processElementPropertyIfPresent((string)controlSpec["foreground"], "Foreground", value => ToBrush(value));
         }
 
         public iOSControlWrapper getChildControlWrapper(UIView control)
@@ -125,6 +164,21 @@ namespace MaaasClientIOS.Controls
                     break;
                 case "stackpanel":
                     controlWrapper = new iOSStackPanelWrapper(parent, bindingContext, controlSpec);
+                    break;
+                case "toggle":
+                    controlWrapper = new iOSToggleSwitchWrapper(parent, bindingContext, controlSpec);
+                    break;
+                case "slider":
+                    controlWrapper = new iOSSliderWrapper(parent, bindingContext, controlSpec);
+                    break;
+                case "image":
+                    controlWrapper = new iOSImageWrapper(parent, bindingContext, controlSpec);
+                    break;
+                case "canvas":
+                    controlWrapper = new iOSCanvasWrapper(parent, bindingContext, controlSpec);
+                    break;
+                case "rectangle":
+                    controlWrapper = new iOSRectangleWrapper(parent, bindingContext, controlSpec);
                     break;
             }
 

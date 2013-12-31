@@ -22,11 +22,23 @@ namespace MaaasClientIOS.Controls
             this._control = textBlock;
 
             processElementDimensions(controlSpec, 150, 50);
-            //textBlock.AutoresizingMask = UIViewAutoresizing.FlexibleWidth | UIViewAutoresizing.FlexibleTopMargin | UIViewAutoresizing.FlexibleBottomMargin;
-
             applyFrameworkElementDefaults(textBlock);
 
-            //processElementProperty((string)controlSpec["value"], value => textBlock.Text = ToString(value));
+            processElementProperty((string)controlSpec["foreground"], value =>
+            {
+                ColorARGB colorArgb = ControlWrapper.getColor(ToString(value));
+                UIColor color = UIColor.FromRGBA(colorArgb.r, colorArgb.g, colorArgb.b, colorArgb.a);
+                textBlock.TextColor = color;
+            });
+
+            // !!! ?
+            processElementProperty((string)controlSpec["fontsize"], value => 
+            {
+                UIFont font = UIFont.FromName(textBlock.Font.Name, iosPointsFromTypographicPoints((float)ToDouble(value)));
+                textBlock.Font = font;
+                textBlock.SizeToFit();
+            });
+
             processElementProperty((string)controlSpec["value"], value => 
             {
                 // !!! We really only want to size to fix the height and/or width if not specied expicitly

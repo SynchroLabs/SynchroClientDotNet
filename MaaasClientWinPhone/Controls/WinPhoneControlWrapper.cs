@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using Windows.Graphics.Display;
 
 
 namespace MaaasClientWinPhone.Controls
@@ -30,30 +31,34 @@ namespace MaaasClientWinPhone.Controls
             _control = control;
         }
 
+        protected static double WindowsPxFromMaaasUnits(double maaasUnits)
+        {
+            // A MaaasUnit is 1/160 of an inch.  A Windows px (device-independant pixel) is 1/96 of an inch.
+            // 
+            return maaasUnits * 96f / 160f;
+        }
+
+        public static double WindowsPxFromTypographicPoints(double typographicPoints)
+        {
+            Util.debug("Display properties - logical DPI: " + DisplayProperties.LogicalDpi);
+            Util.debug("Display properties - resolution scale: " + DisplayProperties.ResolutionScale);
+
+            // A typographic point is 1/72 of an inch.  A Windows px (device-independant pixel) is 1/96 of an inch.
+            //
+            return typographicPoints * 96f / 72f;
+        }
+
         public static SolidColorBrush ToBrush(object value)
         {
-            String color = ToString(value);
-            if (color.StartsWith("#"))
+            ColorARGB color = ControlWrapper.getColor(ToString(value));
+            if (color != null)
             {
-                color = color.Replace("#", "");
-                if (color.Length == 6)
-                {
-                    return new SolidColorBrush(Color.FromArgb(255,
-                        byte.Parse(color.Substring(0, 2), System.Globalization.NumberStyles.HexNumber),
-                        byte.Parse(color.Substring(2, 2), System.Globalization.NumberStyles.HexNumber),
-                        byte.Parse(color.Substring(4, 2), System.Globalization.NumberStyles.HexNumber)));
-                }
+                return new SolidColorBrush(Color.FromArgb(color.a, color.r, color.g, color.b));
             }
             else
             {
-                var property = typeof(Colors).GetRuntimeProperty(color);
-                if (property != null)
-                {
-                    return new SolidColorBrush((Color)property.GetValue(null));
-                }
+                return null;
             }
-
-            return null;
         }
 
         public static FontWeight ToFontWeight(object value)
@@ -163,7 +168,7 @@ namespace MaaasClientWinPhone.Controls
             processMarginProperty(controlSpec["margin"]);
 
             // These elements are very common among derived classes, so we'll do some runtime reflection...
-            processElementPropertyIfPresent((string)controlSpec["fontsize"], "FontSize", value => ToDouble(value));
+            processElementPropertyIfPresent((string)controlSpec["fontsize"], "FontSize", value => WindowsPxFromTypographicPoints(ToDouble(value)));
             processElementPropertyIfPresent((string)controlSpec["fontweight"], "FontWeight", value => ToFontWeight(value));
             processElementPropertyIfPresent((string)controlSpec["enabled"], "IsEnabled", value => ToBoolean(value));
             processElementPropertyIfPresent((string)controlSpec["background"], "Background", value => ToBrush(value));
@@ -227,6 +232,9 @@ namespace MaaasClientWinPhone.Controls
                     break;
                 case "stackpanel":
                     controlWrapper = new WinPhoneStackPanelWrapper(parent, bindingContext, controlSpec);
+                    break;
+                case "rectangle":
+                    controlWrapper = new WinPhoneRectangleWrapper(parent, bindingContext, controlSpec);
                     break;
             }
 

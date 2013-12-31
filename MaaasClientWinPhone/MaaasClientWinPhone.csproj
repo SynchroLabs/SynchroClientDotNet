@@ -130,6 +130,7 @@
     <Compile Include="Controls\WinPhoneListBoxWrapper.cs" />
     <Compile Include="Controls\WinPhoneListViewWrapper.cs" />
     <Compile Include="Controls\WinPhonePasswordBoxWrapper.cs" />
+    <Compile Include="Controls\WinPhoneRectangleWrapper.cs" />
     <Compile Include="Controls\WinPhoneSliderWrapper.cs" />
     <Compile Include="Controls\WinPhoneStackPanelWrapper.cs" />
     <Compile Include="Controls\WinPhoneTextBlockWrapper.cs" />

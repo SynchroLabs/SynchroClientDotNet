@@ -15,7 +15,7 @@ namespace MaaasClientWinPhone
 {
     public partial class MainPage : PhoneApplicationPage
     {
-        static string _host = "192.168.1.109:1337"; // "localhost:1337";
+        static string _host = "192.168.1.105:1337"; // "localhost:1337";
         //static string _host = "maaas.azurewebsites.net";
 
         StateManager _stateManager;

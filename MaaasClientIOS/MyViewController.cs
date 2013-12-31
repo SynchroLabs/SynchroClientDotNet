@@ -4,12 +4,13 @@ using System.Drawing;
 using MaaasCore;
 using System.Net.Http;
 using MaaasShared;
+using ModernHttpClient;
 
 namespace MaaasClientIOS
 {
     public class MyViewController : UIViewController
     {
-        static string _host = "192.168.1.109:1337"; // "localhost:1337";
+        static string _host = "192.168.1.105:1337"; // "localhost:1337";
         //static string _host = "maaas.azurewebsites.net";
 
         StateManager _stateManager;
@@ -27,7 +28,9 @@ namespace MaaasClientIOS
             View.BackgroundColor = UIColor.White;
             View.AutoresizingMask = UIViewAutoresizing.FlexibleWidth | UIViewAutoresizing.FlexibleHeight;
 
-            _stateManager = new StateManager(_host, new TransportHttp(_host + "/api"));
+            // Using AFNetworkHandler via ModernHttpClient component
+            HttpClient httpClient = new HttpClient(new AFNetworkHandler());
+            _stateManager = new StateManager(_host, new TransportHttp(httpClient, _host + "/api"));
             _pageView = new iOSPageView(_stateManager, _stateManager.ViewModel, View);
 
             _stateManager.Path = "menu";

@@ -22,8 +22,6 @@ namespace MaaasClientIOS.Controls
             this._control = button;
 
             processElementDimensions(controlSpec, 150, 50);
-            //button.AutoresizingMask = UIViewAutoresizing.FlexibleWidth | UIViewAutoresizing.FlexibleTopMargin | UIViewAutoresizing.FlexibleBottomMargin;
-
             applyFrameworkElementDefaults(button);
 
             processElementProperty((string)controlSpec["caption"], value => button.SetTitle(ToString(value), UIControlState.Normal));

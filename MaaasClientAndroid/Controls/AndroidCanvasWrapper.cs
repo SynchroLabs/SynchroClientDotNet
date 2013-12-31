@@ -25,6 +25,7 @@ namespace MaaasClientAndroid.Controls
             this._control = absLayout;
 
             applyFrameworkElementDefaults(absLayout);
+            processElementProperty((string)controlSpec["background"], value => absLayout.SetBackgroundColor(ToColor(value)));
 
             if (controlSpec["contents"] != null)
             {

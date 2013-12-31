@@ -8,13 +8,15 @@ using Android.Widget;
 using Android.OS;
 using MaaasCore;
 using MaaasShared;
+using System.Net.Http;
+using ModernHttpClient;
 
 namespace MaaasClientAndroid
 {
     [Activity(Label = "Loading...", MainLauncher = true, Icon = "@drawable/icon", Theme = "@android:style/Theme.Holo")]
     public class MainActivity : Activity
     {
-        static string _host = "192.168.1.109:1337"; // "localhost:1337";
+        static string _host = "192.168.1.105:1337"; // "localhost:1337";
         //static string _host = "maaas.azurewebsites.net";
 
         StateManager _stateManager;
@@ -29,6 +31,13 @@ namespace MaaasClientAndroid
             var layout = new LinearLayout(this);
             layout.Orientation = Orientation.Vertical;
 
+            // Using OkHttpNetworkHandler via ModernHttpClient component
+            //
+            // !!! Doesn't appear to support cookies out of the box
+            //
+            // HttpClient httpClient = new HttpClient(new OkHttpNetworkHandler());
+            // _stateManager = new StateManager(_host, new TransportHttp(httpClient, _host + "/api"));
+            //
             _stateManager = new StateManager(_host, new TransportHttp(_host + "/api"));
             _pageView = new AndroidPageView(_stateManager, _stateManager.ViewModel, this, layout);
 

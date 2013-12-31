@@ -27,10 +27,7 @@ namespace MaaasClientIOS.Controls
             _view = new UIView();
             this._control = _view;
 
-            // !!! Sizing/position of stack panel needs some work...
             processElementDimensions(controlSpec, 0, 0);
-            //_view.AutoresizingMask = UIViewAutoresizing.FlexibleWidth | UIViewAutoresizing.FlexibleTopMargin | UIViewAutoresizing.FlexibleBottomMargin;
-
             applyFrameworkElementDefaults(_view);
 
             if ((controlSpec["orientation"] != null) && ((string)controlSpec["orientation"] == "vertical"))

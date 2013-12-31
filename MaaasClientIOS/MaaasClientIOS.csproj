@@ -110,10 +110,15 @@
       <Link>Linked\ViewModel.cs</Link>
     </Compile>
     <Compile Include="Controls\iOSButtonWrapper.cs" />
+    <Compile Include="Controls\iOSCanvasWrapper.cs" />
     <Compile Include="Controls\iOSControlWrapper.cs" />
+    <Compile Include="Controls\iOSImageWrapper.cs" />
+    <Compile Include="Controls\iOSRectangleWrapper.cs" />
+    <Compile Include="Controls\iOSSliderWrapper.cs" />
     <Compile Include="Controls\iOSStackPanelWrapper.cs" />
     <Compile Include="Controls\iOSTextBlockWrapper.cs" />
     <Compile Include="Controls\iOSTextBoxWrapper.cs" />
+    <Compile Include="Controls\iOSToggleSwitchWrapper.cs" />
     <Compile Include="iOSPageView.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="AppDelegate.cs" />
@@ -127,8 +132,13 @@
     <BundleResource Include="Resources\Default@2x.png" />
     <BundleResource Include="Resources\Default-568h@2x.png" />
   </ItemGroup>
-  <ItemGroup />
   <ItemGroup>
+    <Reference Include="AFNetworking">
+      <HintPath>..\Components\modernhttpclient-1.1.0\lib\ios\AFNetworking.dll</HintPath>
+    </Reference>
+    <Reference Include="ModernHttpClient.iOS">
+      <HintPath>..\Components\modernhttpclient-1.1.0\lib\ios\ModernHttpClient.iOS.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\packages\Newtonsoft.Json.5.0.8\lib\portable-net40+sl4+wp7+win8\Newtonsoft.Json.dll</HintPath>
     </Reference>
@@ -137,6 +147,12 @@
     <Reference Include="System.Xml" />
     <Reference Include="System.Core" />
     <Reference Include="monotouch" />
+  </ItemGroup>
+  <ItemGroup>
+    <XamarinComponentReference Include="modernhttpclient">
+      <Visible>False</Visible>
+      <Version>1.1.0</Version>
+    </XamarinComponentReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.MonoTouch.CSharp.targets" />
 </Project>

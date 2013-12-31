@@ -27,6 +27,12 @@ namespace MaaasShared
             // _httpClient.DefaultRequestHeaders.Connection.Add("Keep-Alive");
         }
 
+        public TransportHttp(HttpClient client, string host)
+        {
+            _uri = new Uri("http://" + host);
+            _httpClient = client;
+        }
+
         public async Task sendMessage(JObject requestObject, Action<JObject> responseHandler)
         {
             StringContent jsonContent = new StringContent(requestObject.ToString(), System.Text.Encoding.UTF8, "application/json");
