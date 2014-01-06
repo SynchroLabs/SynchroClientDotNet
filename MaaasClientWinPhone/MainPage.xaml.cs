@@ -24,8 +24,6 @@ namespace MaaasClientWinPhone
         StateManager _stateManager;
         PageView _pageView;
 
-        bool _isAppBackEnabled = false;
-
         // Constructor
         public MainPage()
         {
@@ -42,7 +40,6 @@ namespace MaaasClientWinPhone
             _stateManager.Path = "menu";
 
             _pageView.setPageTitle = title => this.pageTitle.Text = title;
-            _pageView.setBackEnabled = isEnabled => _isAppBackEnabled = isEnabled;
 
             _stateManager.SetProcessingHandlers(json => _pageView.ProcessPageView(json), json => _pageView.ProcessMessageBox(json));
 
@@ -57,11 +54,8 @@ namespace MaaasClientWinPhone
 
         void MainPage_BackKeyPress(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            if (_isAppBackEnabled)
-            {
-                _pageView.OnBackCommand();
-                e.Cancel = true;
-            }
+            _pageView.OnBackCommand();
+            e.Cancel = true;
         }
 
         // Sample code for building a localized ApplicationBar

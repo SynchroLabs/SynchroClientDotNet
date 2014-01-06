@@ -10,7 +10,7 @@ namespace MaaasCore
     public abstract class PageView
     {
         public Action<string> setPageTitle { get; set; }
-        public Action<bool> setBackEnabled { get; set; }
+        public Action<bool> setBackEnabled { get; set; } // Optional - set if you care about back enablement
 
         protected StateManager _stateManager;
         protected ViewModel _viewModel;
@@ -29,10 +29,21 @@ namespace MaaasCore
 
         public abstract void ProcessMessageBox(JObject messageBox);
 
-        public void OnBackCommand()
+        public bool HasBackCommand { get { return onBackCommand != null; } }
+
+        public bool OnBackCommand()
         {
-            Util.debug("Back button click with command: " + onBackCommand);
-            _stateManager.processCommand(onBackCommand);
+            if (onBackCommand != null)
+            {
+                Util.debug("Back button click with command: " + onBackCommand);
+                _stateManager.processCommand(onBackCommand);
+                return true;
+            }
+            else
+            {
+                Util.debug("OnBackCommand called with no back command, ignoring");
+                return false; // Not handled
+            }
         }
 
         public void ProcessPageView(JObject pageView)
@@ -40,7 +51,10 @@ namespace MaaasCore
             ClearContent();
 
             this.onBackCommand = (string)pageView["onBack"];
-            this.setBackEnabled(this.onBackCommand != null);
+            if (this.setBackEnabled != null)
+            {
+                this.setBackEnabled(this.onBackCommand != null);
+            }
 
             string pageTitle = (string)pageView["title"];
             if (pageTitle != null)

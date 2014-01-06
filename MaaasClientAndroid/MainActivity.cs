@@ -23,8 +23,6 @@ namespace MaaasClientAndroid
         StateManager _stateManager;
         PageView _pageView;
 
-        bool _isAppBackEnabled = false;
-
         async protected override void OnCreate(Bundle bundle)
         {
             base.OnCreate(bundle);
@@ -47,7 +45,6 @@ namespace MaaasClientAndroid
             _stateManager.Path = "menu";
 
             _pageView.setPageTitle = title => this.ActionBar.Title = title;
-            _pageView.setBackEnabled = isEnabled => _isAppBackEnabled = isEnabled;
 
             SetContentView(layout);
 
@@ -57,7 +54,7 @@ namespace MaaasClientAndroid
 
         public override void OnBackPressed()
         {
-            if (_isAppBackEnabled)
+            if (_pageView.HasBackCommand)
             {
                 _pageView.OnBackCommand();
             }

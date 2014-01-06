@@ -33,7 +33,6 @@ namespace MaaasClientIOS
     {
         iOSControlWrapper _rootControlWrapper;
         string _pageTitle = "";
-        bool _backEnabled = false;
 
         public iOSPageView(StateManager stateManager, ViewModel viewModel, UIView panel) :
             base(stateManager, viewModel)
@@ -41,7 +40,6 @@ namespace MaaasClientIOS
             _rootControlWrapper = new iOSControlWrapper(_stateManager, _viewModel, _viewModel.RootBindingContext, panel);
 
             this.setPageTitle = title => _pageTitle = title;
-            this.setBackEnabled = enabled => _backEnabled = enabled;
         }
 
         public override ControlWrapper CreateRootContainerControl(JObject controlSpec)

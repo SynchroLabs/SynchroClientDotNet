@@ -95,8 +95,7 @@ namespace MaaasClientAndroid.Controls
                 // !!! These seem to be equivalent, but product fonts that are larger than on other platforms (for glyph span is the specified height, 
                 //     with the total box being a fair amount larger, as opposed to most platforms where the box is the specified height).
                 //
-                processElementProperty((string)controlSpec["fontsize"], value => textView.TextSize = (float)ToDeviceUnitsFromTypographicPoints(value));
-                //processElementProperty((string)controlSpec["fontsize"], value => textView.SeTextSize(ComplexUnitType.Pt, (float)ToDouble(value)));
+                processElementProperty((string)controlSpec["fontsize"], value => textView.SetTextSize(ComplexUnitType.Px, (float)ToDeviceUnitsFromTypographicPoints(value)));
 
                 //processElementPropertyIfPresent((string)controlSpec["fontweight"], "FontWeight", value => ToFontWeight(value));
             }

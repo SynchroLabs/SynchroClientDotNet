@@ -154,7 +154,7 @@ namespace MaaasCore
 
         public double ToDeviceUnitsFromTypographicPoints(object value)
         {
-            return StateManager.DeviceMetrics.TypographicPointsToMaaasUnits(ToDouble(value));
+            return ToDeviceUnits(StateManager.DeviceMetrics.TypographicPointsToMaaasUnits(ToDouble(value)));
         }
 
         // Silverlight colors

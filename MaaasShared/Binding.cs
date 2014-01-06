@@ -125,7 +125,6 @@ namespace MaaasCore
     public class PropertyValue
     {
         private static Regex _braceContentsRE = new Regex(@"{([^}]*)}");
-        private static Regex _onlyBraceContentsRE = new Regex(@"^{([^}]*)}$");
 
         private string _formatString;
         private List<BindingContext> _boundTokens;
