@@ -34,7 +34,7 @@ namespace MaaasClientIOS.Controls
             // !!! ?
             processElementProperty((string)controlSpec["fontsize"], value => 
             {
-                UIFont font = UIFont.FromName(textBlock.Font.Name, iosPointsFromTypographicPoints((float)ToDouble(value)));
+                UIFont font = UIFont.FromName(textBlock.Font.Name, (float)ToDeviceUnitsFromTypographicPoints(value));
                 textBlock.Font = font;
                 textBlock.SizeToFit();
             });

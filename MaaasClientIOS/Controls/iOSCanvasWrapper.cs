@@ -31,14 +31,14 @@ namespace MaaasClientIOS.Controls
                     childControlWrapper.processElementProperty((string)childControlSpec["left"], value =>
                     {
                         RectangleF childFrame = childControlWrapper.Control.Frame;
-                        childFrame.X = (float)ToDouble(value);
+                        childFrame.X = (float)ToDeviceUnits(value);
                         childControlWrapper.Control.Frame = childFrame;
                         // !!! Resize canvas to contain control
                     });
                     childControlWrapper.processElementProperty((string)childControlSpec["top"], value =>
                     {
                         RectangleF childFrame = childControlWrapper.Control.Frame;
-                        childFrame.Y = (float)ToDouble(value);
+                        childFrame.Y = (float)ToDeviceUnits(value);
                         childControlWrapper.Control.Frame = childFrame;
                         // !!! Resize canvas to contain control
                     });

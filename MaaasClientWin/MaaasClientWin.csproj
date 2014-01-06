@@ -120,6 +120,9 @@
     <Compile Include="..\MaaasShared\ControlWrapper.cs">
       <Link>Linked\ControlWrapper.cs</Link>
     </Compile>
+    <Compile Include="..\MaaasShared\DeviceMetrics.cs">
+      <Link>Linked\DeviceMetrics.cs</Link>
+    </Compile>
     <Compile Include="..\MaaasShared\PageView.cs">
       <Link>Linked\PageView.cs</Link>
     </Compile>
@@ -161,6 +164,7 @@
     <Compile Include="Common\SuspensionManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Core\TransportWs.cs" />
+    <Compile Include="WinDeviceMetrics.cs" />
     <Compile Include="WinPageView.cs" />
   </ItemGroup>
   <ItemGroup>

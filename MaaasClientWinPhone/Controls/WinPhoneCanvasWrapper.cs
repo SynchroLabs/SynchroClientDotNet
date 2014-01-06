@@ -26,8 +26,8 @@ namespace MaaasClientWinPhone.Controls
                 {
                     // We need to capture and potentially bind some attributes on the added child controls here in the context of the parent...
                     //
-                    childControlWrapper.processElementProperty((string)childControlSpec["top"], value => Canvas.SetTop(childControlWrapper.Control, ToDouble(value)));
-                    childControlWrapper.processElementProperty((string)childControlSpec["left"], value => Canvas.SetLeft(childControlWrapper.Control, ToDouble(value)));
+                    childControlWrapper.processElementProperty((string)childControlSpec["top"], value => Canvas.SetTop(childControlWrapper.Control, ToDeviceUnits(value)));
+                    childControlWrapper.processElementProperty((string)childControlSpec["left"], value => Canvas.SetLeft(childControlWrapper.Control, ToDeviceUnits(value)));
                     childControlWrapper.processElementProperty((string)childControlSpec["zindex"], value => Canvas.SetZIndex(childControlWrapper.Control, (int)ToDouble(value)));
                     canvas.Children.Add(childControlWrapper.Control);
                 });

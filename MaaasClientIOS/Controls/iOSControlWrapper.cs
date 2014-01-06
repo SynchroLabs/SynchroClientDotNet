@@ -28,26 +28,6 @@ namespace MaaasClientIOS.Controls
             _control = control;
         }
 
-        protected static float iosPointsFromMaaasUnits(float maaasUnits)
-        {
-            // A MaaasUnit is 1/160 of an inch.  An iOS point is 1/163 of an inch on a small form factor device (iPhone or
-            // iPad mini), and 1/132 of an inch on a large form factor device (iPad).  Using the 163 value in all cases works
-            // well (causing things to be somewhat physically larger on the large format screens, which is fine).  Since these
-            // values are very close, and the iOS point is not an exact value in the first place, we'll just treat the Maaas
-            // units as iOS units.
-            //
-            return maaasUnits;
-        }
-
-        protected static float iosPointsFromTypographicPoints(float typographicPoints)
-        {
-            // A typographic point is 1/72 of an inch.  An iOS point is 1/163 of an inch on a small form factor device (iPhone or
-            // iPad mini), and 1/132 of an inch on a large form factor device (iPad).  Using the 163 value in all cases works
-            // well (causing things to be somewhat physically larger on the large format screens, which is fine).
-            //
-            return typographicPoints * 163f / 72f;
-        }
-
         protected static UIColor ToColor(object value)
         {
             ColorARGB color = ControlWrapper.getColor(ToString(value));
@@ -73,14 +53,14 @@ namespace MaaasClientIOS.Controls
             processElementProperty((string)controlSpec["height"], value => 
             {
                 RectangleF frame = this.Control.Frame;
-                frame.Height = (float)ToDouble(value);
+                frame.Height = (float)ToDeviceUnits(value);
                 this.Control.Frame = frame;
             });
 
             processElementProperty((string)controlSpec["width"], value => 
             {
                 RectangleF frame = this.Control.Frame;
-                frame.Width = (float)ToDouble(value);
+                frame.Width = (float)ToDeviceUnits(value);
                 this.Control.Frame = frame;
             });
         }

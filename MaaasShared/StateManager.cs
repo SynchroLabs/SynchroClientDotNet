@@ -16,7 +16,9 @@ namespace MaaasCore
         Action<JObject> _onProcessPageView;
         Action<JObject> _onProcessMessageBox;
 
-        public StateManager(string host, Transport transport)
+        MaaasDeviceMetrics _deviceMetrics;
+
+        public StateManager(string host, Transport transport, MaaasDeviceMetrics deviceMetrics)
         {
             _viewModel = new ViewModel();
             _host = host;
@@ -34,10 +36,13 @@ namespace MaaasCore
             */
             _transport = transport;
 
+            _deviceMetrics = deviceMetrics;
         }
 
         public String Path { get; set; }
         public ViewModel ViewModel { get { return _viewModel; } }
+
+        public MaaasDeviceMetrics DeviceMetrics { get { return _deviceMetrics; } }
 
         public void SetProcessingHandlers(Action<JObject> OnProcessPageView, Action<JObject> OnProcessMessageBox)
         {

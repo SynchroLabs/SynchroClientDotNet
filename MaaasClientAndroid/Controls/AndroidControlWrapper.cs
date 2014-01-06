@@ -43,22 +43,6 @@ namespace MaaasClientAndroid.Controls
             _control = control;
         }
 
-        protected static float AndroidDpFromMaaasUnits(float maaasUnits)
-        {
-            // A MaaasUnit is 1/160 of an inch.  An Android DP (device-independant pixel) is 1/160 of an inch.
-            // 
-            return maaasUnits;
-        }
-
-        public static float AndroidDpFromTypographicPoints(float typographicPoints)
-        {
-            // A typographic point is 1/72 of an inch.  An Android DP (Device-independant Pixel) is 1/160 of an inch.  Note that the
-            // returned value may be used either as a DP (specifying an exact size) or as an SP (scale-independant pixel) that will
-            // specify a size that will produce a scaled value based on screen density, user preferences (such as font sizes), etc.
-            //
-            return typographicPoints * 160f / 72f;
-        }
-
         public static Color ToColor(object value)
         {
             ColorARGB color = ControlWrapper.getColor(ToString(value));
@@ -77,13 +61,24 @@ namespace MaaasClientAndroid.Controls
             // !!! This could be a little more thourough ;)
         }
 
+        public double ToAndroidDpFromTypographicPoints(object value)
+        {
+            // A typographic point is 1/72 of an inch.  Convert to logical pixel value for device.
+            //
+            double typographicPoints = ToDouble(value);
+            return typographicPoints * 160f / 72f;
+        }
+
         protected void processCommonFrameworkElementProperies(JObject controlSpec)
         {
             // !!! This could be a little more thourough ;)
             Util.debug("Processing framework element properties");
 
             //processElementProperty((string)controlSpec["name"], value => this.Control.Name = ToString(value));
-            //processElementProperty((string)controlSpec["height"], value => this.Control.Height = ToDouble(value));
+
+            processElementProperty((string)controlSpec["height"], value => this.Control.SetMinimumHeight((int)ToDeviceUnits(value)));
+            processElementProperty((string)controlSpec["width"], value => this.Control.SetMinimumWidth((int)ToDeviceUnits(value)));
+
             //processElementProperty((string)controlSpec["width"], value => this.Control.Width = ToDouble(value));
             //processElementProperty((string)controlSpec["minheight"], value => this.Control.MinHeight = ToDouble(value));
             //processElementProperty((string)controlSpec["minwidth"], value => this.Control.MinWidth = ToDouble(value));
@@ -97,7 +92,12 @@ namespace MaaasClientAndroid.Controls
             TextView textView = this.Control as TextView;
             if (textView != null)
             {
-                processElementProperty((string)controlSpec["fontsize"], value => textView.TextSize = AndroidDpFromTypographicPoints((float)ToDouble(value)));
+                // !!! These seem to be equivalent, but product fonts that are larger than on other platforms (for glyph span is the specified height, 
+                //     with the total box being a fair amount larger, as opposed to most platforms where the box is the specified height).
+                //
+                processElementProperty((string)controlSpec["fontsize"], value => textView.TextSize = (float)ToDeviceUnitsFromTypographicPoints(value));
+                //processElementProperty((string)controlSpec["fontsize"], value => textView.SeTextSize(ComplexUnitType.Pt, (float)ToDouble(value)));
+
                 //processElementPropertyIfPresent((string)controlSpec["fontweight"], "FontWeight", value => ToFontWeight(value));
             }
 

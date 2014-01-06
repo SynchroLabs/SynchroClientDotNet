@@ -31,23 +31,28 @@ namespace MaaasClientWin.Controls
             _control = control;
         }
 
+        /*
         protected static double WindowsPxFromMaaasUnits(double maaasUnits)
         {
+            var displayInformation = DisplayInformation.GetForCurrentView();
+
             // A MaaasUnit is 1/160 of an inch.  A Windows px (device-independant pixel) is 1/96 of an inch.
             // 
-            return maaasUnits * 96f / 160f;
+            // return maaasUnits * 96f / 160f;
+            return maaasUnits * displayInformation.LogicalDpi / 160f;
         }
 
         public static double WindowsPxFromTypographicPoints(double typographicPoints)
         {
-            var displayInformation = DisplayInformation.GetForCurrentView();
-            Util.debug("Display properties - logical DPI: " + displayInformation.LogicalDpi);
+
             Util.debug("Display properties - resolution scale: " + displayInformation.ResolutionScale);
 
             // A typographic point is 1/72 of an inch.  A Windows px (device-independant pixel) is 1/96 of an inch.
             //
-            return typographicPoints * 96f / 72f;
+            // return typographicPoints * 96f / 72f;
+            return typographicPoints * displayInformation.LogicalDpi / 72f;
         }
+         */
 
         public static SolidColorBrush ToBrush(object value)
         {
@@ -158,8 +163,8 @@ namespace MaaasClientWin.Controls
 
             Util.debug("Processing framework element properties");
             processElementProperty((string)controlSpec["name"], value => this.Control.Name = ToString(value));
-            processElementProperty((string)controlSpec["height"], value => this.Control.Height = ToDouble(value));
-            processElementProperty((string)controlSpec["width"], value => this.Control.Width = ToDouble(value));
+            processElementProperty((string)controlSpec["height"], value => this.Control.Height = ToDeviceUnits(value));
+            processElementProperty((string)controlSpec["width"], value => this.Control.Width = ToDeviceUnits(value));
             processElementProperty((string)controlSpec["minheight"], value => this.Control.MinHeight = ToDouble(value));
             processElementProperty((string)controlSpec["minwidth"], value => this.Control.MinWidth = ToDouble(value));
             processElementProperty((string)controlSpec["maxheight"], value => this.Control.MaxHeight = ToDouble(value));
@@ -169,7 +174,7 @@ namespace MaaasClientWin.Controls
             processMarginProperty(controlSpec["margin"]);
 
             // These elements are very common among derived classes, so we'll do some runtime reflection...
-            processElementPropertyIfPresent((string)controlSpec["fontsize"], "FontSize", value => WindowsPxFromTypographicPoints(ToDouble(value)));
+            processElementPropertyIfPresent((string)controlSpec["fontsize"], "FontSize", value => ToDeviceUnitsFromTypographicPoints(value));
             processElementPropertyIfPresent((string)controlSpec["fontweight"], "FontWeight", value => ToFontWeight(value));
             processElementPropertyIfPresent((string)controlSpec["enabled"], "IsEnabled", value => ToBoolean(value));
             processElementPropertyIfPresent((string)controlSpec["background"], "Background", value => ToBrush(value));

@@ -22,15 +22,36 @@ namespace MaaasClientAndroid.Controls
     {
         private ShapeDrawable _drawable;
 
+        int _width = 0;
+        int _height = 0;
+
         public ShapeView(Context context) : base(context)
         {
-            int x = 0;
-            int y = 0;
-            int width = 160;
-            int height = 160;
+            _width = 100;
+            _height = 100;
 
             _drawable = new ShapeDrawable(new RectShape());
-            _drawable.SetBounds(x, y, x + width, y + height);
+            _drawable.SetBounds(0, 0, _width, _height);
+        }
+
+        public int ShapeWidth 
+        { 
+            get { return _width; }
+            set 
+            {
+                _width = value;
+                _drawable.SetBounds(0, 0, _width, _height);
+            }
+        }
+
+        public int ShapeHeight
+        {
+            get { return _height; }
+            set
+            {
+                _height = value;
+                _drawable.SetBounds(0, 0, _width, _height);
+            }
         }
 
         public void SetFillColor(Color color)
@@ -56,6 +77,8 @@ namespace MaaasClientAndroid.Controls
 
             applyFrameworkElementDefaults(shapeView);
             processElementProperty((string)controlSpec["fill"], value => shapeView.SetFillColor(ToColor(value)));
+            processElementProperty((string)controlSpec["width"], value => shapeView.ShapeWidth = (int)ToDeviceUnits(value));
+            processElementProperty((string)controlSpec["height"], value => shapeView.ShapeHeight = (int)ToDeviceUnits(value));
         }
     }
 }

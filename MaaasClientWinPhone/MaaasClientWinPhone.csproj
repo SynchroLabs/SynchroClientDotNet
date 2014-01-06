@@ -102,6 +102,9 @@
     <Compile Include="..\MaaasShared\ControlWrapper.cs">
       <Link>Linked\ControlWrapper.cs</Link>
     </Compile>
+    <Compile Include="..\MaaasShared\DeviceMetrics.cs">
+      <Link>Linked\DeviceMetrics.cs</Link>
+    </Compile>
     <Compile Include="..\MaaasShared\PageView.cs">
       <Link>Linked\PageView.cs</Link>
     </Compile>
@@ -146,6 +149,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>AppResources.resx</DependentUpon>
     </Compile>
+    <Compile Include="WinPhoneDeviceMetrics.cs" />
     <Compile Include="WinPhonePageView.cs" />
   </ItemGroup>
   <ItemGroup>

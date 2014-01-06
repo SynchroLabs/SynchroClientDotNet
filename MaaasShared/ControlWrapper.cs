@@ -144,6 +144,19 @@ namespace MaaasCore
             return result;
         }
 
+        // Conversion functions to go from Maaas units or typographic points to device units
+        //
+
+        public double ToDeviceUnits(object value)
+        {
+            return StateManager.DeviceMetrics.MaaasUnitsToDeviceUnits(ToDouble(value));
+        }
+
+        public double ToDeviceUnitsFromTypographicPoints(object value)
+        {
+            return StateManager.DeviceMetrics.TypographicPointsToMaaasUnits(ToDouble(value));
+        }
+
         // Silverlight colors
         //
         // http://msdn.microsoft.com/en-us/library/system.windows.media.colors(v=vs.110).aspx

@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.Graphics.Display;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -33,7 +34,9 @@ namespace MaaasClientWin
         {
             this.InitializeComponent();
 
-            _stateManager = new StateManager(_host, new TransportHttp(_host + "/api"));
+            WinDeviceMetrics deviceMetrics = new WinDeviceMetrics();
+
+            _stateManager = new StateManager(_host, new TransportHttp(_host + "/api"), deviceMetrics);
             _pageView = new WinPageView(_stateManager, _stateManager.ViewModel, (Panel)this.mainStack);
             _stateManager.Path = "menu";
 

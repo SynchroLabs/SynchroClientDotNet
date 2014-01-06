@@ -10,12 +10,15 @@ using Microsoft.Phone.Shell;
 using MaaasClientWinPhone.Resources;
 using MaaasCore;
 using MaaasShared;
+using Windows.Graphics.Display;
+using Windows.UI.Core;
+using Microsoft.Phone.Info;
 
 namespace MaaasClientWinPhone
 {
     public partial class MainPage : PhoneApplicationPage
     {
-        static string _host = "192.168.1.105:1337"; // "localhost:1337";
+        static string _host = "192.168.1.109:1337"; // "localhost:1337";
         //static string _host = "maaas.azurewebsites.net";
 
         StateManager _stateManager;
@@ -27,8 +30,10 @@ namespace MaaasClientWinPhone
         public MainPage()
         {
             InitializeComponent();
+            
+            WinPhoneDeviceMetrics deviceMetrics = new WinPhoneDeviceMetrics();
 
-            _stateManager = new StateManager(_host, new TransportHttp(_host + "/api"));
+            _stateManager = new StateManager(_host, new TransportHttp(_host + "/api"), deviceMetrics);
             _pageView = new WinPhonePageView(_stateManager, _stateManager.ViewModel, (Panel)this.mainStack);
 
             this.BackKeyPress += MainPage_BackKeyPress;

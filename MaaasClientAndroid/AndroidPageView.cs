@@ -12,6 +12,7 @@ using Android.Widget;
 using MaaasCore;
 using MaaasClientAndroid.Controls;
 using Newtonsoft.Json.Linq;
+using Android.Util;
 
 namespace MaaasClientAndroid
 {

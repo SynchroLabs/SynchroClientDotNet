@@ -91,6 +91,9 @@
     <Compile Include="..\MaaasShared\ControlWrapper.cs">
       <Link>Linked\ControlWrapper.cs</Link>
     </Compile>
+    <Compile Include="..\MaaasShared\DeviceMetrics.cs">
+      <Link>Linked\DeviceMetrics.cs</Link>
+    </Compile>
     <Compile Include="..\MaaasShared\PageView.cs">
       <Link>Linked\PageView.cs</Link>
     </Compile>
@@ -119,6 +122,7 @@
     <Compile Include="Controls\iOSTextBlockWrapper.cs" />
     <Compile Include="Controls\iOSTextBoxWrapper.cs" />
     <Compile Include="Controls\iOSToggleSwitchWrapper.cs" />
+    <Compile Include="iOSDeviceMetrics.cs" />
     <Compile Include="iOSPageView.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="AppDelegate.cs" />

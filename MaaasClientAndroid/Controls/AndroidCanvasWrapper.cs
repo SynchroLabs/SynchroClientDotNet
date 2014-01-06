@@ -33,16 +33,17 @@ namespace MaaasClientAndroid.Controls
                 {
                     // We need to capture and potentially bind some attributes on the added child controls here in the context of the parent...
                     //
-                    // AbsoluteLayout.LayoutParams layoutParams = new AbsoluteLayout.LayoutParams(childControlWrapper.Control.Width, childControlWrapper.Control.Height, 0, 0);
-                    AbsoluteLayout.LayoutParams layoutParams = new AbsoluteLayout.LayoutParams(128, 128, 0, 0);
+                    AbsoluteLayout.LayoutParams layoutParams = new AbsoluteLayout.LayoutParams(
+                        AbsoluteLayout.LayoutParams.WrapContent, AbsoluteLayout.LayoutParams.WrapContent, 0, 0
+                        );
                     absLayout.AddView(childControlWrapper.Control, layoutParams);
 
                     childControlWrapper.processElementProperty((string)childControlSpec["left"], value => {
-                        ((AbsoluteLayout.LayoutParams)childControlWrapper.Control.LayoutParameters).X = (int)ToDouble(value);
+                        ((AbsoluteLayout.LayoutParams)childControlWrapper.Control.LayoutParameters).X = (int)ToDeviceUnits(value);
                         absLayout.ForceLayout();
                     });
                     childControlWrapper.processElementProperty((string)childControlSpec["top"], value => {
-                        ((AbsoluteLayout.LayoutParams)childControlWrapper.Control.LayoutParameters).Y = (int)ToDouble(value);
+                        ((AbsoluteLayout.LayoutParams)childControlWrapper.Control.LayoutParameters).Y = (int)ToDeviceUnits(value);
                         absLayout.ForceLayout();
                     });
                 });
