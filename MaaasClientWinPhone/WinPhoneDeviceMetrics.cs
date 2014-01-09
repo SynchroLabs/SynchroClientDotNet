@@ -12,18 +12,21 @@ namespace MaaasClientWinPhone
 {
     class WinPhoneDeviceMetrics : MaaasDeviceMetrics
     {
-        // OK, so Windows Phone prior to GDR3 had no way to access the physical size of the screen.  All screens were scaled from a
-        // virtual 480 x 800/853 resolution.  Original Windows Phone 7 era phones were between 3.7" - 4.3", whereas more modern Windows
-        // Phone 8 devices were typically in the 4"-4.5" range.
+        // Windows Phone prior to GDR3 had no way to access the physical size of the screen.  All screens were scaled from a
+        // virtual 480 x 800/853 resolution.
         //
-        // Windows Phone 8 GDR 3 added some metrics to give the actual screen size / ppi so that size-aware apps could take advantage of
-        // potentially much larger screens.  Those devices can be as large as 6" - 7".
+        // Windows Phone 8 GDR 3 added some metrics to give the actual screen size / ppi so that size-aware apps could take 
+        // advantage of potentially much larger screens.  Those devices can be as large as 6" - 7".
         //
-        // The general rule will be to try to get the physical size from the GDR extended screen info.  If that is not present, just 
-        // make an assumption about the screen size (we know it's a pre-phablet phone).  It might be good to assume a smaller physical
-        // screen for the lower resolution, such as 4" for a 100% scale device and 4.25" for devices with a larger scale factor.
+        //   http://blogs.windows.com/windows_phone/b/wpdev/archive/2013/11/22/taking-advantage-of-large-screen-windows-phones.aspx
         //
-        // http://blogs.windows.com/windows_phone/b/wpdev/archive/2013/11/22/taking-advantage-of-large-screen-windows-phones.aspx
+        // Note that the GDR3 emulators return a value for PhysicalScreenResolution, but not for RawDpiX.  Nokia's suggested 
+        // workaround for testing is here:
+        //
+        //   http://developer.nokia.com/Community/Wiki/Simulate_1080p_windows_phone_emulator
+        //
+        // This code was tested on a Nokia 920 with GDR3, which provided both PhysicalScreenResolution and RawDpiX, and using
+        // those values, produced correct values for screen width/height in inches.
         //
         bool GetExtendedScreenInfo()
         {
@@ -46,13 +49,20 @@ namespace MaaasClientWinPhone
 
             var dpi = (double)temp;
 
-            var screenDiagonal = Math.Sqrt(Math.Pow(screenResolution.Width / dpi, 2) + Math.Pow(screenResolution.Height / dpi, 2));
+            this._widthInches = screenResolution.Width / dpi;
+            this._heightInches = screenResolution.Height / dpi;
 
-            var width = App.Current.Host.Content.ActualWidth;
+            // It might be nice to record this, as for very large scale values Windows Phone will report
+            // a lower / more common scaling factor (for example, on a Nokia 1520 the actual scale factor
+            // is 2.25, but the OS will report 1.6, as if it was a 720p screen instead of 1080p).  Using
+            // the reported scaling factor for selecting resources will work fine (they'll be scaled up
+            // by the OS as needed), but if the scaling factor is used for anything else, you might want
+            // the real deal.
+            //
+            double rawScalingFactor = screenResolution.Width / this._widthDeviceUnits;
 
-            Util.debug(String.Format("Extended screen info {0} x {1}; {2:0.0#} raw scale; {3:0.0}\"",
-              screenResolution.Width, screenResolution.Height, screenResolution.Width / width,
-              screenDiagonal));
+            Util.debug(String.Format("Extended screen info resolution {0} x {1}; {2:0.0#} raw scale; {3:0.0}\" x {4:0.0}\"",
+                screenResolution.Width, screenResolution.Height, rawScalingFactor, this._widthInches, this._heightInches));
 
             return true;
         }
@@ -66,26 +76,27 @@ namespace MaaasClientWinPhone
 
             _scalingFactor = Application.Current.Host.Content.ScaleFactor;
 
-            // !!! We need to check extended screen info, and if present, use that (as it will give us accurate information)
+            // We check extended screen info, and if present, use that (as it will give us accurate information)
             //
-            Util.debug("extended screen info:" + GetExtendedScreenInfo());
-
-            // !!! Only if extended screen info fails (pre GDR3), then we will use the guestimate method below...
-            //
-            // Windows phones at lower resolutions (unscaled) are typically 4" to 4.3", so we'll assume
-            // 4.25" for those phones.  Windows phones with higher resolution displays tend to also be
-            // larger, typically 4.3" to 4.8", so we'll assume 4.5" for those.
-            //
-            double screenDiagonalInches = 4.25f;
-            if (_scalingFactor > 1.0f)
+            if (!GetExtendedScreenInfo())
             {
-                screenDiagonalInches = 4.5f;
+                // If extended screen info fails (pre GDR3), then we will use the guestimate method below...
+                //
+                // Windows phones at lower resolutions (unscaled) are typically 4" to 4.3", so we'll assume
+                // 4.25" for those phones.  Windows phones with higher resolution displays tend to also be
+                // larger, typically 4.3" to 4.8", so we'll assume 4.5" for those.
+                //
+                double screenDiagonalInches = 4.25f;
+                if (_scalingFactor > 1.0f)
+                {
+                    screenDiagonalInches = 4.5f;
+                }
+
+                double screenDiagonalDeviceUnits = Math.Sqrt(Math.Pow(_widthDeviceUnits, 2) + Math.Pow(_heightDeviceUnits, 2));
+
+                _widthInches = screenDiagonalInches / screenDiagonalDeviceUnits * _widthDeviceUnits;
+                _heightInches = screenDiagonalInches / screenDiagonalDeviceUnits * _heightDeviceUnits;
             }
-
-            double screenDiagonalDeviceUnits = Math.Sqrt(Math.Pow(_widthDeviceUnits, 2) + Math.Pow(_heightDeviceUnits, 2));
-
-            _widthInches = screenDiagonalInches / screenDiagonalDeviceUnits * _widthDeviceUnits;
-            _heightInches = screenDiagonalInches / screenDiagonalDeviceUnits * _heightDeviceUnits;
         }
     }
 }
