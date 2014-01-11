@@ -391,7 +391,7 @@ namespace MaaasCore
             {
                 if (valueBinding.BindingContext == bindingContext)
                 {
-                    Util.debug("Marking dirty - binding with path: " + bindingContext.BindingPath);
+                    // Util.debug("Marking dirty - binding with path: " + bindingContext.BindingPath);
                     valueBinding.IsDirty = true;
                 }
             }

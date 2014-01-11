@@ -40,6 +40,32 @@ namespace MaaasClientIOS
             _rootControlWrapper = new iOSControlWrapper(_stateManager, _viewModel, _viewModel.RootBindingContext, panel);
 
             this.setPageTitle = title => _pageTitle = title;
+
+            NSNotificationCenter.DefaultCenter.AddObserver(UIKeyboard.DidShowNotification, notification => onKeyboardShown(notification));
+            NSNotificationCenter.DefaultCenter.AddObserver(UIKeyboard.WillHideNotification, notification => onKeyboardHidden(notification));
+
+            DismissKeyboardOnBackgroundTap();
+        }
+
+        protected void DismissKeyboardOnBackgroundTap()
+        {
+            // Add gesture recognizer to hide keyboard
+            var tap = new UITapGestureRecognizer { CancelsTouchesInView = false };
+            tap.AddTarget(() => _rootControlWrapper.Control.EndEditing(true));
+            tap.ShouldReceiveTouch += (recognizer, touch) => !(touch.View is UIButton);
+            _rootControlWrapper.Control.AddGestureRecognizer(tap);
+        }
+
+        public void onKeyboardShown(NSNotification notification)
+        {
+            var keyboardFrame = UIKeyboard.FrameEndFromNotification(notification);
+            Util.debug("Keyboard shown - frame: " + keyboardFrame);
+        }
+
+        public void onKeyboardHidden(NSNotification notification)
+        {
+            Util.debug("Keyboard hidden");
+            var keyboardFrame = UIKeyboard.FrameBeginFromNotification(notification);
         }
 
         public override ControlWrapper CreateRootContainerControl(JObject controlSpec)
@@ -76,6 +102,20 @@ namespace MaaasClientIOS
             navBar.PushNavigationItem(navItem, false);
 
             panel.AddSubview(navBar);
+
+            // !!! What we really want to do here is create a (vertical) scrollview that covers the area from the 
+            //     nav bar to the bottom of the screen.  Add any content to that scrollview.
+            //
+            /*
+            JObject controlSpec = new JObject(
+                new JProperty("type", "scrollview"),
+                new JProperty("orientation", "vertical")
+                // height (screen height - navBar.Bounds.Height) 
+                // width (screen width)
+            );
+
+            var controlWrapper = CreateRootContainerControl(controlSpec);
+            */
 
             if (content != null)
             {

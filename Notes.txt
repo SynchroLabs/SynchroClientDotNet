@@ -55,6 +55,8 @@ ListView binding attributes
 
 Rebinding
 
+    Note: I'm pretty sure this all got fixed - verify
+
     The problem is that bindings are established using the tokens from the viewmodel.  So it is currently
     impossible to create a binding for which the token doesn't exist (and this same issue would be a problem
     when any intermeidate binding context isn't represented by a token).
@@ -150,3 +152,23 @@ Controls - http://msdn.microsoft.com/en-us/library/windows/apps/hh465351.aspx
 	Web view
 
 	Windows contracts?  Sharing, settings, search...
+
+
+Containers
+
+    Border
+       border (brush/color)
+       borderthickness
+       cornerradius
+       padding
+       background (brush/color)
+
+       Sizes to control (Always?  What if size is specified?  Min/max sizes?)
+
+    Panel
+       padding
+
+    Scrolling
+       iOS - UIScrollView - https://developer.apple.com/library/ios/documentation/WindowsViews/Conceptual/UIScrollView_pg/Introduction/Introduction.html
+       Android - ScrollView - http://developer.android.com/reference/android/widget/ScrollView.html
+       Win - ScrollViewer - http://msdn.microsoft.com/en-us/library/windows/apps/windows.ui.xaml.controls.scrollviewer.aspx

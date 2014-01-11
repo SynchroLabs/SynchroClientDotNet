@@ -144,7 +144,9 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Controls\WinBorderWrapper.cs" />
     <Compile Include="Controls\WinRectangleWrapper.cs" />
+    <Compile Include="Controls\WinScrollWrapper.cs" />
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>

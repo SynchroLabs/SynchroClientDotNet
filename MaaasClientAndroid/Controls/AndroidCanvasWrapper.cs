@@ -24,6 +24,9 @@ namespace MaaasClientAndroid.Controls
             AbsoluteLayout absLayout = new AbsoluteLayout(((AndroidControlWrapper)parent).Control.Context);
             this._control = absLayout;
 
+            // !!! Absolute layout supports padding
+            // !!! http://alvinalexander.com/java/jwarehouse/android/core/java/android/widget/AbsoluteLayout.java.shtml
+
             applyFrameworkElementDefaults(absLayout);
             processElementProperty((string)controlSpec["background"], value => absLayout.SetBackgroundColor(ToColor(value)));
 

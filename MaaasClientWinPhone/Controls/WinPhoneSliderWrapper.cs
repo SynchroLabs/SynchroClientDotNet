@@ -20,6 +20,14 @@ namespace MaaasClientWinPhone.Controls
 
             applyFrameworkElementDefaults(slider);
 
+            // Static
+            Orientation orientation = Orientation.Horizontal;
+            if ((controlSpec["orientation"] != null) && ((string)controlSpec["orientation"] == "vertical"))
+            {
+                orientation = Orientation.Vertical;
+            }
+            slider.Orientation = orientation;
+
             JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "value");
             if (!processElementBoundValue("value", (string)bindingSpec["value"], () => { return slider.Value; }, value => slider.Value = ToDouble(value)))
             {

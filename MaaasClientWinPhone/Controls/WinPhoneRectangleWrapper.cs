@@ -19,6 +19,14 @@ namespace MaaasClientWinPhone.Controls
             this._control = rect;
 
             applyFrameworkElementDefaults(rect);
+
+            processElementProperty((string)controlSpec["border"], value => rect.Stroke = ToBrush(value));
+            processElementProperty((string)controlSpec["borderthickness"], value => rect.StrokeThickness = (float)ToDeviceUnits(value));
+            processElementProperty((string)controlSpec["cornerradius"], value =>
+            {
+                rect.RadiusX = (float)ToDeviceUnits(value);
+                rect.RadiusY = (float)ToDeviceUnits(value);
+            });
             processElementProperty((string)controlSpec["fill"], value => rect.Fill = ToBrush(value));
         }
     }

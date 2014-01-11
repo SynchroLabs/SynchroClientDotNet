@@ -112,11 +112,13 @@
     <Compile Include="..\MaaasShared\ViewModel.cs">
       <Link>Linked\ViewModel.cs</Link>
     </Compile>
+    <Compile Include="Controls\iOSBorderWrapper.cs" />
     <Compile Include="Controls\iOSButtonWrapper.cs" />
     <Compile Include="Controls\iOSCanvasWrapper.cs" />
     <Compile Include="Controls\iOSControlWrapper.cs" />
     <Compile Include="Controls\iOSImageWrapper.cs" />
     <Compile Include="Controls\iOSRectangleWrapper.cs" />
+    <Compile Include="Controls\iOSScrollWrapper.cs" />
     <Compile Include="Controls\iOSSliderWrapper.cs" />
     <Compile Include="Controls\iOSStackPanelWrapper.cs" />
     <Compile Include="Controls\iOSTextBlockWrapper.cs" />

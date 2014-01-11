@@ -126,6 +126,7 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Controls\WinPhoneBorderWrapper.cs" />
     <Compile Include="Controls\WinPhoneButtonWrapper.cs" />
     <Compile Include="Controls\WinPhoneCanvasWrapper.cs" />
     <Compile Include="Controls\WinPhoneControlWrapper.cs" />
@@ -134,6 +135,7 @@
     <Compile Include="Controls\WinPhoneListViewWrapper.cs" />
     <Compile Include="Controls\WinPhonePasswordBoxWrapper.cs" />
     <Compile Include="Controls\WinPhoneRectangleWrapper.cs" />
+    <Compile Include="Controls\WinPhoneScrollWrapper.cs" />
     <Compile Include="Controls\WinPhoneSliderWrapper.cs" />
     <Compile Include="Controls\WinPhoneStackPanelWrapper.cs" />
     <Compile Include="Controls\WinPhoneTextBlockWrapper.cs" />

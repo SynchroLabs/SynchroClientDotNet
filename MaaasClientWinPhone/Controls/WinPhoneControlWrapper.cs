@@ -79,53 +79,48 @@ namespace MaaasClientWinPhone.Controls
             }
         }
 
-        protected void processMarginProperty(JToken margin)
+        public void processThicknessProperty(JToken thicknessAttributeValue, SetViewValue setThickness)
         {
-            Thickness thickness = new Thickness();
-
-            if (margin is JValue)
+            if (thicknessAttributeValue is JValue)
             {
-                processElementProperty((string)margin, value =>
+                processElementProperty((string)thicknessAttributeValue, value =>
                 {
-                    double marginThickness = ToDouble(value);
-                    thickness.Left = marginThickness;
-                    thickness.Top = marginThickness;
-                    thickness.Right = marginThickness;
-                    thickness.Bottom = marginThickness;
-                    this.Control.Margin = thickness;
+                    Thickness thickness = new Thickness(ToDouble(value));
+                    setThickness(thickness);
                 }, "0");
             }
-            else if (margin is JObject)
+            else if (thicknessAttributeValue is JObject)
             {
-                JObject marginObject = margin as JObject;
+                JObject marginObject = thicknessAttributeValue as JObject;
+                Thickness thickness = new Thickness();
+
                 processElementProperty((string)marginObject.Property("left"), value =>
                 {
                     thickness.Left = ToDouble(value);
-                    this.Control.Margin = thickness;
+                    setThickness(thickness);
                 }, "0");
                 processElementProperty((string)marginObject.Property("top"), value =>
                 {
                     thickness.Top = ToDouble(value);
-                    this.Control.Margin = thickness;
+                    setThickness(thickness);
                 }, "0");
                 processElementProperty((string)marginObject.Property("right"), value =>
                 {
                     thickness.Right = ToDouble(value);
-                    this.Control.Margin = thickness;
+                    setThickness(thickness);
                 }, "0");
                 processElementProperty((string)marginObject.Property("bottom"), value =>
                 {
                     thickness.Bottom = ToDouble(value);
-                    this.Control.Margin = thickness;
+                    setThickness(thickness);
                 }, "0");
             }
         }
-
         static Thickness defaultThickness = new Thickness(0, 0, 10, 10);
 
         protected void applyFrameworkElementDefaults(FrameworkElement element)
         {
-            element.Margin = defaultThickness;
+            //element.Margin = defaultThickness;
             element.HorizontalAlignment = HorizontalAlignment.Left;
         }
 
@@ -135,7 +130,7 @@ namespace MaaasClientWinPhone.Controls
             //
             //           VerticalAlignment [ Top, Center, Bottom, Stretch ]
             //           HorizontalAlignment [ Left, Center, Right, Stretch ] 
-            //           Maring, padding, border, etc.
+            //           Padding, border, etc.
             //
 
             Util.debug("Processing framework element properties");
@@ -148,7 +143,7 @@ namespace MaaasClientWinPhone.Controls
             processElementProperty((string)controlSpec["maxwidth"], value => this.Control.MaxWidth = ToDouble(value));
             processElementProperty((string)controlSpec["opacity"], value => this.Control.Opacity = ToDouble(value));
             processElementProperty((string)controlSpec["visibility"], value => this.Control.Visibility = ToBoolean(value) ? Visibility.Visible : Visibility.Collapsed);
-            processMarginProperty(controlSpec["margin"]);
+            processThicknessProperty(controlSpec["margin"], value => this.Control.Margin = (Thickness)value);
 
             // These elements are very common among derived classes, so we'll do some runtime reflection...
             processElementPropertyIfPresent((string)controlSpec["fontsize"], "FontSize", value => ToDeviceUnitsFromTypographicPoints(value));
@@ -218,6 +213,12 @@ namespace MaaasClientWinPhone.Controls
                     break;
                 case "rectangle":
                     controlWrapper = new WinPhoneRectangleWrapper(parent, bindingContext, controlSpec);
+                    break;
+                case "border":
+                    controlWrapper = new WinPhoneBorderWrapper(parent, bindingContext, controlSpec);
+                    break;
+                case "scrollview":
+                    controlWrapper = new WinPhoneScrollWrapper(parent, bindingContext, controlSpec);
                     break;
             }
 

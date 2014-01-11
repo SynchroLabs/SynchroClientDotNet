@@ -24,6 +24,14 @@ namespace MaaasClientAndroid.Controls
             LinearLayout layout = new LinearLayout(((AndroidControlWrapper)parent).Control.Context);
             this._control = layout;
 
+            // !!! Padding (thickness)
+            /*
+            layout.PaddingTop;
+            layout.PaddingBottom;
+            layout.PaddingLeft;
+            layout.PaddingRight;
+            */
+
             applyFrameworkElementDefaults(layout);
 
             Orientation orientation = Orientation.Horizontal;

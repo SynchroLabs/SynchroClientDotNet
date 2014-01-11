@@ -160,6 +160,12 @@ namespace MaaasClientIOS.Controls
                 case "rectangle":
                     controlWrapper = new iOSRectangleWrapper(parent, bindingContext, controlSpec);
                     break;
+                case "border":
+                    controlWrapper = new iOSBorderWrapper(parent, bindingContext, controlSpec);
+                    break;
+                case "scrollview":
+                    controlWrapper = new iOSScrollWrapper(parent, bindingContext, controlSpec);
+                    break;
             }
 
             if (controlWrapper != null)

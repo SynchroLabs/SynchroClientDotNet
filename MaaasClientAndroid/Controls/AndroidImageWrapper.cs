@@ -33,16 +33,17 @@ namespace MaaasClientAndroid.Controls
 
             if (image.LayoutParameters == null)
             {
-                image.LayoutParameters = new LinearLayout.LayoutParams(128, 128);
+                image.LayoutParameters = new ViewGroup.LayoutParams(0, 0);
             }
-            // image.SetScaleType(ImageView.ScaleType.FitXy);
-            //image.LayoutParameters.Height = 64;
 
-            // !!! image.SetMaxHeight(64); // Sizes will be overriden by the generic height/width property handlers, but
-            // !!! image.SetMaxWidth(64);  // we have to set these here (as defaults) in case the sizes aren't specified. 
+            processElementProperty((string)controlSpec["height"], value => image.LayoutParameters.Height = (int)ToDeviceUnits(value));
+            processElementProperty((string)controlSpec["width"], value => image.LayoutParameters.Width = (int)ToDeviceUnits(value));
+
+            // !!! Image scale type might be interesting later...
+            //
+            // image.SetScaleType(ImageView.ScaleType.FitXy);
 
             var ctx = SynchronizationContext.Current;
-
             processElementProperty((string)controlSpec["resource"], async value =>
             {
                 Uri uri = this.StateManager.buildUri(ToString(value));

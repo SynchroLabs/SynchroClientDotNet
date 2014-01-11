@@ -20,6 +20,7 @@ namespace MaaasClientWinPhone.Controls
 
             applyFrameworkElementDefaults(stackPanel);
 
+            // Static
             Orientation orientation = Orientation.Horizontal;
             if ((controlSpec["orientation"] != null) && ((string)controlSpec["orientation"] == "vertical"))
             {
