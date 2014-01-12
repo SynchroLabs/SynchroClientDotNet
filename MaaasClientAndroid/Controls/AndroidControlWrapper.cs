@@ -161,6 +161,9 @@ namespace MaaasClientAndroid.Controls
                 case "scrollview":
                     controlWrapper = new AndroidScrollWrapper(parent, bindingContext, controlSpec);
                     break;
+                case "border":
+                    controlWrapper = new AndroidBorderWrapper(parent, bindingContext, controlSpec);
+                    break;
             }
 
             if (controlWrapper != null)

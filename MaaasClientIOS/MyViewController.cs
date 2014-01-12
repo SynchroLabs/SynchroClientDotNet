@@ -10,8 +10,7 @@ namespace MaaasClientIOS
 {
     public class MyViewController : UIViewController
     {
-        static string _host = "192.168.1.109:1337"; // "localhost:1337";
-        //static string _host = "maaas.azurewebsites.net";
+        static string _host = Util.getMaaasHost();
 
         StateManager _stateManager;
         PageView _pageView;

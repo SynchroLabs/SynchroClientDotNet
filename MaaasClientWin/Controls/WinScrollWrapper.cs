@@ -14,6 +14,8 @@ namespace MaaasClientWin.Controls
         public WinScrollWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
+            // ScrollViewer - http://msdn.microsoft.com/en-us/library/windows/apps/windows.ui.xaml.controls.scrollviewer.aspx
+            //
             Util.debug("Creating scroll element");
             ScrollViewer scroller = new ScrollViewer();
             this._control = scroller;

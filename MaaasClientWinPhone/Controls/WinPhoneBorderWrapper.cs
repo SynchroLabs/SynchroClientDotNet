@@ -25,6 +25,7 @@ namespace MaaasClientWinPhone.Controls
             processThicknessProperty(controlSpec["borderthickness"], value => border.BorderThickness = (Thickness)value);
             processElementProperty((string)controlSpec["cornerradius"], value => border.CornerRadius = new CornerRadius(ToDouble(value)));
             processThicknessProperty(controlSpec["padding"], value => border.Padding = (Thickness)value);
+            // "background" color handled by base class
 
             if (controlSpec["contents"] != null)
             {

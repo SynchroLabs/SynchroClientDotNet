@@ -24,8 +24,7 @@ namespace MaaasClientWin
     /// </summary>
     public sealed partial class BasicPage : MaaasClientWin.Common.LayoutAwarePage
     {
-        static string _host = "localhost:1337";
-        //static string _host = "maaas.azurewebsites.net";
+        static string _host = Util.getMaaasHost();
 
         StateManager _stateManager;
         PageView _pageView;

@@ -17,52 +17,47 @@ using Android.Graphics;
 
 namespace MaaasClientAndroid.Controls
 {
-
-    public class ShapeView : View 
+    public class MaaasRectDrawable : GradientDrawable
     {
-        private GradientDrawable _drawable;
-
-        int _width = 0;
-        int _height = 0;
+        int _width = 100;
+        int _height = 100;
         int _strokeWidth = 0;
-        
+        float _radius = 0;
+
         Color _fillColor;
         Color _strokeColor;
 
-        public ShapeView(Context context) : base(context)
+        public MaaasRectDrawable()
+            : base()
         {
-            _width = 100;
-            _height = 100;
-
-            _drawable = new GradientDrawable();
-            _drawable.SetShape(ShapeType.Rectangle);
-            _drawable.SetBounds(0, 0, _width, _height);
+            this.SetShape(ShapeType.Rectangle);
+            this.SetBounds(0, 0, _width, _height);
         }
 
-        public int ShapeWidth 
-        { 
+        public int Width
+        {
             get { return _width; }
-            set 
+            set
             {
                 _width = value;
-                _drawable.SetBounds(0, 0, _width, _height);
+                this.SetBounds(0, 0, _width, _height);
             }
         }
 
-        public int ShapeHeight
+        public int Height
         {
             get { return _height; }
             set
             {
                 _height = value;
-                _drawable.SetBounds(0, 0, _width, _height);
+                this.SetBounds(0, 0, _width, _height);
             }
         }
 
         public void SetFillColor(Color color)
         {
             _fillColor = color;
-            _drawable.SetColor(_fillColor);
+            this.SetColor(_fillColor);
         }
 
         public void SetStrokeWidth(int width)
@@ -70,9 +65,10 @@ namespace MaaasClientAndroid.Controls
             _strokeWidth = width;
         }
 
-        public void SetCornerRadius(float radius)
+        public override void SetCornerRadius(float radius)
         {
-            _drawable.SetCornerRadius(radius);
+            _radius = radius;
+            base.SetCornerRadius(_radius);
         }
 
         public void SetStrokeColor(Color color)
@@ -80,12 +76,27 @@ namespace MaaasClientAndroid.Controls
             _strokeColor = color;
         }
 
-        protected override void OnDraw(Canvas canvas) 
+        public override void Draw(Canvas canvas)
         {
-            // Since the stroke width and color can be set independantly, we update the stroke here..
+            // Since the stroke width and color can be set independantly, we update the stroke here before drawing...
             //
-            _drawable.SetStroke(_strokeWidth, _strokeColor);
+            this.SetStroke(_strokeWidth, _strokeColor);
+            base.Draw(canvas);
+        }
+    }
 
+    public class DrawableView : View
+    {
+        Drawable _drawable;
+
+        public DrawableView(Context context, Drawable drawable)
+            : base(context)
+        {
+            _drawable = drawable;
+        }
+
+        protected override void OnDraw(Canvas canvas)
+        {
             _drawable.Draw(canvas);
         }
     }
@@ -97,16 +108,20 @@ namespace MaaasClientAndroid.Controls
         {
             Util.debug("Creating rectangle");
 
-            ShapeView shapeView = new ShapeView(((AndroidControlWrapper)parent).Control.Context);
-            this._control = shapeView;
+            MaaasRectDrawable rect = new MaaasRectDrawable();
+            DrawableView drawableView = new DrawableView(((AndroidControlWrapper)parent).Control.Context, rect);
+            this._control = drawableView;
 
-            applyFrameworkElementDefaults(shapeView);
-            processElementProperty((string)controlSpec["border"], value => shapeView.SetStrokeColor(ToColor(value)));
-            processElementProperty((string)controlSpec["borderthickness"], value => shapeView.SetStrokeWidth((int)ToDeviceUnits(value)));
-            processElementProperty((string)controlSpec["cornerradius"], value => shapeView.SetCornerRadius((float)ToDeviceUnits(value)));
-            processElementProperty((string)controlSpec["fill"], value => shapeView.SetFillColor(ToColor(value)));
-            processElementProperty((string)controlSpec["width"], value => shapeView.ShapeWidth = (int)ToDeviceUnits(value));
-            processElementProperty((string)controlSpec["height"], value => shapeView.ShapeHeight = (int)ToDeviceUnits(value));
+            applyFrameworkElementDefaults(drawableView);
+            processElementProperty((string)controlSpec["border"], value => rect.SetStrokeColor(ToColor(value)));
+            processElementProperty((string)controlSpec["borderthickness"], value => rect.SetStrokeWidth((int)ToDeviceUnits(value)));
+            processElementProperty((string)controlSpec["cornerradius"], value => rect.SetCornerRadius((float)ToDeviceUnits(value)));
+            processElementProperty((string)controlSpec["fill"], value => rect.SetFillColor(ToColor(value)));
+
+            // !!! The View needs to report its height/width for layout purposes (which values need to be updated via the setters below)
+            //
+            processElementProperty((string)controlSpec["width"], value => rect.Width = (int)ToDeviceUnits(value));
+            processElementProperty((string)controlSpec["height"], value => rect.Height = (int)ToDeviceUnits(value));
         }
     }
 }

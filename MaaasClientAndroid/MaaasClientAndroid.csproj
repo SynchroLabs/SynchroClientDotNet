@@ -102,6 +102,7 @@
     </Compile>
     <Compile Include="AndroidDeviceMetrics.cs" />
     <Compile Include="AndroidPageView.cs" />
+    <Compile Include="Controls\AndroidBorderWrapper.cs" />
     <Compile Include="Controls\AndroidButtonWrapper.cs" />
     <Compile Include="Controls\AndroidCanvasWrapper.cs" />
     <Compile Include="Controls\AndroidControlWrapper.cs" />

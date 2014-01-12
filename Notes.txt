@@ -153,22 +153,29 @@ Controls - http://msdn.microsoft.com/en-us/library/windows/apps/hh465351.aspx
 
 	Windows contracts?  Sharing, settings, search...
 
+    Stepper (up/down)
+
+    SplitView (maybe only for landscape-first devices, fallback to multi-view for portrait-first)
 
 Containers
 
     Border
-       border (brush/color)
-       borderthickness
-       cornerradius
-       padding
-       background (brush/color)
+       - Should be done on all platforms.  
+       - Make test harness that binds borderthickness and padding and animates them.  Also test animating size of contained control.
+       - Support explicit size with content alignment (h and v)?  Maybe later.
 
-       Sizes to control (Always?  What if size is specified?  Min/max sizes?)
+    Add "page" scrollers to Android/WinPhone (Win?) like iOS (for cases where content goes off bottom of screen)
 
-    Panel
-       padding
+    Stack panel - implement/test on all platforms
+      - Specify height/width vs wrap content
+      - Alignment of items (left/right/center/stretch)
+      - Padding
 
-    Scrolling
-       iOS - UIScrollView - https://developer.apple.com/library/ios/documentation/WindowsViews/Conceptual/UIScrollView_pg/Introduction/Introduction.html
-       Android - ScrollView - http://developer.android.com/reference/android/widget/ScrollView.html
-       Win - ScrollViewer - http://msdn.microsoft.com/en-us/library/windows/apps/windows.ui.xaml.controls.scrollviewer.aspx
+    Slider
+      - Orientaton - implement/verify on all platforms
+
+Misc
+
+    Color spec should suppost 8 byte form with alpha specified
+    Separate binding ability of RGBA elements would be a neat parlor trick (maybe later)
+    Which controls should support "padding"?  Button, Textblock, Textbox?

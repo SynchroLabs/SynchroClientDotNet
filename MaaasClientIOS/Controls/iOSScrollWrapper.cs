@@ -19,6 +19,7 @@ namespace MaaasClientIOS.Controls
 
         public override void LayoutSubviews()
         {
+            // this.Superview
             if (!Dragging && !Decelerating)
             {
                 Util.debug("Laying out sub view");

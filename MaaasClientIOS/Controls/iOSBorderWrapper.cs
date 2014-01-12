@@ -15,7 +15,7 @@ namespace MaaasClientIOS.Controls
     {
         protected UIView _view = null;  
         protected UIView _childView = null;
-        protected int _padding = 10;
+        protected float _padding = 0;
 
         public iOSBorderWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
@@ -28,10 +28,22 @@ namespace MaaasClientIOS.Controls
             processElementDimensions(controlSpec, 128, 128);
             applyFrameworkElementDefaults(_view);
 
+            // If border thickness or padding change, need to resize view to child...
+            //
             processElementProperty((string)controlSpec["border"], value => _view.Layer.BorderColor = ToColor(value).CGColor);
-            processElementProperty((string)controlSpec["borderthickness"], value => _view.Layer.BorderWidth = (float)ToDeviceUnits(value));
+            processElementProperty((string)controlSpec["borderthickness"], value => 
+            {
+                _view.Layer.BorderWidth = (float)ToDeviceUnits(value);
+                this.sizeToChild();
+            });
+            processElementProperty((string)controlSpec["cornerradius"], value => _view.Layer.CornerRadius = (float)ToDeviceUnits(value));
+            processElementProperty((string)controlSpec["padding"], value => // !!! Simple value only for now
+            {
+                _padding = (float)ToDeviceUnits(value);
+                this.sizeToChild();
+            }); 
 
-            processElementProperty((string)controlSpec["fill"], value => _view.BackgroundColor = ToColor(value));
+            // "background" color handled by base class
 
             if (controlSpec["contents"] != null)
             {

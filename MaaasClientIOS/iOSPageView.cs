@@ -29,9 +29,43 @@ namespace MaaasClientIOS
         }
     }
 
+    class PageContentScrollView : UIScrollView
+    {
+        public PageContentScrollView(RectangleF rect)
+            : base(rect)
+        {
+        }
+
+        public override void LayoutSubviews()
+        {
+            if (!Dragging && !Decelerating)
+            {
+                Util.debug("Laying out sub view");
+
+                SizeF size = new SizeF(this.ContentSize);
+
+                // Size width to parent width (to achieve vertical-only scroll)
+                size.Width = this.Superview.Frame.Width;
+
+                foreach (UIView view in this.Subviews)
+                {
+                    // Size height of content area to height of contained views...
+                    if ((view.Frame.Y + view.Frame.Height) > size.Height)
+                    {
+                        size.Height = view.Frame.Y + view.Frame.Height;
+                    }
+                }
+                this.ContentSize = size;
+            }
+
+            base.LayoutSubviews();
+        }
+    }
+
     class iOSPageView : PageView
     {
         iOSControlWrapper _rootControlWrapper;
+        PageContentScrollView _contentScrollView;
         string _pageTitle = "";
 
         public iOSPageView(StateManager stateManager, ViewModel viewModel, UIView panel) :
@@ -49,7 +83,7 @@ namespace MaaasClientIOS
 
         protected void DismissKeyboardOnBackgroundTap()
         {
-            // Add gesture recognizer to hide keyboard
+            // Add gesture recognizer to hide keyboard on tap
             var tap = new UITapGestureRecognizer { CancelsTouchesInView = false };
             tap.AddTarget(() => _rootControlWrapper.Control.EndEditing(true));
             tap.ShouldReceiveTouch += (recognizer, touch) => !(touch.View is UIButton);
@@ -58,14 +92,59 @@ namespace MaaasClientIOS
 
         public void onKeyboardShown(NSNotification notification)
         {
+            // May want animate this at some point - see: https://gist.github.com/redent/7263276
+            //
             var keyboardFrame = UIKeyboard.FrameEndFromNotification(notification);
             Util.debug("Keyboard shown - frame: " + keyboardFrame);
+
+            var contentInsets = new UIEdgeInsets(0.0f, 0.0f, keyboardFrame.Height, 0.0f);
+            _contentScrollView.ContentInset = contentInsets;
+            _contentScrollView.ScrollIndicatorInsets = contentInsets;
+
+            centerScrollView();
         }
 
         public void onKeyboardHidden(NSNotification notification)
         {
             Util.debug("Keyboard hidden");
-            var keyboardFrame = UIKeyboard.FrameBeginFromNotification(notification);
+            _contentScrollView.ContentInset = UIEdgeInsets.Zero;
+            _contentScrollView.ScrollIndicatorInsets = UIEdgeInsets.Zero;
+        }
+
+        public static UIView FindFirstResponder(UIView view)
+        {
+            if (view.IsFirstResponder)
+            {
+                return view;
+            }
+
+            foreach (UIView subView in view.Subviews)
+            {
+                var firstResponder = FindFirstResponder(subView);
+                if (firstResponder != null)
+                {
+                    return firstResponder;
+                }
+            }
+            return null;
+        }
+
+        // Center the scroll view on the active edit control.
+        //
+        public void centerScrollView()
+        {
+            // We could use this any time the edit control focus changed, on the "return" in an edit control, etc.
+            //
+            UIView activeView = FindFirstResponder(_contentScrollView);
+            if (activeView != null)
+            {
+                RectangleF activeViewRect = activeView.Superview.ConvertRectToView(activeView.Frame, _contentScrollView);
+
+                float scrollAreaHeight = _contentScrollView.Frame.Height - _contentScrollView.ContentInset.Bottom;
+
+                var offset = Math.Max(0, activeViewRect.Y - (scrollAreaHeight - activeView.Frame.Height) / 2);
+                _contentScrollView.SetContentOffset(new PointF(0, offset), false);
+            }
         }
 
         public override ControlWrapper CreateRootContainerControl(JObject controlSpec)
@@ -81,12 +160,15 @@ namespace MaaasClientIOS
                 subview.RemoveFromSuperview();
             }
             _rootControlWrapper.ChildControls.Clear();
+            _contentScrollView = null;
         }
 
         public override void SetContent(ControlWrapper content)
         {
             UIView panel = _rootControlWrapper.Control;
 
+            // Create the nav bar, add a back control as appropriate...
+            //
             UINavigationBar navBar = new UINavigationBar(new RectangleF(0f, 0f, panel.Frame.Width, 42f));
 
             if (this.onBackCommand != null)
@@ -100,33 +182,20 @@ namespace MaaasClientIOS
 
             UINavigationItem navItem = new UINavigationItem(_pageTitle);
             navBar.PushNavigationItem(navItem, false);
-
             panel.AddSubview(navBar);
 
-            // !!! What we really want to do here is create a (vertical) scrollview that covers the area from the 
-            //     nav bar to the bottom of the screen.  Add any content to that scrollview.
+            // Create the main content area (scroll view) and add the page content to it...
             //
-            /*
-            JObject controlSpec = new JObject(
-                new JProperty("type", "scrollview"),
-                new JProperty("orientation", "vertical")
-                // height (screen height - navBar.Bounds.Height) 
-                // width (screen width)
-            );
-
-            var controlWrapper = CreateRootContainerControl(controlSpec);
-            */
-
+            _contentScrollView = new PageContentScrollView(new RectangleF(0f, navBar.Bounds.Height, panel.Frame.Width, panel.Frame.Height - navBar.Bounds.Height));
+            panel.AddSubview(_contentScrollView);
             if (content != null)
             {
                 UIView childView = ((iOSControlWrapper)content).Control;
-                RectangleF frame = childView.Frame;
-                frame.Y = navBar.Bounds.Height;
-                childView.Frame = frame;
-
-                panel.AddSubview(childView);
+                _contentScrollView.AddSubview(childView);
+                // We're adding the content to the _rootControlWrapper child list, even thought the scroll view
+                // is actually in between (in the view heirarchy) - but that shouldn't be a problem.
+                _rootControlWrapper.ChildControls.Add(content);
             }
-            _rootControlWrapper.ChildControls.Add(content);
         }
 
         //

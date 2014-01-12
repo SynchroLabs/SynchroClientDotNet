@@ -79,13 +79,7 @@ namespace MaaasClientIOS.Controls
             //processElementProperty((string)controlSpec["maxwidth"], value => this.Control.MaxWidth = ToDouble(value));
             //processElementProperty((string)controlSpec["opacity"], value => this.Control.Opacity = ToDouble(value));
 
-            processElementProperty((string)controlSpec["background"], value =>
-            {
-                ColorARGB colorArgb = ControlWrapper.getColor(ToString(value));
-                UIColor color = UIColor.FromRGBA(colorArgb.r, colorArgb.g, colorArgb.b, colorArgb.a);
-                this.Control.BackgroundColor = color;
-            });
-
+            processElementProperty((string)controlSpec["background"], value => this.Control.BackgroundColor = ToColor(value));
             processElementProperty((string)controlSpec["visibility"], value => this.Control.Hidden = !ToBoolean(value));
 
             if (this.Control is UIControl)
