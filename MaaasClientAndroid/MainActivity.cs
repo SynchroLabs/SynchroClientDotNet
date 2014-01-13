@@ -28,8 +28,9 @@ namespace MaaasClientAndroid
 
             AndroidDeviceMetrics deviceMetrics = new AndroidDeviceMetrics(this.WindowManager.DefaultDisplay);
 
-            var layout = new LinearLayout(this);
-            layout.Orientation = Orientation.Vertical;
+            // This ScrollView will consume all available screen space by default, which is what we want...
+            //
+            var layout = new ScrollView(this);
 
             // Using OkHttpNetworkHandler via ModernHttpClient component
             //

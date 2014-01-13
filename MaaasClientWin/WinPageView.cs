@@ -15,10 +15,10 @@ namespace MaaasClientWin
     {
         WinControlWrapper _rootControlWrapper;
 
-        public WinPageView(StateManager stateManager, ViewModel viewModel, Panel panel) :
+        public WinPageView(StateManager stateManager, ViewModel viewModel, ContentControl contentControl) :
             base(stateManager, viewModel)
         {
-            _rootControlWrapper = new WinControlWrapper(_stateManager, _viewModel, _viewModel.RootBindingContext, panel);
+            _rootControlWrapper = new WinControlWrapper(_stateManager, _viewModel, _viewModel.RootBindingContext, contentControl);
         }
 
         public override ControlWrapper CreateRootContainerControl(JObject controlSpec)
@@ -28,17 +28,17 @@ namespace MaaasClientWin
 
         public override void ClearContent()
         {
-            Panel panel = (Panel)_rootControlWrapper.Control;
-            panel.Children.Clear();
+            ContentControl contentControl = (ContentControl)_rootControlWrapper.Control;
+            contentControl.Content = null;
             _rootControlWrapper.ChildControls.Clear();
         }
 
         public override void SetContent(ControlWrapper content)
         {
-            Panel panel = (Panel)_rootControlWrapper.Control;
+            ContentControl contentControl = (ContentControl)_rootControlWrapper.Control;
             if (content != null)
             {
-                panel.Children.Add(((WinControlWrapper)content).Control);
+                contentControl.Content = ((WinControlWrapper)content).Control;
             }
             _rootControlWrapper.ChildControls.Add(content);
         }

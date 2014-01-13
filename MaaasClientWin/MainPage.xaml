@@ -30,8 +30,7 @@
             <Button x:Name="backButton" IsEnabled="False" Style="{StaticResource BackButtonStyle}"/>
             <TextBlock x:Name="pageTitle" Grid.Column="1" Text="Loading..." Style="{StaticResource PageHeaderTextStyle}"/>
         </Grid>
-
-        <StackPanel x:Name="mainStack" Grid.Row="2" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="120,20,20,20" IsHoldingEnabled="False"/>
+        <ScrollViewer x:Name="mainScroll" IsHoldingEnabled="False" Margin="120,20,0,0" Grid.Row="2" MaxZoomFactor="1" MinZoomFactor="1" ZoomMode="Disabled" />
 
         <VisualStateManager.VisualStateGroups>
 

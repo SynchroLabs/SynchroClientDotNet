@@ -43,11 +43,9 @@
         <StackPanel x:Name="TitlePanel" Grid.Row="0" Margin="12,17,0,28">
             <TextBlock x:Name="pageTitle" Text="Loading..." Margin="9,-7,0,0" Style="{StaticResource PhoneTextTitle1Style}"/>
         </StackPanel>
+        <ScrollViewer x:Name="mainScroll" Margin="12,0,12,0" Grid.Row="1" />
 
         <!--ContentPanel - place additional content here-->
-        <StackPanel x:Name="mainStack" Grid.Row="1" Margin="12,0,12,0">
-
-        </StackPanel>
 
         <!--Uncomment to see an alignment grid to help ensure your controls are
             aligned on common boundaries.  The image has a top margin of -32px to

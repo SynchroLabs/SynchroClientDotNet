@@ -14,10 +14,10 @@ namespace MaaasClientWinPhone
     {
         WinPhoneControlWrapper _rootControlWrapper;
 
-        public WinPhonePageView(StateManager stateManager, ViewModel viewModel, Panel panel) :
+        public WinPhonePageView(StateManager stateManager, ViewModel viewModel, ContentControl contentControl) :
             base(stateManager, viewModel)
         {
-            _rootControlWrapper = new WinPhoneControlWrapper(_stateManager, _viewModel, _viewModel.RootBindingContext, panel);
+            _rootControlWrapper = new WinPhoneControlWrapper(_stateManager, _viewModel, _viewModel.RootBindingContext, contentControl);
         }
 
         public override ControlWrapper CreateRootContainerControl(JObject controlSpec)
@@ -27,17 +27,17 @@ namespace MaaasClientWinPhone
 
         public override void ClearContent()
         {
-            Panel panel = (Panel)_rootControlWrapper.Control;
-            panel.Children.Clear();
+            ContentControl contentControl = (ContentControl)_rootControlWrapper.Control;
+            contentControl.Content = null;
             _rootControlWrapper.ChildControls.Clear();
         }
 
         public override void SetContent(ControlWrapper content)
         {
-            Panel panel = (Panel)_rootControlWrapper.Control;
+            ContentControl contentControl = (ContentControl)_rootControlWrapper.Control;
             if (content != null)
             {
-                panel.Children.Add(((WinPhoneControlWrapper)content).Control);
+                contentControl.Content = (((WinPhoneControlWrapper)content).Control);
             }
             _rootControlWrapper.ChildControls.Add(content);
         }

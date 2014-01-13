@@ -35,8 +35,11 @@ namespace MaaasClientWin
 
             WinDeviceMetrics deviceMetrics = new WinDeviceMetrics();
 
+            this.mainScroll.HorizontalScrollBarVisibility = ScrollBarVisibility.Auto;
+            this.mainScroll.VerticalScrollBarVisibility = ScrollBarVisibility.Auto;
+
             _stateManager = new StateManager(_host, new TransportHttp(_host + "/api"), deviceMetrics);
-            _pageView = new WinPageView(_stateManager, _stateManager.ViewModel, (Panel)this.mainStack);
+            _pageView = new WinPageView(_stateManager, _stateManager.ViewModel, this.mainScroll);
             _stateManager.Path = "menu";
 
             this.Loaded += BasicPage_Loaded; 
