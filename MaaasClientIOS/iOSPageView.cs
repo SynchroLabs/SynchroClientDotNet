@@ -40,7 +40,7 @@ namespace MaaasClientIOS
         {
             if (!Dragging && !Decelerating)
             {
-                Util.debug("Laying out sub view");
+                // Util.debug("Laying out sub view");
 
                 SizeF size = new SizeF(this.ContentSize);
 

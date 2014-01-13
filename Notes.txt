@@ -160,8 +160,6 @@ Controls - http://msdn.microsoft.com/en-us/library/windows/apps/hh465351.aspx
 Containers
 
     Border
-       - Should be done on all platforms.  
-       - Make test harness that binds borderthickness and padding and animates them.  Also test animating size of contained control.
        - Support explicit size with content alignment (h and v)?  Maybe later.
 
     Add "page" scrollers to Android/WinPhone (Win?) like iOS (for cases where content goes off bottom of screen)
@@ -172,7 +170,7 @@ Containers
       - Padding
 
     Slider
-      - Orientaton - implement/verify on all platforms
+      - Orientaton - implement/verify on all platforms - actually, iOS only supports horizontal, so maybe we just do that.
 
 Misc
 

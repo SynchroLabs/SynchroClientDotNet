@@ -11,37 +11,94 @@ using System.Drawing;
 
 namespace MaaasClientIOS.Controls
 {
-    class iOSBorderWrapper : iOSControlWrapper
+    class BorderView : UIView
     {
-        protected UIView _view = null;  
         protected UIView _childView = null;
         protected float _padding = 0;
 
+        public BorderView() : base()
+        {
+        }
+
+        public float BorderWidth
+        {
+            get { return this.Layer.BorderWidth; }
+            set
+            {
+                this.Layer.BorderWidth = value;
+                this.SetNeedsLayout();
+            }
+        }
+
+        public float Padding
+        {
+            get { return _padding; }
+            set
+            {
+                _padding = value;
+                this.SetNeedsLayout();
+            }
+        }
+
+        public override void AddSubview(UIView view)
+        {
+            _childView = view;
+            base.AddSubview(view);
+        }
+
+        public override void LayoutSubviews()
+        {
+            // Util.debug("BorderView - Layout subviews");
+
+            if (_childView != null)
+            {
+                float borderPlusPadding = this.Layer.BorderWidth + _padding;
+
+                // Position the child considering border width and padding...
+                //
+                RectangleF childFrame = _childView.Frame;
+                childFrame.X = borderPlusPadding;
+                childFrame.Y = borderPlusPadding;
+                _childView.Frame = childFrame;
+
+                // Resize the panel (border) to contain the control...
+                //
+                SizeF panelSize = this.Frame.Size;
+                panelSize.Width = childFrame.X + childFrame.Width + borderPlusPadding;
+                panelSize.Height = childFrame.Y + childFrame.Height + borderPlusPadding;
+                RectangleF panelFrame = this.Frame;
+                panelFrame.Size = panelSize;
+                this.Frame = panelFrame;
+
+                if (this.Superview != null)
+                {
+                    this.Superview.SetNeedsLayout();
+                }
+            }
+
+            base.LayoutSubviews();
+        }
+    }
+
+    class iOSBorderWrapper : iOSControlWrapper
+    {
         public iOSBorderWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
             Util.debug("Creating border element");
 
-            _view = new UIView();  
-            this._control = _view;
+            BorderView border = new BorderView();  
+            this._control = border;
 
             processElementDimensions(controlSpec, 128, 128);
-            applyFrameworkElementDefaults(_view);
+            applyFrameworkElementDefaults(border);
 
             // If border thickness or padding change, need to resize view to child...
             //
-            processElementProperty((string)controlSpec["border"], value => _view.Layer.BorderColor = ToColor(value).CGColor);
-            processElementProperty((string)controlSpec["borderthickness"], value => 
-            {
-                _view.Layer.BorderWidth = (float)ToDeviceUnits(value);
-                this.sizeToChild();
-            });
-            processElementProperty((string)controlSpec["cornerradius"], value => _view.Layer.CornerRadius = (float)ToDeviceUnits(value));
-            processElementProperty((string)controlSpec["padding"], value => // !!! Simple value only for now
-            {
-                _padding = (float)ToDeviceUnits(value);
-                this.sizeToChild();
-            }); 
+            processElementProperty((string)controlSpec["border"], value => border.Layer.BorderColor = ToColor(value).CGColor);
+            processElementProperty((string)controlSpec["borderthickness"], value => border.BorderWidth = (float)ToDeviceUnits(value));
+            processElementProperty((string)controlSpec["cornerradius"], value => border.Layer.CornerRadius = (float)ToDeviceUnits(value));
+            processElementProperty((string)controlSpec["padding"], value => border.Padding = (float)ToDeviceUnits(value)); // !!! Simple value only for now
 
             // "background" color handled by base class
 
@@ -49,32 +106,9 @@ namespace MaaasClientIOS.Controls
             {
                 createControls((JArray)controlSpec["contents"], (childControlSpec, childControlWrapper) =>
                 {
-                    _childView = childControlWrapper.Control;
-                    _view.AddSubview(_childView);
-                    sizeToChild();
+                    border.AddSubview(childControlWrapper.Control);
                 });
             }
-        }
-
-        protected void sizeToChild()
-        {
-            float borderPlusPadding = _view.Layer.BorderWidth + _padding;
-
-            // Position the child considering border width and padding...
-            //
-            RectangleF childFrame = _childView.Frame;
-            childFrame.X = borderPlusPadding;
-            childFrame.Y = borderPlusPadding;
-            _childView.Frame = childFrame;
-
-            // Resize the panel (border) to contain the control...
-            //
-            SizeF panelSize = _view.Frame.Size;
-            panelSize.Width = childFrame.X + childFrame.Width + borderPlusPadding;
-            panelSize.Height = childFrame.Y + childFrame.Height + borderPlusPadding;
-            RectangleF panelFrame = _view.Frame;
-            panelFrame.Size = panelSize;
-            _view.Frame = panelFrame;
         }
     }
 }

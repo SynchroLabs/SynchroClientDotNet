@@ -11,69 +11,125 @@ using System.Drawing;
 
 namespace MaaasClientIOS.Controls
 {
+    class StackPanelView : UIView
+    {
+        protected iOSControlWrapper _controlWrapper;
+        protected bool _isHorizontal = true;
+        protected float _padding = 0;
+        protected float _spacing = 10;
+
+        public StackPanelView(iOSControlWrapper controlWrapper)
+            : base()
+        {
+            _controlWrapper = controlWrapper;
+        }
+
+        public bool Horizontal { get { return _isHorizontal; } set { _isHorizontal = value; } }
+
+        public float Padding
+        {
+            get { return _padding; }
+            set
+            {
+                _padding = value;
+                this.SetNeedsLayout();
+            }
+        }
+
+        public override void AddSubview(UIView view)
+        {
+            base.AddSubview(view);
+        }
+
+        public override void LayoutSubviews()
+        {
+            // !!! What we really need to do here is measure all the subviews to determinal the final size of the
+            //     stackpanel after layout.  Then as we position each subview, we use the alignment to determine how to
+            //     position the item within the space available.
+            //
+            // !!! How do we access the subview configuration?  Via the wrapper somehow?
+
+            // Util.debug("StackPanelView - Layout subviews");
+
+            float _currTop = _padding;
+            float _currLeft = _padding;
+
+            SizeF newPanelSize = new SizeF(0, 0);
+
+            // Arrange the subviews
+            //
+            foreach (UIView childView in this.Subviews)
+            {
+                iOSControlWrapper childControlWrapper = _controlWrapper.getChildControlWrapper(childView);
+
+                RectangleF childFrame = childView.Frame;
+                childFrame.X = _currLeft;
+                childFrame.Y = _currTop;
+                if (_isHorizontal)
+                {
+                    _currLeft += childView.Bounds.Width + _spacing;
+                }
+                else
+                {
+                    _currTop += childView.Bounds.Height + _spacing;
+                }
+                childView.Frame = childFrame;
+
+                if ((childFrame.X + childFrame.Width) > newPanelSize.Width)
+                {
+                    newPanelSize.Width = childFrame.X + childFrame.Width;
+                }
+                if ((childFrame.Y + childFrame.Height) > newPanelSize.Height)
+                {
+                    newPanelSize.Height = childFrame.Y + childFrame.Height;
+                }
+            }
+
+            // Resize the stackpanel to contain the subview
+            //
+            // !!! Optimize this to only re-size/notify if the size actually changes
+            //
+            newPanelSize.Height += _padding;
+            newPanelSize.Width += _padding;
+
+            RectangleF panelFrame = this.Frame;
+            panelFrame.Size = newPanelSize;
+            this.Frame = panelFrame;
+            if (this.Superview != null)
+            {
+                this.Superview.SetNeedsLayout();
+            }
+
+            base.LayoutSubviews();
+        }
+    }
+
     class iOSStackPanelWrapper : iOSControlWrapper
     {
-        UIView _view;
-        bool _isHorizontal = true;
-        int _padding = 10;
-        float _currTop;
-        float _currLeft;
-
         public iOSStackPanelWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
             Util.debug("Creating stack panel element");
 
-            _view = new UIView();
-            this._control = _view;
+            StackPanelView stackPanel = new StackPanelView(this);
+            this._control = stackPanel;
 
             processElementDimensions(controlSpec, 0, 0);
-            applyFrameworkElementDefaults(_view);
+            applyFrameworkElementDefaults(stackPanel);
 
+            processElementProperty((string)controlSpec["padding"], value => stackPanel.Padding = (float)ToDeviceUnits(value)); // !!! Simple value only for now
+
+            stackPanel.Horizontal = true;
             if ((controlSpec["orientation"] != null) && ((string)controlSpec["orientation"] == "vertical"))
             {
-                _isHorizontal = false;
+                stackPanel.Horizontal = false;
             }
-
-            _currTop = _padding;
-            _currLeft = _padding;
 
             if (controlSpec["contents"] != null)
             {
                 createControls((JArray)controlSpec["contents"], (childControlSpec, childControlWrapper) =>
                 {
-                    // !!! Worlds worst stackpanel
-
-                    // Add the child control, update current stackpanel position info
-                    //
-                    RectangleF childFrame = childControlWrapper.Control.Frame;
-                    childFrame.X = _currLeft;
-                    childFrame.Y = _currTop;
-                    if (_isHorizontal)
-                    {
-                        _currLeft += childControlWrapper.Control.Bounds.Width + _padding;
-                    }
-                    else
-                    {
-                        _currTop += childControlWrapper.Control.Bounds.Height + _padding;
-                    }
-                    childControlWrapper.Control.Frame = childFrame;
-                    _view.AddSubview(childControlWrapper.Control);
-
-                    // Resize the stackpanel to contain the new control
-                    //
-                    SizeF panelSize = _view.Frame.Size;
-                    if ((childFrame.X + childFrame.Width) > _view.Bounds.Width)
-                    {
-                        panelSize.Width = childFrame.X + childFrame.Width;
-                    }
-                    if ((childFrame.Y + childFrame.Height) > _view.Bounds.Height)
-                    {
-                        panelSize.Height = childFrame.Y + childFrame.Height;
-                    }
-                    RectangleF panelFrame = _view.Frame;
-                    panelFrame.Size = panelSize;
-                    _view.Frame = panelFrame;
+                    stackPanel.AddSubview(childControlWrapper.Control);
                 });
             }
         }

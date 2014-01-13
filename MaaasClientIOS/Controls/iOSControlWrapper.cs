@@ -28,6 +28,30 @@ namespace MaaasClientIOS.Controls
             _control = control;
         }
 
+        // !!! In work...
+        //
+        public enum Alignment : uint
+        {
+            UNDEFINED = 0,
+            Center,
+            Left,
+            Right,
+            Top,
+            Bottom,
+            Stretch
+        }
+
+        public static Alignment getAlignment(string alignmentValue, Alignment defaultAlignment = Alignment.UNDEFINED)
+        {
+            Alignment alignment = (Alignment)Enum.Parse(typeof(Alignment), alignmentValue);
+            if (Enum.IsDefined(typeof(Alignment), alignmentValue))
+            {
+                return alignment;
+            }
+
+            return defaultAlignment;
+        }
+
         protected static UIColor ToColor(object value)
         {
             ColorARGB color = ControlWrapper.getColor(ToString(value));
@@ -55,6 +79,10 @@ namespace MaaasClientIOS.Controls
                 RectangleF frame = this.Control.Frame;
                 frame.Height = (float)ToDeviceUnits(value);
                 this.Control.Frame = frame;
+                if (this.Control.Superview != null)
+                {
+                    this.Control.Superview.SetNeedsLayout();
+                }
             });
 
             processElementProperty((string)controlSpec["width"], value => 
@@ -62,6 +90,10 @@ namespace MaaasClientIOS.Controls
                 RectangleF frame = this.Control.Frame;
                 frame.Width = (float)ToDeviceUnits(value);
                 this.Control.Frame = frame;
+                if (this.Control.Superview != null)
+                {
+                    this.Control.Superview.SetNeedsLayout();
+                }
             });
         }
 
@@ -71,13 +103,12 @@ namespace MaaasClientIOS.Controls
             Util.debug("Processing framework element properties");
 
             //processElementProperty((string)controlSpec["name"], value => this.Control.Name = ToString(value));
-            //processElementProperty((string)controlSpec["height"], value => this.Control.Height = ToDouble(value));
-            //processElementProperty((string)controlSpec["width"], value => this.Control.Width = ToDouble(value));
             //processElementProperty((string)controlSpec["minheight"], value => this.Control.MinHeight = ToDouble(value));
             //processElementProperty((string)controlSpec["minwidth"], value => this.Control.MinWidth = ToDouble(value));
             //processElementProperty((string)controlSpec["maxheight"], value => this.Control.MaxHeight = ToDouble(value));
             //processElementProperty((string)controlSpec["maxwidth"], value => this.Control.MaxWidth = ToDouble(value));
-            //processElementProperty((string)controlSpec["opacity"], value => this.Control.Opacity = ToDouble(value));
+
+            processElementProperty((string)controlSpec["opacity"], value => this.Control.Layer.Opacity = (float)ToDouble(value));
 
             processElementProperty((string)controlSpec["background"], value => this.Control.BackgroundColor = ToColor(value));
             processElementProperty((string)controlSpec["visibility"], value => this.Control.Hidden = !ToBoolean(value));
@@ -91,7 +122,6 @@ namespace MaaasClientIOS.Controls
                 processElementProperty((string)controlSpec["enabled"], value => this.Control.UserInteractionEnabled = ToBoolean(value));
             }
 
-            // !!! ((UIControl)this.Control).enabled
             //processMarginProperty(controlSpec["margin"]);
 
             // These elements are very common among derived classes, so we'll do some runtime reflection...
