@@ -31,14 +31,6 @@ namespace MaaasClientAndroid.Controls
 
             applyFrameworkElementDefaults(image);
 
-            if (image.LayoutParameters == null)
-            {
-                image.LayoutParameters = new ViewGroup.LayoutParams(0, 0);
-            }
-
-            processElementProperty((string)controlSpec["height"], value => image.LayoutParameters.Height = (int)ToDeviceUnits(value));
-            processElementProperty((string)controlSpec["width"], value => image.LayoutParameters.Width = (int)ToDeviceUnits(value));
-
             // !!! Image scale type might be interesting later...
             //
             // image.SetScaleType(ImageView.ScaleType.FitXy);

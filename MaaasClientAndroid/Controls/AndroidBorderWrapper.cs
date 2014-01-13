@@ -40,12 +40,10 @@ namespace MaaasClientAndroid.Controls
             _layout = new LinearLayout(((AndroidControlWrapper)parent).Control.Context);
             this._control = _layout;
 
+            _layout.SetBackgroundDrawable(_rect);
             _layout.LayoutChange += _layout_LayoutChange;
 
             applyFrameworkElementDefaults(_layout);
-
-            _layout.SetBackgroundDrawable(_rect);
-            _layout.LayoutParameters = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
 
             // If border thickness or padding change, need to record value and update layout padding...
             //

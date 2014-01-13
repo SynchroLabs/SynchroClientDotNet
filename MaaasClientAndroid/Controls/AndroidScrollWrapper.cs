@@ -43,15 +43,7 @@ namespace MaaasClientAndroid.Controls
             _control = scroller;
             _control.OverScrollMode = OverScrollMode.Never;
 
-            if (_control.LayoutParameters == null)
-            {
-                _control.LayoutParameters = new ViewGroup.LayoutParams(0, 0);
-            }
-
             applyFrameworkElementDefaults(_control);
-
-            processElementProperty((string)controlSpec["height"], value => _control.LayoutParameters.Height = (int)ToDeviceUnits(value));
-            processElementProperty((string)controlSpec["width"], value => _control.LayoutParameters.Width = (int)ToDeviceUnits(value));
 
             if (controlSpec["contents"] != null)
             {

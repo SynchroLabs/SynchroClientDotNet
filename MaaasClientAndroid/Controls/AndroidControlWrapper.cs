@@ -31,6 +31,9 @@ namespace MaaasClientAndroid.Controls
         protected View _control;
         public View Control { get { return _control; } }
 
+        protected int _height = ViewGroup.LayoutParams.WrapContent;
+        protected int _width = ViewGroup.LayoutParams.WrapContent;
+
         public AndroidControlWrapper(StateManager stateManager, ViewModel viewModel, BindingContext bindingContext, View control) :
             base(stateManager, viewModel, bindingContext)
         {
@@ -41,6 +44,42 @@ namespace MaaasClientAndroid.Controls
             base(parent, bindingContext)
         {
             _control = control;
+        }
+
+        public void updateSize()
+        {
+            if (_control.LayoutParameters == null)
+            {
+                _control.LayoutParameters = new ViewGroup.LayoutParams(_width, _height);
+            }
+            else
+            {
+                _control.LayoutParameters.Width = _width;
+                _control.LayoutParameters.Height = _height;
+            }
+            _control.RequestLayout();
+        }
+
+        public int Width 
+        {
+            get { return _width; }
+            set 
+            {
+                _width = value;
+                _control.SetMinimumWidth(value);
+                this.updateSize();
+            }
+        }
+
+        public int Height
+        {
+            get { return _height; }
+            set
+            {
+                _height = value;
+                _control.SetMinimumHeight(value);
+                this.updateSize();
+            }
         }
 
         public static Color ToColor(object value)
@@ -76,12 +115,13 @@ namespace MaaasClientAndroid.Controls
 
             //processElementProperty((string)controlSpec["name"], value => this.Control.Name = ToString(value));
 
-            processElementProperty((string)controlSpec["height"], value => this.Control.SetMinimumHeight((int)ToDeviceUnits(value)));
-            processElementProperty((string)controlSpec["width"], value => this.Control.SetMinimumWidth((int)ToDeviceUnits(value)));
+            processElementProperty((string)controlSpec["height"], value => this.Height = (int)ToDeviceUnits(value));
+            processElementProperty((string)controlSpec["width"], value => this.Width = (int)ToDeviceUnits(value));
+            this.updateSize();
 
-            //processElementProperty((string)controlSpec["width"], value => this.Control.Width = ToDouble(value));
-            //processElementProperty((string)controlSpec["minheight"], value => this.Control.MinHeight = ToDouble(value));
-            //processElementProperty((string)controlSpec["minwidth"], value => this.Control.MinWidth = ToDouble(value));
+            processElementProperty((string)controlSpec["minheight"], value => this.Control.SetMinimumHeight((int)ToDeviceUnits(value)));
+            processElementProperty((string)controlSpec["minwidth"], value => this.Control.SetMinimumWidth((int)ToDeviceUnits(value)));
+
             //processElementProperty((string)controlSpec["maxheight"], value => this.Control.MaxHeight = ToDouble(value));
             //processElementProperty((string)controlSpec["maxwidth"], value => this.Control.MaxWidth = ToDouble(value));
             //processElementProperty((string)controlSpec["opacity"], value => this.Control.Opacity = ToDouble(value));

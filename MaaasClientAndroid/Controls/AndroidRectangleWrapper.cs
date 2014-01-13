@@ -103,25 +103,31 @@ namespace MaaasClientAndroid.Controls
 
     class AndroidRectangleWrapper : AndroidControlWrapper
     {
+        MaaasRectDrawable _rect = new MaaasRectDrawable();
+
         public AndroidRectangleWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
             Util.debug("Creating rectangle");
 
-            MaaasRectDrawable rect = new MaaasRectDrawable();
-            DrawableView drawableView = new DrawableView(((AndroidControlWrapper)parent).Control.Context, rect);
+            DrawableView drawableView = new DrawableView(((AndroidControlWrapper)parent).Control.Context, _rect);
             this._control = drawableView;
 
-            applyFrameworkElementDefaults(drawableView);
-            processElementProperty((string)controlSpec["border"], value => rect.SetStrokeColor(ToColor(value)));
-            processElementProperty((string)controlSpec["borderthickness"], value => rect.SetStrokeWidth((int)ToDeviceUnits(value)));
-            processElementProperty((string)controlSpec["cornerradius"], value => rect.SetCornerRadius((float)ToDeviceUnits(value)));
-            processElementProperty((string)controlSpec["fill"], value => rect.SetFillColor(ToColor(value)));
+            drawableView.LayoutChange += drawableView_LayoutChange;
 
-            // !!! The View needs to report its height/width for layout purposes (which values need to be updated via the setters below)
-            //
-            processElementProperty((string)controlSpec["width"], value => rect.Width = (int)ToDeviceUnits(value));
-            processElementProperty((string)controlSpec["height"], value => rect.Height = (int)ToDeviceUnits(value));
+            applyFrameworkElementDefaults(drawableView);
+
+            processElementProperty((string)controlSpec["border"], value => _rect.SetStrokeColor(ToColor(value)));
+            processElementProperty((string)controlSpec["borderthickness"], value => _rect.SetStrokeWidth((int)ToDeviceUnits(value)));
+            processElementProperty((string)controlSpec["cornerradius"], value => _rect.SetCornerRadius((float)ToDeviceUnits(value)));
+            processElementProperty((string)controlSpec["fill"], value => _rect.SetFillColor(ToColor(value)));
+        }
+
+        void drawableView_LayoutChange(object sender, View.LayoutChangeEventArgs e)
+        {
+            Util.debug("Rect Layout change!!!!");
+            _rect.Width = this.Width;
+            _rect.Height = this.Height;
         }
     }
 }

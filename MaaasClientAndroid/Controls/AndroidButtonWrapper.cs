@@ -23,9 +23,7 @@ namespace MaaasClientAndroid.Controls
             Button button = new Button(((AndroidControlWrapper)parent).Control.Context);
             this._control = button;
 
-            // button.Height = 75; // !!!
-
-            // applyFrameworkElementDefaults(button);
+            applyFrameworkElementDefaults(button);
 
             processElementProperty((string)controlSpec["caption"], value => button.Text = ToString(value));
 
