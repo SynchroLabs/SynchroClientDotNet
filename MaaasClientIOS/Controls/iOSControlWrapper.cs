@@ -28,30 +28,6 @@ namespace MaaasClientIOS.Controls
             _control = control;
         }
 
-        // !!! In work...
-        //
-        public enum Alignment : uint
-        {
-            UNDEFINED = 0,
-            Center,
-            Left,
-            Right,
-            Top,
-            Bottom,
-            Stretch
-        }
-
-        public static Alignment getAlignment(string alignmentValue, Alignment defaultAlignment = Alignment.UNDEFINED)
-        {
-            Alignment alignment = (Alignment)Enum.Parse(typeof(Alignment), alignmentValue);
-            if (Enum.IsDefined(typeof(Alignment), alignmentValue))
-            {
-                return alignment;
-            }
-
-            return defaultAlignment;
-        }
-
         protected static UIColor ToColor(object value)
         {
             ColorARGB color = ControlWrapper.getColor(ToString(value));

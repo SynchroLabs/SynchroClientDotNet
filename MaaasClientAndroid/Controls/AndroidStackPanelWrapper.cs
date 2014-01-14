@@ -16,6 +16,44 @@ namespace MaaasClientAndroid.Controls
 {
     class AndroidStackPanelWrapper : AndroidControlWrapper
     {
+        public GravityFlags ToHorizontalAlignment(object value, GravityFlags defaultAlignment = GravityFlags.Left)
+        {
+            GravityFlags alignment = defaultAlignment;
+            string alignmentValue = ToString(value);
+            if (alignmentValue == "Left")
+            {
+                alignment = GravityFlags.Left;
+            }
+            if (alignmentValue == "Right")
+            {
+                alignment = GravityFlags.Right;
+            }
+            else if (alignmentValue == "Center")
+            {
+                alignment = GravityFlags.Center;
+            }
+            return alignment;
+        }
+
+        public GravityFlags ToVerticalAlignment(object value, GravityFlags defaultAlignment = GravityFlags.Top)
+        {
+            GravityFlags alignment = defaultAlignment;
+            string alignmentValue = ToString(value);
+            if (alignmentValue == "Top")
+            {
+                alignment = GravityFlags.Top;
+            }
+            if (alignmentValue == "Right")
+            {
+                alignment = GravityFlags.Bottom;
+            }
+            else if (alignmentValue == "Center")
+            {
+                alignment = GravityFlags.Center;
+            }
+            return alignment;
+        }
+
         public AndroidStackPanelWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
@@ -23,14 +61,6 @@ namespace MaaasClientAndroid.Controls
 
             LinearLayout layout = new LinearLayout(((AndroidControlWrapper)parent).Control.Context);
             this._control = layout;
-
-            // !!! Padding (thickness)
-            /*
-            layout.PaddingTop;
-            layout.PaddingBottom;
-            layout.PaddingLeft;
-            layout.PaddingRight;
-            */
 
             applyFrameworkElementDefaults(layout);
 
@@ -40,6 +70,15 @@ namespace MaaasClientAndroid.Controls
                 orientation = Orientation.Vertical;
             }
             layout.Orientation = orientation;
+
+            if (orientation == Orientation.Vertical)
+            {
+                layout.SetHorizontalGravity(ToHorizontalAlignment(controlSpec["alignContent"]));
+            }
+            else
+            {
+                layout.SetVerticalGravity(ToHorizontalAlignment(controlSpec["alignContent"]));
+            }
 
             if (controlSpec["contents"] != null)
             {

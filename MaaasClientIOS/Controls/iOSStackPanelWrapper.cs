@@ -11,12 +11,24 @@ using System.Drawing;
 
 namespace MaaasClientIOS.Controls
 {
+    public enum Alignment : uint
+    {
+        UNDEFINED = 0,
+        Center,
+        Left,
+        Right,
+        Top,
+        Bottom,
+        Stretch
+    }
+
     class StackPanelView : UIView
     {
         protected iOSControlWrapper _controlWrapper;
         protected bool _isHorizontal = true;
         protected float _padding = 0;
         protected float _spacing = 10;
+        protected Alignment _alignment = Alignment.UNDEFINED;
 
         public StackPanelView(iOSControlWrapper controlWrapper)
             : base()
@@ -25,6 +37,8 @@ namespace MaaasClientIOS.Controls
         }
 
         public bool Horizontal { get { return _isHorizontal; } set { _isHorizontal = value; } }
+
+        public Alignment Alignment { get { return _alignment; } set { _alignment = value; } }
 
         public float Padding
         {
@@ -43,20 +57,23 @@ namespace MaaasClientIOS.Controls
 
         public override void LayoutSubviews()
         {
-            // !!! What we really need to do here is measure all the subviews to determinal the final size of the
-            //     stackpanel after layout.  Then as we position each subview, we use the alignment to determine how to
-            //     position the item within the space available.
-            //
-            // !!! How do we access the subview configuration?  Via the wrapper somehow?
-
             // Util.debug("StackPanelView - Layout subviews");
+
+            // Determine the maximum subview size in each dimension (for item alignment later).
+            //
+            SizeF maxSubviewSize = new SizeF(0, 0);
+            foreach (UIView childView in this.Subviews)
+            {
+                maxSubviewSize.Width = Math.Max(maxSubviewSize.Width, childView.Frame.Width);
+                maxSubviewSize.Height = Math.Max(maxSubviewSize.Height, childView.Frame.Height);
+            }
 
             float _currTop = _padding;
             float _currLeft = _padding;
 
             SizeF newPanelSize = new SizeF(0, 0);
 
-            // Arrange the subviews
+            // Arrange the subviews (align as appropriate)
             //
             foreach (UIView childView in this.Subviews)
             {
@@ -67,10 +84,26 @@ namespace MaaasClientIOS.Controls
                 childFrame.Y = _currTop;
                 if (_isHorizontal)
                 {
+                    if (_alignment == Alignment.Center)
+                    {
+                        childFrame.Y += (maxSubviewSize.Height - childFrame.Height) / 2;
+                    }
+                    else if (_alignment == Alignment.Bottom)
+                    {
+                        childFrame.Y += (maxSubviewSize.Height - childFrame.Height);
+                    }
                     _currLeft += childView.Bounds.Width + _spacing;
                 }
                 else
                 {
+                    if (_alignment == Alignment.Center)
+                    {
+                        childFrame.X += (maxSubviewSize.Width - childFrame.Width) / 2;
+                    }
+                    else if (_alignment == Alignment.Right)
+                    {
+                        childFrame.X += (maxSubviewSize.Width - childFrame.Width);
+                    }
                     _currTop += childView.Bounds.Height + _spacing;
                 }
                 childView.Frame = childFrame;
@@ -106,6 +139,18 @@ namespace MaaasClientIOS.Controls
 
     class iOSStackPanelWrapper : iOSControlWrapper
     {
+        public static Alignment ToAlignment(object alignmentValue, Alignment defaultAlignment = Alignment.UNDEFINED)
+        {
+            string alignmentString = ToString(alignmentValue);
+            Alignment alignment = (Alignment)Enum.Parse(typeof(Alignment), alignmentString);
+            if (Enum.IsDefined(typeof(Alignment), alignmentString))
+            {
+                return alignment;
+            }
+
+            return defaultAlignment;
+        }
+
         public iOSStackPanelWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
@@ -117,7 +162,7 @@ namespace MaaasClientIOS.Controls
             processElementDimensions(controlSpec, 0, 0);
             applyFrameworkElementDefaults(stackPanel);
 
-            processElementProperty((string)controlSpec["padding"], value => stackPanel.Padding = (float)ToDeviceUnits(value)); // !!! Simple value only for now
+            processElementProperty((string)controlSpec["alignContent"], value => stackPanel.Alignment = ToAlignment(value));
 
             stackPanel.Horizontal = true;
             if ((controlSpec["orientation"] != null) && ((string)controlSpec["orientation"] == "vertical"))
