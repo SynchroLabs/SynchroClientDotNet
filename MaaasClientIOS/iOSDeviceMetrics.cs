@@ -29,6 +29,8 @@ namespace MaaasClientIOS
 
         public iOSDeviceMetrics() : base()
         {
+            _os = "iOS";
+
             // Device         Screen size  Logical resolution  Logical ppi  Width (in)  Height (in)
             // =============  ===========  ==================  ===========  ==========  ===========
             // iPhone / iPod     3.5"           320 x 480           163       1.963       2.944
@@ -51,18 +53,21 @@ namespace MaaasClientIOS
                 {
                     _heightInches = 2.944f;
                 }
+                _deviceName = "iPhone/iPod";
             }
             else if (iPadMini())
             {
                 _deviceType = MaaasDeviceType.MiniTablet;
                 _widthInches = 4.712f;
                 _heightInches = 6.282f;
+                _deviceName = "iPad Mini";
             }
             else
             {
                 _deviceType = MaaasDeviceType.Tablet;
                 _widthInches = 5.818f;
                 _heightInches = 7.758f;
+                _deviceName = "iPad";
             }
 
             _widthDeviceUnits = UIScreen.MainScreen.Bounds.Width;

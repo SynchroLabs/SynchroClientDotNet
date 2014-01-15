@@ -18,6 +18,9 @@ namespace MaaasCore
     {
         protected MaaasDeviceType _deviceType = MaaasDeviceType.Phone;
 
+        protected string _os = "Unknown"; // !!! OS version would be nice
+        protected string _deviceName = "Unknown";
+
         protected double _widthInches = 0;
         protected double _heightInches = 0;
 
@@ -29,6 +32,11 @@ namespace MaaasCore
         public MaaasDeviceMetrics()
         {
         }
+
+        // Device details
+        //
+        public string OS { get { return _os; } }
+        public string DeviceName { get { return _deviceName; } }
 
         // Device type
         //
@@ -50,7 +58,7 @@ namespace MaaasCore
         public double WidthDeviceUnits { get { return _widthDeviceUnits; } }
         public double HeightDeviceUnits { get { return _heightDeviceUnits; } }
 
-        // Scaling factor is the ratio of device units to physical pixels.  This can be used to determine an approopriately sized 
+        // Scaling factor is the ratio of device units to physical pixels.  This can be used to determine an appropriately sized 
         // image resource, for example.
         //
         public double ScalingFactor { get { return _scalingFactor; } }
@@ -114,17 +122,6 @@ namespace MaaasCore
             // Convert typographic point values (72pt/inch) to Maaas units (219.52units/inch on model phone)
             //
             return points * 3;
-        }
-
-        // On some platforms the font size may be specified in typographic points.  In order to maintain font scaling (as described 
-        // above), we may need to scale typographic point values based on the ratio of physical screen size to the size of the 
-        // model screen used in the typographic point conversion method above.
-        //
-        // !!! Do we even need this?  Can we just use Maaas units / device units to specify font sizes in all cases?
-        //
-        public double ScaledTypographicPoints(double points)
-        {
-            return points; // !!! TODO
         }
     }
 }

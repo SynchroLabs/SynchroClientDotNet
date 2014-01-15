@@ -14,6 +14,9 @@ namespace MaaasClientWin
 
         public WinDeviceMetrics() : base()
         {
+            _os = "Windows";
+            _deviceName = "Windows Device";
+
             _deviceType = MaaasDeviceType.Tablet;
 
             var displayInfo = Windows.Graphics.Display.DisplayInformation.GetForCurrentView();

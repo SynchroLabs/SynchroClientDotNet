@@ -72,17 +72,11 @@ Rebinding
 	Investigate maintaining path/parentage on replaced tokens.
 	How do binding tokens ($root, $parent, etc) fit in to this?
 
-	For array bindings, update repeated items (remove all and re-add?), use stored template to create items (?)
-
-On server 
-    Persistent client state
-        Use cookies?  homegrown cookie-like method?.  Needs to work with any driver.
-    Cache
-        View cache - negotiate view cache state so that server knows whether you need a given view or have it
-    Hotloading (test for new, later will always load/hotload as needed)
-
+	For array bindings, update repeated items (remove all and re-add?), use stored template to create items? (I'm thinking no)
 
 Binding context specifiers
+
+    !!! Document binding tokens - $root, $parent, etc
 
     Each item has a binding context, which is determined before the item is created/processed by inspecting the
     "binding" attribute to look for a "foreach" or "with" binding context specifier.
@@ -90,7 +84,7 @@ Binding context specifiers
         foreach: "foos" (for each element in array "foos", create an instance of this visual element and set the
                          binding context for the visual element to the array element).
 
-        with: "foo.bar" (select the element foo.bar from the current binding context as then new binding context
+        with: "foo.bar" (select the element foo.bar from the current binding context as the new binding context
                          for the visual element).
 
         Note that it is possible to use "foreach" and "with" together - in which case "foreach" is applied first
@@ -111,69 +105,144 @@ Property binding expressions/directives:
 
 Controls - http://msdn.microsoft.com/en-us/library/windows/apps/hh465351.aspx
 
-	AppBar/CommandBar and buttons (app bar button for round app bar buttons that can be used anywhere)
+    Implemented 
+    ======================================
 
-	Border
+        !!! All - document binding details, all supportded attributes (specify which ones can use binding tokens), show sample usage
 
-	Canvas (child elements have positioning properties)
+    	Canvas (child elements have positioning properties)
 
-		{ type: "canvas", contents: [
-		    { type: "text", value: "Somevalue", top: 10, left: 25 },
-		] };
+            !!! Explicit size vs wrap content (not sure wrap content is even working on all platforms)
 
-	Checkbox/radio buttons
+            !!! Z-order spec for contents (vs order added as it is now)?
 
-	Dropdown combo
+		    { type: "canvas", contents: [
+		        { type: "text", value: "Somevalue", top: 10, left: 25 },
+		    ] };
 
-	Date/time
+        ScrollView
 
-	Flip view
+            !!! iOS - Constrain scroll to horizontal or vertical
 
-	Flyout (not really a control)
+        Stackpanel
 
-	Grid / VariableSizeWrapGrid (child elements have row/col properties)
+            !!! Explicit size vs wrap content
 
-		{ type: "grid", columns: [100, 100], rows: [50, 50], contents: [
-		    { type: "text", value: "Somevalue", row: 1, column: 1 },
-		] };
+        Border
 
-	GridView/ListView
+            !!! Explicit size vs wrap content (implement alignment for explicit size)
 
-	Hub
+        Button
 
-	Media
+        Image
 
-	Progress bar / slider (both "range" controls with similar interface)
+        Rectangle
 
-	Progress ring
+        Textbox / Password
 
-	Semantic zoom
+        Textblock
 
-	Web view
+        Listbox
 
-	Windows contracts?  Sharing, settings, search...
+           !!! Implement on iOS/Android, test on WinPhone
 
-    Stepper (up/down)
+        Listview
 
-    SplitView (maybe only for landscape-first devices, fallback to multi-view for portrait-first)
+           !!! Implement on WinPhone/Android/iOS
 
-Containers
+        Slider
 
-    Border
-       - Support explicit size with content alignment (h and v)?  Maybe later.
+            !!! Make horizontal only (iOS only supports horizontal)
 
-    Add "page" scrollers to Android/WinPhone (Win?) like iOS (for cases where content goes off bottom of screen)
+        Toggle
 
-    Stack panel - implement/test on all platforms
-      - Specify height/width vs wrap content
-      - Alignment of items (left/right/center/stretch)
-      - Padding
+            !!! Resolve platform differences (title, on/off state description, switch labels)
 
-    Slider
-      - Orientaton - implement/verify on all platforms - actually, iOS only supports horizontal, so maybe we just do that.
 
-Misc
+    Not Implemented Yet
+    ========================
+
+        !!! Survey controls on all platforms to make complete list (especially Android/iOS)
+
+	    AppBar/CommandBar and buttons (app bar button for round app bar buttons that can be used anywhere)
+
+	    Checkbox/radio buttons
+
+	    Dropdown combo
+
+	    Date/time
+
+	    Flip view
+
+	    Flyout (not really a control)
+
+	    Grid / VariableSizeWrapGrid (child elements have row/col properties)
+
+		    { type: "grid", columns: [100, 100], rows: [50, 50], contents: [
+		        { type: "text", value: "Somevalue", row: 1, column: 1 },
+		    ] };
+
+	    GridView
+
+	    Hub
+
+	    Media
+
+	    Progress bar
+
+	    Progress ring
+
+	    Semantic zoom
+
+	    Web view
+
+	    Windows contracts?  Sharing, settings, search...
+
+        Stepper (up/down)
+
+        SplitView (maybe only for landscape-first devices, fallback to multi-view for portrait-first)
+
+Misc Control stuff
 
     Color spec should suppost 8 byte form with alpha specified
     Separate binding ability of RGBA elements would be a neat parlor trick (maybe later)
     Which controls should support "padding"?  Button, Textblock, Textbox?
+
+Client
+
+    Configuration of server on client, maybe menu of servers so you can pick on as top level screen
+       - Enter via address, get server identifier from server and use that in menu (maybe in addition to address)
+
+    Transaction synchronization, "waiting" indicator (if > .5 seconds maybe), retry if fails?
+
+    Set icon, title, supported orientation (maybe dynamic - only portrait on phone, only landscape on tab?)
+    Deploy on all devices for demo
+
+    Store/restrore state as required (should just be client cookie/id and current page so can re-load as needed)
+        - Requires persistent client state mechanism on server
+
+    Look at perf (especially on iOS - maybe just related to console logging)
+
+    Investigate initial image load issue (DNS failure) on Android
+
+    View/resource caching
+
+Server
+
+    Tune all existing server pages to work on all clients
+
+    Test on iPad, Android tab (Nexus 7, Kindle Fire)
+
+    Communicate device metrics to server, create server page to report metrics (os, device, type, portrait/landscape-first, size in inches)
+
+    Layout filtering mechanism (so different layouts, sections of layouts, maybe even attributes, can be provided based on OS, type, portrait/landscape first, maybe even size)
+
+    Persistent client state
+        Use cookies?  homegrown cookie-like method?.  Needs to work with any driver.  Backed by Redis or similar
+
+    Cache
+        View cache - negotiate view cache state so that server knows whether you need a given view or have it (to avoid round trips)?
+
+    Hotloading (test for new, later will always load/hotload as needed)
+
+    Implement PropertyCross

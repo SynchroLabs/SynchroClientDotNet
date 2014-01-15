@@ -14,6 +14,9 @@ namespace MaaasClientAndroid
 
         public AndroidDeviceMetrics(Display display) : base()
         {
+            _os = "Android";
+            _deviceName = "Android Device"; // !!! Actual device manufaturer/model would be nice
+
             // Galaxy S3 - DisplayMetrics{density=2.0, width=720, height=1280, scaledDensity=2.0, xdpi=304.799, ydpi=306.716}
             //             DensityDpi: Xhigh
             //
@@ -24,7 +27,17 @@ namespace MaaasClientAndroid
             _widthDeviceUnits = _metrics.WidthPixels;
             _heightDeviceUnits = _metrics.HeightPixels;
 
-            _deviceType = MaaasDeviceType.Phone;
+            // !!! This could be a little more sophisticated - for now, largish is considered a "tablet", smaller is a "phone"
+            //
+            double screenDiagonalInches = Math.Sqrt(Math.Pow(_widthInches, 2) + Math.Pow(_heightInches, 2));
+            if (screenDiagonalInches > 6.5f)
+            {
+                _deviceType = MaaasDeviceType.Tablet;
+            }
+            else
+            {
+                _deviceType = MaaasDeviceType.Phone;
+            }
         }
     }
 }
