@@ -20,8 +20,8 @@ namespace MaaasClientWin.Controls
 
             applyFrameworkElementDefaults(rect);
             processElementProperty((string)controlSpec["border"], value => rect.Stroke = ToBrush(value));
-            processElementProperty((string)controlSpec["borderthickness"], value => rect.StrokeThickness = (float)ToDeviceUnits(value));
-            processElementProperty((string)controlSpec["cornerradius"], value => 
+            processElementProperty((string)controlSpec["borderThickness"], value => rect.StrokeThickness = (float)ToDeviceUnits(value));
+            processElementProperty((string)controlSpec["cornerRadius"], value => 
             {
                 rect.RadiusX = (float)ToDeviceUnits(value);
                 rect.RadiusY = (float)ToDeviceUnits(value);

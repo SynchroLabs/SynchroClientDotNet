@@ -24,8 +24,8 @@ namespace MaaasClientIOS.Controls
             applyFrameworkElementDefaults(rect);
 
             processElementProperty((string)controlSpec["border"], value => rect.Layer.BorderColor = ToColor(value).CGColor);
-            processElementProperty((string)controlSpec["borderthickness"], value => rect.Layer.BorderWidth = (float)ToDeviceUnits(value));
-            processElementProperty((string)controlSpec["cornerradius"], value => rect.Layer.CornerRadius = (float)ToDeviceUnits(value));
+            processElementProperty((string)controlSpec["borderThickness"], value => rect.Layer.BorderWidth = (float)ToDeviceUnits(value));
+            processElementProperty((string)controlSpec["cornerRadius"], value => rect.Layer.CornerRadius = (float)ToDeviceUnits(value));
             processElementProperty((string)controlSpec["fill"], value => rect.BackgroundColor = ToColor(value));
         }
     }

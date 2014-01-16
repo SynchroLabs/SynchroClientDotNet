@@ -10,6 +10,7 @@ using Windows.Graphics.Display;
 using Windows.UI;
 using Windows.UI.Text;
 using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
 
 namespace MaaasClientWin.Controls
@@ -29,6 +30,74 @@ namespace MaaasClientWin.Controls
             base(parent, bindingContext)
         {
             _control = control;
+        }
+
+        public Orientation ToOrientation(object value, Orientation defaultOrientation = Orientation.Horizontal)
+        {
+            if (value is Orientation)
+            {
+                return (Orientation)value;
+            }
+
+            Orientation orientation = defaultOrientation;
+            string orientationValue = ToString(value);
+            if (orientationValue == "Horizontal")
+            {
+                orientation = Orientation.Horizontal;
+            }
+            else if (orientationValue == "Vertical")
+            {
+                orientation = Orientation.Vertical;
+            }
+            return orientation;
+        }
+
+        public HorizontalAlignment ToHorizontalAlignment(object value, HorizontalAlignment defaultAlignment = HorizontalAlignment.Left)
+        {
+            if (value is HorizontalAlignment)
+            {
+                return (HorizontalAlignment)value;
+            }
+
+            HorizontalAlignment alignment = defaultAlignment;
+            string alignmentValue = ToString(value);
+            if (alignmentValue == "Left")
+            {
+                alignment = HorizontalAlignment.Left;
+            }
+            if (alignmentValue == "Right")
+            {
+                alignment = HorizontalAlignment.Right;
+            }
+            else if (alignmentValue == "Center")
+            {
+                alignment = HorizontalAlignment.Center;
+            }
+            return alignment;
+        }
+
+        public VerticalAlignment ToVerticalAlignment(object value, VerticalAlignment defaultAlignment = VerticalAlignment.Top)
+        {
+            if (value is VerticalAlignment)
+            {
+                return (VerticalAlignment)value;
+            }
+
+            VerticalAlignment alignment = defaultAlignment;
+            string alignmentValue = ToString(value);
+            if (alignmentValue == "Top")
+            {
+                alignment = VerticalAlignment.Top;
+            }
+            if (alignmentValue == "Bottom")
+            {
+                alignment = VerticalAlignment.Bottom;
+            }
+            else if (alignmentValue == "Center")
+            {
+                alignment = VerticalAlignment.Center;
+            }
+            return alignment;
         }
 
         public static SolidColorBrush ToBrush(object value)

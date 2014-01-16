@@ -48,19 +48,22 @@ namespace MaaasClientAndroid.Controls
             // If border thickness or padding change, need to record value and update layout padding...
             //
             processElementProperty((string)controlSpec["border"], value => _rect.SetStrokeColor(ToColor(value)));
-            processElementProperty((string)controlSpec["borderthickness"], value =>
+            processElementProperty((string)controlSpec["borderThickness"], value =>
             {
                 _thickness = (int)ToDeviceUnits(value);
                 _rect.SetStrokeWidth(_thickness);
                 this.updateLayoutPadding();
             });
-            processElementProperty((string)controlSpec["cornerradius"], value => _rect.SetCornerRadius((float)ToDeviceUnits(value)));
+            processElementProperty((string)controlSpec["cornerRadius"], value => _rect.SetCornerRadius((float)ToDeviceUnits(value)));
             processElementProperty((string)controlSpec["background"], value => _rect.SetFillColor(ToColor(value)));
             processElementProperty((string)controlSpec["padding"], value =>   // !!! Simple value only for now (would actually support complex values)
             {
                 _padding = (int)ToDeviceUnits(value);
                 this.updateLayoutPadding();
             });
+
+            processElementProperty((string)controlSpec["alignContentH"], value => _layout.SetHorizontalGravity(ToHorizontalAlignment(value, GravityFlags.Center)), GravityFlags.Center);
+            processElementProperty((string)controlSpec["alignContentV"], value => _layout.SetVerticalGravity(ToVerticalAlignment(value, GravityFlags.Center)), GravityFlags.Center);
 
             // In theory we're only jamming one child in here (so it doesn't really matter whether the linear layout is
             // horizontal or vertical.

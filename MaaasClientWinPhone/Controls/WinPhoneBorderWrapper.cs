@@ -12,27 +12,49 @@ namespace MaaasClientWinPhone.Controls
 {
     class WinPhoneBorderWrapper : WinPhoneControlWrapper
     {
+        Border _border;
+        protected HorizontalAlignment _hAlign;
+        protected VerticalAlignment _vAlign;
+
+        public HorizontalAlignment HorizontalAlignment { get { return _hAlign; } set { _hAlign = value; updateContentAlignment(); } }
+        public VerticalAlignment VerticalAlignment { get { return _vAlign; } set { _vAlign = value; updateContentAlignment(); } }
+
         public WinPhoneBorderWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
             Util.debug("Creating border element");
-            Border border = new Border();
-            this._control = border;
+            _border = new Border();
+            this._control = _border;
 
-            applyFrameworkElementDefaults(border);
+            applyFrameworkElementDefaults(_border);
 
-            processElementProperty((string)controlSpec["border"], value => border.BorderBrush = ToBrush(value));
-            processThicknessProperty(controlSpec["borderthickness"], value => border.BorderThickness = (Thickness)value);
-            processElementProperty((string)controlSpec["cornerradius"], value => border.CornerRadius = new CornerRadius(ToDouble(value)));
-            processThicknessProperty(controlSpec["padding"], value => border.Padding = (Thickness)value);
+            processElementProperty((string)controlSpec["border"], value => _border.BorderBrush = ToBrush(value));
+            processThicknessProperty(controlSpec["borderThickness"], value => _border.BorderThickness = (Thickness)value);
+            processElementProperty((string)controlSpec["cornerRadius"], value => _border.CornerRadius = new CornerRadius(ToDouble(value)));
+            processThicknessProperty(controlSpec["padding"], value => _border.Padding = (Thickness)value);
             // "background" color handled by base class
+
+            processElementProperty((string)controlSpec["alignContentH"], value => this.HorizontalAlignment = ToHorizontalAlignment(value, HorizontalAlignment.Center), HorizontalAlignment.Center);
+            processElementProperty((string)controlSpec["alignContentV"], value => this.VerticalAlignment = ToVerticalAlignment(value, VerticalAlignment.Center), HorizontalAlignment.Center);
 
             if (controlSpec["contents"] != null)
             {
                 createControls((JArray)controlSpec["contents"], (childControlSpec, childControlWrapper) =>
                 {
-                    border.Child = childControlWrapper.Control;
+                    childControlWrapper.Control.HorizontalAlignment = _hAlign;
+                    childControlWrapper.Control.VerticalAlignment = _vAlign;
+
+                    _border.Child = childControlWrapper.Control;
                 });
+            }
+        }
+
+        void updateContentAlignment()
+        {
+            if (_border.Child != null)
+            {
+                ((Control)_border.Child).HorizontalAlignment = _hAlign;
+                ((Control)_border.Child).VerticalAlignment = _vAlign;
             }
         }
     }

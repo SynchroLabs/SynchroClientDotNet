@@ -126,11 +126,7 @@ Controls - http://msdn.microsoft.com/en-us/library/windows/apps/hh465351.aspx
 
         Stackpanel
 
-            !!! Explicit size vs wrap content
-
         Border
-
-            !!! Explicit size vs wrap content (implement alignment for explicit size)
 
         Button
 
@@ -157,6 +153,7 @@ Controls - http://msdn.microsoft.com/en-us/library/windows/apps/hh465351.aspx
         Toggle
 
             !!! Resolve platform differences (title, on/off state description, switch labels)
+            !!! Binding mappings (true/false, string on/off or other arbitrary values)
 
 
     Not Implemented Yet

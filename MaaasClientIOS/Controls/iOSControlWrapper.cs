@@ -11,6 +11,36 @@ using System.Drawing;
 
 namespace MaaasClientIOS.Controls
 {
+    public enum HorizontalAlignment : uint
+    {
+        UNDEFINED = 0,
+        Center,
+        Left,
+        Right,
+        Stretch
+    }
+
+    public enum VerticalAlignment : uint
+    {
+        UNDEFINED = 0,
+        Center,
+        Top,
+        Bottom,
+        Stretch
+    }
+
+    public enum Orientation : uint
+    {
+        Horizontal,
+        Vertical
+    }
+
+    public class FrameProperties
+    {
+        public bool WidthSpecified = false;
+        public bool HeightSpecified = false;
+    }
+
     class iOSControlWrapper : ControlWrapper
     {
         protected UIView _control;
@@ -26,6 +56,74 @@ namespace MaaasClientIOS.Controls
             base(parent, bindingContext)
         {
             _control = control;
+        }
+
+        public Orientation ToOrientation(object value, Orientation defaultOrientation = Orientation.Horizontal)
+        {
+            if (value is Orientation)
+            {
+                return (Orientation)value;
+            }
+
+            Orientation orientation = defaultOrientation;
+            string orientationValue = ToString(value);
+            if (orientationValue == "Horizontal")
+            {
+                orientation = Orientation.Horizontal;
+            }
+            else if (orientationValue == "Vertical")
+            {
+                orientation = Orientation.Vertical;
+            }
+            return orientation;
+        }
+
+        public HorizontalAlignment ToHorizontalAlignment(object value, HorizontalAlignment defaultAlignment = HorizontalAlignment.Left)
+        {
+            if (value is HorizontalAlignment)
+            {
+                return (HorizontalAlignment)value;
+            }
+
+            HorizontalAlignment alignment = defaultAlignment;
+            string alignmentValue = ToString(value);
+            if (alignmentValue == "Left")
+            {
+                alignment = HorizontalAlignment.Left;
+            }
+            if (alignmentValue == "Right")
+            {
+                alignment = HorizontalAlignment.Right;
+            }
+            else if (alignmentValue == "Center")
+            {
+                alignment = HorizontalAlignment.Center;
+            }
+            return alignment;
+        }
+
+        public VerticalAlignment ToVerticalAlignment(object value, VerticalAlignment defaultAlignment = VerticalAlignment.Top)
+        {
+            if (value is VerticalAlignment)
+            {
+                return (VerticalAlignment)value;
+            }
+
+            VerticalAlignment alignment = defaultAlignment;
+            string alignmentValue = ToString(value);
+            if (alignmentValue == "Top")
+            {
+                alignment = VerticalAlignment.Top;
+            }
+            if (alignmentValue == "Bottom")
+            {
+                alignment = VerticalAlignment.Bottom;
+            }
+            else if (alignmentValue == "Center")
+            {
+                alignment = VerticalAlignment.Center;
+            }
+            return alignment;
         }
 
         protected static UIColor ToColor(object value)
@@ -46,8 +144,12 @@ namespace MaaasClientIOS.Controls
             // !!! This could be a little more thourough ;)
         }
 
-        protected void processElementDimensions(JObject controlSpec, float defaultWidth = 100, float defaultHeight = 100)
+        protected FrameProperties processElementDimensions(JObject controlSpec, float defaultWidth = 100, float defaultHeight = 100)
         {
+            FrameProperties frameProps = new FrameProperties();
+            frameProps.HeightSpecified = ((string)controlSpec["height"] != null);
+            frameProps.WidthSpecified = ((string)controlSpec["width"] != null);
+
             this.Control.Frame = new RectangleF(0, 0, defaultWidth, defaultHeight);
 
             processElementProperty((string)controlSpec["height"], value => 
@@ -71,6 +173,8 @@ namespace MaaasClientIOS.Controls
                     this.Control.Superview.SetNeedsLayout();
                 }
             });
+
+            return frameProps;
         }
 
         protected void processCommonFrameworkElementProperies(JObject controlSpec)

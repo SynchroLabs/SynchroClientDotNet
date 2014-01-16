@@ -386,7 +386,7 @@ namespace MaaasCore
         //
         // This is "public" because there are cases when a parent element needs to process properties on its children after creation.
         //
-        public void processElementProperty(string value, SetViewValue setValue, string defaultValue = null)
+        public void processElementProperty(string value, SetViewValue setValue, object defaultValue = null)
         {
             if (value == null)
             {

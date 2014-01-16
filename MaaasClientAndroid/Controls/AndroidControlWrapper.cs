@@ -82,6 +82,74 @@ namespace MaaasClientAndroid.Controls
             }
         }
 
+        public Orientation ToOrientation(object value, Orientation defaultOrientation = Orientation.Horizontal)
+        {
+            if (value is Orientation)
+            {
+                return (Orientation)value;
+            }
+
+            Orientation orientation = defaultOrientation;
+            string orientationValue = ToString(value);
+            if (orientationValue == "Horizontal")
+            {
+                orientation = Orientation.Horizontal;
+            }
+            else if (orientationValue == "Vertical")
+            {
+                orientation = Orientation.Vertical;
+            }
+            return orientation;
+        }
+
+        public GravityFlags ToHorizontalAlignment(object value, GravityFlags defaultAlignment = GravityFlags.Left)
+        {
+            if (value is GravityFlags)
+            {
+                return (GravityFlags)value;
+            }
+
+            GravityFlags alignment = defaultAlignment;
+            string alignmentValue = ToString(value);
+            if (alignmentValue == "Left")
+            {
+                alignment = GravityFlags.Left;
+            }
+            if (alignmentValue == "Right")
+            {
+                alignment = GravityFlags.Right;
+            }
+            else if (alignmentValue == "Center")
+            {
+                alignment = GravityFlags.Center;
+            }
+            return alignment;
+        }
+
+        public GravityFlags ToVerticalAlignment(object value, GravityFlags defaultAlignment = GravityFlags.Top)
+        {
+            if (value is GravityFlags)
+            {
+                return (GravityFlags)value;
+            }
+
+            GravityFlags alignment = defaultAlignment;
+            string alignmentValue = ToString(value);
+            if (alignmentValue == "Top")
+            {
+                alignment = GravityFlags.Top;
+            }
+            if (alignmentValue == "Bottom")
+            {
+                alignment = GravityFlags.Bottom;
+            }
+            else if (alignmentValue == "Center")
+            {
+                alignment = GravityFlags.Center;
+            }
+            return alignment;
+        }
+
         public static Color ToColor(object value)
         {
             ColorARGB color = ControlWrapper.getColor(ToString(value));
@@ -124,10 +192,15 @@ namespace MaaasClientAndroid.Controls
 
             //processElementProperty((string)controlSpec["maxheight"], value => this.Control.MaxHeight = ToDouble(value));
             //processElementProperty((string)controlSpec["maxwidth"], value => this.Control.MaxWidth = ToDouble(value));
-            //processElementProperty((string)controlSpec["opacity"], value => this.Control.Opacity = ToDouble(value));
+            processElementProperty((string)controlSpec["opacity"], value => this.Control.Alpha = (float)ToDouble(value));
             processElementProperty((string)controlSpec["visibility"], value => this.Control.Visibility = ToBoolean(value) ? ViewStates.Visible : ViewStates.Gone);
             processElementProperty((string)controlSpec["enabled"], value => this.Control.Enabled = ToBoolean(value));
             //processMarginProperty(controlSpec["margin"]);
+
+            if (!(this is AndroidBorderWrapper) && !(this is AndroidRectangleWrapper))
+            {
+                processElementProperty((string)controlSpec["background"], value => this.Control.SetBackgroundColor(ToColor(value)));
+            }
 
             TextView textView = this.Control as TextView;
             if (textView != null)
@@ -140,8 +213,8 @@ namespace MaaasClientAndroid.Controls
                 //processElementPropertyIfPresent((string)controlSpec["fontweight"], "FontWeight", value => ToFontWeight(value));
             }
 
+
             // These elements are very common among derived classes, so we'll do some runtime reflection...
-            //processElementPropertyIfPresent((string)controlSpec["background"], "Background", value => ToBrush(value));
             //processElementPropertyIfPresent((string)controlSpec["foreground"], "Foreground", value => ToBrush(value));
         }
 

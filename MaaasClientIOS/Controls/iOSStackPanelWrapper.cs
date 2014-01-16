@@ -11,24 +11,15 @@ using System.Drawing;
 
 namespace MaaasClientIOS.Controls
 {
-    public enum Alignment : uint
-    {
-        UNDEFINED = 0,
-        Center,
-        Left,
-        Right,
-        Top,
-        Bottom,
-        Stretch
-    }
-
     class StackPanelView : UIView
     {
         protected iOSControlWrapper _controlWrapper;
-        protected bool _isHorizontal = true;
+        protected Orientation _orientation;
         protected float _padding = 0;
         protected float _spacing = 10;
-        protected Alignment _alignment = Alignment.UNDEFINED;
+        protected FrameProperties _frameProps;
+        protected HorizontalAlignment _hAlign;
+        protected VerticalAlignment _vAlign;
 
         public StackPanelView(iOSControlWrapper controlWrapper)
             : base()
@@ -36,9 +27,37 @@ namespace MaaasClientIOS.Controls
             _controlWrapper = controlWrapper;
         }
 
-        public bool Horizontal { get { return _isHorizontal; } set { _isHorizontal = value; } }
+        public Orientation Orientation 
+        { 
+            get { return _orientation; } 
+            set 
+            {
+                _orientation = value;
+                this.SetNeedsLayout();
+            } 
+        }
 
-        public Alignment Alignment { get { return _alignment; } set { _alignment = value; } }
+        public FrameProperties FrameProperties { get { return _frameProps; } set { _frameProps = value; } }
+
+        public HorizontalAlignment HorizontalAlignment 
+        { 
+            get { return _hAlign; } 
+            set 
+            { 
+                _hAlign = value;
+                this.SetNeedsLayout();
+            } 
+        }
+
+        public VerticalAlignment VerticalAlignment 
+        {
+            get { return _vAlign; } 
+            set 
+            {
+                _vAlign = value;
+                this.SetNeedsLayout();
+            } 
+        }
 
         public float Padding
         {
@@ -61,11 +80,20 @@ namespace MaaasClientIOS.Controls
 
             // Determine the maximum subview size in each dimension (for item alignment later).
             //
-            SizeF maxSubviewSize = new SizeF(0, 0);
+            SizeF maxDimensions = new SizeF(0, 0);
             foreach (UIView childView in this.Subviews)
             {
-                maxSubviewSize.Width = Math.Max(maxSubviewSize.Width, childView.Frame.Width);
-                maxSubviewSize.Height = Math.Max(maxSubviewSize.Height, childView.Frame.Height);
+                maxDimensions.Width = Math.Max(maxDimensions.Width, childView.Frame.Width);
+                maxDimensions.Height = Math.Max(maxDimensions.Height, childView.Frame.Height);
+            }
+
+            if (_frameProps.WidthSpecified)
+            {
+                maxDimensions.Width = this.Frame.Width;
+            }
+            if (_frameProps.HeightSpecified)
+            {
+                maxDimensions.Height = this.Frame.Height;
             }
 
             float _currTop = _padding;
@@ -82,27 +110,27 @@ namespace MaaasClientIOS.Controls
                 RectangleF childFrame = childView.Frame;
                 childFrame.X = _currLeft;
                 childFrame.Y = _currTop;
-                if (_isHorizontal)
+                if (_orientation == Orientation.Horizontal)
                 {
-                    if (_alignment == Alignment.Center)
+                    if (_vAlign == VerticalAlignment.Center)
                     {
-                        childFrame.Y += (maxSubviewSize.Height - childFrame.Height) / 2;
+                        childFrame.Y += (maxDimensions.Height - childFrame.Height) / 2;
                     }
-                    else if (_alignment == Alignment.Bottom)
+                    else if (_vAlign == VerticalAlignment.Bottom)
                     {
-                        childFrame.Y += (maxSubviewSize.Height - childFrame.Height);
+                        childFrame.Y += (maxDimensions.Height - childFrame.Height);
                     }
                     _currLeft += childView.Bounds.Width + _spacing;
                 }
                 else
                 {
-                    if (_alignment == Alignment.Center)
+                    if (_hAlign == HorizontalAlignment.Center)
                     {
-                        childFrame.X += (maxSubviewSize.Width - childFrame.Width) / 2;
+                        childFrame.X += (maxDimensions.Width - childFrame.Width) / 2;
                     }
-                    else if (_alignment == Alignment.Right)
+                    else if (_hAlign == HorizontalAlignment.Right)
                     {
-                        childFrame.X += (maxSubviewSize.Width - childFrame.Width);
+                        childFrame.X += (maxDimensions.Width - childFrame.Width);
                     }
                     _currTop += childView.Bounds.Height + _spacing;
                 }
@@ -120,17 +148,35 @@ namespace MaaasClientIOS.Controls
 
             // Resize the stackpanel to contain the subview
             //
-            // !!! Optimize this to only re-size/notify if the size actually changes
-            //
             newPanelSize.Height += _padding;
             newPanelSize.Width += _padding;
 
-            RectangleF panelFrame = this.Frame;
-            panelFrame.Size = newPanelSize;
-            this.Frame = panelFrame;
-            if (this.Superview != null)
+            // See if the stack panel might have changed size (based on content)
+            //
+            if (!_frameProps.WidthSpecified || !_frameProps.HeightSpecified)
             {
-                this.Superview.SetNeedsLayout();
+                SizeF panelSize = this.Frame.Size;
+                if (!_frameProps.HeightSpecified)
+                {
+                    panelSize.Height = newPanelSize.Height;
+                }
+                if (!_frameProps.WidthSpecified)
+                {
+                    panelSize.Width = newPanelSize.Width;
+                }
+
+                // Only re-size and request superview layout if the size actually changes
+                //
+                if ((panelSize.Width != this.Frame.Width) || (panelSize.Height != this.Frame.Height))
+                {                    
+                    RectangleF panelFrame = this.Frame;
+                    panelFrame.Size = panelSize;
+                    this.Frame = panelFrame;
+                    if (this.Superview != null)
+                    {
+                        this.Superview.SetNeedsLayout();
+                    }
+                }
             }
 
             base.LayoutSubviews();
@@ -139,18 +185,6 @@ namespace MaaasClientIOS.Controls
 
     class iOSStackPanelWrapper : iOSControlWrapper
     {
-        public static Alignment ToAlignment(object alignmentValue, Alignment defaultAlignment = Alignment.UNDEFINED)
-        {
-            string alignmentString = ToString(alignmentValue);
-            Alignment alignment = (Alignment)Enum.Parse(typeof(Alignment), alignmentString);
-            if (Enum.IsDefined(typeof(Alignment), alignmentString))
-            {
-                return alignment;
-            }
-
-            return defaultAlignment;
-        }
-
         public iOSStackPanelWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
@@ -159,16 +193,13 @@ namespace MaaasClientIOS.Controls
             StackPanelView stackPanel = new StackPanelView(this);
             this._control = stackPanel;
 
-            processElementDimensions(controlSpec, 0, 0);
+            stackPanel.FrameProperties = processElementDimensions(controlSpec, 0, 0);
             applyFrameworkElementDefaults(stackPanel);
 
-            processElementProperty((string)controlSpec["alignContent"], value => stackPanel.Alignment = ToAlignment(value));
+            processElementProperty((string)controlSpec["orientation"], value => stackPanel.Orientation = ToOrientation(value, Orientation.Vertical), Orientation.Vertical);
 
-            stackPanel.Horizontal = true;
-            if ((controlSpec["orientation"] != null) && ((string)controlSpec["orientation"] == "vertical"))
-            {
-                stackPanel.Horizontal = false;
-            }
+            processElementProperty((string)controlSpec["alignContentH"], value => stackPanel.HorizontalAlignment = ToHorizontalAlignment(value, HorizontalAlignment.Left), HorizontalAlignment.Left);
+            processElementProperty((string)controlSpec["alignContentV"], value => stackPanel.VerticalAlignment = ToVerticalAlignment(value, VerticalAlignment.Center), VerticalAlignment.Center);
 
             if (controlSpec["contents"] != null)
             {

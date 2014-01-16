@@ -118,8 +118,8 @@ namespace MaaasClientAndroid.Controls
             applyFrameworkElementDefaults(drawableView);
 
             processElementProperty((string)controlSpec["border"], value => _rect.SetStrokeColor(ToColor(value)));
-            processElementProperty((string)controlSpec["borderthickness"], value => _rect.SetStrokeWidth((int)ToDeviceUnits(value)));
-            processElementProperty((string)controlSpec["cornerradius"], value => _rect.SetCornerRadius((float)ToDeviceUnits(value)));
+            processElementProperty((string)controlSpec["borderThickness"], value => _rect.SetStrokeWidth((int)ToDeviceUnits(value)));
+            processElementProperty((string)controlSpec["cornerRadius"], value => _rect.SetCornerRadius((float)ToDeviceUnits(value)));
             processElementProperty((string)controlSpec["fill"], value => _rect.SetFillColor(ToColor(value)));
         }
 
