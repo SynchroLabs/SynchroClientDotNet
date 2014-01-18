@@ -249,17 +249,17 @@ namespace MaaasClientWin.Controls
 
             switch ((string)controlSpec["type"])
             {
-                case "text":
-                    controlWrapper = new WinTextBlockWrapper(parent, bindingContext, controlSpec);
-                    break;
-                case "edit":
-                    controlWrapper = new WinTextBoxWrapper(parent, bindingContext, controlSpec);
-                    break;
-                case "password":
-                    controlWrapper = new WinPasswordBoxWrapper(parent, bindingContext, controlSpec);
+                case "border":
+                    controlWrapper = new WinBorderWrapper(parent, bindingContext, controlSpec);
                     break;
                 case "button":
                     controlWrapper = new WinButtonWrapper(parent, bindingContext, controlSpec);
+                    break;
+                case "canvas":
+                    controlWrapper = new WinCanvasWrapper(parent, bindingContext, controlSpec);
+                    break;
+                case "edit":
+                    controlWrapper = new WinTextBoxWrapper(parent, bindingContext, controlSpec);
                     break;
                 case "image":
                     controlWrapper = new WinImageWrapper(parent, bindingContext, controlSpec);
@@ -270,26 +270,29 @@ namespace MaaasClientWin.Controls
                 case "listview":
                     controlWrapper = new WinListViewWrapper(parent, bindingContext, controlSpec);
                     break;
-                case "toggle":
-                    controlWrapper = new WinToggleSwitchWrapper(parent, bindingContext, controlSpec);
+                case "password":
+                    controlWrapper = new WinPasswordBoxWrapper(parent, bindingContext, controlSpec);
                     break;
-                case "slider":
-                    controlWrapper = new WinSliderWrapper(parent, bindingContext, controlSpec);
-                    break;
-                case "canvas":
-                    controlWrapper = new WinCanvasWrapper(parent, bindingContext, controlSpec);
-                    break;
-                case "stackpanel":
-                    controlWrapper = new WinStackPanelWrapper(parent, bindingContext, controlSpec);
+                case "picker":
+                    controlWrapper = new WinPickerWrapper(parent, bindingContext, controlSpec);
                     break;
                 case "rectangle":
                     controlWrapper = new WinRectangleWrapper(parent, bindingContext, controlSpec);
                     break;
-                case "border":
-                    controlWrapper = new WinBorderWrapper(parent, bindingContext, controlSpec);
-                    break;
                 case "scrollview":
                     controlWrapper = new WinScrollWrapper(parent, bindingContext, controlSpec);
+                    break;
+                case "slider":
+                    controlWrapper = new WinSliderWrapper(parent, bindingContext, controlSpec);
+                    break;
+                case "stackpanel":
+                    controlWrapper = new WinStackPanelWrapper(parent, bindingContext, controlSpec);
+                    break;
+                case "text":
+                    controlWrapper = new WinTextBlockWrapper(parent, bindingContext, controlSpec);
+                    break;
+                case "toggle":
+                    controlWrapper = new WinToggleSwitchWrapper(parent, bindingContext, controlSpec);
                     break;
             }
 

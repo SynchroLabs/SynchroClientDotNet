@@ -54,8 +54,17 @@ namespace MaaasClientAndroid.Controls
             }
             else
             {
-                _control.LayoutParameters.Width = _width;
-                _control.LayoutParameters.Height = _height;
+                // We don't want to overwrite an actual height/width value with WrapContent...
+                //
+                if (_width != ViewGroup.LayoutParams.WrapContent)
+                {
+                    _control.LayoutParameters.Width = _width;
+                }
+
+                if (_height != ViewGroup.LayoutParams.WrapContent)
+                {
+                    _control.LayoutParameters.Height = _height;
+                }
             }
             _control.RequestLayout();
         }
@@ -243,30 +252,32 @@ namespace MaaasClientAndroid.Controls
 
             switch ((string)controlSpec["type"])
             {
-                case "text":
-                    controlWrapper = new AndroidTextBlockWrapper(parent, bindingContext, controlSpec);
-                    break;
-                case "edit":
-                case "password":
-                    controlWrapper = new AndroidTextBoxWrapper(parent, bindingContext, controlSpec);
+                case "border":
+                    controlWrapper = new AndroidBorderWrapper(parent, bindingContext, controlSpec);
                     break;
                 case "button":
                     controlWrapper = new AndroidButtonWrapper(parent, bindingContext, controlSpec);
                     break;
-                case "image":
-                    controlWrapper = new AndroidImageWrapper(parent, bindingContext, controlSpec);
-                    break;
-                case "stackpanel":
-                    controlWrapper = new AndroidStackPanelWrapper(parent, bindingContext, controlSpec);
-                    break;
-                case "toggle":
-                    controlWrapper = new AndroidToggleSwitchWrapper(parent, bindingContext, controlSpec);
-                    break;
                 case "canvas":
                     controlWrapper = new AndroidCanvasWrapper(parent, bindingContext, controlSpec);
                     break;
-                case "slider":
-                    controlWrapper = new AndroidSliderWrapper(parent, bindingContext, controlSpec);
+                case "edit":
+                    controlWrapper = new AndroidTextBoxWrapper(parent, bindingContext, controlSpec);
+                    break;
+                case "image":
+                    controlWrapper = new AndroidImageWrapper(parent, bindingContext, controlSpec);
+                    break;
+                case "listbox":
+                    controlWrapper = new AndroidListBoxWrapper(parent, bindingContext, controlSpec);
+                    break;
+                case "listview":
+                    controlWrapper = new AndroidListViewWrapper(parent, bindingContext, controlSpec);
+                    break;
+                case "password":
+                    controlWrapper = new AndroidTextBoxWrapper(parent, bindingContext, controlSpec);
+                    break;
+                case "picker":
+                    controlWrapper = new AndroidPickerWrapper(parent, bindingContext, controlSpec);
                     break;
                 case "rectangle":
                     controlWrapper = new AndroidRectangleWrapper(parent, bindingContext, controlSpec);
@@ -274,8 +285,17 @@ namespace MaaasClientAndroid.Controls
                 case "scrollview":
                     controlWrapper = new AndroidScrollWrapper(parent, bindingContext, controlSpec);
                     break;
-                case "border":
-                    controlWrapper = new AndroidBorderWrapper(parent, bindingContext, controlSpec);
+                case "slider":
+                    controlWrapper = new AndroidSliderWrapper(parent, bindingContext, controlSpec);
+                    break;
+                case "stackpanel":
+                    controlWrapper = new AndroidStackPanelWrapper(parent, bindingContext, controlSpec);
+                    break;
+                case "text":
+                    controlWrapper = new AndroidTextBlockWrapper(parent, bindingContext, controlSpec);
+                    break;
+                case "toggle":
+                    controlWrapper = new AndroidToggleSwitchWrapper(parent, bindingContext, controlSpec);
                     break;
             }
 

@@ -11,34 +11,39 @@ namespace MaaasClientWinPhone.Controls
 {
     class WinPhoneScrollWrapper : WinPhoneControlWrapper
     {
+        protected ScrollViewer _scroller;
+
         public WinPhoneScrollWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
             Util.debug("Creating scroll element");
-            ScrollViewer scroller = new ScrollViewer();
-            this._control = scroller;
+            _scroller = new ScrollViewer();
+            this._control = _scroller;
 
-            if ((controlSpec["orientation"] == null) || ((string)controlSpec["orientation"] != "horizontal"))
-            {
-                // Vertical (default)
-                scroller.HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled;
-                scroller.VerticalScrollBarVisibility = ScrollBarVisibility.Auto;
-            }
-            else
-            {
-                // Horizontal
-                scroller.HorizontalScrollBarVisibility = ScrollBarVisibility.Auto;
-                scroller.VerticalScrollBarVisibility = ScrollBarVisibility.Disabled;
-            }
+            processElementProperty((string)controlSpec["orientation"], value => setOrientation(ToOrientation(value, Orientation.Vertical)), Orientation.Vertical);
 
-            applyFrameworkElementDefaults(scroller);
+            applyFrameworkElementDefaults(_scroller);
 
             if (controlSpec["contents"] != null)
             {
                 createControls((JArray)controlSpec["contents"], (childControlSpec, childControlWrapper) =>
                 {
-                    scroller.Content = childControlWrapper.Control;
+                    _scroller.Content = childControlWrapper.Control;
                 });
+            }
+        }
+
+        public void setOrientation(Orientation orientation)
+        {
+            if (orientation == Orientation.Vertical)
+            {
+                _scroller.HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled;
+                _scroller.VerticalScrollBarVisibility = ScrollBarVisibility.Auto;
+            }
+            else
+            {
+                _scroller.HorizontalScrollBarVisibility = ScrollBarVisibility.Auto;
+                _scroller.VerticalScrollBarVisibility = ScrollBarVisibility.Disabled;
             }
         }
     }

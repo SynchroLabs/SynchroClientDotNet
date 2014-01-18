@@ -134,6 +134,7 @@
     <Compile Include="Controls\WinPhoneListBoxWrapper.cs" />
     <Compile Include="Controls\WinPhoneListViewWrapper.cs" />
     <Compile Include="Controls\WinPhonePasswordBoxWrapper.cs" />
+    <Compile Include="Controls\WinPhonePickerWrapper.cs" />
     <Compile Include="Controls\WinPhoneRectangleWrapper.cs" />
     <Compile Include="Controls\WinPhoneScrollWrapper.cs" />
     <Compile Include="Controls\WinPhoneSliderWrapper.cs" />

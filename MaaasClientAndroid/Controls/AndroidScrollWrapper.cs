@@ -29,7 +29,8 @@ namespace MaaasClientAndroid.Controls
             //
             // Vertical scroll is default...
             //
-            if ((controlSpec["orientation"] == null) || ((string)controlSpec["orientation"] != "horizontal"))
+            Orientation orientation = ToOrientation((string)controlSpec["orientation"], Orientation.Vertical);
+            if (orientation == Orientation.Vertical)
             {
                 ScrollView vScroller = new ScrollView(((AndroidControlWrapper)parent).Control.Context);
                 scroller = vScroller;

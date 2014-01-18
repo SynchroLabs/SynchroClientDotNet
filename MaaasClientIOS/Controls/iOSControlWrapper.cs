@@ -236,39 +236,47 @@ namespace MaaasClientIOS.Controls
 
             switch ((string)controlSpec["type"])
             {
-                case "text":
-                    controlWrapper = new iOSTextBlockWrapper(parent, bindingContext, controlSpec);
-                    break;
-                case "edit":
-                case "password":
-                    controlWrapper = new iOSTextBoxWrapper(parent, bindingContext, controlSpec);
+                case "border":
+                    controlWrapper = new iOSBorderWrapper(parent, bindingContext, controlSpec);
                     break;
                 case "button":
                     controlWrapper = new iOSButtonWrapper(parent, bindingContext, controlSpec);
                     break;
-                case "stackpanel":
-                    controlWrapper = new iOSStackPanelWrapper(parent, bindingContext, controlSpec);
+                case "canvas":
+                    controlWrapper = new iOSCanvasWrapper(parent, bindingContext, controlSpec);
                     break;
-                case "toggle":
-                    controlWrapper = new iOSToggleSwitchWrapper(parent, bindingContext, controlSpec);
-                    break;
-                case "slider":
-                    controlWrapper = new iOSSliderWrapper(parent, bindingContext, controlSpec);
+                case "edit":
+                    controlWrapper = new iOSTextBoxWrapper(parent, bindingContext, controlSpec);
                     break;
                 case "image":
                     controlWrapper = new iOSImageWrapper(parent, bindingContext, controlSpec);
                     break;
-                case "canvas":
-                    controlWrapper = new iOSCanvasWrapper(parent, bindingContext, controlSpec);
+                case "listbox":
+                    controlWrapper = new iOSListBoxWrapper(parent, bindingContext, controlSpec);
+                    break;
+                case "password":
+                    controlWrapper = new iOSTextBoxWrapper(parent, bindingContext, controlSpec);
+                    break;
+                case "pickerview":
+                    controlWrapper = new iOSPickerWrapper(parent, bindingContext, controlSpec);
                     break;
                 case "rectangle":
                     controlWrapper = new iOSRectangleWrapper(parent, bindingContext, controlSpec);
                     break;
-                case "border":
-                    controlWrapper = new iOSBorderWrapper(parent, bindingContext, controlSpec);
-                    break;
                 case "scrollview":
                     controlWrapper = new iOSScrollWrapper(parent, bindingContext, controlSpec);
+                    break;
+                case "slider":
+                    controlWrapper = new iOSSliderWrapper(parent, bindingContext, controlSpec);
+                    break;
+                case "stackpanel":
+                    controlWrapper = new iOSStackPanelWrapper(parent, bindingContext, controlSpec);
+                    break;
+                case "text":
+                    controlWrapper = new iOSTextBlockWrapper(parent, bindingContext, controlSpec);
+                    break;
+                case "toggle":
+                    controlWrapper = new iOSToggleSwitchWrapper(parent, bindingContext, controlSpec);
                     break;
             }
 

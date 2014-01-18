@@ -246,17 +246,17 @@ namespace MaaasClientWinPhone.Controls
 
             switch ((string)controlSpec["type"])
             {
-                case "text":
-                    controlWrapper = new WinPhoneTextBlockWrapper(parent, bindingContext, controlSpec);
-                    break;
-                case "edit":
-                    controlWrapper = new WinPhoneTextBoxWrapper(parent, bindingContext, controlSpec);
-                    break;
-                case "password":
-                    controlWrapper = new WinPhonePasswordBoxWrapper(parent, bindingContext, controlSpec);
+                case "border":
+                    controlWrapper = new WinPhoneBorderWrapper(parent, bindingContext, controlSpec);
                     break;
                 case "button":
                     controlWrapper = new WinPhoneButtonWrapper(parent, bindingContext, controlSpec);
+                    break;
+                case "canvas":
+                    controlWrapper = new WinPhoneCanvasWrapper(parent, bindingContext, controlSpec);
+                    break;
+                case "edit":
+                    controlWrapper = new WinPhoneTextBoxWrapper(parent, bindingContext, controlSpec);
                     break;
                 case "image":
                     controlWrapper = new WinPhoneImageWrapper(parent, bindingContext, controlSpec);
@@ -267,26 +267,29 @@ namespace MaaasClientWinPhone.Controls
                 case "listview":
                     // !!! controlWrapper = new WinPhoneListViewWrapper(parent, bindingContext, controlSpec);
                     break;
-                case "toggle":
-                    controlWrapper = new WinPhoneToggleSwitchWrapper(parent, bindingContext, controlSpec);
+                case "password":
+                    controlWrapper = new WinPhonePasswordBoxWrapper(parent, bindingContext, controlSpec);
                     break;
-                case "slider":
-                    controlWrapper = new WinPhoneSliderWrapper(parent, bindingContext, controlSpec);
-                    break;
-                case "canvas":
-                    controlWrapper = new WinPhoneCanvasWrapper(parent, bindingContext, controlSpec);
-                    break;
-                case "stackpanel":
-                    controlWrapper = new WinPhoneStackPanelWrapper(parent, bindingContext, controlSpec);
+                case "picker":
+                    controlWrapper = new WinPhonePickerWrapper(parent, bindingContext, controlSpec);
                     break;
                 case "rectangle":
                     controlWrapper = new WinPhoneRectangleWrapper(parent, bindingContext, controlSpec);
                     break;
-                case "border":
-                    controlWrapper = new WinPhoneBorderWrapper(parent, bindingContext, controlSpec);
-                    break;
                 case "scrollview":
                     controlWrapper = new WinPhoneScrollWrapper(parent, bindingContext, controlSpec);
+                    break;
+                case "slider":
+                    controlWrapper = new WinPhoneSliderWrapper(parent, bindingContext, controlSpec);
+                    break;
+                case "stackpanel":
+                    controlWrapper = new WinPhoneStackPanelWrapper(parent, bindingContext, controlSpec);
+                    break;
+                case "text":
+                    controlWrapper = new WinPhoneTextBlockWrapper(parent, bindingContext, controlSpec);
+                    break;
+                case "toggle":
+                    controlWrapper = new WinPhoneToggleSwitchWrapper(parent, bindingContext, controlSpec);
                     break;
             }
 

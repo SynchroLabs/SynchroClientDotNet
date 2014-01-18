@@ -56,7 +56,8 @@ namespace MaaasClientIOS.Controls
             UIScrollView scroller = new AutoSizingScrollView(); // UIScrollView();
             this._control = scroller;
 
-            if ((controlSpec["orientation"] == null) || ((string)controlSpec["orientation"] != "horizontal"))
+            Orientation orientation = ToOrientation((string)controlSpec["orientation"], Orientation.Vertical);
+            if (orientation == Orientation.Vertical)
             {
                 // !!! Vertical (default)
             }

@@ -11,40 +11,45 @@ namespace MaaasClientWin.Controls
 {
     class WinScrollWrapper : WinControlWrapper
     {
+        protected ScrollViewer _scroller;
+
         public WinScrollWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
             // ScrollViewer - http://msdn.microsoft.com/en-us/library/windows/apps/windows.ui.xaml.controls.scrollviewer.aspx
             //
             Util.debug("Creating scroll element");
-            ScrollViewer scroller = new ScrollViewer();
-            this._control = scroller;
+            _scroller = new ScrollViewer();
+            this._control = _scroller;
 
-            if ((controlSpec["orientation"] == null) || ((string)controlSpec["orientation"] != "horizontal"))
-            {
-                // Vertical (default)
-                scroller.VerticalScrollMode = ScrollMode.Enabled;
-                scroller.HorizontalScrollMode = ScrollMode.Disabled;
-                scroller.HorizontalScrollBarVisibility = ScrollBarVisibility.Hidden;
-                scroller.VerticalScrollBarVisibility = ScrollBarVisibility.Auto;
-            }
-            else
-            {
-                // Horizontal
-                scroller.VerticalScrollMode = ScrollMode.Disabled;
-                scroller.HorizontalScrollMode = ScrollMode.Enabled;
-                scroller.HorizontalScrollBarVisibility = ScrollBarVisibility.Auto;
-                scroller.VerticalScrollBarVisibility = ScrollBarVisibility.Hidden;
-            }
+            processElementProperty((string)controlSpec["orientation"], value => setOrientation(ToOrientation(value, Orientation.Vertical)), Orientation.Vertical);
 
-            applyFrameworkElementDefaults(scroller);
+            applyFrameworkElementDefaults(_scroller);
 
             if (controlSpec["contents"] != null)
             {
                 createControls((JArray)controlSpec["contents"], (childControlSpec, childControlWrapper) =>
                 {
-                    scroller.Content = childControlWrapper.Control;
+                    _scroller.Content = childControlWrapper.Control;
                 });
+            }
+        }
+
+        public void setOrientation(Orientation orientation)
+        {
+            if (orientation == Orientation.Vertical)
+            {
+                _scroller.VerticalScrollMode = ScrollMode.Enabled;
+                _scroller.HorizontalScrollMode = ScrollMode.Disabled;
+                _scroller.HorizontalScrollBarVisibility = ScrollBarVisibility.Hidden;
+                _scroller.VerticalScrollBarVisibility = ScrollBarVisibility.Auto;
+            }
+            else
+            {
+                _scroller.VerticalScrollMode = ScrollMode.Disabled;
+                _scroller.HorizontalScrollMode = ScrollMode.Enabled;
+                _scroller.HorizontalScrollBarVisibility = ScrollBarVisibility.Auto;
+                _scroller.VerticalScrollBarVisibility = ScrollBarVisibility.Hidden;
             }
         }
     }

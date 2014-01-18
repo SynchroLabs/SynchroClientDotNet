@@ -108,52 +108,115 @@ Controls - http://msdn.microsoft.com/en-us/library/windows/apps/hh465351.aspx
     Implemented 
     ======================================
 
-        !!! All - document binding details, all supportded attributes (specify which ones can use binding tokens), show sample usage
+    !!! All - document binding details, all supported attributes (specify which ones can use binding tokens), show sample usage
 
-    	Canvas (child elements have positioning properties)
+    Canvas (child elements have positioning properties)
 
-            !!! Explicit size vs wrap content (not sure wrap content is even working on all platforms)
+        !!! Explicit size vs wrap content (not sure wrap content is even working on all platforms)
 
-            !!! Z-order spec for contents (vs order added as it is now)?
+        !!! Z-order spec for contents (vs order added as it is now)?
 
-		    { type: "canvas", contents: [
-		        { type: "text", value: "Somevalue", top: 10, left: 25 },
-		    ] };
+		{ type: "canvas", contents: [
+		    { type: "text", value: "Somevalue", top: 10, left: 25 },
+		] };
 
-        ScrollView
+    ScrollView
 
-            !!! iOS - Constrain scroll to horizontal or vertical
+        !!! iOS - Constrain scroll to horizontal or vertical
 
-        Stackpanel
+        orientation = [Vertical], Horizontal
+        contents
 
-        Border
+    Stackpanel
 
-        Button
+        Attributes:
+            orientation = [Vertical], Horizontal
+            alignContentV = Top, [Center], Bottom
+            alignContentH = [Left], Center, Right
+            contents
 
-        Image
+    Border
 
-        Rectangle
+        Attributes:
+            border
+            borderThickness
+            cornerRadius
+            padding
+            background
+            alignContentV = Top, [Center], Bottom
+            alignContentH = Left, [Center], Right
+            contents
 
-        Textbox / Password
+    Button
 
-        Textblock
+        Attributes:
+            caption
 
-        Listbox
+        Bindings:
+            onClick (command + params)
 
-           !!! Implement on iOS/Android, test on WinPhone
+    Image
 
-        Listview
+        Attributes:
+            resource
 
-           !!! Implement on WinPhone/Android/iOS
+    Rectangle
 
-        Slider
+        Attributes:
+            border
+            borderThickness
+            cornerRadius
+            fill
 
-            !!! Make horizontal only (iOS only supports horizontal)
+    Textbox / Password
 
-        Toggle
+        Attributes:
+            value
 
-            !!! Resolve platform differences (title, on/off state description, switch labels)
-            !!! Binding mappings (true/false, string on/off or other arbitrary values)
+        Bindings:
+            value
+
+    Textblock
+
+        Attributes:
+            value
+
+    Slider
+
+        Attributes:
+            value
+            minimum
+            maximum
+
+        Bindings:
+            value
+
+    Toggle
+
+        !!! Resolve platform differences (title, on/off state description, switch labels)
+        !!! Binding mappings (true/false, string on/off or other arbitrary values)
+
+        Attributes:
+            value
+
+        Bindings:
+            value
+            onToggle (command + params)
+
+    Listbox
+
+        !!! Implement on iOS/Android, test on WinPhone
+
+    Listview
+
+        !!! Implement on WinPhone/Android/iOS
+
+    Picker (choose one element from a list/listbox)
+        Win - ComboBox
+        WinPhone - ListPicker
+        iOS - Two controls - UIPickerView
+        Android - Spinner
+
 
 
     Not Implemented Yet
@@ -164,8 +227,6 @@ Controls - http://msdn.microsoft.com/en-us/library/windows/apps/hh465351.aspx
 	    AppBar/CommandBar and buttons (app bar button for round app bar buttons that can be used anywhere)
 
 	    Checkbox/radio buttons
-
-	    Dropdown combo
 
 	    Date/time
 

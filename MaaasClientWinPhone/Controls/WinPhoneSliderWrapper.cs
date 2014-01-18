@@ -18,15 +18,9 @@ namespace MaaasClientWinPhone.Controls
             Slider slider = new Slider();
             this._control = slider;
 
-            applyFrameworkElementDefaults(slider);
+            slider.Orientation = Orientation.Horizontal; // iOS/Android only support horizontal, so we limit this for now...
 
-            // Static
-            Orientation orientation = Orientation.Horizontal;
-            if ((controlSpec["orientation"] != null) && ((string)controlSpec["orientation"] == "vertical"))
-            {
-                orientation = Orientation.Vertical;
-            }
-            slider.Orientation = orientation;
+            applyFrameworkElementDefaults(slider);
 
             JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "value");
             if (!processElementBoundValue("value", (string)bindingSpec["value"], () => { return slider.Value; }, value => slider.Value = ToDouble(value)))

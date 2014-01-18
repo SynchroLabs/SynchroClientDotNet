@@ -32,8 +32,9 @@ namespace MaaasClientWin.Controls
                     processElementBoundValue("selection", (string)bindingSpec["selection"], () => getListboxSelection(listbox), value => this.setListboxSelection(listbox, (JToken)value));
                 }
             }
+
             // Get selection mode - single (default) or multiple - no dynamic values (we don't need this changing during execution).
-            if ((controlSpec["select"] != null) && ((string)controlSpec["select"] == "multiple"))
+            if ((controlSpec["select"] != null) && ((string)controlSpec["select"] == "Multiple"))
             {
                 listbox.SelectionMode = SelectionMode.Multiple;
             }
