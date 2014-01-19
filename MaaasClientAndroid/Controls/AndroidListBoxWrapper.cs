@@ -149,12 +149,12 @@ namespace MaaasClientAndroid.Controls
             for (var i = 0; i < checkedItems.Size(); i++)
             {
                 int key = checkedItems.KeyAt(i);
-                if (checkedItems.ValueAt(i) == true)
+                if (checkedItems.Get(key))
                 {
                     selected.Add(listView.GetItemAtPosition(key).ToString());
-                    checkedItems.Delete(key);
                 }
             }
+            checkedItems.Clear();
 
             // Clear the list and refill...
             //
@@ -196,7 +196,7 @@ namespace MaaasClientAndroid.Controls
                 for (var i = 0; i < checkedItems.Size(); i++)
                 {
                     int key = checkedItems.KeyAt(i);
-                    if (checkedItems.ValueAt(i) == true)
+                    if (checkedItems.Get(key))
                     {
                         selected.Add(listView.GetItemAtPosition(key).ToString());
                     }
@@ -232,6 +232,7 @@ namespace MaaasClientAndroid.Controls
             }
 
             var checkedItems = listView.CheckedItemPositions;
+            checkedItems.Clear();
             for (int n = 0; n < listView.Count; n++)
             {
                 string listItem = listView.GetItemAtPosition(n).ToString();
@@ -240,6 +241,9 @@ namespace MaaasClientAndroid.Controls
                     checkedItems.Put(n, true);
                 }
             }
+
+            ArrayAdapter adapter = (ArrayAdapter)listView.Adapter;
+            adapter.NotifyDataSetChanged();
         }
 
         void listbox_SelectionChanged()

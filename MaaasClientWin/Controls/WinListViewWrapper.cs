@@ -63,11 +63,11 @@ namespace MaaasClientWin.Controls
             }
 
             // Get selection mode - single (default) or multiple - no dynamic values (we don't need this changing during execution).
-            if ((controlSpec["select"] != null) && ((string)controlSpec["select"] == "multiple"))
+            if ((controlSpec["select"] != null) && ((string)controlSpec["select"] == "Multiple"))
             {
                 listView.SelectionMode = ListViewSelectionMode.Multiple;
             }
-            else if ((controlSpec["select"] != null) && ((string)controlSpec["select"] == "none"))
+            else if ((controlSpec["select"] != null) && ((string)controlSpec["select"] == "None"))
             {
                 listView.SelectionMode = ListViewSelectionMode.None;
             }
