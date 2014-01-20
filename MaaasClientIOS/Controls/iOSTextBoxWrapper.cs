@@ -54,7 +54,7 @@ namespace MaaasClientIOS.Controls
             // an update from the server), so we'll do some downstream delta checking as well, but this
             // check will cut down most of the chatter.
             //
-            if (textBox.Highlighted)
+            if (textBox.IsFirstResponder)
             {
                 updateValueBindingForAttribute("value");
             }
