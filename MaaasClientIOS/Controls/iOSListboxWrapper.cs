@@ -17,95 +17,128 @@ namespace MaaasClientIOS.Controls
     //
     //    http://docs.xamarin.com/guides/ios/user_interface/tables/part_3_-_customizing_a_table's_appearance/
 
-    public class TableCell : UITableViewCell
+    abstract public class TableSourceItem
     {
-        static NSString _cellIdentifier = new NSString("TableCell");
-        public static NSString CellIdentifier { get { return _cellIdentifier; } }
+        abstract public NSString CellIdentifier { get; }
 
-        public TableCell() : base(UITableViewCellStyle.Default, CellIdentifier)
+        abstract public UITableViewCell CreateCell(UITableView tableView);
+
+        abstract public void BindCell(UITableView tableView, UITableViewCell cell);
+
+        public virtual bool SetCheckedState(UITableView tableView, UITableViewCell cell, bool isChecked)
         {
+            return false;
         }
     }
 
-    // !!! It seems like we want to use the accessory checkmark to show "selection", and not the iOS selection
-    //     mechanism (with the blue or gray background).  So this seems to mean that we'll need to track our
-    //     own "selected" state (used to get/set selection, and to drive prescence of checkbox).
+    // We want to use the accessory checkmark to show "selection", and not the iOS selection
+    // mechanism (with the blue or gray background).  That means we'll need to track our
+    // own "checked" state and use that to drive prescence of checkbox.
     //
-    /*
-    public class SelectableTableSourceItem
+    public class CheckableTableSourceItem
     {
-        protected bool _selected = false;
+        protected bool _checked = false;
         protected NSIndexPath _indexPath;
+        protected TableSourceItem _tableSourceItem;
 
-        public bool Selected 
-        { 
-            get { return _selected; } 
-            set 
-            { 
-                if (_selected != value)
-                {
-                    _selected = value; 
-                }
-            } 
-        }
+        public bool Checked { get { return _checked; } }
 
-        public SelectableTableSourceItem(NSIndexPath indexPath)
+        public CheckableTableSourceItem(TableSourceItem tableSourceItem, NSIndexPath indexPath)
         {
+            _tableSourceItem = tableSourceItem;
             _indexPath = indexPath;
         }
 
-        public UITableViewCell GetCell()
+        public TableSourceItem TableSourceItem { get { return _tableSourceItem; } }
+
+        public void SetChecked(UITableView tableView, bool isChecked)
         {
-            return null;
+            if (_checked != isChecked)
+            {
+                _checked = isChecked;
+                UITableViewCell cell = tableView.CellAt(_indexPath);
+                if (cell != null)
+                {
+                    SetCheckedState(tableView, cell);
+                }
+            }
         }
 
-        public void SelectionChanged(UITableView tableView, bool isSelected)
+        public void SetCheckedState(UITableView tableView, UITableViewCell cell)
         {
-            _selected = isSelected;
+            if (!_tableSourceItem.SetCheckedState(tableView, cell, Checked))
+            {
+                cell.Accessory = _checked ? UITableViewCellAccessory.Checkmark : UITableViewCellAccessory.None;
+            }
+        }
+
+        public UITableViewCell GetCell(UITableView tableView)
+        {
+            UITableViewCell cell = tableView.DequeueReusableCell(_tableSourceItem.CellIdentifier);
+            if (cell == null)
+            {
+                cell = _tableSourceItem.CreateCell(tableView);
+                // cell.SelectionStyle = UITableViewCellSelectionStyle.Blue;
+            }
+
+            _tableSourceItem.BindCell(tableView, cell);
+            SetCheckedState(tableView, cell);
+
+            return cell;
         }
     }
-    */
 
-    public class TableSource : UITableViewSource
+    public class CheckableTableSource : UITableViewSource
     {
-        public List<string> TableItems = new List<string>();
+        protected List<CheckableTableSourceItem> _tableItems = new List<CheckableTableSourceItem>();
 
         protected Action _onSelectionChange;
+        protected SelectionMode _selectionMode;
 
-        public TableSource(Action OnSelectionChange)
+        public CheckableTableSource(SelectionMode selectionMode, Action OnSelectionChange)
         {
+            _selectionMode = selectionMode;
             _onSelectionChange = OnSelectionChange;
+        }
+
+        public SelectionMode SelectionMode { get { return _selectionMode; } }
+
+        public List<CheckableTableSourceItem> AllItems { get { return _tableItems; } }
+
+        public List<CheckableTableSourceItem> CheckedItems
+        {
+            get
+            {
+                List<CheckableTableSourceItem> checkedItems = new List<CheckableTableSourceItem>();
+                foreach (CheckableTableSourceItem item in _tableItems)
+                {
+                    if (item.Checked)
+                    {
+                        checkedItems.Add(item);
+                    }
+                }
+
+                return checkedItems;
+            }
         }
 
         public override int RowsInSection(UITableView tableview, int section)
         {
-            return TableItems.Count;
+            return _tableItems.Count;
         }
 
         public override UITableViewCell GetCell(UITableView tableView, MonoTouch.Foundation.NSIndexPath indexPath)
         {
             Util.debug("Getting cell for path: " + indexPath);
-
-            TableCell cell = tableView.DequeueReusableCell(TableCell.CellIdentifier) as TableCell;
-            if (cell == null)
-            {
-                cell = new TableCell();
-            }
-
-            // cell.SelectionStyle = UITableViewCellSelectionStyle.Blue;
-
-            cell.TextLabel.Text = TableItems[indexPath.Row];
-            // cell.DetailTextLabel.Text = "Details";
-            // cell.ImageView.Image
-            // cell.Accessory
-            return cell;
+            CheckableTableSourceItem selectedItem = _tableItems[indexPath.Row];
+            return selectedItem.GetCell(tableView);
         }
 
-        public string GetStringAtRow(MonoTouch.Foundation.NSIndexPath indexPath)
+        public CheckableTableSourceItem GetItemAtRow(MonoTouch.Foundation.NSIndexPath indexPath)
         {
             if (indexPath.Section == 0)
             {
-                return TableItems[indexPath.Row];
+                return _tableItems[indexPath.Row];
             }
 
             return null;
@@ -114,23 +147,45 @@ namespace MaaasClientIOS.Controls
         public override void RowSelected(UITableView tableView, MonoTouch.Foundation.NSIndexPath indexPath)
         {
             Util.debug("Row selected: " + indexPath);
-            UITableViewCell cell = tableView.CellAt(indexPath);
-            cell.Accessory = UITableViewCellAccessory.Checkmark;
-            if (_onSelectionChange != null)
+
+            tableView.DeselectRow(indexPath, true); // normal iOS behaviour is to remove the blue highlight
+
+            CheckableTableSourceItem selectedItem = _tableItems[indexPath.Row];
+
+            if ((_selectionMode != SelectionMode.None) || ((_selectionMode == SelectionMode.Single) && !selectedItem.Checked))
             {
-                _onSelectionChange();
+                if (_selectionMode == SelectionMode.Single)
+                {
+                    // Uncheck any currently checked item(s) and check the item selected
+                    //
+                    foreach (CheckableTableSourceItem item in _tableItems)
+                    {
+                        if (item.Checked)
+                        {
+                            item.SetChecked(tableView, false);
+                        }
+                    }
+                    selectedItem.SetChecked(tableView, true);
+                }
+                else
+                {
+                    // Toggle the checked state of the item selected
+                    //
+                    selectedItem.SetChecked(tableView, !selectedItem.Checked);
+                }
+
+                if (_onSelectionChange != null)
+                {
+                    _onSelectionChange();
+                }
             }
+
+            // !!! Separate callback for "OnItemClicked" should be called here...
         }
 
         public override void RowDeselected(UITableView tableView, MonoTouch.Foundation.NSIndexPath indexPath)
         {
             Util.debug("Row deselected: " + indexPath);
-            UITableViewCell cell = tableView.CellAt(indexPath);
-            cell.Accessory = UITableViewCellAccessory.None;
-            if (_onSelectionChange != null)
-            {
-                _onSelectionChange();
-            }
         }
 
         /*
@@ -146,6 +201,46 @@ namespace MaaasClientIOS.Controls
          */
     }
 
+    public class StringTableSourceItem : TableSourceItem
+    {
+        static NSString _cellIdentifier = new NSString("StringTableCell");
+        public override NSString CellIdentifier { get { return _cellIdentifier; } }
+
+        protected string _string;
+        public string String { get { return _string; } }
+
+        public StringTableSourceItem(string str)
+        {
+            _string = str;
+        }
+
+        public override UITableViewCell CreateCell(UITableView tableView)
+        {
+            return new UITableViewCell(UITableViewCellStyle.Default, CellIdentifier);
+        }
+
+        public override void BindCell(UITableView tableView, UITableViewCell cell)
+        {
+            cell.TextLabel.Text = _string;
+            // cell.DetailTextLabel.Text = "Details";
+            // cell.ImageView.Image
+        }
+    }
+
+    public class CheckableStringTableSource : CheckableTableSource
+    {
+        public CheckableStringTableSource(SelectionMode selectionMode, Action OnSelectionChange)
+            : base(selectionMode, OnSelectionChange)
+        {
+        }
+
+        public void AddItem(string value, bool isChecked = false)
+        {
+            StringTableSourceItem item = new StringTableSourceItem(value);
+            _tableItems.Add(new CheckableTableSourceItem(item, NSIndexPath.FromItemSection(_tableItems.Count, 0)));
+        }
+    }
+
     class iOSListBoxWrapper : iOSControlWrapper
     {
         public iOSListBoxWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
@@ -157,7 +252,9 @@ namespace MaaasClientIOS.Controls
             this._control = table;
 
             //table.RegisterClassForCellReuse(typeof(TableCell), TableCell.CellIdentifier);
-            table.Source = new TableSource(listbox_SelectionChanged);
+
+            SelectionMode selectionMode = ToSelectionMode((string)controlSpec["select"]);
+            table.Source = new CheckableStringTableSource(selectionMode, listbox_SelectionChanged);
 
             processElementDimensions(controlSpec, 150, 50);
             applyFrameworkElementDefaults(table);
@@ -174,23 +271,17 @@ namespace MaaasClientIOS.Controls
                     processElementBoundValue("selection", (string)bindingSpec["selection"], () => getListboxSelection(table), value => this.setListboxSelection(table, (JToken)value));
                 }
             }
-
-            // Get selection mode - single (default) or multiple - no dynamic values (we don't need this changing during execution).
-            if ((controlSpec["select"] != null) && ((string)controlSpec["select"] == "Multiple"))
-            {
-                table.AllowsMultipleSelection = true;
-            }
         }
 
-        public JToken getListboxContents(UITableView listbox)
+        public JToken getListboxContents(UITableView tableView)
         {
             Util.debug("Getting listbox contents");
 
-            TableSource tableSource = (TableSource)listbox.Source;
+            CheckableStringTableSource tableSource = (CheckableStringTableSource)tableView.Source;
 
             return new JArray(
-                from item in tableSource.TableItems
-                select new Newtonsoft.Json.Linq.JValue(item)
+                from item in tableSource.AllItems
+                select new Newtonsoft.Json.Linq.JValue(((StringTableSourceItem)item.TableSourceItem).String)
                 );
         }
 
@@ -198,12 +289,14 @@ namespace MaaasClientIOS.Controls
         {
             Util.debug("Setting listbox contents");
 
-            TableSource tableSource = (TableSource)tableView.Source;
+            CheckableStringTableSource tableSource = (CheckableStringTableSource)tableView.Source;
 
             // Keep track of currently selected item/items so we can restore after repopulating list
             JToken selection = getListboxSelection(tableView);
 
-            List<string> items = new List<string>();
+            int oldCount = tableSource.AllItems.Count;
+            tableSource.AllItems.Clear();
+
             if ((contents != null) && (contents.Type == JTokenType.Array))
             {
                 // !!! Default itemValue is "$data"
@@ -213,25 +306,25 @@ namespace MaaasClientIOS.Controls
                     //     Otherwise, if there is a non-default itemData binding, we apply that.
                     string value = (string)arrayElementBindingContext;
                     Util.debug("adding listbox item: " + value);
-                    items.Add(value);
+                    tableSource.AddItem(value);
                 }
             }
-            List<string> oldItems = tableSource.TableItems;
-            tableSource.TableItems = items;
+
+            int newCount = tableSource.AllItems.Count;
 
             List<NSIndexPath> reloadRows = new List<NSIndexPath>();
             List<NSIndexPath> insertRows = new List<NSIndexPath>();
             List<NSIndexPath> deleteRows = new List<NSIndexPath>();
 
-            int maxCount = Math.Max(items.Count, oldItems.Count);
+            int maxCount = Math.Max(newCount, oldCount);
             for (int i = 0; i < maxCount; i++)
             {
                 NSIndexPath row = NSIndexPath.FromRowSection(i, 0);
-                if (i < Math.Min(items.Count, oldItems.Count))
+                if (i < Math.Min(newCount, oldCount))
                 {
                     reloadRows.Add(row);
                 }
-                else if (i < items.Count)
+                else if (i < newCount)
                 {
                     insertRows.Add(row);
                 }
@@ -261,27 +354,22 @@ namespace MaaasClientIOS.Controls
 
         public JToken getListboxSelection(UITableView tableView)
         {
-            TableSource tableSource = (TableSource)tableView.Source;
+            CheckableStringTableSource tableSource = (CheckableStringTableSource)tableView.Source;
 
-            if (tableView.AllowsMultipleSelection)
+            List<CheckableTableSourceItem> checkedItems = tableSource.CheckedItems;
+
+            if (tableSource.SelectionMode == SelectionMode.Multiple)
             {
-                NSIndexPath[] selectedRows = tableView.IndexPathsForSelectedRows;
-                if (selectedRows == null)
-                {
-                    selectedRows = new NSIndexPath[]{};
-                }
-
                 return new JArray(
-                    from selectedRow in selectedRows
-                    select new Newtonsoft.Json.Linq.JValue(tableSource.GetStringAtRow(selectedRow))
+                    from item in checkedItems
+                    select new Newtonsoft.Json.Linq.JValue(((StringTableSourceItem)item.TableSourceItem).String)
                     );
             }
             else
             {
-                NSIndexPath selectedRow = tableView.IndexPathForSelectedRow;
-                if (selectedRow != null)
+                if (checkedItems.Count > 0)
                 {
-                    return new JValue(tableSource.GetStringAtRow(selectedRow));
+                    return new JValue(((StringTableSourceItem)checkedItems[0].TableSourceItem).String);
                 }
                 return new JValue(false); // This is a "null" selection
             }
@@ -289,22 +377,7 @@ namespace MaaasClientIOS.Controls
 
         public void setListboxSelection(UITableView tableView, JToken selection)
         {
-            // This version eliminates any unnecessary clearing and later resetting of selection on a given selected item,
-            // unlike the brute force "clear all item selection, then set selection for selected items" approach.  Specifically,
-            // with this method if the selection does not change, this will be a no-op (in terms of select/deselect).
-            //
-            // For long lists with small numbers of selections, it would be more efficient to just process the current selections
-            // and new selected values (as opposed to going throught the whole list).  Maybe later.
-
-            TableSource tableSource = (TableSource)tableView.Source;
-
-            // Get current selected rows...
-            //
-            List<NSIndexPath> selectedRows = new List<NSIndexPath>();
-            if (tableView.IndexPathsForSelectedRows != null)
-            {
-                selectedRows.AddRange(tableView.IndexPathsForSelectedRows);
-            }
+            CheckableStringTableSource tableSource = (CheckableStringTableSource)tableView.Source;
 
             // Get list of values to be selected...
             //
@@ -322,30 +395,14 @@ namespace MaaasClientIOS.Controls
                 selectedStrings.Add(ToString(selection));
             }
 
-            // Go through the rows and select/deselect as appropriate...
+            // Go through all values and check as appropriate
             //
-            int itemCount = tableSource.RowsInSection(tableView, 0);
-            for (int i = 0; i < itemCount; i++)
+            foreach (CheckableTableSourceItem item in tableSource.AllItems)
             {
-                NSIndexPath row = NSIndexPath.FromRowSection(i, 0);
-                if (selectedStrings.Contains(tableSource.GetStringAtRow(row)))
-                {
-                    if (!selectedRows.Contains(row))
-                    {
-                        tableView.SelectRow(row, false, UITableViewScrollPosition.None);
-                    }
-                }
-                else
-                {
-                    if (selectedRows.Contains(row))
-                    {
-                        tableView.DeselectRow(row, false);
-                    }
-                }
+                item.SetChecked(tableView, selectedStrings.Contains(((StringTableSourceItem)item.TableSourceItem).String));
             }
         }
 
-        // !!! Currently not called
         void listbox_SelectionChanged()
         {
             updateValueBindingForAttribute("selection");

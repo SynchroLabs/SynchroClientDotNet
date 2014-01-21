@@ -35,6 +35,13 @@ namespace MaaasClientIOS.Controls
         Vertical
     }
 
+    public enum SelectionMode : uint
+    {
+        None,
+        Single,
+        Multiple
+    }
+
     public class FrameProperties
     {
         public bool WidthSpecified = false;
@@ -124,6 +131,30 @@ namespace MaaasClientIOS.Controls
                 alignment = VerticalAlignment.Center;
             }
             return alignment;
+        }
+
+        public SelectionMode ToSelectionMode(object value, SelectionMode defaultSelectionMode = SelectionMode.Single)
+        {
+            if (value is SelectionMode)
+            {
+                return (SelectionMode)value;
+            }
+
+            SelectionMode selectionMode = defaultSelectionMode;
+            string selectionModeValue = ToString(value);
+            if (selectionModeValue == "None")
+            {
+                selectionMode = SelectionMode.None;
+            }
+            else if (selectionModeValue == "Single")
+            {
+                selectionMode = SelectionMode.Single;
+            }
+            else if (selectionModeValue == "Multiple")
+            {
+                selectionMode = SelectionMode.Multiple;
+            }
+            return selectionMode;
         }
 
         protected static UIColor ToColor(object value)

@@ -15,6 +15,13 @@ using Android.Graphics;
 
 namespace MaaasClientAndroid.Controls
 {
+    // http://docs.xamarin.com/guides/android/user_interface/working_with_listviews_and_adapters/part_3_-_customizing_a_listview%27s_appearance/
+    //
+    // Source for resources
+    //
+    //     https://github.com/android/platform_frameworks_base/tree/master/core/res/res/layout
+    //
+
     class AndroidListBoxWrapper : AndroidControlWrapper
     {
         public AndroidListBoxWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
