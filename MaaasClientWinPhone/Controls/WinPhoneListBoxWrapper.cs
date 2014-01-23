@@ -20,6 +20,12 @@ namespace MaaasClientWinPhone.Controls
 
             applyFrameworkElementDefaults(listbox);
 
+            // Get selection mode - single (default) or multiple - no dynamic values (we don't need this changing during execution).
+            if ((controlSpec["select"] != null) && ((string)controlSpec["select"] == "Multiple"))
+            {
+                listbox.SelectionMode = SelectionMode.Multiple;
+            }
+
             JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "items");
             if (bindingSpec != null)
             {
@@ -32,11 +38,7 @@ namespace MaaasClientWinPhone.Controls
                     processElementBoundValue("selection", (string)bindingSpec["selection"], () => getListboxSelection(listbox), value => this.setListboxSelection(listbox, (JToken)value));
                 }
             }
-            // Get selection mode - single (default) or multiple - no dynamic values (we don't need this changing during execution).
-            if ((controlSpec["select"] != null) && ((string)controlSpec["select"] == "Multiple"))
-            {
-                listbox.SelectionMode = SelectionMode.Multiple;
-            }
+
             listbox.SelectionChanged += listbox_SelectionChanged;
         }
 

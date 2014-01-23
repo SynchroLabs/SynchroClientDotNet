@@ -25,9 +25,18 @@ namespace MaaasClientIOS.Controls
 
         abstract public void BindCell(UITableView tableView, UITableViewCell cell);
 
+        // Override this and return true if you set the checked state yourself
+        //
         public virtual bool SetCheckedState(UITableView tableView, UITableViewCell cell, bool isChecked)
         {
             return false;
+        }
+
+        // Override this and return the row height if you want to set the row height yourself
+        //
+        public virtual float GetHeightForRow(UITableView tableView)
+        {
+            return -1;
         }
     }
 
@@ -74,6 +83,7 @@ namespace MaaasClientIOS.Controls
 
         public UITableViewCell GetCell(UITableView tableView)
         {
+            Util.debug("Getting cell for: " + _indexPath);
             UITableViewCell cell = tableView.DequeueReusableCell(_tableSourceItem.CellIdentifier);
             if (cell == null)
             {
@@ -85,6 +95,11 @@ namespace MaaasClientIOS.Controls
             SetCheckedState(tableView, cell);
 
             return cell;
+        }
+
+        public virtual float GetHeightForRow(UITableView tableView)
+        {
+            return _tableSourceItem.GetHeightForRow(tableView);
         }
     }
 
@@ -130,8 +145,8 @@ namespace MaaasClientIOS.Controls
         public override UITableViewCell GetCell(UITableView tableView, MonoTouch.Foundation.NSIndexPath indexPath)
         {
             Util.debug("Getting cell for path: " + indexPath);
-            CheckableTableSourceItem selectedItem = _tableItems[indexPath.Row];
-            return selectedItem.GetCell(tableView);
+            CheckableTableSourceItem item = _tableItems[indexPath.Row];
+            return item.GetCell(tableView);
         }
 
         public CheckableTableSourceItem GetItemAtRow(MonoTouch.Foundation.NSIndexPath indexPath)
@@ -143,6 +158,19 @@ namespace MaaasClientIOS.Controls
 
             return null;
         }
+
+        public override float GetHeightForRow(UITableView tableView, NSIndexPath indexPath)
+        {
+            Util.debug("Getting row height for: " + indexPath);
+            CheckableTableSourceItem item = _tableItems[indexPath.Row];
+            float height = item.GetHeightForRow(tableView);
+            if (height == -1)
+            {
+                height = base.GetHeightForRow(tableView, indexPath);
+            }
+            return height;
+        }
+
 
         public override void RowSelected(UITableView tableView, MonoTouch.Foundation.NSIndexPath indexPath)
         {
@@ -251,7 +279,9 @@ namespace MaaasClientIOS.Controls
             var table = new UITableView();
             this._control = table;
 
-            //table.RegisterClassForCellReuse(typeof(TableCell), TableCell.CellIdentifier);
+            // The "new style" reuse model doesn't seem to work with custom table cell implementations
+            //
+            // table.RegisterClassForCellReuse(typeof(TableCell), TableCell.CellIdentifier);
 
             SelectionMode selectionMode = ToSelectionMode((string)controlSpec["select"]);
             table.Source = new CheckableStringTableSource(selectionMode, listbox_SelectionChanged);

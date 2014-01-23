@@ -37,6 +37,8 @@ namespace MaaasClientAndroid.Controls
             processElementProperty((string)controlSpec["alignContentH"], value => layout.SetHorizontalGravity(ToHorizontalAlignment(value, GravityFlags.Left)), GravityFlags.Left);
             processElementProperty((string)controlSpec["alignContentV"], value => layout.SetVerticalGravity(ToVerticalAlignment(value, GravityFlags.Center)), GravityFlags.Center);
 
+            processThicknessProperty(controlSpec["padding"], new PaddingThicknessSetter(this.Control));
+
             if (controlSpec["contents"] != null)
             {
                 createControls((JArray)controlSpec["contents"], (childControlSpec, childControlWrapper) =>

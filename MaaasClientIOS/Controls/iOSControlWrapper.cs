@@ -48,10 +48,95 @@ namespace MaaasClientIOS.Controls
         public bool HeightSpecified = false;
     }
 
-    class iOSControlWrapper : ControlWrapper
+    public abstract class ThicknessSetter
+    {
+        public virtual void SetThickness(int thickness)
+        {
+            this.SetThicknessTop(thickness);
+            this.SetThicknessLeft(thickness);
+            this.SetThicknessBottom(thickness);
+            this.SetThicknessRight(thickness);
+        }
+        public abstract void SetThicknessLeft(int thickness);
+        public abstract void SetThicknessTop(int thickness);
+        public abstract void SetThicknessRight(int thickness);
+        public abstract void SetThicknessBottom(int thickness);
+    }
+
+    public class MarginThicknessSetter : ThicknessSetter
+    {
+        protected iOSControlWrapper _controlWrapper;
+
+        public MarginThicknessSetter(iOSControlWrapper controlWrapper)
+        {
+            _controlWrapper = controlWrapper;
+        }
+
+        public override void SetThicknessLeft(int thickness)
+        {
+            _controlWrapper.MarginLeft = thickness;
+        }
+
+        public override void SetThicknessTop(int thickness)
+        {
+            _controlWrapper.MarginTop = thickness;
+        }
+
+        public override void SetThicknessRight(int thickness)
+        {
+            _controlWrapper.MarginRight = thickness;
+        }
+
+        public override void SetThicknessBottom(int thickness)
+        {
+            _controlWrapper.MarginBottom = thickness;
+        }
+    }
+
+    public class PaddingThicknessSetter : ThicknessSetter
+    {
+        protected iOSControlWrapper _controlWrapper;
+
+        public PaddingThicknessSetter(iOSControlWrapper controlWrapper)
+        {
+            _controlWrapper = controlWrapper;
+        }
+
+        public override void SetThicknessLeft(int thickness)
+        {
+            _controlWrapper.PaddingLeft = thickness;
+        }
+
+        public override void SetThicknessTop(int thickness)
+        {
+            _controlWrapper.PaddingTop = thickness;
+        }
+
+        public override void SetThicknessRight(int thickness)
+        {
+            _controlWrapper.PaddingRight = thickness;
+        }
+
+        public override void SetThicknessBottom(int thickness)
+        {
+            _controlWrapper.PaddingBottom = thickness;
+        }
+    }
+
+    public class iOSControlWrapper : ControlWrapper
     {
         protected UIView _control;
         public UIView Control { get { return _control; } }
+
+        protected float _marginLeft = 0f;
+        protected float _marginTop = 0f;
+        protected float _marginRight = 0f;
+        protected float _marginBottom = 0f;
+
+        protected float _paddingLeft = 0f;
+        protected float _paddingTop = 0f;
+        protected float _paddingRight = 0f;
+        protected float _paddingBottom = 0f;
 
         public iOSControlWrapper(StateManager stateManager, ViewModel viewModel, BindingContext bindingContext, UIView control) :
             base(stateManager, viewModel, bindingContext)
@@ -63,6 +148,98 @@ namespace MaaasClientIOS.Controls
             base(parent, bindingContext)
         {
             _control = control;
+        }
+
+        public float MarginLeft
+        {
+            get { return _marginLeft; }
+            set
+            {
+                _marginLeft = value;
+                if (_control.Superview != null)
+                {
+                    _control.Superview.SetNeedsLayout();
+                }
+            }
+        }
+
+        public float MarginTop
+        {
+            get { return _marginTop; }
+            set
+            {
+                _marginTop = value;
+                if (_control.Superview != null)
+                {
+                    _control.Superview.SetNeedsLayout();
+                }
+            }
+        }
+
+        public float MarginRight
+        {
+            get { return _marginRight; }
+            set
+            {
+                _marginRight = value;
+                if (_control.Superview != null)
+                {
+                    _control.Superview.SetNeedsLayout();
+                }
+            }
+        }
+
+        public float MarginBottom
+        {
+            get { return _marginBottom; }
+            set
+            {
+                _marginBottom = value;
+                if (_control.Superview != null)
+                {
+                    _control.Superview.SetNeedsLayout();
+                }
+            }
+        }
+
+        public float PaddingLeft
+        {
+            get { return _paddingLeft; }
+            set
+            {
+                _paddingLeft = value;
+                _control.SetNeedsLayout();
+            }
+        }
+
+        public float PaddingTop
+        {
+            get { return _paddingTop; }
+            set
+            {
+                _paddingTop = value;
+                _control.SetNeedsLayout();
+            }
+        }
+
+        public float PaddingRight
+        {
+            get { return _paddingRight; }
+            set
+            {
+                _paddingRight = value;
+                _control.SetNeedsLayout();
+            }
+        }
+
+        public float PaddingBottom
+        {
+            get { return _paddingBottom; }
+            set
+            {
+                _paddingBottom = value;
+                _control.SetNeedsLayout();
+            }
         }
 
         public Orientation ToOrientation(object value, Orientation defaultOrientation = Orientation.Horizontal)
@@ -170,6 +347,38 @@ namespace MaaasClientIOS.Controls
             }
         }
 
+        public void processThicknessProperty(JToken thicknessAttributeValue, ThicknessSetter thicknessSetter)
+        {
+            if (thicknessAttributeValue is Newtonsoft.Json.Linq.JValue)
+            {
+                processElementProperty((string)thicknessAttributeValue, value =>
+                {
+                    thicknessSetter.SetThickness((int)ToDeviceUnits(value));
+                }, "0");
+            }
+            else if (thicknessAttributeValue is JObject)
+            {
+                JObject marginObject = thicknessAttributeValue as JObject;
+
+                processElementProperty((string)marginObject.Property("left"), value =>
+                {
+                    thicknessSetter.SetThicknessLeft((int)ToDeviceUnits(value));
+                }, "0");
+                processElementProperty((string)marginObject.Property("top"), value =>
+                {
+                    thicknessSetter.SetThicknessTop((int)ToDeviceUnits(value));
+                }, "0");
+                processElementProperty((string)marginObject.Property("right"), value =>
+                {
+                    thicknessSetter.SetThicknessRight((int)ToDeviceUnits(value));
+                }, "0");
+                processElementProperty((string)marginObject.Property("bottom"), value =>
+                {
+                    thicknessSetter.SetThicknessBottom((int)ToDeviceUnits(value));
+                }, "0");
+            }
+        }
+
         protected void applyFrameworkElementDefaults(UIView element)
         {
             // !!! This could be a little more thourough ;)
@@ -233,7 +442,8 @@ namespace MaaasClientIOS.Controls
                 processElementProperty((string)controlSpec["enabled"], value => this.Control.UserInteractionEnabled = ToBoolean(value));
             }
 
-            //processMarginProperty(controlSpec["margin"]);
+            processThicknessProperty(controlSpec["margin"], new MarginThicknessSetter(this));
+            processThicknessProperty(controlSpec["padding"], new PaddingThicknessSetter(this));
 
             // These elements are very common among derived classes, so we'll do some runtime reflection...
             //
@@ -284,6 +494,9 @@ namespace MaaasClientIOS.Controls
                     break;
                 case "listbox":
                     controlWrapper = new iOSListBoxWrapper(parent, bindingContext, controlSpec);
+                    break;
+                case "listview":
+                    controlWrapper = new iOSListViewWrapper(parent, bindingContext, controlSpec);
                     break;
                 case "password":
                     controlWrapper = new iOSTextBoxWrapper(parent, bindingContext, controlSpec);

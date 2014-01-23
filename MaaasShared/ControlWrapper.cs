@@ -374,6 +374,12 @@ namespace MaaasCore
                 BindingContext valueBindingContext = this.BindingContext.Select(value);
                 ValueBinding binding = ViewModel.CreateAndRegisterValueBinding(valueBindingContext, value, getValue, setValue);
                 SetValueBinding(attributeName, binding);
+
+                // !!! Immediate content update during configuration.  Make sure this isn't an issue (that controls are fully formed and
+                //     ready for content to be set, and that we don't double set the content in a content update immediately after this, or if
+                //     we do, it's not annoying).
+                binding.UpdateViewFromViewModel(); 
+
                 return true;
             }
 
@@ -401,6 +407,12 @@ namespace MaaasCore
                 // If value contains a binding, create a Binding and add it to metadata
                 PropertyBinding binding = ViewModel.CreateAndRegisterPropertyBinding(this.BindingContext, value, setValue);
                 _propertyBindings.Add(binding);
+
+                // !!! Immediate content update during configuration.  Make sure this isn't an issue (that controls are fully formed and
+                //     ready for content to be set, and that we don't double set the content in a content update immediately after this, or if
+                //     we do, it's not annoying).
+                //
+                binding.UpdateViewFromViewModel(); 
             }
             else
             {

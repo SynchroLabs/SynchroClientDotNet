@@ -124,10 +124,11 @@ namespace MaaasClientAndroid.Controls
                 //     keeping track of bindings that have not been updated so they can be updated when signalled (here) - maybe marking the bindings
                 //     as dirty, or possibly a method of resolving the bindings at the time the controls are created.
                 //
+                // !!! The real-time binding resolution fix in common should make this unnecessary - remove and test.
+                //
                 controlWrapper.ViewModel.UpdateViewFromViewModel();
 
                 return controlWrapper.Control;
-
             }
             return null;
         }
@@ -178,6 +179,20 @@ namespace MaaasClientAndroid.Controls
 
             applyFrameworkElementDefaults(listView);
 
+            // Get selection mode - None (default), Single, or Multiple - no dynamic values (we don't need this changing during execution).
+            listView.ChoiceMode = ChoiceMode.None;
+            if (controlSpec["select"] != null)
+            {
+                if ((string)controlSpec["select"] == "Single")
+                {
+                    listView.ChoiceMode = ChoiceMode.Single;
+                }
+                else if ((string)controlSpec["select"] == "Multiple")
+                {
+                    listView.ChoiceMode = ChoiceMode.Multiple;
+                }
+            }
+
             JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "items", new string[] { "onItemClick" });
             if (bindingSpec != null)
             {
@@ -216,20 +231,6 @@ namespace MaaasClientAndroid.Controls
                         (string)bindingSpec["selection"],
                         () => getListViewSelection(listView, selectionItem),
                         value => this.setListViewSelection(listView, selectionItem, (JToken)value));
-                }
-            }
-
-            // Get selection mode - None (default), Single, or Multiple - no dynamic values (we don't need this changing during execution).
-            listView.ChoiceMode = ChoiceMode.None;
-            if (controlSpec["select"] != null)
-            {
-                if ((string)controlSpec["select"] == "Single")
-                {
-                    listView.ChoiceMode = ChoiceMode.Single;
-                }
-                else if ((string)controlSpec["select"] == "Multiple")
-                {
-                    listView.ChoiceMode = ChoiceMode.Multiple;
                 }
             }
 
@@ -274,14 +275,8 @@ namespace MaaasClientAndroid.Controls
                 totalHeight += listItem.MeasuredHeight + ((CheckedTextView)listItem).TotalPaddingBottom + ((CheckedTextView)listItem).TotalPaddingTop;
             }
 
-            ViewGroup.LayoutParams layout = listView.LayoutParameters;
-            if (layout == null)
-            {
-                layout = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
-            }
-            layout.Height = totalHeight + (listView.DividerHeight * (adapter.Count + 1));
-            listView.LayoutParameters = layout;
-            listView.RequestLayout();
+            _height = totalHeight + (listView.DividerHeight * (adapter.Count + 1));
+            this.updateSize();
         }
 
         void listView_ItemSelected(object sender, AdapterView.ItemSelectedEventArgs e)

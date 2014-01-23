@@ -20,6 +20,12 @@ namespace MaaasClientWin.Controls
 
             applyFrameworkElementDefaults(listbox);
 
+            // Get selection mode - single (default) or multiple - no dynamic values (we don't need this changing during execution).
+            if ((controlSpec["select"] != null) && ((string)controlSpec["select"] == "Multiple"))
+            {
+                listbox.SelectionMode = SelectionMode.Multiple;
+            }
+
             JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "items");
             if (bindingSpec != null)
             {
@@ -33,11 +39,6 @@ namespace MaaasClientWin.Controls
                 }
             }
 
-            // Get selection mode - single (default) or multiple - no dynamic values (we don't need this changing during execution).
-            if ((controlSpec["select"] != null) && ((string)controlSpec["select"] == "Multiple"))
-            {
-                listbox.SelectionMode = SelectionMode.Multiple;
-            }
             listbox.SelectionChanged += listbox_SelectionChanged;
         }
 

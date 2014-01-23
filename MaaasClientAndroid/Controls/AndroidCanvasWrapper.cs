@@ -34,14 +34,27 @@ namespace MaaasClientAndroid.Controls
             {
                 createControls((JArray)controlSpec["contents"], (childControlSpec, childControlWrapper) =>
                 {
-                    // We need to capture and potentially bind some attributes on the added child controls here in the context of the parent...
+                    // Create an appropriate set of LayoutParameters...
                     //
-                    AbsoluteLayout.LayoutParams layoutParams = new AbsoluteLayout.LayoutParams(
-                        AbsoluteLayout.LayoutParams.WrapContent, AbsoluteLayout.LayoutParams.WrapContent, 0, 0
-                        );
-                    absLayout.AddView(childControlWrapper.Control, layoutParams);
+                    if (childControlWrapper.Control.LayoutParameters != null)
+                    {
+                        childControlWrapper.Control.LayoutParameters = new AbsoluteLayout.LayoutParams(
+                            childControlWrapper.Control.LayoutParameters.Width, childControlWrapper.Control.LayoutParameters.Height, 0, 0
+                            );
+                    }
+                    else
+                    {
+                        childControlWrapper.Control.LayoutParameters = new AbsoluteLayout.LayoutParams(
+                            AbsoluteLayout.LayoutParams.WrapContent, AbsoluteLayout.LayoutParams.WrapContent, 0, 0
+                            );
+                    }
 
-                    childControlWrapper.processElementProperty((string)childControlSpec["left"], value => {
+                    absLayout.AddView(childControlWrapper.Control);
+
+                    // Bind the x and y position to the appropriate properties of the AbsoluteLayout.LayoutParams....
+                    //
+                    childControlWrapper.processElementProperty((string)childControlSpec["left"], value =>
+                    {
                         ((AbsoluteLayout.LayoutParams)childControlWrapper.Control.LayoutParameters).X = (int)ToDeviceUnits(value);
                         absLayout.ForceLayout();
                     });

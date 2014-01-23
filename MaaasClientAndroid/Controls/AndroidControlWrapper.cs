@@ -26,7 +26,104 @@ namespace MaaasClientAndroid.Controls
         }
     }
 
-    class AndroidControlWrapper : ControlWrapper
+    public abstract class ThicknessSetter
+    {
+        public virtual void SetThickness(int thickness)
+        {
+            this.SetThicknessTop(thickness);
+            this.SetThicknessLeft(thickness);
+            this.SetThicknessBottom(thickness);
+            this.SetThicknessRight(thickness);
+        }
+        public abstract void SetThicknessLeft(int thickness);
+        public abstract void SetThicknessTop(int thickness);
+        public abstract void SetThicknessRight(int thickness);
+        public abstract void SetThicknessBottom(int thickness);
+    }
+
+    public class MarginThicknessSetter : ThicknessSetter
+    {
+        protected View _control;
+
+        public MarginThicknessSetter(AndroidControlWrapper controlWrapper)
+        {
+            controlWrapper.InitializeLayoutParameters();
+            _control = controlWrapper.Control;
+        }
+
+        public override void SetThicknessLeft(int thickness)
+        {
+            ViewGroup.MarginLayoutParams layoutParams = _control.LayoutParameters as ViewGroup.MarginLayoutParams;
+            if (layoutParams != null)
+            {
+                layoutParams.LeftMargin = thickness;
+            }
+        }
+
+        public override void SetThicknessTop(int thickness)
+        {
+            ViewGroup.MarginLayoutParams layoutParams = _control.LayoutParameters as ViewGroup.MarginLayoutParams;
+            if (layoutParams != null)
+            {
+                layoutParams.TopMargin = thickness;
+            }
+        }
+
+        public override void SetThicknessRight(int thickness)
+        {
+            ViewGroup.MarginLayoutParams layoutParams = _control.LayoutParameters as ViewGroup.MarginLayoutParams;
+            if (layoutParams != null)
+            {
+                layoutParams.RightMargin = thickness;
+            }
+        }
+
+        public override void SetThicknessBottom(int thickness)
+        {
+            ViewGroup.MarginLayoutParams layoutParams = _control.LayoutParameters as ViewGroup.MarginLayoutParams;
+            if (layoutParams != null)
+            {
+                layoutParams.BottomMargin = thickness;
+            }
+        }
+    }
+
+    public class PaddingThicknessSetter : ThicknessSetter
+    {
+        protected View _control;
+
+        public PaddingThicknessSetter(View control)
+        {
+            _control = control;
+        }
+
+        public override void SetThickness(int thickness)
+        {
+            _control.SetPadding(thickness, thickness, thickness, thickness);
+        }
+
+        public override void SetThicknessLeft(int thickness)
+        {
+            _control.SetPadding(thickness, _control.PaddingTop, _control.PaddingRight, _control.PaddingBottom);
+        }
+
+        public override void SetThicknessTop(int thickness)
+        {
+            _control.SetPadding(_control.PaddingLeft, thickness, _control.PaddingRight, _control.PaddingBottom);
+        }
+
+        public override void SetThicknessRight(int thickness)
+        {
+            _control.SetPadding(_control.PaddingLeft, _control.PaddingTop, thickness, _control.PaddingBottom);
+        }
+
+        public override void SetThicknessBottom(int thickness)
+        {
+            _control.SetPadding(_control.PaddingLeft, _control.PaddingTop, _control.PaddingRight, thickness);
+        }
+    }
+
+    public class AndroidControlWrapper : ControlWrapper
     {
         protected View _control;
         public View Control { get { return _control; } }
@@ -40,32 +137,35 @@ namespace MaaasClientAndroid.Controls
             _control = control;
         }
 
-        public AndroidControlWrapper(ControlWrapper parent, BindingContext bindingContext, View control = null) :
+        public AndroidControlWrapper(ControlWrapper parent, BindingContext bindingContext) :
             base(parent, bindingContext)
         {
-            _control = control;
+        }
+
+        public void InitializeLayoutParameters()
+        {
+            if (_control.LayoutParameters == null)
+            {
+                _control.LayoutParameters = new ViewGroup.MarginLayoutParams(_width, _height);
+            }
         }
 
         public void updateSize()
         {
-            if (_control.LayoutParameters == null)
-            {
-                _control.LayoutParameters = new ViewGroup.LayoutParams(_width, _height);
-            }
-            else
-            {
-                // We don't want to overwrite an actual height/width value with WrapContent...
-                //
-                if (_width != ViewGroup.LayoutParams.WrapContent)
-                {
-                    _control.LayoutParameters.Width = _width;
-                }
+            InitializeLayoutParameters();
 
-                if (_height != ViewGroup.LayoutParams.WrapContent)
-                {
-                    _control.LayoutParameters.Height = _height;
-                }
+            // We don't want to overwrite an actual height/width value with WrapContent...
+            //
+            if (_width != ViewGroup.LayoutParams.WrapContent)
+            {
+                _control.LayoutParameters.Width = _width;
             }
+
+            if (_height != ViewGroup.LayoutParams.WrapContent)
+            {
+                _control.LayoutParameters.Height = _height;
+            }
+
             _control.RequestLayout();
         }
 
@@ -185,6 +285,38 @@ namespace MaaasClientAndroid.Controls
             return typographicPoints * 160f / 72f;
         }
 
+        public void processThicknessProperty(JToken thicknessAttributeValue, ThicknessSetter thicknessSetter)
+        {
+            if (thicknessAttributeValue is Newtonsoft.Json.Linq.JValue)
+            {
+                processElementProperty((string)thicknessAttributeValue, value =>
+                {
+                    thicknessSetter.SetThickness((int)ToDeviceUnits(value));
+                }, "0");
+            }
+            else if (thicknessAttributeValue is JObject)
+            {
+                JObject marginObject = thicknessAttributeValue as JObject;
+
+                processElementProperty((string)marginObject.Property("left"), value =>
+                {
+                    thicknessSetter.SetThicknessLeft((int)ToDeviceUnits(value));
+                }, "0");
+                processElementProperty((string)marginObject.Property("top"), value =>
+                {
+                    thicknessSetter.SetThicknessTop((int)ToDeviceUnits(value));
+                }, "0");
+                processElementProperty((string)marginObject.Property("right"), value =>
+                {
+                    thicknessSetter.SetThicknessRight((int)ToDeviceUnits(value));
+                }, "0");
+                processElementProperty((string)marginObject.Property("bottom"), value =>
+                {
+                    thicknessSetter.SetThicknessBottom((int)ToDeviceUnits(value));
+                }, "0");
+            }
+        }
+
         protected void processCommonFrameworkElementProperies(JObject controlSpec)
         {
             // !!! This could be a little more thourough ;)
@@ -204,7 +336,10 @@ namespace MaaasClientAndroid.Controls
             processElementProperty((string)controlSpec["opacity"], value => this.Control.Alpha = (float)ToDouble(value));
             processElementProperty((string)controlSpec["visibility"], value => this.Control.Visibility = ToBoolean(value) ? ViewStates.Visible : ViewStates.Gone);
             processElementProperty((string)controlSpec["enabled"], value => this.Control.Enabled = ToBoolean(value));
-            //processMarginProperty(controlSpec["margin"]);
+
+            processThicknessProperty(controlSpec["margin"], new MarginThicknessSetter(this));
+            // Since some controls have to treat padding differently, the padding attribute is handled by the individual control classes
+            // processThicknessProperty(controlSpec["padding"], new PaddingThicknessSetter(this.Control));
 
             if (!(this is AndroidBorderWrapper) && !(this is AndroidRectangleWrapper))
             {

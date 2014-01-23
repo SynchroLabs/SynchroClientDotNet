@@ -304,3 +304,42 @@ Server
     Hotloading (test for new, later will always load/hotload as needed)
 
     Implement PropertyCross
+
+
+================================================================================
+
+Win/WinPhone
+
+    http://msdn.microsoft.com/en-us/library/ms751709(v=vs.110).aspx
+
+    Margin - Supported on all elements via Margin property and Margin.Left/Right/Top/Bottom for setting individual values
+    Padding - Only supported on certain elements (Block, Border, Control, Textblock)
+
+    !!! To add padding to StackPanel, we have to put a StackPanel inside of a Border (apply all attributes to border, but add children to stackpanel)
+
+Android
+
+    http://developer.android.com/reference/android/view/View.html
+
+    Padding - Supported by all elements (views) via PaddingLeft/PaddingRight/PaddingTop/PaddingBottom properties
+    Margin - Supported in children of ViewGroup elements via ViewGroup.MarginLayoutParams
+
+iOS
+
+    !!! Implement complex padding/margins in Border and StackPanel
+    Padding for controls that support it natively via ContentInset/ContentEdgeInset?  Override padding properties in derived control wrappers?
+
+=======================
+
+Everything should have margin and Border/StackPanel (at least) should obey them
+Border and StackPanel should have padding 
+
+Containers
+
+    ListView (can ignore margin/padding)
+    StackPanel
+    Border
+    ScrollView
+    Canvas (can ignore padding, child margins)
+
+

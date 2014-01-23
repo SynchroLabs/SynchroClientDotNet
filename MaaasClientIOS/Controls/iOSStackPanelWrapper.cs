@@ -78,6 +78,8 @@ namespace MaaasClientIOS.Controls
         {
             // Util.debug("StackPanelView - Layout subviews");
 
+            base.LayoutSubviews();
+
             // Determine the maximum subview size in each dimension (for item alignment later).
             //
             SizeF maxDimensions = new SizeF(0, 0);
@@ -178,8 +180,6 @@ namespace MaaasClientIOS.Controls
                     }
                 }
             }
-
-            base.LayoutSubviews();
         }
     }
 
@@ -208,6 +208,8 @@ namespace MaaasClientIOS.Controls
                     stackPanel.AddSubview(childControlWrapper.Control);
                 });
             }
+
+            stackPanel.LayoutSubviews();
         }
     }
 }

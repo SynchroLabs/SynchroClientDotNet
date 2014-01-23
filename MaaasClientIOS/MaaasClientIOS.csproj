@@ -118,6 +118,7 @@
     <Compile Include="Controls\iOSControlWrapper.cs" />
     <Compile Include="Controls\iOSImageWrapper.cs" />
     <Compile Include="Controls\iOSListBoxWrapper.cs" />
+    <Compile Include="Controls\iOSListViewWrapper.cs" />
     <Compile Include="Controls\iOSPickerWrapper.cs" />
     <Compile Include="Controls\iOSRectangleWrapper.cs" />
     <Compile Include="Controls\iOSScrollWrapper.cs" />

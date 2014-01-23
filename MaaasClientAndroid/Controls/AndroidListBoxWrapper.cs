@@ -97,14 +97,8 @@ namespace MaaasClientAndroid.Controls
                 totalHeight += listItem.MeasuredHeight + ((CheckedTextView)listItem).TotalPaddingBottom + ((CheckedTextView)listItem).TotalPaddingTop;
             }
 
-            ViewGroup.LayoutParams layout = listView.LayoutParameters;
-            if (layout == null)
-            {
-                layout = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
-            }
-            layout.Height = totalHeight + (listView.DividerHeight * (adapter.Count + 1));
-            listView.LayoutParameters = layout;
-            listView.RequestLayout();
+            _height = totalHeight + (listView.DividerHeight * (adapter.Count + 1));
+            this.updateSize();
         }
 
         void listView_ItemSelected(object sender, AdapterView.ItemSelectedEventArgs e)

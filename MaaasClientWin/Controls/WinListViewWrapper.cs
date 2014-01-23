@@ -21,6 +21,20 @@ namespace MaaasClientWin.Controls
 
             applyFrameworkElementDefaults(listView);
 
+            // Get selection mode - single (default) or multiple - no dynamic values (we don't need this changing during execution).
+            if ((controlSpec["select"] != null) && ((string)controlSpec["select"] == "Multiple"))
+            {
+                listView.SelectionMode = ListViewSelectionMode.Multiple;
+            }
+            else if ((controlSpec["select"] != null) && ((string)controlSpec["select"] == "None"))
+            {
+                listView.SelectionMode = ListViewSelectionMode.None;
+            }
+            else
+            {
+                listView.SelectionMode = ListViewSelectionMode.Single;
+            }
+
             JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "items", new string[] { "onItemClick" });
             if (bindingSpec != null)
             {
@@ -60,20 +74,6 @@ namespace MaaasClientWin.Controls
                         () => getListViewSelection(listView, selectionItem),
                         value => this.setListViewSelection(listView, selectionItem, (JToken)value));
                 }
-            }
-
-            // Get selection mode - single (default) or multiple - no dynamic values (we don't need this changing during execution).
-            if ((controlSpec["select"] != null) && ((string)controlSpec["select"] == "Multiple"))
-            {
-                listView.SelectionMode = ListViewSelectionMode.Multiple;
-            }
-            else if ((controlSpec["select"] != null) && ((string)controlSpec["select"] == "None"))
-            {
-                listView.SelectionMode = ListViewSelectionMode.None;
-            }
-            else
-            {
-                listView.SelectionMode = ListViewSelectionMode.Single;
             }
 
             if (listView.SelectionMode != ListViewSelectionMode.None)

@@ -14,6 +14,73 @@ using Newtonsoft.Json.Linq;
 
 namespace MaaasClientAndroid.Controls
 {
+    public class BorderPaddingThicknessSetter : ThicknessSetter
+    {
+        protected View _control;
+        protected int _paddingLeft = 0;
+        protected int _paddingTop = 0;
+        protected int _paddingRight = 0;
+        protected int _paddingBottom = 0;
+        protected int _inset = 0;
+
+        public BorderPaddingThicknessSetter(View control)
+        {
+            _control = control;
+            _paddingLeft = _control.PaddingLeft;
+            _paddingTop = _control.PaddingTop;
+            _paddingRight = _control.PaddingRight;
+            _paddingBottom = _control.PaddingBottom;
+        }
+
+        public int Inset 
+        {
+            get { return _inset; }
+            set
+            {
+                _inset = value;
+                updatePadding();
+            }
+        }
+
+        protected void updatePadding()
+        {
+            _control.SetPadding(_paddingLeft + _inset, _paddingTop + _inset, _paddingRight + _inset, _paddingBottom + _inset);
+        }
+
+        public override void SetThickness(int thickness)
+        {
+            _paddingLeft = thickness;
+            _paddingTop = thickness;
+            _paddingRight = thickness;
+            _paddingBottom = thickness;
+            updatePadding();
+        }
+
+        public override void SetThicknessLeft(int thickness)
+        {
+            _paddingLeft = thickness;
+            updatePadding();
+        }
+
+        public override void SetThicknessTop(int thickness)
+        {
+            _paddingTop = thickness;
+            updatePadding();
+        }
+
+        public override void SetThicknessRight(int thickness)
+        {
+            _paddingRight = thickness;
+            updatePadding();
+        }
+
+        public override void SetThicknessBottom(int thickness)
+        {
+            _paddingBottom = thickness;
+            updatePadding();
+        }
+    }
+
     class AndroidBorderWrapper : AndroidControlWrapper
     {
         LinearLayout _layout;
@@ -47,20 +114,17 @@ namespace MaaasClientAndroid.Controls
 
             // If border thickness or padding change, need to record value and update layout padding...
             //
+            BorderPaddingThicknessSetter borderThicknessSetter = new BorderPaddingThicknessSetter(this.Control);
             processElementProperty((string)controlSpec["border"], value => _rect.SetStrokeColor(ToColor(value)));
             processElementProperty((string)controlSpec["borderThickness"], value =>
             {
                 _thickness = (int)ToDeviceUnits(value);
                 _rect.SetStrokeWidth(_thickness);
-                this.updateLayoutPadding();
+                borderThicknessSetter.Inset = _thickness;
             });
             processElementProperty((string)controlSpec["cornerRadius"], value => _rect.SetCornerRadius((float)ToDeviceUnits(value)));
             processElementProperty((string)controlSpec["background"], value => _rect.SetFillColor(ToColor(value)));
-            processElementProperty((string)controlSpec["padding"], value =>   // !!! Simple value only for now (would actually support complex values)
-            {
-                _padding = (int)ToDeviceUnits(value);
-                this.updateLayoutPadding();
-            });
+            processThicknessProperty(controlSpec["padding"], borderThicknessSetter);
 
             processElementProperty((string)controlSpec["alignContentH"], value => _layout.SetHorizontalGravity(ToHorizontalAlignment(value, GravityFlags.Center)), GravityFlags.Center);
             processElementProperty((string)controlSpec["alignContentV"], value => _layout.SetVerticalGravity(ToVerticalAlignment(value, GravityFlags.Center)), GravityFlags.Center);
