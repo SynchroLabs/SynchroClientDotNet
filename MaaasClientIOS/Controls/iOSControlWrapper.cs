@@ -93,50 +93,12 @@ namespace MaaasClientIOS.Controls
         }
     }
 
-    public class PaddingThicknessSetter : ThicknessSetter
-    {
-        protected iOSControlWrapper _controlWrapper;
-
-        public PaddingThicknessSetter(iOSControlWrapper controlWrapper)
-        {
-            _controlWrapper = controlWrapper;
-        }
-
-        public override void SetThicknessLeft(int thickness)
-        {
-            _controlWrapper.PaddingLeft = thickness;
-        }
-
-        public override void SetThicknessTop(int thickness)
-        {
-            _controlWrapper.PaddingTop = thickness;
-        }
-
-        public override void SetThicknessRight(int thickness)
-        {
-            _controlWrapper.PaddingRight = thickness;
-        }
-
-        public override void SetThicknessBottom(int thickness)
-        {
-            _controlWrapper.PaddingBottom = thickness;
-        }
-    }
-
     public class iOSControlWrapper : ControlWrapper
     {
         protected UIView _control;
         public UIView Control { get { return _control; } }
 
-        protected float _marginLeft = 0f;
-        protected float _marginTop = 0f;
-        protected float _marginRight = 0f;
-        protected float _marginBottom = 0f;
-
-        protected float _paddingLeft = 0f;
-        protected float _paddingTop = 0f;
-        protected float _paddingRight = 0f;
-        protected float _paddingBottom = 0f;
+        protected UIEdgeInsets _margin = new UIEdgeInsets(0, 0, 0, 0);
 
         public iOSControlWrapper(StateManager stateManager, ViewModel viewModel, BindingContext bindingContext, UIView control) :
             base(stateManager, viewModel, bindingContext)
@@ -150,12 +112,25 @@ namespace MaaasClientIOS.Controls
             _control = control;
         }
 
-        public float MarginLeft
+        public UIEdgeInsets Margin
         {
-            get { return _marginLeft; }
+            get { return _margin; }
             set
             {
-                _marginLeft = value;
+                _margin = value;
+                if (_control.Superview != null)
+                {
+                    _control.Superview.SetNeedsLayout();
+                }
+            }
+        }
+
+        public float MarginLeft
+        {
+            get { return _margin.Left; }
+            set
+            {
+                _margin.Left = value;
                 if (_control.Superview != null)
                 {
                     _control.Superview.SetNeedsLayout();
@@ -165,10 +140,10 @@ namespace MaaasClientIOS.Controls
 
         public float MarginTop
         {
-            get { return _marginTop; }
+            get { return _margin.Top; }
             set
             {
-                _marginTop = value;
+                _margin.Top = value;
                 if (_control.Superview != null)
                 {
                     _control.Superview.SetNeedsLayout();
@@ -178,10 +153,10 @@ namespace MaaasClientIOS.Controls
 
         public float MarginRight
         {
-            get { return _marginRight; }
+            get { return _margin.Right; }
             set
             {
-                _marginRight = value;
+                _margin.Right = value;
                 if (_control.Superview != null)
                 {
                     _control.Superview.SetNeedsLayout();
@@ -191,54 +166,14 @@ namespace MaaasClientIOS.Controls
 
         public float MarginBottom
         {
-            get { return _marginBottom; }
+            get { return _margin.Bottom; }
             set
             {
-                _marginBottom = value;
+                _margin.Bottom = value;
                 if (_control.Superview != null)
                 {
                     _control.Superview.SetNeedsLayout();
                 }
-            }
-        }
-
-        public float PaddingLeft
-        {
-            get { return _paddingLeft; }
-            set
-            {
-                _paddingLeft = value;
-                _control.SetNeedsLayout();
-            }
-        }
-
-        public float PaddingTop
-        {
-            get { return _paddingTop; }
-            set
-            {
-                _paddingTop = value;
-                _control.SetNeedsLayout();
-            }
-        }
-
-        public float PaddingRight
-        {
-            get { return _paddingRight; }
-            set
-            {
-                _paddingRight = value;
-                _control.SetNeedsLayout();
-            }
-        }
-
-        public float PaddingBottom
-        {
-            get { return _paddingBottom; }
-            set
-            {
-                _paddingBottom = value;
-                _control.SetNeedsLayout();
             }
         }
 
@@ -443,7 +378,6 @@ namespace MaaasClientIOS.Controls
             }
 
             processThicknessProperty(controlSpec["margin"], new MarginThicknessSetter(this));
-            processThicknessProperty(controlSpec["padding"], new PaddingThicknessSetter(this));
 
             // These elements are very common among derived classes, so we'll do some runtime reflection...
             //

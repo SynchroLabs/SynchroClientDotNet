@@ -349,10 +349,17 @@ namespace MaaasClientAndroid.Controls
             TextView textView = this.Control as TextView;
             if (textView != null)
             {
-                // !!! These seem to be equivalent, but product fonts that are larger than on other platforms (for glyph span is the specified height, 
+                // !!! These seem to be equivalent, but produce fonts that are larger than on other platforms (for glyph span is the specified height, 
                 //     with the total box being a fair amount larger, as opposed to most platforms where the box is the specified height).
                 //
                 processElementProperty((string)controlSpec["fontsize"], value => textView.SetTextSize(ComplexUnitType.Px, (float)ToDeviceUnitsFromTypographicPoints(value)));
+                processElementProperty((string)controlSpec["foreground"], value => textView.SetTextColor(ToColor(value)));
+
+                // Change typeface - preserve style
+                // textView.SetTypeface(Typeface.Monospace, textView.Typeface.Style);
+
+                // Change style - preserve typeface
+                // textView.SetTypeface(textView.Typeface, TypefaceStyle.Bold);
 
                 //processElementPropertyIfPresent((string)controlSpec["fontweight"], "FontWeight", value => ToFontWeight(value));
             }

@@ -11,16 +11,106 @@ using System.Drawing;
 
 namespace MaaasClientIOS.Controls
 {
-    class BorderView : UIView
+    public class PaddedView : UIView
     {
+        protected UIEdgeInsets _padding = new UIEdgeInsets(0, 0, 0, 0);
+
+        public PaddedView() : base()
+        {
+        }
+
+        public UIEdgeInsets Padding
+        {
+            get { return _padding; }
+            set
+            {
+                _padding = value;
+                this.SetNeedsLayout();
+            }
+        }
+
+        public float PaddingLeft
+        {
+            get { return _padding.Left; }
+            set
+            {
+                _padding.Left = value;
+                this.SetNeedsLayout();
+            }
+        }
+
+        public float PaddingTop
+        {
+            get { return _padding.Top; }
+            set
+            {
+                _padding.Top = value;
+                this.SetNeedsLayout();
+            }
+        }
+
+        public float PaddingRight
+        {
+            get { return _padding.Right; }
+            set
+            {
+                _padding.Right = value;
+                this.SetNeedsLayout();
+            }
+        }
+
+        public float PaddingBottom
+        {
+            get { return _padding.Bottom; }
+            set
+            {
+                _padding.Bottom = value;
+                this.SetNeedsLayout();
+            }
+        }
+    }
+
+    public class PaddedViewThicknessSetter : ThicknessSetter
+    {
+        protected PaddedView _paddedView;
+
+        public PaddedViewThicknessSetter(PaddedView paddedView)
+        {
+            _paddedView = paddedView;
+        }
+
+        public override void SetThicknessLeft(int thickness)
+        {
+            _paddedView.PaddingLeft = thickness;
+        }
+
+        public override void SetThicknessTop(int thickness)
+        {
+            _paddedView.PaddingTop = thickness;
+        }
+
+        public override void SetThicknessRight(int thickness)
+        {
+            _paddedView.PaddingRight = thickness;
+        }
+
+        public override void SetThicknessBottom(int thickness)
+        {
+            _paddedView.PaddingBottom = thickness;
+        }
+    }
+
+    class BorderView : PaddedView
+    {
+        iOSControlWrapper _controlWrapper;
         protected UIView _childView = null;
-        protected float _padding = 0;
         protected HorizontalAlignment _hAlign;
         protected VerticalAlignment _vAlign;
         protected FrameProperties _frameProps;
 
-        public BorderView() : base()
+        public BorderView(iOSControlWrapper controlWrapper) : base()
         {
+            _controlWrapper = controlWrapper;
         }
 
         public FrameProperties FrameProperties { get { return _frameProps; } set { _frameProps = value; } }
@@ -37,16 +127,6 @@ namespace MaaasClientIOS.Controls
             }
         }
 
-        public float Padding
-        {
-            get { return _padding; }
-            set
-            {
-                _padding = value;
-                this.SetNeedsLayout();
-            }
-        }
-
         public override void AddSubview(UIView view)
         {
             _childView = view;
@@ -59,53 +139,67 @@ namespace MaaasClientIOS.Controls
 
             if (_childView != null)
             {
-                float borderPlusPadding = this.Layer.BorderWidth + _padding;
+                UIEdgeInsets insets = new UIEdgeInsets(
+                    this.Layer.BorderWidth + _padding.Top,
+                    this.Layer.BorderWidth + _padding.Left,
+                    this.Layer.BorderWidth + _padding.Bottom,
+                    this.Layer.BorderWidth + _padding.Right
+                    );
 
                 RectangleF childFrame = _childView.Frame;
                 SizeF panelSize = this.Frame.Size;
 
+                UIEdgeInsets margin = new UIEdgeInsets(0, 0, 0, 0);
+                iOSControlWrapper childControlWrapper = _controlWrapper.getChildControlWrapper(_childView);
+                if (childControlWrapper != null)
+                {
+                    margin = childControlWrapper.Margin;
+                }
+
                 if (_frameProps.WidthSpecified)
                 {
-                    // Panel width is explicit, so align content using the content horizontal alignment (along with padding)
+                    // Panel width is explicit, so align content using the content horizontal alignment (along with padding and margin)
                     //
-                    childFrame.X = borderPlusPadding;
+                    childFrame.X = insets.Left + margin.Left;
                     if (_hAlign == HorizontalAlignment.Center)
                     {
+                        // Ignoring margins on center for now.
                         childFrame.X = (panelSize.Width - childFrame.Width) / 2;
                     }
                     else if (_hAlign == HorizontalAlignment.Right)
                     {
-                        childFrame.X = (panelSize.Width - childFrame.Width - borderPlusPadding);
+                        childFrame.X = (panelSize.Width - childFrame.Width - insets.Right - margin.Right);
                     }
                 }
                 else
                 {
                     // Panel width will size to content
                     //
-                    childFrame.X = borderPlusPadding;
-                    panelSize.Width = childFrame.X + childFrame.Width + borderPlusPadding;
+                    childFrame.X = insets.Left + margin.Left;
+                    panelSize.Width = childFrame.X + childFrame.Width + insets.Right + margin.Right;
                 }
 
                 if (_frameProps.HeightSpecified)
                 {
-                    // Panel height is explicit, so align content using the content vertical alignment (along with padding)
+                    // Panel height is explicit, so align content using the content vertical alignment (along with padding and margin)
                     //
-                    childFrame.Y = borderPlusPadding;
+                    childFrame.Y = insets.Top + margin.Top;
                     if (_vAlign == VerticalAlignment.Center)
                     {
+                        // Ignoring margins on center for now.
                         childFrame.Y = (panelSize.Height - childFrame.Height) / 2;
                     }
                     else if (_vAlign == VerticalAlignment.Bottom)
                     {
-                        childFrame.Y = (panelSize.Height - childFrame.Height - borderPlusPadding);
+                        childFrame.Y = (panelSize.Height - childFrame.Height - insets.Bottom - margin.Bottom);
                     }
                 }
                 else
                 {
                     // Panel height will size to content
                     //
-                    childFrame.Y = borderPlusPadding;
-                    panelSize.Height = childFrame.Y + childFrame.Height + borderPlusPadding;
+                    childFrame.Y = insets.Top + margin.Top;
+                    panelSize.Height = childFrame.Y + childFrame.Height + insets.Bottom + margin.Bottom;
                 }
 
                 // Update the content position
@@ -145,7 +239,7 @@ namespace MaaasClientIOS.Controls
         {
             Util.debug("Creating border element");
 
-            BorderView border = new BorderView();  
+            BorderView border = new BorderView(this);  
             this._control = border;
 
             border.FrameProperties = processElementDimensions(controlSpec, 128, 128);
@@ -156,7 +250,7 @@ namespace MaaasClientIOS.Controls
             processElementProperty((string)controlSpec["border"], value => border.Layer.BorderColor = ToColor(value).CGColor);
             processElementProperty((string)controlSpec["borderThickness"], value => border.BorderWidth = (float)ToDeviceUnits(value));
             processElementProperty((string)controlSpec["cornerRadius"], value => border.Layer.CornerRadius = (float)ToDeviceUnits(value));
-            processElementProperty((string)controlSpec["padding"], value => border.Padding = (float)ToDeviceUnits(value)); // !!! Simple value only for now
+            processThicknessProperty(controlSpec["padding"], new PaddedViewThicknessSetter(border));
 
             // "background" color handled by base class
 

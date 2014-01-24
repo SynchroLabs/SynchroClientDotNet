@@ -133,6 +133,7 @@ Controls - http://msdn.microsoft.com/en-us/library/windows/apps/hh465351.aspx
             orientation = [Vertical], Horizontal
             alignContentV = Top, [Center], Bottom
             alignContentH = [Left], Center, Right
+            padding
             contents
 
     Border
@@ -308,6 +309,9 @@ Server
 
 ================================================================================
 
+Margin/Padding layout stuff
+------------------------------------
+
 Win/WinPhone
 
     http://msdn.microsoft.com/en-us/library/ms751709(v=vs.110).aspx
@@ -315,7 +319,7 @@ Win/WinPhone
     Margin - Supported on all elements via Margin property and Margin.Left/Right/Top/Bottom for setting individual values
     Padding - Only supported on certain elements (Block, Border, Control, Textblock)
 
-    !!! To add padding to StackPanel, we have to put a StackPanel inside of a Border (apply all attributes to border, but add children to stackpanel)
+    To add padding to StackPanel, we put a StackPanel inside of a Border - tested and working
 
 Android
 
@@ -324,10 +328,13 @@ Android
     Padding - Supported by all elements (views) via PaddingLeft/PaddingRight/PaddingTop/PaddingBottom properties
     Margin - Supported in children of ViewGroup elements via ViewGroup.MarginLayoutParams
 
+    Margin and padding tested and working in StackPanel and Border
+
 iOS
 
-    !!! Implement complex padding/margins in Border and StackPanel
-    Padding for controls that support it natively via ContentInset/ContentEdgeInset?  Override padding properties in derived control wrappers?
+    Margin and padding tested and working in StackPanel and Border (implemented from scratch)
+
+    !!! Padding for controls that support it natively via ContentInset/ContentEdgeInset?  Override padding properties in derived control wrappers?
 
 =======================
 
@@ -342,4 +349,10 @@ Containers
     ScrollView
     Canvas (can ignore padding, child margins)
 
+
+Dynamic sizing
+    Win - 
+        Layout logic - http://msdn.microsoft.com/en-us/library/ms745058(v=vs.110).aspx
+        FrameworkElement.MeasureOverride()
+        FrameworkElement.Width = Double.NaN (for autosizing)
 

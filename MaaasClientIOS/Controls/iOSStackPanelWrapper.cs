@@ -11,11 +11,10 @@ using System.Drawing;
 
 namespace MaaasClientIOS.Controls
 {
-    class StackPanelView : UIView
+    class StackPanelView : PaddedView
     {
         protected iOSControlWrapper _controlWrapper;
         protected Orientation _orientation;
-        protected float _padding = 0;
         protected float _spacing = 10;
         protected FrameProperties _frameProps;
         protected HorizontalAlignment _hAlign;
@@ -59,16 +58,6 @@ namespace MaaasClientIOS.Controls
             } 
         }
 
-        public float Padding
-        {
-            get { return _padding; }
-            set
-            {
-                _padding = value;
-                this.SetNeedsLayout();
-            }
-        }
-
         public override void AddSubview(UIView view)
         {
             base.AddSubview(view);
@@ -85,8 +74,15 @@ namespace MaaasClientIOS.Controls
             SizeF maxDimensions = new SizeF(0, 0);
             foreach (UIView childView in this.Subviews)
             {
-                maxDimensions.Width = Math.Max(maxDimensions.Width, childView.Frame.Width);
-                maxDimensions.Height = Math.Max(maxDimensions.Height, childView.Frame.Height);
+                UIEdgeInsets margin = new UIEdgeInsets(0 ,0, 0, 0);
+                iOSControlWrapper childControlWrapper = _controlWrapper.getChildControlWrapper(childView);
+                if (childControlWrapper != null)
+                {
+                    margin = childControlWrapper.Margin;
+                }
+
+                maxDimensions.Width = Math.Max(maxDimensions.Width, childView.Frame.Width + margin.Left + margin.Right);
+                maxDimensions.Height = Math.Max(maxDimensions.Height, childView.Frame.Height + margin.Top + margin.Bottom);
             }
 
             if (_frameProps.WidthSpecified)
@@ -98,60 +94,80 @@ namespace MaaasClientIOS.Controls
                 maxDimensions.Height = this.Frame.Height;
             }
 
-            float _currTop = _padding;
-            float _currLeft = _padding;
+            float _currTop = _padding.Top;
+            float _currLeft = _padding.Left;
 
             SizeF newPanelSize = new SizeF(0, 0);
+
+            UIEdgeInsets lastMargin = new UIEdgeInsets(0, 0, 0, 0);
 
             // Arrange the subviews (align as appropriate)
             //
             foreach (UIView childView in this.Subviews)
             {
+                UIEdgeInsets margin = new UIEdgeInsets(0, 0, 0, 0);
                 iOSControlWrapper childControlWrapper = _controlWrapper.getChildControlWrapper(childView);
+                if (childControlWrapper != null)
+                {
+                    margin = childControlWrapper.Margin;
+                }
 
                 RectangleF childFrame = childView.Frame;
-                childFrame.X = _currLeft;
-                childFrame.Y = _currTop;
+
                 if (_orientation == Orientation.Horizontal)
                 {
+                    // Set the horizontal position (considering margin overlap)
+                    childFrame.X = _currLeft + Math.Max(lastMargin.Right, margin.Left);
+
+                    // Set the vertical position based on aligment (default Top)
+                    childFrame.Y = _currTop + margin.Top;
                     if (_vAlign == VerticalAlignment.Center)
                     {
-                        childFrame.Y += (maxDimensions.Height - childFrame.Height) / 2;
+                        // Should we consider margin when centering?  For now, we don't.
+                        childFrame.Y = _currTop + ((maxDimensions.Height - childFrame.Height) / 2);
                     }
                     else if (_vAlign == VerticalAlignment.Bottom)
                     {
-                        childFrame.Y += (maxDimensions.Height - childFrame.Height);
+                        childFrame.Y = _currTop + (maxDimensions.Height - childFrame.Height) - margin.Bottom;
                     }
-                    _currLeft += childView.Bounds.Width + _spacing;
+                    _currLeft = childFrame.X + childFrame.Width;
                 }
-                else
+                else // Orientation.Vertical
                 {
+                    // Set the vertical position (considering margin overlap)
+                    childFrame.Y = _currTop + Math.Max(lastMargin.Bottom, margin.Top);
+
+                    // Set the horizontal position based on aligment (default Left)
+                    childFrame.X = _currLeft + margin.Left;
                     if (_hAlign == HorizontalAlignment.Center)
                     {
-                        childFrame.X += (maxDimensions.Width - childFrame.Width) / 2;
+                        // Should we consider margin when centering?  For now, we don't.
+                        childFrame.X = _currLeft + ((maxDimensions.Width - childFrame.Width) / 2);
                     }
                     else if (_hAlign == HorizontalAlignment.Right)
                     {
-                        childFrame.X += (maxDimensions.Width - childFrame.Width);
+                        childFrame.X = _currLeft + (maxDimensions.Width - childFrame.Width) - margin.Right;
                     }
-                    _currTop += childView.Bounds.Height + _spacing;
+                    _currTop = childFrame.Y + childFrame.Height;
                 }
                 childView.Frame = childFrame;
 
-                if ((childFrame.X + childFrame.Width) > newPanelSize.Width)
+                if ((childFrame.X + childFrame.Width + margin.Right) > newPanelSize.Width)
                 {
-                    newPanelSize.Width = childFrame.X + childFrame.Width;
+                    newPanelSize.Width = childFrame.X + childFrame.Width + margin.Right;
                 }
-                if ((childFrame.Y + childFrame.Height) > newPanelSize.Height)
+                if ((childFrame.Y + childFrame.Height + margin.Bottom) > newPanelSize.Height)
                 {
-                    newPanelSize.Height = childFrame.Y + childFrame.Height;
+                    newPanelSize.Height = childFrame.Y + childFrame.Height + margin.Bottom;
                 }
+
+                lastMargin = margin;
             }
 
             // Resize the stackpanel to contain the subview
             //
-            newPanelSize.Height += _padding;
-            newPanelSize.Width += _padding;
+            newPanelSize.Height += _padding.Bottom;
+            newPanelSize.Width += _padding.Right;
 
             // See if the stack panel might have changed size (based on content)
             //
@@ -200,6 +216,7 @@ namespace MaaasClientIOS.Controls
 
             processElementProperty((string)controlSpec["alignContentH"], value => stackPanel.HorizontalAlignment = ToHorizontalAlignment(value, HorizontalAlignment.Left), HorizontalAlignment.Left);
             processElementProperty((string)controlSpec["alignContentV"], value => stackPanel.VerticalAlignment = ToVerticalAlignment(value, VerticalAlignment.Center), VerticalAlignment.Center);
+            processThicknessProperty(controlSpec["padding"], new PaddedViewThicknessSetter(stackPanel));
 
             if (controlSpec["contents"] != null)
             {

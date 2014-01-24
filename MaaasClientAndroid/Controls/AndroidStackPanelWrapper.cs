@@ -43,25 +43,30 @@ namespace MaaasClientAndroid.Controls
             {
                 createControls((JArray)controlSpec["contents"], (childControlSpec, childControlWrapper) =>
                 {
-                    // In order to align each item independantly, get the current size from any existing LayoutParams, then using that size, create
-                    // a LinearLayout.LayoutParams (there will often not be any LayoutParams in existence at this time, and even if there is, is 
-                    // could be of a more generic type).  Then the gravity can be set for the item (both horizontal and vertical, or'ed together).
-                    // Lastly, set the LineaeLayout.LayoutParams as the item LayoutParams.
-                    //
-                    // The code below has been tested and verified...
-                    //
-                    /*
-                    int height = ViewGroup.LayoutParams.WrapContent;
-                    int width = ViewGroup.LayoutParams.WrapContent;
+                    LinearLayout.LayoutParams layoutParams = null;
+
                     if (childControlWrapper.Control.LayoutParameters != null)
                     {
-                        height = childControlWrapper.Control.LayoutParameters.Height;
-                        width = childControlWrapper.Control.LayoutParameters.Width;
+                        if (childControlWrapper.Control.LayoutParameters is ViewGroup.MarginLayoutParams)
+                        {
+                            layoutParams = new LinearLayout.LayoutParams((ViewGroup.MarginLayoutParams)childControlWrapper.Control.LayoutParameters);
+                        }
+                        else
+                        {
+                            layoutParams = new LinearLayout.LayoutParams(childControlWrapper.Control.LayoutParameters);
+                        }
                     }
-                    LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(width, height);
-                    layoutParams.Gravity = GravityFlags.Bottom;
+                    else
+                    {
+                        layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WrapContent, LinearLayout.LayoutParams.WrapContent);
+                    }
+
+                    // In order to align each item independantly, just set the Gravity for the item...
+                    //
+                    // layoutParams.Gravity = GravityFlags.Bottom;
+                    //
+
                     childControlWrapper.Control.LayoutParameters = layoutParams;
-                    */
 
                     layout.AddView(childControlWrapper.Control);
                 });

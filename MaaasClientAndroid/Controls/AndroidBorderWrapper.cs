@@ -136,6 +136,26 @@ namespace MaaasClientAndroid.Controls
             {
                 createControls((JArray)controlSpec["contents"], (childControlSpec, childControlWrapper) =>
                 {
+                    LinearLayout.LayoutParams layoutParams = null;
+
+                    if (childControlWrapper.Control.LayoutParameters != null)
+                    {
+                        if (childControlWrapper.Control.LayoutParameters is ViewGroup.MarginLayoutParams)
+                        {
+                            layoutParams = new LinearLayout.LayoutParams((ViewGroup.MarginLayoutParams)childControlWrapper.Control.LayoutParameters);
+                        }
+                        else
+                        {
+                            layoutParams = new LinearLayout.LayoutParams(childControlWrapper.Control.LayoutParameters);
+                        }
+                    }
+                    else
+                    {
+                        layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WrapContent, LinearLayout.LayoutParams.WrapContent);
+                    }
+
+                    childControlWrapper.Control.LayoutParameters = layoutParams;
+
                     _layout.AddView(childControlWrapper.Control);
                 });
             }

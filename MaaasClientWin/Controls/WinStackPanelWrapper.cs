@@ -17,6 +17,7 @@ namespace MaaasClientWin.Controls
 
     class WinStackPanelWrapper : WinControlWrapper
     {
+        Border _border;
         StackPanel _stackPanel;
         protected HorizontalAlignment _hAlign;
         protected VerticalAlignment _vAlign;
@@ -28,10 +29,15 @@ namespace MaaasClientWin.Controls
             base(parent, bindingContext)
         {
             Util.debug("Creating stackpanel element");
-            _stackPanel = new StackPanel();
-            this._control = _stackPanel;
 
-            applyFrameworkElementDefaults(_stackPanel);
+            // In order to get padding support, we put a Border around the StackPanel...
+            //
+            _border = new Border();
+            _stackPanel = new StackPanel();
+            _border.Child = _stackPanel;
+            this._control = _border;
+
+            applyFrameworkElementDefaults(_border);
 
             processElementProperty((string)controlSpec["orientation"], value => _stackPanel.Orientation = ToOrientation(value, Orientation.Vertical), Orientation.Vertical);
 
@@ -41,6 +47,8 @@ namespace MaaasClientWin.Controls
             //
             processElementProperty((string)controlSpec["alignContentH"], value => this.HorizontalAlignment = ToHorizontalAlignment(value, HorizontalAlignment.Left), HorizontalAlignment.Left);
             processElementProperty((string)controlSpec["alignContentV"], value => this.VerticalAlignment = ToVerticalAlignment(value, VerticalAlignment.Center), VerticalAlignment.Center);
+
+            processThicknessProperty(controlSpec["padding"], value => _border.Padding = (Thickness)value);
 
             if (controlSpec["contents"] != null)
             {
