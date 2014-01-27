@@ -48,6 +48,85 @@ namespace MaaasClientIOS.Controls
         public bool HeightSpecified = false;
     }
 
+    public class iOSFontSetter : FontSetter
+    {
+        FontFaceType _faceType = FontFaceType.FONT_DEFAULT;
+        bool _bold = false;
+        bool _italic = false;
+        float _size = 17.0f;
+
+        public iOSFontSetter()
+        {
+            // !!! Ideally, it would be nice to be able to get the font name from the current font (the default)
+            //     and to somehow use that unless SetFaceType gets called (so you can change just the size/style
+            //     without having to actually pick a font).  Not sure how this would work, unless maybe there
+            //     was a big data-driven function that took into consideration common fonts from iOS 6 and 7.
+            //     This is complicated by the fact that for some fonts their "normal" weight is actually a very
+            //     light weight (especially in iOS 7) and their bold weight is often normal or lighter.  So you
+            //     kind of have to know each font and what you want to do for normal/bold/italic based on the
+            //     name of the font (which will also include some of those modifiers).
+            //
+            // !!! See this for list of fonts by version: http://iosfonts.com/
+            //
+            // !!! Also, consider reviewing Pixtamatic font logic (enumerate/parse/catalog all fonts)
+            //
+        }
+
+        public virtual void setFont(UIFont font);
+
+        protected void createAndSetFont()
+        {
+            string faceName = null;
+
+            switch (_faceType)
+            {
+                case FontFaceType.FONT_DEFAULT:
+                    // !!! Get name, consider bold/italic
+                    break;
+                case FontFaceType.FONT_SANSERIF:
+                    // !!! Get name, consider bold/italic
+                    break;
+                case FontFaceType.FONT_SERIF:
+                    // !!! Get name, consider bold/italic
+                    break;
+                case FontFaceType.FONT_MONOSPACE:
+                    // !!! Get name, consider bold/italic
+                    break;
+            }
+
+            if (faceName != null)
+            {
+                UIFont font = UIFont.FromName(faceName, _size);
+                this.setFont(font);
+            }
+        }
+
+        public override void SetFaceType(FontFaceType faceType)
+        {
+            _faceType = faceType;
+            this.createAndSetFont();
+        }
+
+        public override void SetSize(double size)
+        {
+            _size = (float)size;
+            this.createAndSetFont();
+        }
+
+
+        public override void SetBold(bool bold)
+        {
+            _bold = bold;
+            this.createAndSetFont();
+        }
+
+        public override void SetItalic(bool italic)
+        {
+            _italic = italic;
+            this.createAndSetFont();
+        }
+    }
+
     public abstract class ThicknessSetter
     {
         public virtual void SetThickness(int thickness)

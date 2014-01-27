@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.21005.1
+VisualStudioVersion = 12.0.30110.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MaaasClientWin", "MaaasClientWin\MaaasClientWin.csproj", "{B80825FA-E75B-4E55-86F8-08D5FA0954B9}"
 EndProject
@@ -300,7 +300,6 @@ Global
 		{463FF541-F091-48EC-B555-5F10C2EE5500}.Debug|iPhoneSimulator.Deploy.0 = Debug|iPhoneSimulator
 		{463FF541-F091-48EC-B555-5F10C2EE5500}.Debug|Mixed Platforms.ActiveCfg = Debug|iPhone
 		{463FF541-F091-48EC-B555-5F10C2EE5500}.Debug|Mixed Platforms.Build.0 = Debug|iPhone
-		{463FF541-F091-48EC-B555-5F10C2EE5500}.Debug|Mixed Platforms.Deploy.0 = Debug|iPhone
 		{463FF541-F091-48EC-B555-5F10C2EE5500}.Debug|x64.ActiveCfg = Debug|iPhone
 		{463FF541-F091-48EC-B555-5F10C2EE5500}.Debug|x86.ActiveCfg = Debug|iPhone
 		{463FF541-F091-48EC-B555-5F10C2EE5500}.Release|Any CPU.ActiveCfg = Release|iPhone

@@ -35,7 +35,7 @@ namespace MaaasClientWinPhone.Controls
             // "background" color handled by base class
 
             processElementProperty((string)controlSpec["alignContentH"], value => this.HorizontalAlignment = ToHorizontalAlignment(value, HorizontalAlignment.Center), HorizontalAlignment.Center);
-            processElementProperty((string)controlSpec["alignContentV"], value => this.VerticalAlignment = ToVerticalAlignment(value, VerticalAlignment.Center), HorizontalAlignment.Center);
+            processElementProperty((string)controlSpec["alignContentV"], value => this.VerticalAlignment = ToVerticalAlignment(value, VerticalAlignment.Center), VerticalAlignment.Center);
 
             if (controlSpec["contents"] != null)
             {

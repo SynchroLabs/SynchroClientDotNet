@@ -15,6 +15,68 @@ using Windows.UI.Xaml.Media;
 
 namespace MaaasClientWin.Controls
 {
+    public class WinFontSetter : FontSetter
+    {
+        FrameworkElement _control;
+        public WinFontSetter(FrameworkElement control)
+        {
+            _control = control;
+        }
+
+        public override void SetFaceType(FontFaceType faceType)
+        {
+            FontFamily fontFamily = null;
+            switch (faceType)
+            {
+                case FontFaceType.FONT_DEFAULT:
+                case FontFaceType.FONT_SANSERIF:
+                    fontFamily = new FontFamily("Segoe UI");
+                    break;
+                case FontFaceType.FONT_SERIF:
+                    fontFamily = new FontFamily("Cambria");
+                    break;
+                case FontFaceType.FONT_MONOSPACE:
+                    fontFamily = new FontFamily("Courier New");
+                    break;
+            }
+
+            var property = _control.GetType().GetRuntimeProperty("FontFamily");
+            if (property != null)
+            {
+                property.SetValue(_control, fontFamily);
+            }
+        }
+
+        public override void SetSize(double size)
+        {
+            var property = _control.GetType().GetRuntimeProperty("FontSize");
+            if (property != null)
+            {
+                property.SetValue(_control, size);
+            }
+        }
+
+        public override void SetBold(bool bold)
+        {
+            FontWeight fontWeight = bold ? FontWeights.Bold : FontWeights.Normal;
+            var property = _control.GetType().GetRuntimeProperty("FontWeight");
+            if (property != null)
+            {
+                property.SetValue(_control, fontWeight);
+            }
+        }
+
+        public override void SetItalic(bool italic)
+        {
+            FontStyle fontStyle = italic ? FontStyle.Italic : FontStyle.Normal;
+            var property = _control.GetType().GetRuntimeProperty("FontStyle");
+            if (property != null)
+            {
+                property.SetValue(_control, fontStyle);
+            }
+        }
+    }
+
     class WinControlWrapper : ControlWrapper
     {
         protected FrameworkElement _control;
@@ -215,10 +277,9 @@ namespace MaaasClientWin.Controls
             processElementProperty((string)controlSpec["opacity"], value => this.Control.Opacity = ToDouble(value));
             processElementProperty((string)controlSpec["visibility"], value => this.Control.Visibility = ToBoolean(value) ? Visibility.Visible : Visibility.Collapsed);
             processThicknessProperty(controlSpec["margin"], value => this.Control.Margin = (Thickness)value);
+            processFontAttribute(controlSpec, new WinFontSetter(this.Control));
 
             // These elements are very common among derived classes, so we'll do some runtime reflection...
-            processElementPropertyIfPresent((string)controlSpec["fontsize"], "FontSize", value => ToDeviceUnitsFromTypographicPoints(value));
-            processElementPropertyIfPresent((string)controlSpec["fontweight"], "FontWeight", value => ToFontWeight(value));
             processElementPropertyIfPresent((string)controlSpec["enabled"], "IsEnabled", value => ToBoolean(value));
             processElementPropertyIfPresent((string)controlSpec["background"], "Background", value => ToBrush(value));
             processElementPropertyIfPresent((string)controlSpec["foreground"], "Foreground", value => ToBrush(value));

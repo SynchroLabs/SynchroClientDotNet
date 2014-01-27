@@ -7,6 +7,22 @@ using System.Threading.Tasks;
 
 namespace MaaasCore
 {
+    public enum FontFaceType
+    {
+        FONT_DEFAULT,
+        FONT_SERIF,
+        FONT_SANSERIF,
+        FONT_MONOSPACE
+    }
+
+    public abstract class FontSetter
+    {
+        public abstract void SetFaceType(FontFaceType faceType);
+        public abstract void SetSize(double size);
+        public abstract void SetBold(bool bold);
+        public abstract void SetItalic(bool italic);
+    }
+
     public class ControlWrapper
     {
         StateManager _stateManager;
@@ -364,6 +380,58 @@ namespace MaaasCore
 
             return null;
         }
+
+        public void processFontAttribute(JObject controlSpec, FontSetter fontSetter)
+        {
+            JToken fontAttributeValue = controlSpec["font"];
+            if (fontAttributeValue is JObject)
+            {
+                JObject fontObject = fontAttributeValue as JObject;
+
+                processElementProperty((string)fontObject.Property("face"), value =>
+                {
+                    FontFaceType faceType = FontFaceType.FONT_DEFAULT;
+                    string faceTypeString = ToString(value);
+                    switch (faceTypeString)
+                    {
+                        case "Serif":
+                            faceType = FontFaceType.FONT_SERIF;
+                            break;
+                        case "SanSerif":
+                            faceType = FontFaceType.FONT_SANSERIF;
+                            break;
+                        case "Monospace":
+                            faceType = FontFaceType.FONT_MONOSPACE;
+                            break;
+                    }
+                    fontSetter.SetFaceType(faceType);
+                });
+
+                processElementProperty((string)fontObject.Property("size"), value =>
+                {
+                    fontSetter.SetSize(ToDeviceUnitsFromTypographicPoints(value));
+                });
+
+                processElementProperty((string)fontObject.Property("bold"), value =>
+                {
+                    fontSetter.SetBold(ToBoolean(value));
+                });
+
+                processElementProperty((string)fontObject.Property("italic"), value =>
+                {
+                    fontSetter.SetItalic(ToBoolean(value));
+                });
+            }
+
+            // This will handle the simple style "fontsize" attribute (this is the most common font attribute and is
+            // very often used by itself, so we'll support this alternate syntax).
+            //
+            processElementProperty((string)controlSpec["fontsize"], value =>
+            {
+                fontSetter.SetSize(ToDeviceUnitsFromTypographicPoints(value));
+            });
+        }
+
 
         // Process a value binding on an element.  If a value is supplied, a value binding to that binding context will be created.
         //

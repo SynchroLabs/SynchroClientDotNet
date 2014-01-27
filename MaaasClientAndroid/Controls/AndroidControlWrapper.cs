@@ -26,6 +26,130 @@ namespace MaaasClientAndroid.Controls
         }
     }
 
+    public class AndroidFontSetter : FontSetter
+    {
+        TextView _control = null;
+        bool _bold = false;
+        bool _italic = false;
+
+        public AndroidFontSetter(View control)
+        {
+            _control = control as TextView;
+        }
+
+        // !!! The SetTypeface method used below takes an "extra" stlye param, which is documented as:
+        //
+        //         "Sets the typeface and style in which the text should be displayed, and turns on the fake bold and italic bits
+        //          in the Paint if the Typeface that you provided does not have all the bits in the style that you specified."
+        //
+        //     When using this method with such a font (like the default system monospace font), this works fine unless you are
+        //     trying to set the style from any non-normal value to normal, in which case it fails to restore it to normal.
+        //     Not sure if this is an Android TextView bug or a Xamarin bug, but would guess the former.  Setting the typeface
+        //     to a face that does support the style bits, then setting it to the proper typeface with the extra style param
+        //     seems to work (and doesn't produce any visible flickering or other artifacts).  So we're going with that for now.
+        //
+        protected void setStyledTypeface(Typeface tf)
+        {
+            TypefaceStyle tfStyle = getTypefaceStyle(_bold, _italic);
+            tf = Typeface.Create(tf, tfStyle);
+            if (tfStyle == TypefaceStyle.Normal)
+            {
+                _control.Typeface = Typeface.Default; // This is the hackaround described above
+            }
+            _control.SetTypeface(tf, tfStyle);
+        }
+
+        public override void SetFaceType(FontFaceType faceType)
+        {
+            if (_control != null)
+            {
+                Typeface tf = null;
+                
+                switch (faceType)
+                {
+                    case FontFaceType.FONT_DEFAULT:
+                        tf = Typeface.Default;
+                        break;
+                    case FontFaceType.FONT_SANSERIF:
+                        tf = Typeface.SansSerif;
+                        break;
+                    case FontFaceType.FONT_SERIF:
+                        tf = Typeface.Serif;
+                        break;
+                    case FontFaceType.FONT_MONOSPACE:
+                        tf = Typeface.Monospace;
+                        break;
+                }
+
+                if (tf != null)
+                {
+                    this.setStyledTypeface(tf);
+                }
+            }
+        }
+
+        public override void SetSize(double size)
+        {
+            if (_control != null)
+            {
+                // !!! These seem to be equivalent, but produce fonts that are larger than on other platforms (for glyph span is the specified height, 
+                //     with the total box being a fair amount larger, as opposed to most platforms where the box is the specified height).
+                //
+                _control.SetTextSize(ComplexUnitType.Px, (float)size);
+            }
+        }
+
+        protected bool isBold(TypefaceStyle tfStyle)
+        {
+            return ((tfStyle == TypefaceStyle.Bold) || (tfStyle == TypefaceStyle.BoldItalic));
+        }
+
+        protected bool isItalic(TypefaceStyle tfStyle)
+        {
+            return ((tfStyle == TypefaceStyle.Italic) || (tfStyle == TypefaceStyle.BoldItalic));
+        }
+
+        protected TypefaceStyle getTypefaceStyle(bool bold, bool italic)
+        {
+            if (bold && italic)
+            {
+                return TypefaceStyle.BoldItalic;
+            }
+            else if (bold)
+            {
+                return TypefaceStyle.Bold;
+            }
+            else if (italic)
+            {
+                return TypefaceStyle.Italic;
+            }
+            else
+            {
+                return TypefaceStyle.Normal;
+            }
+        }
+
+        public override void SetBold(bool bold)
+        {
+            _bold = bold;
+            if (_control != null)
+            {
+                Typeface tf = _control.Typeface;
+                this.setStyledTypeface(tf);
+            }
+        }
+
+        public override void SetItalic(bool italic)
+        {
+            _italic = italic;
+            if (_control != null)
+            {
+                Typeface tf = _control.Typeface;
+                this.setStyledTypeface(tf);
+            }
+        }
+    }
+
     public abstract class ThicknessSetter
     {
         public virtual void SetThickness(int thickness)
@@ -346,24 +470,13 @@ namespace MaaasClientAndroid.Controls
                 processElementProperty((string)controlSpec["background"], value => this.Control.SetBackgroundColor(ToColor(value)));
             }
 
+            processFontAttribute(controlSpec, new AndroidFontSetter(this.Control));
+
             TextView textView = this.Control as TextView;
             if (textView != null)
             {
-                // !!! These seem to be equivalent, but produce fonts that are larger than on other platforms (for glyph span is the specified height, 
-                //     with the total box being a fair amount larger, as opposed to most platforms where the box is the specified height).
-                //
-                processElementProperty((string)controlSpec["fontsize"], value => textView.SetTextSize(ComplexUnitType.Px, (float)ToDeviceUnitsFromTypographicPoints(value)));
                 processElementProperty((string)controlSpec["foreground"], value => textView.SetTextColor(ToColor(value)));
-
-                // Change typeface - preserve style
-                // textView.SetTypeface(Typeface.Monospace, textView.Typeface.Style);
-
-                // Change style - preserve typeface
-                // textView.SetTypeface(textView.Typeface, TypefaceStyle.Bold);
-
-                //processElementPropertyIfPresent((string)controlSpec["fontweight"], "FontWeight", value => ToFontWeight(value));
             }
-
 
             // These elements are very common among derived classes, so we'll do some runtime reflection...
             //processElementPropertyIfPresent((string)controlSpec["foreground"], "Foreground", value => ToBrush(value));
