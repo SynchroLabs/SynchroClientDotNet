@@ -379,14 +379,13 @@ namespace MaaasClientIOS.Controls
 
         public iOSFontSetter(UIFont font)
         {
-            FontFamily family = null;
             if (SystemFontFamily.IsStystemFont(font))
             {
-                family = new SystemFontFamily();
+                _family = new SystemFontFamily();
             }
             else
             {
-                family = new FontFamilyFromName(font.FamilyName);
+                _family = new FontFamilyFromName(font.FamilyName);
             }
 
             _size = font.PointSize;
