@@ -11,6 +11,22 @@ using System.Drawing;
 
 namespace MaaasClientIOS.Controls
 {
+    class TextBlockFontSetter : iOSFontSetter
+    {
+        UILabel _label;
+
+        public TextBlockFontSetter(UILabel label) : base(label.Font)
+        {
+            _label = label;
+        }
+
+        public override void setFont(UIFont font)
+        {
+            _label.Font = font;
+            _label.SizeToFit(); // Might want to do this conditionally based on how control size was specified.
+        }
+    }
+
     class iOSTextBlockWrapper : iOSControlWrapper
     {
         public iOSTextBlockWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
@@ -31,13 +47,17 @@ namespace MaaasClientIOS.Controls
                 textBlock.TextColor = color;
             });
 
+            processFontAttribute(controlSpec, new TextBlockFontSetter(textBlock));
+
             // !!! ?
+            /*
             processElementProperty((string)controlSpec["fontsize"], value => 
             {
                 UIFont font = UIFont.FromName(textBlock.Font.Name, (float)ToDeviceUnitsFromTypographicPoints(value));
                 textBlock.Font = font;
                 textBlock.SizeToFit();
             });
+             */
 
             processElementProperty((string)controlSpec["value"], value => 
             {

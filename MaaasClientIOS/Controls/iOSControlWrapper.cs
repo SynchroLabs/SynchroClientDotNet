@@ -8,6 +8,7 @@ using MonoTouch.UIKit;
 using MaaasCore;
 using Newtonsoft.Json.Linq;
 using System.Drawing;
+using System.Text.RegularExpressions;
 
 namespace MaaasClientIOS.Controls
 {
@@ -48,62 +49,382 @@ namespace MaaasClientIOS.Controls
         public bool HeightSpecified = false;
     }
 
-    public class iOSFontSetter : FontSetter
+    //
+    // Font stuff...
+    //
+
+    public enum FontSlope
     {
-        FontFaceType _faceType = FontFaceType.FONT_DEFAULT;
+        Roman = 0, // Also Regular, Plain - standard upright font
+        Italic,    // Italic font
+        Oblique,   // Also Incline, Inclined - Slanted version of Roman glyphs
+        Cursive    // Also Kursiv - Italic with cursive glyph connections
+    }
+
+    public enum FontWidth
+    {
+        Normal = 0,
+        Narrow,    // Compressed, Condensed, Narrow
+        Wide       // Wide, Extended, Expanded
+    }
+
+    public enum FontWeight
+    {
+        ExtraLight = 100, // ExtraLight or UltraLight
+        Light      = 200, // Light or Thin
+        Book       = 300, // Book or Demi
+        Normal     = 400, // Normal or Regular
+        Medium     = 500, // Medium
+        Semibold   = 600, // Semibold, Demibold
+        Bold       = 700, // Bold
+        Black      = 800, // Black, ExtraBold or Heavy
+        ExtraBlack = 900, // ExtraBlack, Fat, Poster or UltraBlack
+    }
+
+    public class FontMetrics
+    {
+        string _faceName;
+
+        FontSlope _slope = FontSlope.Roman;
+        FontWidth _width = FontWidth.Normal;
+        FontWeight _weight = FontWeight.Normal;
+
+        private static Regex _slope_italic = new Regex(@"Italic");
+        private static Regex _slope_oblique = new Regex(@"Oblique|Incline");
+        private static Regex _slope_cursive = new Regex(@"Cursive|Kursiv");
+
+        private static Regex _width_narrow = new Regex(@"Compressed|Condensed|Narrow");
+        private static Regex _width_wide = new Regex(@"Wide|Extended|Expanded");
+
+        private static Regex _weight_100 = new Regex(@"ExtraLight|UltraLight");
+        private static Regex _weight_200 = new Regex(@"Light|Thin");
+        private static Regex _weight_300 = new Regex(@"Book|Demi");
+        private static Regex _weight_400 = new Regex(@"Normal|Regular");
+        private static Regex _weight_500 = new Regex(@"Medium");
+        private static Regex _weight_600 = new Regex(@"Semibold|Demibold");
+        private static Regex _weight_700 = new Regex(@"Bold");
+        private static Regex _weight_800 = new Regex(@"Black|ExtraBold|Heavy");
+        private static Regex _weight_900 = new Regex(@"ExtraBlack|Fat|Poster|UltraBlack");
+
+        // The function of this class is to parse the font properties (slope/weight/width) from the font names, as
+        // that's really the only indication that iOS gives us about the font metrics.
+        //
+        public FontMetrics(string faceName)
+        {
+            _faceName = faceName;
+
+            if (_slope_italic.IsMatch(_faceName))
+            {
+                _slope = FontSlope.Italic;
+            }
+            else if (_slope_oblique.IsMatch(_faceName))
+            {
+                _slope = FontSlope.Oblique;
+            }
+            else if (_slope_cursive.IsMatch(_faceName))
+            {
+                _slope = FontSlope.Cursive;
+            }
+
+            if (_width_narrow.IsMatch(_faceName))
+            {
+                _width = FontWidth.Narrow;
+            }
+            else if (_width_wide.IsMatch(_faceName))
+            {
+                _width = FontWidth.Wide;
+            }
+
+            // The ordering below might look a little strange, but it is important.  We have to be careful not to match Light, Bold, Black,
+            // or Demi in other stlyes (UltraLight, SemiBold, UltraBlack, etc), so we have to search for the longer terms first.
+            //
+            if (_weight_100.IsMatch(_faceName))
+            {
+                _weight = FontWeight.ExtraLight;
+            }
+            else if (_weight_400.IsMatch(_faceName))
+            {
+                _weight = FontWeight.Normal;
+            }
+            else if (_weight_500.IsMatch(_faceName))
+            {
+                _weight = FontWeight.Medium;
+            }
+            else if (_weight_900.IsMatch(_faceName))
+            {
+                _weight = FontWeight.ExtraBlack;
+            }
+            else if (_weight_800.IsMatch(_faceName))
+            {
+                _weight = FontWeight.Black;
+            }
+            else if (_weight_600.IsMatch(_faceName))
+            {
+                _weight = FontWeight.Semibold;
+            }
+            else if (_weight_700.IsMatch(_faceName))
+            {
+                _weight = FontWeight.Bold;
+            }
+            else if (_weight_200.IsMatch(_faceName))
+            {
+                _weight = FontWeight.Light;
+            }
+            else if (_weight_300.IsMatch(_faceName))
+            {
+                _weight = FontWeight.Book;
+            }
+        }
+
+        public string Name { get { return _faceName; } }
+        public FontSlope Slope { get { return _slope; } }
+        public FontWidth Width { get { return _width; } }
+        public FontWeight Weight { get { return _weight; } }
+
+        // The math here works more or less as follows.  For each of the three criteria, a value of 1.0 is
+        // given for a perfect match, a value of 0.8 is given for a "close" match, and a value of 0.5 is given
+        // for a poor (typically opposite) match.  For font weight a sliding scale is used, but it more or less
+        // matches up to the fixed scale values in the other metrics.  The overall match quality returned is the
+        // product of these values.  A perfect match is 1.0, and the worst possible match is 0.125.  Importantly, 
+        // a font that matches perfectly on two criteria, but opposite on the third, will score a 0.5, whereas a
+        // font that is a close match (but not perfect) on all three criteria will score a 0.512 (it is considered
+        // a better match).
+        //
+        public float MatchQuality(FontSlope slope, FontWeight weight, FontWidth width)
+        {
+            float matchQuality = 1;
+
+            if (slope != _slope)
+            {
+                if ((slope != FontSlope.Roman) && (_slope != FontSlope.Roman))
+                {
+                    // Slopes aren't equal, but are both non-Roman, which is kind of close...
+                    matchQuality *= 0.8f;
+                }
+                else
+                {
+                    // Slopes differ (one is Roman, one is some kind of non-Roman)...
+                    matchQuality *= 0.5f;
+                }
+            }
+
+            if (width != _width)
+            {
+                if ((width == FontWidth.Normal) || (_width == FontWidth.Normal))
+                {
+                    // Font widths are within one (either, but not both, are normal), which is kind of close...
+                    matchQuality *= 0.8f;
+                }
+                else
+                {
+                    // The widths are opposite...
+                    matchQuality *= 0.5f;
+                }
+            }
+
+            if (weight != _weight)
+            {
+                int weightDifference = Math.Abs((int)weight - (int)_weight);
+                // Max weight difference is 800 - We want to scale match from 1.0 (exact match) to 0.5 (opposite, or 800 difference)
+                matchQuality *= (1.0f - (weightDifference / 1600f));
+            }
+
+            return matchQuality;
+        }
+
+        public override string ToString() 
+        {
+            return "FontMetrics - Face: " + _faceName + ", Weight: " + _weight + ", Slope: " + _slope + ", Width: " + _width;
+        }
+    }
+
+    public abstract class FontFamily
+    {
+        public abstract UIFont CreateFont(bool bold, bool italic, float size);
+    }
+
+    public class FontFamilyFromName : FontFamily
+    {
+        string _familyName;
+        List<FontMetrics> _fonts = new List<FontMetrics>();
+
+        protected FontMetrics _plainFont;
+        protected FontMetrics _boldFont;
+        protected FontMetrics _italicFont;
+        protected FontMetrics _boldItalicFont;
+
+        public FontFamilyFromName(string familyName)
+        {
+            _familyName = familyName;
+            string[] fontNames = UIFont.FontNamesForFamilyName(_familyName);
+            foreach (string fontName in fontNames)
+            {
+                _fonts.Add(new FontMetrics(fontName));
+            }
+
+            _plainFont = GetBestMatch(FontSlope.Roman, FontWeight.Normal, FontWidth.Normal);
+            _boldFont = GetBestMatch(FontSlope.Roman, FontWeight.Bold, FontWidth.Normal);
+            _italicFont = GetBestMatch(FontSlope.Italic, FontWeight.Normal, FontWidth.Normal);
+            _boldItalicFont = GetBestMatch(FontSlope.Italic, FontWeight.Bold, FontWidth.Normal);
+        }
+        
+        public FontMetrics GetBestMatch(FontSlope slope, FontWeight weight, FontWidth width)
+        {
+            FontMetrics bestMatch = null;
+            float bestMatchScore = -1;
+
+            foreach(FontMetrics fontMetrics in _fonts)
+            {
+                float matchScore = fontMetrics.MatchQuality(slope, weight, width);
+                if (matchScore > bestMatchScore)
+                {
+                    bestMatch = fontMetrics;
+                    bestMatchScore = matchScore;
+                }
+
+                if (matchScore == 1)
+                    break;
+            }
+
+            return bestMatch;
+        }
+
+        public override UIFont CreateFont(bool bold, bool italic, float size)
+        {
+            if (bold && italic)
+            {
+                return UIFont.FromName(_boldItalicFont.Name, size);
+            }
+            else if (bold)
+            {
+                return UIFont.FromName(_boldFont.Name, size);
+            }
+            else if (italic)
+            {
+                return UIFont.FromName(_italicFont.Name, size);
+            }
+            else
+            {
+                return UIFont.FromName(_plainFont.Name, size);
+            }
+        }
+    }
+
+    public class SystemFontFamily : FontFamily
+    {
+        public SystemFontFamily()
+        {
+        }
+
+        public static bool IsStystemFont(UIFont font)
+        {
+            float currSize = font.PointSize;
+
+            UIFont systemFont = UIFont.SystemFontOfSize(currSize);
+            UIFont systemBoldFont = UIFont.BoldSystemFontOfSize(currSize);
+            UIFont systemItalicFont = UIFont.ItalicSystemFontOfSize(currSize);
+
+            return ((font == systemFont) || (font == systemBoldFont) || (font == systemItalicFont));
+        }
+
+        public override UIFont CreateFont(bool bold, bool italic, float size)
+        {
+            if (bold && italic)
+            {
+                // Family for system fonts: ".Helvetica NeueUI"
+                //
+                //   SystemFont        ".HelveticaNeueUI" 
+                //   BoldSystemFont    ".HelveticaNeueUI-Bold"
+                //   ItalicSystemFont  ".HelveticaNeueUI-Italic"
+                //
+                // There is no built-in way to get the system bold+italic font, and it cannot be enumerated from the system font family,
+                // but it happens that you can create it explicitly if you know the name (which should generally be the same as the bold
+                // name plus "Italic", but could be different if there was a different system font).
+                //
+                //   ".HelveticaNeueUI-BoldItalic" - Works
+                //
+                UIFont boldFont = UIFont.BoldSystemFontOfSize(size);
+                UIFont boldItalicFont = UIFont.FromName(boldFont.Name + "Italic", size);
+                if (boldItalicFont != null)
+                {
+                    return boldItalicFont;
+                }
+                else
+                {
+                    // If we can't create the bold+italic, we'll just return the bold (best we can do)
+                    return boldFont;
+                }
+            }
+            else if (bold)
+            {
+                return UIFont.BoldSystemFontOfSize(size);
+            }
+            else if (italic)
+            {
+                return UIFont.ItalicSystemFontOfSize(size);
+            }
+            else
+            {
+                return UIFont.SystemFontOfSize(size);
+            }
+        }
+    }
+
+    public abstract class iOSFontSetter : FontSetter
+    {
+        FontFamily _family = null;
         bool _bold = false;
         bool _italic = false;
         float _size = 17.0f;
 
-        public iOSFontSetter()
+        public iOSFontSetter(UIFont font)
         {
-            // !!! Ideally, it would be nice to be able to get the font name from the current font (the default)
-            //     and to somehow use that unless SetFaceType gets called (so you can change just the size/style
-            //     without having to actually pick a font).  Not sure how this would work, unless maybe there
-            //     was a big data-driven function that took into consideration common fonts from iOS 6 and 7.
-            //     This is complicated by the fact that for some fonts their "normal" weight is actually a very
-            //     light weight (especially in iOS 7) and their bold weight is often normal or lighter.  So you
-            //     kind of have to know each font and what you want to do for normal/bold/italic based on the
-            //     name of the font (which will also include some of those modifiers).
-            //
-            // !!! See this for list of fonts by version: http://iosfonts.com/
-            //
-            // !!! Also, consider reviewing Pixtamatic font logic (enumerate/parse/catalog all fonts)
-            //
+            FontFamily family = null;
+            if (SystemFontFamily.IsStystemFont(font))
+            {
+                family = new SystemFontFamily();
+            }
+            else
+            {
+                family = new FontFamilyFromName(font.FamilyName);
+            }
+
+            _size = font.PointSize;
         }
 
-        public virtual void setFont(UIFont font);
+        public abstract void setFont(UIFont font);
 
         protected void createAndSetFont()
         {
-            string faceName = null;
-
-            switch (_faceType)
+            if (_family != null)
             {
-                case FontFaceType.FONT_DEFAULT:
-                    // !!! Get name, consider bold/italic
-                    break;
-                case FontFaceType.FONT_SANSERIF:
-                    // !!! Get name, consider bold/italic
-                    break;
-                case FontFaceType.FONT_SERIF:
-                    // !!! Get name, consider bold/italic
-                    break;
-                case FontFaceType.FONT_MONOSPACE:
-                    // !!! Get name, consider bold/italic
-                    break;
-            }
-
-            if (faceName != null)
-            {
-                UIFont font = UIFont.FromName(faceName, _size);
-                this.setFont(font);
+                this.setFont(_family.CreateFont(_bold, _italic, _size));
             }
         }
 
         public override void SetFaceType(FontFaceType faceType)
         {
-            _faceType = faceType;
+            // See this for list of iOS fonts by version: http://iosfonts.com/
+            //
+            // If the face type is set, then we will create a font family to use.  Otherwise, we'll fall back to
+            // the family created in the constructor (based on the initial/existing font).
+            //
+            switch (faceType)
+            {
+                case FontFaceType.FONT_DEFAULT:
+                    _family = new SystemFontFamily();
+                    break;
+                case FontFaceType.FONT_SANSERIF:
+                    _family = new FontFamilyFromName("Helvetica Neue");
+                    break;
+                case FontFaceType.FONT_SERIF:
+                    _family = new FontFamilyFromName("Times New Roman");
+                    break;
+                case FontFaceType.FONT_MONOSPACE:
+                    _family = new FontFamilyFromName("Courier New");
+                    break;
+            }
+
             this.createAndSetFont();
         }
 
@@ -112,7 +433,6 @@ namespace MaaasClientIOS.Controls
             _size = (float)size;
             this.createAndSetFont();
         }
-
 
         public override void SetBold(bool bold)
         {
