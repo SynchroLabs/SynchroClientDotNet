@@ -110,6 +110,18 @@ Controls - http://msdn.microsoft.com/en-us/library/windows/apps/hh465351.aspx
 
     !!! All - document binding details, all supported attributes (specify which ones can use binding tokens), show sample usage
 
+    Border
+
+        Attributes:
+            border
+            borderThickness
+            cornerRadius
+            padding
+            background
+            alignContentV = Top, [Center], Bottom
+            alignContentH = Left, [Center], Right
+            contents
+
     Canvas (child elements have positioning properties)
 
         !!! Explicit size vs wrap content (not sure wrap content is even working on all platforms)
@@ -134,18 +146,6 @@ Controls - http://msdn.microsoft.com/en-us/library/windows/apps/hh465351.aspx
             alignContentV = Top, [Center], Bottom
             alignContentH = [Left], Center, Right
             padding
-            contents
-
-    Border
-
-        Attributes:
-            border
-            borderThickness
-            cornerRadius
-            padding
-            background
-            alignContentV = Top, [Center], Bottom
-            alignContentH = Left, [Center], Right
             contents
 
     Button
@@ -204,13 +204,15 @@ Controls - http://msdn.microsoft.com/en-us/library/windows/apps/hh465351.aspx
             value
             onToggle (command + params)
 
+    !!! TODO - 
+
     Listbox
 
         !!! WinPhone - Review
 
     Listview
 
-        !!! WinPhone - Implemented
+        !!! WinPhone - Implement
         !!! Android - Standard check for selection indicator
         !!! All - Test selection state
 
@@ -220,6 +222,9 @@ Controls - http://msdn.microsoft.com/en-us/library/windows/apps/hh465351.aspx
         iOS - Two controls - UIPickerView
         Android - Spinner
 
+    Grid/GridView
+
+    WrapPanel
 
 
     Not Implemented Yet
@@ -265,9 +270,9 @@ Controls - http://msdn.microsoft.com/en-us/library/windows/apps/hh465351.aspx
 
 Misc Control stuff
 
-    Color spec should suppost 8 byte form with alpha specified
+    Color spec should support 8 byte form with alpha specified
     Separate binding ability of RGBA elements would be a neat parlor trick (maybe later)
-    Which controls should support "padding"?  Button, Textblock, Textbox?
+
 
 Client
 
@@ -394,7 +399,10 @@ Font - cross platform
 
     font: { face: "Serif", size: 12, bold: true, italic: false }
 
-    http://docs.xamarin.com/recipes/ios/standard_controls/fonts/enumerate_fonts/
+    Also provided as convenience parameter (since it is commom to specify on the size):
 
-    Custom font names (platform-specific)
+    fontsize: float (typographic points)
+        fontsize: xx is equivalent to font: { size: xx } 
+
+    !!! TODO: Custom font names (platform-specific), weights?
 

@@ -326,7 +326,7 @@ namespace MaaasClientWinPhone.Controls
                     controlWrapper = new WinPhoneListBoxWrapper(parent, bindingContext, controlSpec);
                     break;
                 case "listview":
-                    // !!! controlWrapper = new WinPhoneListViewWrapper(parent, bindingContext, controlSpec);
+                    controlWrapper = new WinPhoneListViewWrapper(parent, bindingContext, controlSpec);
                     break;
                 case "password":
                     controlWrapper = new WinPhonePasswordBoxWrapper(parent, bindingContext, controlSpec);
