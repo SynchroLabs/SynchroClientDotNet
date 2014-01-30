@@ -4,6 +4,8 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -23,14 +25,14 @@ namespace MaaasClientWinPhone.Controls
         Multiple = 2,
     }
 
-    class ListViewItem : Grid
+    public class ListViewItem : Grid
     {
-        CheckBox _check;
-        WinPhoneControlWrapper _controlWrapper;
+        protected FrameworkElement _control;
+        protected CheckBox _check;
 
-        public ListViewItem(WinPhoneControlWrapper controlWrapper, ListViewSelectionMode selectionMode, bool targetingRequired) : base()
+        public ListViewItem(FrameworkElement control, ListViewSelectionMode selectionMode, bool targetingRequired) : base()
         {
-            _controlWrapper = controlWrapper;
+            _control = control;
 
             if ((selectionMode != ListViewSelectionMode.None) || (targetingRequired))
             {
@@ -63,15 +65,113 @@ namespace MaaasClientWinPhone.Controls
 
                 // Column one is where the listview contents goes...
                 //
-                Grid.SetColumn(_controlWrapper.Control, 1);
+                Grid.SetColumn(_control, 1);
             }
 
-            _controlWrapper.Control.VerticalAlignment = VerticalAlignment.Center;
-            this.Children.Add(_controlWrapper.Control);
+            _control.VerticalAlignment = VerticalAlignment.Center;
+            this.Children.Add(_control);
+        }
+
+        public bool Selected
+        {
+            get { return _check.IsChecked == true; }
+            set 
+            { 
+                if (_check.IsChecked != value)
+                {
+                    _check.IsChecked = value;
+                }
+            }
+        }
+    }
+
+    public class ControlWrapperListViewItem : ListViewItem
+    {
+        WinPhoneControlWrapper _controlWrapper;
+
+        public ControlWrapperListViewItem(WinPhoneControlWrapper controlWrapper, ListViewSelectionMode selectionMode, bool targetingRequired) 
+            : base(controlWrapper.Control, selectionMode, targetingRequired)
+        {
+            _controlWrapper = controlWrapper;
         }
 
         public WinPhoneControlWrapper ControlWrapper { get { return _controlWrapper; } }
-        public CheckBox CheckBox { get { return _check; } }
+    }
+
+    public class SelectedListViewItems : ObservableCollection<ListViewItem>
+    {
+        public SelectedListViewItems() : base()
+        {
+        }
+
+        // The Clear() method produces a "Reset" change event that does not contain any reference to the
+        // items that were removed.  Since we need to deselect items that are removed, we will override
+        // this behavior and manufactor a "Remove" change event with all items in the list.
+        //
+        protected override void ClearItems()
+        {
+            List<ListViewItem> removed = new List<ListViewItem>(this);
+            base.ClearItems();
+            base.OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, removed));
+        }
+
+        protected override void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
+        {
+            if (e.Action != NotifyCollectionChangedAction.Reset)
+                base.OnCollectionChanged(e);
+        }
+    }
+
+    public class ListViewItems : ObservableCollection<ListViewItem>
+    {
+        protected ListViewSelectionMode _selectionMode;
+        protected SelectedListViewItems _selected = new SelectedListViewItems();
+
+        public ListViewItems(ListViewSelectionMode selectionMode = ListViewSelectionMode.Single) : base()
+        {
+            _selectionMode = selectionMode;
+            _selected.CollectionChanged += SelectedListViewItems_CollectionChanged;
+        }
+
+        public ListViewItem SelectedItem 
+        { 
+            get 
+            { 
+                if (_selected.Count > 0)
+                {
+                    return _selected[0];
+                }
+                return null; 
+            } 
+
+            set
+            {
+                _selected.Clear();
+                _selected.Add(value);
+            }
+        }
+
+        public Collection<ListViewItem> SelectedItems { get { return _selected; } }
+
+        void SelectedListViewItems_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (e.NewItems != null)
+            {
+                foreach (ListViewItem item in e.NewItems)
+                {
+                    Util.debug("Selected ListViewItem added: " + item);
+                    item.Selected = true;
+                }
+            }
+            if (e.OldItems != null)
+            {
+                foreach (ListViewItem item in e.OldItems)
+                {
+                    Util.debug("Selected ListViewItem removed: " + item);
+                    item.Selected = false;
+                }
+            }
+        }
     }
 
     class WinPhoneListViewWrapper : WinPhoneControlWrapper
@@ -104,8 +204,7 @@ namespace MaaasClientWinPhone.Controls
                 _selectionMode = ListViewSelectionMode.None;
             }
 
-            ObservableCollection<ListViewItem> items = new ObservableCollection<ListViewItem>();
-            listView.ItemsSource = items;
+            listView.ItemsSource = new ListViewItems();
 
             JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "items", new string[] { "onItemClick" });
 
@@ -168,7 +267,7 @@ namespace MaaasClientWinPhone.Controls
 
             List<BindingContext> itemContexts = bindingContext.SelectEach(itemSelector);
 
-            Collection<ListViewItem> items = (Collection<ListViewItem>)listview.ItemsSource;
+            ListViewItems items = (ListViewItems)listview.ItemsSource;
 
             if (items.Count < itemContexts.Count)
             {
@@ -177,7 +276,7 @@ namespace MaaasClientWinPhone.Controls
                 for (int index = items.Count; index < itemContexts.Count; index++)
                 {
                     WinPhoneControlWrapper controlWrapper = CreateControl(this, itemContexts[index], itemTemplate);
-                    items.Add(new ListViewItem(controlWrapper, _selectionMode, _targetingRequired));
+                    items.Add(new ControlWrapperListViewItem(controlWrapper, _selectionMode, _targetingRequired));
                 }
             }
             else if (items.Count > itemContexts.Count)
@@ -186,7 +285,7 @@ namespace MaaasClientWinPhone.Controls
                 //
                 for (int index = items.Count; index > itemContexts.Count; index--)
                 {
-                    ListViewItem listViewItem = (ListViewItem)items[index - 1];
+                    ControlWrapperListViewItem listViewItem = (ControlWrapperListViewItem)items[index - 1];
 
                     // Unregister any bindings for this element or any descendants
                     //
@@ -216,40 +315,24 @@ namespace MaaasClientWinPhone.Controls
         //
         public JToken getListViewSelection(LongListSelector listview, string selectionItem)
         {
+            ListViewItems items = (ListViewItems)listview.ItemsSource;
+
             if (_selectionMode == ListViewSelectionMode.Multiple)
             {
-                List<ControlWrapper> selected = new List<ControlWrapper>();
-                foreach (ListViewItem listItem in listview.ItemsSource)
-                {
-                    if (listItem.CheckBox.IsChecked == true)
-                    {
-                        selected.Add(listItem.ControlWrapper);
-                    }
-                }
-
                 return new JArray(
-                    from ControlWrapper controlWrapper in selected
-                    select controlWrapper.BindingContext.Select(selectionItem).GetValue()
+                    from ControlWrapperListViewItem controlWrapperItem in items.SelectedItems
+                    select controlWrapperItem.ControlWrapper.BindingContext.Select(selectionItem).GetValue()
                 );
             }
             else if (_selectionMode == ListViewSelectionMode.Single)
             {
-                ControlWrapper selected = null;
-                foreach (ListViewItem listItem in listview.ItemsSource)
-                {
-                    if (listItem.CheckBox.IsChecked == true)
-                    {
-                        selected = listItem.ControlWrapper;
-                        break;
-                    }
-                }
-
-                if (selected != null)
+                ControlWrapperListViewItem selectedItem = items.SelectedItem as ControlWrapperListViewItem;
+                if (selectedItem != null)
                 {
                     // We need to clone the item so we don't destroy the original link to the item in the list (since the
                     // item we're getting in SelectedItem is the list item and we're putting it into the selection binding).
                     //     
-                    return selected.BindingContext.Select(selectionItem).GetValue().DeepClone();
+                    return selectedItem.ControlWrapper.BindingContext.Select(selectionItem).GetValue().DeepClone();
                 }
                 return new JValue(false); // This is a "null" selection
             }
@@ -266,12 +349,14 @@ namespace MaaasClientWinPhone.Controls
         // 
         public void setListViewSelection(LongListSelector listview, string selectionItem, JToken selection)
         {
+            ListViewItems items = (ListViewItems)listview.ItemsSource;
+
             if (_selectionMode == ListViewSelectionMode.Multiple)
             {
-                foreach (ListViewItem listItem in listview.ItemsSource)
-                {
-                    bool selected = false;
+                items.SelectedItems.Clear();
 
+                foreach (ControlWrapperListViewItem listItem in listview.ItemsSource)
+                {
                     if (selection is JArray)
                     {
                         JArray array = selection as JArray;
@@ -279,7 +364,7 @@ namespace MaaasClientWinPhone.Controls
                         {
                             if (JToken.DeepEquals(item, listItem.ControlWrapper.BindingContext.Select(selectionItem).GetValue()))
                             {
-                                selected = true;
+                                items.SelectedItems.Add(listItem);
                                 break;
                             }
                         }
@@ -288,25 +373,19 @@ namespace MaaasClientWinPhone.Controls
                     {
                         if (JToken.DeepEquals(selection, listItem.ControlWrapper.BindingContext.Select(selectionItem).GetValue()))
                         {
-                            selected = true;
+                            items.SelectedItems.Add(listItem);
                         }
                     }
-
-                    listItem.CheckBox.IsChecked = selected;
                 }
             }
             else if (_selectionMode == ListViewSelectionMode.Single)
             {
-                foreach (ListViewItem listItem in listview.ItemsSource)
+                foreach (ControlWrapperListViewItem listItem in listview.ItemsSource)
                 {
-                    bool selected = false;
-
                     if (JToken.DeepEquals(selection, listItem.ControlWrapper.BindingContext.Select(selectionItem).GetValue()))
                     {
-                        selected = true;
+                        items.SelectedItem = listItem;
                     }
-
-                    listItem.CheckBox.IsChecked = selected;
                 }
             }
         }
@@ -318,40 +397,29 @@ namespace MaaasClientWinPhone.Controls
             if ((listview != null) && (listview.SelectedItem != null))
             {
                 Util.debug("ListView item clicked");
-                ListViewItem item = e.AddedItems[0] as ListViewItem;
+                ControlWrapperListViewItem item = e.AddedItems[0] as ControlWrapperListViewItem;
                 if (item != null)
                 {
+                    ListViewItems items = (ListViewItems)listview.ItemsSource;
+
                     if (_selectionMode == ListViewSelectionMode.Multiple)
                     {
-                        item.CheckBox.IsChecked = !item.CheckBox.IsChecked;
+                        if (items.SelectedItems.Contains(item))
+                        {
+                            items.SelectedItems.Remove(item);
+                        }
+                        else
+                        {
+                            items.SelectedItems.Add(item);
+                        }
                         updateValueBindingForAttribute("selection");
                     }
                     else if (_selectionMode == ListViewSelectionMode.Single)
                     {
-                        if (item.CheckBox.IsChecked == false)
+                        if (!item.Selected)
                         {
-                            bool selectionChanged = false;
-
-                            foreach(ListViewItem listItem in listview.ItemsSource)
-                            {
-                                if (listItem == item)
-                                {
-                                    listItem.CheckBox.IsChecked = true;
-                                    selectionChanged = true;
-                                }
-                                else
-                                {
-                                    if (listItem.CheckBox.IsChecked == true)
-                                    {
-                                        listItem.CheckBox.IsChecked = false;
-                                    }
-                                }
-                            }
-
-                            if (selectionChanged)
-                            {
-                                updateValueBindingForAttribute("selection");
-                            }
+                            items.SelectedItem = item;
+                            updateValueBindingForAttribute("selection");
                         }
                     }
                 }
@@ -374,11 +442,18 @@ namespace MaaasClientWinPhone.Controls
             }
         }
 
+        //
+        // !!! We could use a ListViewItem that had a BindingContext and enough information to create the control(s)
+        //     as needed.  Then the control conent could be created and added during ItemRealized, and removed/unregistered
+        //     during ItemUnrealized.  It wouldn't be a pure virtual list, but it might be better than what we have no
+        //     for large lists.
+        //
+
         void listview_ItemRealized(object sender, ItemRealizationEventArgs e)
         {
             if (e.ItemKind == LongListSelectorItemKind.Item)
             {
-                ListViewItem listViewItem = (ListViewItem)e.Container.Content;
+                ControlWrapperListViewItem listViewItem = (ControlWrapperListViewItem)e.Container.Content;
                 Util.debug("ListView ItemRealized: " + listViewItem.ControlWrapper);
             }
         }
@@ -387,7 +462,7 @@ namespace MaaasClientWinPhone.Controls
         {
             if (e.ItemKind == LongListSelectorItemKind.Item)
             {
-                ListViewItem listViewItem = (ListViewItem)e.Container.Content;
+                ControlWrapperListViewItem listViewItem = (ControlWrapperListViewItem)e.Container.Content;
                 Util.debug("ListView ItemUnrealized: " + listViewItem.ControlWrapper);
             }
         }

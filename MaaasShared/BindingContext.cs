@@ -136,7 +136,7 @@ namespace MaaasCore
 
             if ((_boundToken != null) && (_boundToken.Type == JTokenType.Array))
             {
-                foreach (JObject arrayElement in (JArray)_boundToken)
+                foreach (JToken arrayElement in (JArray)_boundToken)
                 {
                     bindingContexts.Add(new BindingContext(this, arrayElement, bindingPath));
                 }

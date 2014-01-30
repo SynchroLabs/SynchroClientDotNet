@@ -76,7 +76,7 @@ namespace MaaasClientWinPhone.Controls
         }
     }
 
-    class WinPhoneControlWrapper : ControlWrapper
+    public class WinPhoneControlWrapper : ControlWrapper
     {
         protected FrameworkElement _control;
         public FrameworkElement Control { get { return _control; } }
