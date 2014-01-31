@@ -552,6 +552,9 @@ namespace MaaasClientAndroid.Controls
                 case "toggle":
                     controlWrapper = new AndroidToggleSwitchWrapper(parent, bindingContext, controlSpec);
                     break;
+                case "webview":
+                    controlWrapper = new AndroidWebViewWrapper(parent, bindingContext, controlSpec);
+                    break;
             }
 
             if (controlWrapper != null)

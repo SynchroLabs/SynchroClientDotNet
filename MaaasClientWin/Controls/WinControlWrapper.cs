@@ -355,6 +355,9 @@ namespace MaaasClientWin.Controls
                 case "toggle":
                     controlWrapper = new WinToggleSwitchWrapper(parent, bindingContext, controlSpec);
                     break;
+                case "webview":
+                    controlWrapper = new WinWebViewWrapper(parent, bindingContext, controlSpec);
+                    break;
             }
 
             if (controlWrapper != null)

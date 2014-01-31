@@ -352,6 +352,9 @@ namespace MaaasClientWinPhone.Controls
                 case "toggle":
                     controlWrapper = new WinPhoneToggleSwitchWrapper(parent, bindingContext, controlSpec);
                     break;
+                case "webview":
+                    controlWrapper = new WinPhoneWebViewWrapper(parent, bindingContext, controlSpec);
+                    break;
             }
 
             if (controlWrapper != null)

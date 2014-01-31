@@ -126,11 +126,11 @@ Controls -
     Border
 
         Attributes:
-            border
+            border (color)
             borderThickness
             cornerRadius
             padding
-            background
+            background (color)
             alignContentV = Top, [Center], Bottom
             alignContentH = Left, [Center], Right
             contents
@@ -177,10 +177,10 @@ Controls -
     Rectangle
 
         Attributes:
-            border
+            border (color)
             borderThickness
             cornerRadius
-            fill
+            fill (color)
 
     Textbox / Password
 
@@ -205,12 +205,32 @@ Controls -
         Bindings:
             value
 
-    Listbox
+    Listbox (data bound, should we support explicit contents also?)
+
+        Attributes:
+            select = None, Single, Multiple
+            item
+            selectionItem
+
+        Bindings:
+            items
+            selection
 
         Note: Windows uses ListBox, all others use ListView with simple text content (seems appropriate, easy to change if not)
         !!! Test non-default selection context (all platforms)
+        !!! Should we support onItemClick (only WinPhone supports it now)?
 
-    Listview
+    Listview (data bound, should we support explicit contents also?)
+
+        Attributes:
+            select = None, Single, Multiple
+            item
+            selectionItem
+
+        Bindings:
+            items
+            selection
+            onItemClick (command)
 
 
     Toggle
@@ -225,6 +245,13 @@ Controls -
             value
             onToggle (command + params)
 
+    WebView
+
+        Attributes:
+            contents (html string)
+            url
+
+
     !!! TODO - 
 
     Picker (choose one element from a list/listbox)
@@ -233,7 +260,7 @@ Controls -
         iOS - Two controls - UIPickerView
         Android - Spinner
 
-    Grid/GridView
+    Grid (table)
 
         Win/WinPhone - Grid
         Android - 
@@ -248,6 +275,14 @@ Controls -
         Android - FlowLayout - from here: http://forums.xamarin.com/discussion/comment/156
             Also - http://slodge.blogspot.no/2013/01/an-mono-for-android-wrappanelflowlayout.html
         iOS -  UICollectionViewFlowLayout?
+
+    GridView (flowing, scrolling grid) - Ideally support either data bound or explicit contents
+        Win/WinPhone/Android - GridView
+        iOS - UICollectionViewFlowLayout
+
+    !!! A GridView is really just a WrapPanel where every item is the same size.  Review use cases and functionality of platform
+        controls and see if we can combine this into a single concept/implementation.
+
 
 
     Not Implemented Yet

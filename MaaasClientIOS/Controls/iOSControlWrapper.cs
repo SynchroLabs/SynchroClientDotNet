@@ -854,6 +854,9 @@ namespace MaaasClientIOS.Controls
                 case "toggle":
                     controlWrapper = new iOSToggleSwitchWrapper(parent, bindingContext, controlSpec);
                     break;
+                case "webview":
+                    controlWrapper = new iOSWebViewWrapper(parent, bindingContext, controlSpec);
+                    break;
             }
 
             if (controlWrapper != null)

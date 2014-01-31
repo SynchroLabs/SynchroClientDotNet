@@ -1,0 +1,36 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+
+using Android.App;
+using Android.Content;
+using Android.OS;
+using Android.Runtime;
+using Android.Views;
+using Android.Widget;
+using MaaasCore;
+using Newtonsoft.Json.Linq;
+using Android.Webkit;
+
+namespace MaaasClientAndroid.Controls
+{
+    // http://developer.android.com/reference/android/webkit/WebView.html
+    //
+    class AndroidWebViewWrapper : AndroidControlWrapper
+    {
+        public AndroidWebViewWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
+            base(parent, bindingContext)
+        {
+            Util.debug("Creating web view button");
+            WebView webView = new WebView(((AndroidControlWrapper)parent).Control.Context);
+            this._control = webView;
+
+            applyFrameworkElementDefaults(webView);
+
+            // !!! TODO
+            processElementProperty((string)controlSpec["contents"], value => webView.LoadData(ToString(value), "text/html; charset=UTF-8", null));
+            processElementProperty((string)controlSpec["url"], value => webView.LoadUrl(ToString(value)));
+        }
+    }
+}

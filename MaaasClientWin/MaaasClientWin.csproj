@@ -148,6 +148,7 @@
     <Compile Include="Controls\WinPickerWrapper.cs" />
     <Compile Include="Controls\WinRectangleWrapper.cs" />
     <Compile Include="Controls\WinScrollWrapper.cs" />
+    <Compile Include="Controls\WinWebViewWrapper.cs" />
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
