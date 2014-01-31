@@ -103,7 +103,20 @@ Property binding expressions/directives:
 		Logical (charCount >= 240)
 		Type conversion (str(240 - charCount))
 
-Controls - http://msdn.microsoft.com/en-us/library/windows/apps/hh465351.aspx
+Controls - 
+
+    Windows:
+
+        http://msdn.microsoft.com/en-us/library/windows/apps/hh465351.aspx
+
+    Comparison between Windows and Windows Phone:
+
+        http://msdn.microsoft.com/en-us/library/windowsphone/develop/jj735581(v=vs.105).aspx
+
+    Comparison between iOS and Android:
+
+        http://kintek.com.au/blog/portkit-ux-metaphor-equivalents-for-ios-and-android/
+
 
     Implemented 
     ======================================
@@ -192,6 +205,14 @@ Controls - http://msdn.microsoft.com/en-us/library/windows/apps/hh465351.aspx
         Bindings:
             value
 
+    Listbox
+
+        Note: Windows uses ListBox, all others use ListView with simple text content (seems appropriate, easy to change if not)
+        !!! Test non-default selection context (all platforms)
+
+    Listview
+
+
     Toggle
 
         !!! Resolve platform differences (title, on/off state description, switch labels)
@@ -206,16 +227,6 @@ Controls - http://msdn.microsoft.com/en-us/library/windows/apps/hh465351.aspx
 
     !!! TODO - 
 
-    Listbox
-
-        !!! WinPhone - Review
-
-    Listview
-
-        !!! WinPhone - Implement
-        !!! Android - Standard check for selection indicator
-        !!! All - Test selection state
-
     Picker (choose one element from a list/listbox)
         Win - ComboBox
         WinPhone - ListPicker
@@ -224,7 +235,19 @@ Controls - http://msdn.microsoft.com/en-us/library/windows/apps/hh465351.aspx
 
     Grid/GridView
 
+        Win/WinPhone - Grid
+        Android - 
+            TableLayout ?
+            GridLayout - http://android-developers.blogspot.com/2011/11/new-layout-widgets-space-and-gridlayout.html
+                Requires v11 (4.0/ICS) or v7 support library
+        iOS - Ouch!
+
     WrapPanel
+
+        Win/WinPhone - WrapPanel
+        Android - FlowLayout - from here: http://forums.xamarin.com/discussion/comment/156
+            Also - http://slodge.blogspot.no/2013/01/an-mono-for-android-wrappanelflowlayout.html
+        iOS -  UICollectionViewFlowLayout?
 
 
     Not Implemented Yet

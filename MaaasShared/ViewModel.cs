@@ -337,8 +337,8 @@ namespace MaaasCore
                 {
                     if ((vmItemValue.Parent is JProperty) && (vmItemValue is JValue))
                     {
-                        // Cannot remove a property, so we set its value to null (!!! Verify - esp. on obj with all props removed)
-                        ((JValue)vmItemValue).Value = null;
+                        // Cannot remove a value from a property - you have to remove the property itself from its parent (a JObject).
+                        vmItemValue.Parent.Remove();
                     }
                     else 
                     {

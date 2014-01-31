@@ -49,16 +49,6 @@ namespace MaaasClientIOS.Controls
 
             processFontAttribute(controlSpec, new TextBlockFontSetter(textBlock));
 
-            // !!! ?
-            /*
-            processElementProperty((string)controlSpec["fontsize"], value => 
-            {
-                UIFont font = UIFont.FromName(textBlock.Font.Name, (float)ToDeviceUnitsFromTypographicPoints(value));
-                textBlock.Font = font;
-                textBlock.SizeToFit();
-            });
-             */
-
             processElementProperty((string)controlSpec["value"], value => 
             {
                 // !!! We really only want to size to fix the height and/or width if not specied expicitly

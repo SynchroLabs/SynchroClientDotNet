@@ -15,52 +15,42 @@ using Android.Graphics;
 
 namespace MaaasClientAndroid.Controls
 {
-    // http://theopentutorials.com/tutorials/android/listview/android-custom-listview-with-image-and-text-using-baseadapter/
-    //
-    // http://developer.android.com/reference/android/widget/Adapter.html
-    //
- 
-    class ListItemView : TextView, ICheckable
+    class ListItemView : RelativeLayout, ICheckable
     {
-        bool _checked = false;
+        CheckBox _checkBox;
 
-        public ListItemView(Context context)
+        public ListItemView(Context context, View contentView, int viewType)
             : base(context)
         {
+            this.LayoutParameters = new ListView.LayoutParams(ViewGroup.LayoutParams.FillParent, ViewGroup.LayoutParams.WrapContent, viewType);
+
+            this.AddView(contentView);
+
+            // If you add any view that is focusable inside of a ListView row, it will make the row un-selectabled. 
+            // For more, see: http://wiresareobsolete.com/wordpress/2011/08/clickable-zones-in-listview-items/
+            //
+            // Turns out we don't want the checkbox to be clickable (or focusable) anyway, so no problemo.
+            //
+            _checkBox = new CheckBox(this.Context);
+            _checkBox.Clickable = false;
+            _checkBox.Focusable = false;
+            RelativeLayout.LayoutParams relativeParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
+            relativeParams.AddRule(LayoutRules.AlignParentRight);
+            relativeParams.AddRule(LayoutRules.CenterVertical);
+            this.AddView(_checkBox, relativeParams);
         }
 
         public bool Checked
         {
-            get { return _checked; }
-            set
-            {
-                Util.debug("Set checked: " + value);
-                bool valueChanged = _checked != value;
-                _checked = value;
-                /*
-                if (valueChanged)
-                {
-                    if (_checked)
-                    {
-                        this.SetBackgroundColor(Color.Aqua);
-                    }
-                    else
-                    {
-                        this.SetBackgroundColor(Color.Transparent);
-                    }
-                }
-                 */
-                this.RefreshDrawableState(); //?
-            }
+            get { return _checkBox.Checked; }
+            set { _checkBox.Checked = value; }
         }
 
         public void Toggle()
         {
-            Util.debug("Toggle called");
-            _checked = !_checked;
+            _checkBox.Toggle();
         }
     }
-
 
     class ListViewAdapter : BaseAdapter
     {
@@ -101,34 +91,18 @@ namespace MaaasClientAndroid.Controls
             {
                 AndroidControlWrapper controlWrapper = AndroidControlWrapper.CreateControl(_parentControl, _itemContexts[position], _itemTemplate);
 
+                // !!! Need some kind of unregister strategy (when rows get shitcanned by the view).  Maybe:
+                //
+                //         controlWrapper.Control.ViewDetachedFromWindow += Control_ViewDetachedFromWindow;
+
                 // By specifying IgnoreItemViewType we are telling the ListView not to recycle views (convertView will always be null).  It might be
-                // nice to try to take advantage of view recycling, but I don't think that will work with the way our data binding works (the bound
-                // values will attempt to update their associated views at various points in the future).
+                // nice to try to take advantage of view recycling, but that presents somewhat of a challenge in terms of the way our data binding 
+                // works (the bound values will attempt to update their associated views at various points in the future).
                 //
                 int viewType = ListViewAdapter.InterfaceConsts.IgnoreItemViewType;
-                if (controlWrapper.Control.LayoutParameters != null)
-                {
-                    controlWrapper.Control.LayoutParameters = new ListView.LayoutParams(controlWrapper.Control.LayoutParameters.Width, controlWrapper.Control.LayoutParameters.Height, viewType);
-                }
-                else
-                {
-                    controlWrapper.Control.LayoutParameters = new ListView.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent, viewType);
-                }
 
-                controlWrapper.Control.ViewDetachedFromWindow += Control_ViewDetachedFromWindow;
-
-                // !!! OK, super creepy.  Usually the any bound views are created during an update cycle, at the end of which, the bindings update
-                //     their views.  The problem here is that these views created by the adapter are created on-the-fly at some later point after
-                //     the view has been already been updated based on the view model changes.  Calling UpdateViewFromViewModel() fixes this, but that's
-                //     a pretty blunt solution (it will update everything in the view).  A more correct implementation might be to have some way of
-                //     keeping track of bindings that have not been updated so they can be updated when signalled (here) - maybe marking the bindings
-                //     as dirty, or possibly a method of resolving the bindings at the time the controls are created.
-                //
-                // !!! The real-time binding resolution fix in common should make this unnecessary - remove and test.
-                //
-                controlWrapper.ViewModel.UpdateViewFromViewModel();
-
-                return controlWrapper.Control;
+                ListItemView listItemView = new ListItemView(parent.Context, controlWrapper.Control, viewType);
+                return listItemView;
             }
             return null;
         }
@@ -152,14 +126,13 @@ namespace MaaasClientAndroid.Controls
 
         public override Java.Lang.Object GetItem(int position)
         {
-            // !!! Not really sure what the point of this is.  Presumably wrap actual content in a Java.Lang.Object,
-            //     but then who's going to be processing that?
+            // Not really sure what the point of this is.  Presumably wrap actual content in a Java.Lang.Object, but
+            // then who's going to be processing that?  I've never seen this method actually get called in practice.
             return null;
         }
 
         public override long GetItemId(int position)
         {
-            // !!!
             return position;
         }
     }
@@ -236,25 +209,20 @@ namespace MaaasClientAndroid.Controls
 
             if (listView.ChoiceMode != ChoiceMode.None)
             {
-                // !!! These don't really seem to get called (maybe only on kb or other non-touch interaction?)
+                // Have not witnessed these getting called (maybe they get called on kb or other non-touch interaction?).
+                // At any rate, if there is any change to the selection, we need to know about it, so we'll add these
+                // just to be safe.
+                //
                 listView.ItemSelected += listView_ItemSelected;
                 listView.NothingSelected += listView_NothingSelected;
             }
 
-            /* Since we need to handle the item click in order to update the selection state anyway, we'll always
-             * add the handler...
-             * 
-            ProcessCommands(bindingSpec, new string[] { "onItemClick" });
-            if (GetCommand("onItemClick") != null)
-            {
-                listView.ItemClick += listView_ItemClick;
-            }
-             */
+            // Since we need to handle the item click in order to update the selection state anyway, we'll always add
+            // the handler (whether or not there is an onItemClick command, which it will also handle if present)...
+            //
             listView.ItemClick += listView_ItemClick;
 
             // setListViewHeightBasedOnChildren();
-
-            // adapter.NotifyDataSetChanged();
         }
 
         public void setListViewHeightBasedOnChildren()

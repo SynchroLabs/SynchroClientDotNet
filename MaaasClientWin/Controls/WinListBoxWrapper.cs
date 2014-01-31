@@ -46,14 +46,10 @@ namespace MaaasClientWin.Controls
         {
             Util.debug("Getting listbox contents");
 
-            string tokenStr = "[";
-            foreach (string item in listbox.Items)
-            {
-                Util.debug("Found listbox item: " + item);
-                tokenStr += "\"" + item + "\",";
-            }
-            tokenStr += "]";
-            return JToken.Parse(tokenStr);
+            return new JArray(
+                from string item in listbox.Items
+                select new JValue(item)
+                );
         }
 
         public void setListboxContents(ListBox listbox, JToken contents)
@@ -105,15 +101,10 @@ namespace MaaasClientWin.Controls
         {
             if (listbox.SelectionMode == SelectionMode.Multiple)
             {
-                string tokenStr = "[";
-                foreach (string item in listbox.SelectedItems)
-                {
-                    Util.debug("Found listbox item: " + item);
-                    tokenStr += "\"" + item + "\",";
-                }
-                tokenStr += "]";
-
-                return JToken.Parse(tokenStr);
+                return new JArray(
+                    from string item in listbox.SelectedItems
+                    select new JValue(item)
+                    );
             }
             else
             {
