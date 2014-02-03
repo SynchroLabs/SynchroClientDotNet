@@ -322,6 +322,9 @@ namespace MaaasClientWin.Controls
                 case "edit":
                     controlWrapper = new WinTextBoxWrapper(parent, bindingContext, controlSpec);
                     break;
+                case "gridview":
+                    controlWrapper = new WinGridViewWrapper(parent, bindingContext, controlSpec);
+                    break;
                 case "image":
                     controlWrapper = new WinImageWrapper(parent, bindingContext, controlSpec);
                     break;

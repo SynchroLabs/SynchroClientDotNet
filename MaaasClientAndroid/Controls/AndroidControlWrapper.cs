@@ -519,6 +519,9 @@ namespace MaaasClientAndroid.Controls
                 case "edit":
                     controlWrapper = new AndroidTextBoxWrapper(parent, bindingContext, controlSpec);
                     break;
+                case "gridview":
+                    controlWrapper = new AndroidGridViewWrapper(parent, bindingContext, controlSpec);
+                    break;
                 case "image":
                     controlWrapper = new AndroidImageWrapper(parent, bindingContext, controlSpec);
                     break;

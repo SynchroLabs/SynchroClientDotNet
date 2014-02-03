@@ -116,6 +116,7 @@
     <Compile Include="Controls\iOSButtonWrapper.cs" />
     <Compile Include="Controls\iOSCanvasWrapper.cs" />
     <Compile Include="Controls\iOSControlWrapper.cs" />
+    <Compile Include="Controls\iOSGridViewWrapper.cs" />
     <Compile Include="Controls\iOSImageWrapper.cs" />
     <Compile Include="Controls\iOSListBoxWrapper.cs" />
     <Compile Include="Controls\iOSListViewWrapper.cs" />

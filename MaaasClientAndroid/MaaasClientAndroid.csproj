@@ -106,6 +106,7 @@
     <Compile Include="Controls\AndroidButtonWrapper.cs" />
     <Compile Include="Controls\AndroidCanvasWrapper.cs" />
     <Compile Include="Controls\AndroidControlWrapper.cs" />
+    <Compile Include="Controls\AndroidGridViewWrapper.cs" />
     <Compile Include="Controls\AndroidImageWrapper.cs" />
     <Compile Include="Controls\AndroidListBoxWrapper.cs" />
     <Compile Include="Controls\AndroidListViewWrapper.cs" />

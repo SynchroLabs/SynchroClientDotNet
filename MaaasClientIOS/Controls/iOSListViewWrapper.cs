@@ -94,8 +94,8 @@ namespace MaaasClientIOS.Controls
         protected iOSControlWrapper _parentControl;
         protected JObject _itemTemplate;
 
-        public CheckableBindingContextTableSource(iOSControlWrapper parentControl, JObject itemTemplate, SelectionMode selectionMode, Action OnSelectionChange)
-            : base(selectionMode, OnSelectionChange)
+        public CheckableBindingContextTableSource(iOSControlWrapper parentControl, JObject itemTemplate, SelectionMode selectionMode, Action OnSelectionChange, OnItemClicked OnItemClicked)
+            : base(selectionMode, OnSelectionChange, OnItemClicked)
         {
             _parentControl = parentControl;
             _itemTemplate = itemTemplate;
@@ -137,7 +137,7 @@ namespace MaaasClientIOS.Controls
             // table.RegisterClassForCellReuse(typeof(TableCell), TableCell.CellIdentifier);
 
             SelectionMode selectionMode = ToSelectionMode((string)controlSpec["select"]);
-            table.Source = new CheckableBindingContextTableSource(this, (JObject)controlSpec["itemTemplate"], selectionMode, listview_SelectionChanged);
+            table.Source = new CheckableBindingContextTableSource(this, (JObject)controlSpec["itemTemplate"], selectionMode, listview_SelectionChanged, listview_OnItemClicked);
 
             processElementDimensions(controlSpec, 150, 50);
             applyFrameworkElementDefaults(table);
@@ -145,6 +145,8 @@ namespace MaaasClientIOS.Controls
             JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "items", new string[] { "onItemClick" });
             if (bindingSpec != null)
             {
+                ProcessCommands(bindingSpec, new string[] { "onItemClick" });
+
                 if (bindingSpec["items"] != null)
                 {
                     string itemSelector = (string)bindingSpec["item"];
@@ -180,6 +182,24 @@ namespace MaaasClientIOS.Controls
                         (string)bindingSpec["selection"],
                         () => getListViewSelection(table, selectionItem),
                         value => this.setListViewSelection(table, selectionItem, (JToken)value));
+                }
+            }
+        }
+
+        void listview_OnItemClicked(TableSourceItem itemClicked)
+        {
+            Util.debug("Item clicked: " + itemClicked);
+            BindingContextTableSourceItem item = itemClicked as BindingContextTableSourceItem;
+            if (item != null)
+            {
+                CommandInstance command = GetCommand("onItemClick");
+                if (command != null)
+                {
+                    Util.debug("ListView item click with command: " + command);
+
+                    // The item click command handler resolves its tokens relative to the item clicked (not the list view).
+                    //
+                    StateManager.processCommand(command.Command, command.GetResolvedParameters(item.BindingContext));
                 }
             }
         }

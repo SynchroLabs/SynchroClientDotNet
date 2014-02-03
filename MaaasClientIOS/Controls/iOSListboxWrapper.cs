@@ -103,17 +103,21 @@ namespace MaaasClientIOS.Controls
         }
     }
 
+    public delegate void OnItemClicked(TableSourceItem item);
+
     public class CheckableTableSource : UITableViewSource
     {
         protected List<CheckableTableSourceItem> _tableItems = new List<CheckableTableSourceItem>();
 
         protected Action _onSelectionChange;
+        protected OnItemClicked _onItemClicked;
         protected SelectionMode _selectionMode;
 
-        public CheckableTableSource(SelectionMode selectionMode, Action OnSelectionChange)
+        public CheckableTableSource(SelectionMode selectionMode, Action OnSelectionChange, OnItemClicked OnItemClicked = null)
         {
             _selectionMode = selectionMode;
             _onSelectionChange = OnSelectionChange;
+            _onItemClicked = OnItemClicked;
         }
 
         public SelectionMode SelectionMode { get { return _selectionMode; } }
@@ -146,7 +150,12 @@ namespace MaaasClientIOS.Controls
         {
             Util.debug("Getting cell for path: " + indexPath);
             CheckableTableSourceItem item = _tableItems[indexPath.Row];
-            return item.GetCell(tableView);
+            UITableViewCell cell = item.GetCell(tableView);
+            if ((_selectionMode == SelectionMode.None) && (_onItemClicked != null))
+            {
+                cell.Accessory = UITableViewCellAccessory.DisclosureIndicator;
+            }
+            return cell;
         }
 
         public CheckableTableSourceItem GetItemAtRow(MonoTouch.Foundation.NSIndexPath indexPath)
@@ -180,7 +189,7 @@ namespace MaaasClientIOS.Controls
 
             CheckableTableSourceItem selectedItem = _tableItems[indexPath.Row];
 
-            if ((_selectionMode != SelectionMode.None) || ((_selectionMode == SelectionMode.Single) && !selectedItem.Checked))
+            if ((_selectionMode == SelectionMode.Multiple) || ((_selectionMode == SelectionMode.Single) && !selectedItem.Checked))
             {
                 if (_selectionMode == SelectionMode.Single)
                 {
@@ -208,7 +217,10 @@ namespace MaaasClientIOS.Controls
                 }
             }
 
-            // !!! Separate callback for "OnItemClicked" should be called here...
+            if (_onItemClicked != null)
+            {
+                _onItemClicked(selectedItem.TableSourceItem);
+            }
         }
 
         public override void RowDeselected(UITableView tableView, MonoTouch.Foundation.NSIndexPath indexPath)

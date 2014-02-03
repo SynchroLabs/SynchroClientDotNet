@@ -198,7 +198,7 @@ Controls -
     Slider
 
         Attributes:
-            value
+            value (bound only?)
             minimum
             maximum
 
@@ -232,6 +232,10 @@ Controls -
             selection
             onItemClick (command)
 
+        !!! For iOS - If onItemClick present, show accessory
+        !!! All - test selection="None" with onItemClick
+        !!! All - test passing selection context details in on onItemClick
+        !!! All - size to contents (?), at least as option (like wrap_contents) if no explicit size or fill
 
     Toggle
 
@@ -251,6 +255,8 @@ Controls -
             contents (html string)
             url
 
+        !!! How do we talk to the webview?  Use it for OAuth for example?
+
 
     !!! TODO - 
 
@@ -260,7 +266,7 @@ Controls -
         iOS - Two controls - UIPickerView
         Android - Spinner
 
-    Grid (table)
+    Table (aka Grid, like HTML table, rows/colums, typically not data bound)
 
         Win/WinPhone - Grid
         Android - 
@@ -279,6 +285,15 @@ Controls -
     GridView (flowing, scrolling grid) - Ideally support either data bound or explicit contents
         Win/WinPhone/Android - GridView
         iOS - UICollectionViewFlowLayout
+
+        Attributes:
+            item
+            selectionItem
+
+        Bindings:
+            items
+            selection
+            onItemClick (command)
 
     !!! A GridView is really just a WrapPanel where every item is the same size.  Review use cases and functionality of platform
         controls and see if we can combine this into a single concept/implementation.

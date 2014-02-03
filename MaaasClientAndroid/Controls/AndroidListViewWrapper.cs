@@ -17,28 +17,38 @@ namespace MaaasClientAndroid.Controls
 {
     class ListItemView : RelativeLayout, ICheckable
     {
-        CheckBox _checkBox;
+        View _contentView;
+        bool _checkable;
+        CheckBox _checkBox = null;
 
-        public ListItemView(Context context, View contentView, int viewType)
+        public ListItemView(Context context, View contentView, int viewType, bool checkable)
             : base(context)
         {
+            _contentView = contentView;
+            _checkable = checkable;
+
             this.LayoutParameters = new ListView.LayoutParams(ViewGroup.LayoutParams.FillParent, ViewGroup.LayoutParams.WrapContent, viewType);
 
             this.AddView(contentView);
 
-            // If you add any view that is focusable inside of a ListView row, it will make the row un-selectabled. 
-            // For more, see: http://wiresareobsolete.com/wordpress/2011/08/clickable-zones-in-listview-items/
-            //
-            // Turns out we don't want the checkbox to be clickable (or focusable) anyway, so no problemo.
-            //
-            _checkBox = new CheckBox(this.Context);
-            _checkBox.Clickable = false;
-            _checkBox.Focusable = false;
-            RelativeLayout.LayoutParams relativeParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
-            relativeParams.AddRule(LayoutRules.AlignParentRight);
-            relativeParams.AddRule(LayoutRules.CenterVertical);
-            this.AddView(_checkBox, relativeParams);
+            if (_checkable)
+            {
+                // If you add any view that is focusable inside of a ListView row, it will make the row un-selectabled. 
+                // For more, see: http://wiresareobsolete.com/wordpress/2011/08/clickable-zones-in-listview-items/
+                //
+                // Turns out we don't want the checkbox to be clickable (or focusable) anyway, so no problemo.
+                //
+                _checkBox = new CheckBox(this.Context);
+                _checkBox.Clickable = false;
+                _checkBox.Focusable = false;
+                RelativeLayout.LayoutParams relativeParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
+                relativeParams.AddRule(LayoutRules.AlignParentRight);
+                relativeParams.AddRule(LayoutRules.CenterVertical);
+                this.AddView(_checkBox, relativeParams);
+            }
         }
+
+        public View ContentView { get { return _contentView; } }
 
         public bool Checked
         {
@@ -59,13 +69,15 @@ namespace MaaasClientAndroid.Controls
         AndroidControlWrapper _parentControl;
         JObject _itemTemplate;
         List<BindingContext> _itemContexts;
+        bool _checkable;
 
-        public ListViewAdapter(Context context, AndroidControlWrapper parentControl, JObject itemTemplate)
+        public ListViewAdapter(Context context, AndroidControlWrapper parentControl, JObject itemTemplate, Boolean checkable)
             : base()
         {
             _context = context;
             _parentControl = parentControl;
             _itemTemplate = itemTemplate;
+            _checkable = checkable;
         }
 
         public void SetContents(BindingContext bindingContext, string itemSelector)
@@ -101,7 +113,7 @@ namespace MaaasClientAndroid.Controls
                 //
                 int viewType = ListViewAdapter.InterfaceConsts.IgnoreItemViewType;
 
-                ListItemView listItemView = new ListItemView(parent.Context, controlWrapper.Control, viewType);
+                ListItemView listItemView = new ListItemView(parent.Context, controlWrapper.Control, viewType, _checkable);
                 return listItemView;
             }
             return null;
@@ -147,28 +159,32 @@ namespace MaaasClientAndroid.Controls
             ListView listView = new ListView(((AndroidControlWrapper)parent).Control.Context);
             this._control = listView;
 
-            ListViewAdapter adapter = new ListViewAdapter(((AndroidControlWrapper)parent).Control.Context, this, (JObject)controlSpec["itemTemplate"]);
-            listView.Adapter = adapter;
-
-            applyFrameworkElementDefaults(listView);
-
             // Get selection mode - None (default), Single, or Multiple - no dynamic values (we don't need this changing during execution).
-            listView.ChoiceMode = ChoiceMode.None;
+            ChoiceMode choiceMode = ChoiceMode.None;
             if (controlSpec["select"] != null)
             {
                 if ((string)controlSpec["select"] == "Single")
                 {
-                    listView.ChoiceMode = ChoiceMode.Single;
+                    choiceMode = ChoiceMode.Single;
                 }
                 else if ((string)controlSpec["select"] == "Multiple")
                 {
-                    listView.ChoiceMode = ChoiceMode.Multiple;
+                    choiceMode = ChoiceMode.Multiple;
                 }
             }
+
+            ListViewAdapter adapter = new ListViewAdapter(((AndroidControlWrapper)parent).Control.Context, this, (JObject)controlSpec["itemTemplate"], choiceMode != ChoiceMode.None);
+            listView.Adapter = adapter;
+
+            listView.ChoiceMode = choiceMode;
+
+            applyFrameworkElementDefaults(listView);
 
             JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "items", new string[] { "onItemClick" });
             if (bindingSpec != null)
             {
+                ProcessCommands(bindingSpec, new string[] { "onItemClick" });
+
                 if (bindingSpec["items"] != null)
                 {
                     string itemSelector = (string)bindingSpec["item"];
@@ -276,9 +292,13 @@ namespace MaaasClientAndroid.Controls
         void listView_ItemClick(object sender, AdapterView.ItemClickEventArgs e)
         {
             ListView listView = (ListView)this.Control;
-            bool itemChecked = isListViewItemChecked(listView, e.Position);
-            Util.debug("ListView item clicked, checked: " + itemChecked);
-            this.listView_SelectionChanged();
+
+            if (listView.ChoiceMode != ChoiceMode.None)
+            {
+                bool itemChecked = isListViewItemChecked(listView, e.Position);
+                Util.debug("ListView item clicked, checked: " + itemChecked);
+                this.listView_SelectionChanged();
+            }
 
             CommandInstance command = GetCommand("onItemClick");
             if (command != null)
@@ -287,10 +307,15 @@ namespace MaaasClientAndroid.Controls
 
                 // The item click command handler resolves its tokens relative to the item clicked (not the list view).
                 //
-                ControlWrapper wrapper = this.getChildControlWrapper(e.View);
-                if (wrapper != null)
+                ListItemView listItemView = e.View as ListItemView;
+                if (listItemView != null)
                 {
-                    StateManager.processCommand(command.Command, command.GetResolvedParameters(wrapper.BindingContext));
+                    View contentView = listItemView.ContentView;
+                    ControlWrapper wrapper = this.getChildControlWrapper(contentView);
+                    if (wrapper != null)
+                    {
+                        StateManager.processCommand(command.Command, command.GetResolvedParameters(wrapper.BindingContext));
+                    }
                 }
             }
         }

@@ -319,6 +319,9 @@ namespace MaaasClientWinPhone.Controls
                 case "edit":
                     controlWrapper = new WinPhoneTextBoxWrapper(parent, bindingContext, controlSpec);
                     break;
+                case "gridview":
+                    controlWrapper = new WinPhoneGridViewWrapper(parent, bindingContext, controlSpec);
+                    break;
                 case "image":
                     controlWrapper = new WinPhoneImageWrapper(parent, bindingContext, controlSpec);
                     break;

@@ -821,6 +821,9 @@ namespace MaaasClientIOS.Controls
                 case "edit":
                     controlWrapper = new iOSTextBoxWrapper(parent, bindingContext, controlSpec);
                     break;
+                case "gridview":
+                    controlWrapper = new iOSGridViewWrapper(parent, bindingContext, controlSpec);
+                    break;
                 case "image":
                     controlWrapper = new iOSImageWrapper(parent, bindingContext, controlSpec);
                     break;
