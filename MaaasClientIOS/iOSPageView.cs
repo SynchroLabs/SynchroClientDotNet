@@ -206,6 +206,49 @@ namespace MaaasClientIOS
         {
             string message = PropertyValue.ExpandAsString((string)messageBox["message"], _viewModel.RootBindingContext);
             Util.debug("Message box with message: " + message);
+
+            UIAlertView alertView = new UIAlertView();
+
+            alertView.Message = message;
+            if (messageBox["title"] != null)
+            {
+                alertView.Title = PropertyValue.ExpandAsString((string)messageBox["title"], _viewModel.RootBindingContext);
+            }
+
+            List<string> buttonCommands = new List<string>();
+
+            if (messageBox["options"] != null)
+            {
+                JArray options = (JArray)messageBox["options"];
+                foreach (JObject option in options)
+                {
+                    alertView.AddButton(PropertyValue.ExpandAsString((string)option["label"], _viewModel.RootBindingContext));
+                    string command = null;
+                    if (option["command"] != null)
+                    {
+                        command = PropertyValue.ExpandAsString((string)option["command"], _viewModel.RootBindingContext);
+                    }
+                    buttonCommands.Add(command);
+                }
+            }
+            else
+            {
+                alertView.AddButton("Close");
+                buttonCommands.Add(null);
+            }
+
+            alertView.Clicked += (s, b) =>
+            {
+                Util.debug("Button " + b.ButtonIndex.ToString() + " clicked");
+                if (buttonCommands[b.ButtonIndex] != null)
+                {
+                    string command = buttonCommands[b.ButtonIndex];
+                    Util.debug("MessageBox command: " + command);
+                    _stateManager.processCommand(command);
+                }
+            };
+
+            alertView.Show();
         }
     }
 }

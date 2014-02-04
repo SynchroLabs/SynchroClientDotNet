@@ -1,5 +1,6 @@
 ﻿using MaaasClientWinPhone.Controls;
 using MaaasCore;
+using Microsoft.Xna.Framework.GamerServices;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -7,6 +8,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Controls;
+
+// Transitions
+//
+//     http://codingdroid.com/navigation-with-transition-effects-wp8-app-development-tutorial-6/
 
 namespace MaaasClientWinPhone
 {
@@ -49,6 +54,62 @@ namespace MaaasClientWinPhone
         public override void ProcessMessageBox(JObject messageBox)
         {
             string message = PropertyValue.ExpandAsString((string)messageBox["message"], _viewModel.RootBindingContext);
+
+            string title = " "; // Can't be empty my ass.
+            if (messageBox["title"] != null)
+            {
+                title = PropertyValue.ExpandAsString((string)messageBox["title"], _viewModel.RootBindingContext);
+            }
+
+            List<string> buttonLabels = new List<string>();
+            List<string> buttonCommands = new List<string>();
+
+            if (messageBox["options"] != null)
+            {
+                JArray options = (JArray)messageBox["options"];
+                foreach (JObject option in options)
+                {
+                    string label = PropertyValue.ExpandAsString((string)option["label"], _viewModel.RootBindingContext);
+                    string command = null;
+                    if ((string)option["command"] != null)
+                    {
+                        command = PropertyValue.ExpandAsString((string)option["command"], _viewModel.RootBindingContext);
+                    }
+
+                    buttonLabels.Add(label);
+                    buttonCommands.Add(command);
+                }
+            }
+            else
+            {
+                string label = "Close";
+                string command = null;
+                buttonLabels.Add(label);
+                buttonCommands.Add(command);
+            }
+
+            IAsyncResult result = Guide.BeginShowMessageBox(
+                 title,
+                 message,
+                 buttonLabels.ToArray(),
+                 0,
+                 Microsoft.Xna.Framework.GamerServices.MessageBoxIcon.None,
+                 null,
+                 null);
+
+            result.AsyncWaitHandle.WaitOne();
+
+            int? choice = Guide.EndShowMessageBox(result);
+            if (choice.HasValue)
+            {
+                string command = buttonCommands[(int)choice];
+                Util.debug("User chose button #" + choice);
+                if (command != null)
+                {
+                    Util.debug("MessageBox command: " + command);
+                    _stateManager.processCommand(command);
+                }
+            }
         }
     }
 }

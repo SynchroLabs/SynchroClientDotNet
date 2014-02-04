@@ -232,9 +232,7 @@ Controls -
             selection
             onItemClick (command)
 
-        !!! For iOS - If onItemClick present, show accessory
-        !!! All - test selection="None" with onItemClick
-        !!! All - test passing selection context details in on onItemClick
+        !!! WinPhone - with select="None" should show some click indication/feedback
         !!! All - size to contents (?), at least as option (like wrap_contents) if no explicit size or fill
 
     Toggle
