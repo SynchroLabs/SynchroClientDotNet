@@ -363,6 +363,8 @@ Client
 
     View/resource caching
 
+    WebSocket support on WinPhone
+
 Server
 
     Test on iPad, Android tab (Nexus 7, Kindle Fire)

@@ -14,6 +14,8 @@ using Newtonsoft.Json.Linq;
 
 namespace MaaasClientAndroid.Controls
 {
+    // Android "Spinner" - http://developer.android.com/guide/topics/ui/controls/spinner.html
+    //
     class AndroidPickerWrapper : AndroidControlWrapper
     {
         public AndroidPickerWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
@@ -26,6 +28,10 @@ namespace MaaasClientAndroid.Controls
             applyFrameworkElementDefaults(picker);
 
             // !!!
+            String[] values = new String[] { "One", "Two" };
+            ArrayAdapter adapter = new ArrayAdapter(((AndroidControlWrapper)parent).Control.Context, Android.Resource.Layout.SimpleSpinnerItem, values);
+            adapter.SetDropDownViewResource(Android.Resource.Layout.SimpleSpinnerDropDownItem);
+            picker.Adapter = adapter;
         }
     }
 }

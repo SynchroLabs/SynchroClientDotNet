@@ -836,7 +836,7 @@ namespace MaaasClientIOS.Controls
                 case "password":
                     controlWrapper = new iOSTextBoxWrapper(parent, bindingContext, controlSpec);
                     break;
-                case "pickerview":
+                case "picker":
                     controlWrapper = new iOSPickerWrapper(parent, bindingContext, controlSpec);
                     break;
                 case "rectangle":

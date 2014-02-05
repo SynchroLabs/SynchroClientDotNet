@@ -21,6 +21,9 @@ namespace MaaasClientWin.Controls
             applyFrameworkElementDefaults(picker);
  
             // !!!
+
+            picker.Items.Add("One");
+            picker.Items.Add("Two");
         }
     }
 }
