@@ -39,7 +39,10 @@ namespace MaaasClientAndroid
             // HttpClient httpClient = new HttpClient(new OkHttpNetworkHandler());
             // _stateManager = new StateManager(_host, new TransportHttp(httpClient, _host + "/api"));
             //
-            _stateManager = new StateManager(_host, new TransportHttp(_host + "/api"), deviceMetrics);
+            // Transport transport = new TransportHttp(_host + "/api")
+            Transport transport = new AndroidTransportWs(this, _host);
+
+            _stateManager = new StateManager(_host, transport, deviceMetrics);
             _pageView = new AndroidPageView(_stateManager, _stateManager.ViewModel, this, layout);
 
             _stateManager.Path = "menu";

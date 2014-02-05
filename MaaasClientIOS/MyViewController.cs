@@ -30,8 +30,11 @@ namespace MaaasClientIOS
             MaaasDeviceMetrics deviceMetrics = new iOSDeviceMetrics();
 
             // Using AFNetworkHandler via ModernHttpClient component
-            HttpClient httpClient = new HttpClient(new AFNetworkHandler());
-            _stateManager = new StateManager(_host, new TransportHttp(httpClient, _host + "/api"), deviceMetrics);
+            //HttpClient httpClient = new HttpClient(new AFNetworkHandler());
+            //Transport transport = new TransportHttp(httpClient, _host + "/api");
+            Transport transport = new iOSTransportWs(this, _host);
+
+            _stateManager = new StateManager(_host, transport, deviceMetrics);
             _pageView = new iOSPageView(_stateManager, _stateManager.ViewModel, View);
 
             _stateManager.Path = "menu";

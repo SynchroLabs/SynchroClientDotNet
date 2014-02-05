@@ -182,6 +182,7 @@ namespace MaaasClientAndroid.Controls
             {
                 layoutParams.LeftMargin = thickness;
             }
+            _control.LayoutParameters = layoutParams; // Required to trigger real-time update
         }
 
         public override void SetThicknessTop(int thickness)
@@ -191,6 +192,7 @@ namespace MaaasClientAndroid.Controls
             {
                 layoutParams.TopMargin = thickness;
             }
+            _control.LayoutParameters = layoutParams; // Required to trigger real-time update
         }
 
         public override void SetThicknessRight(int thickness)
@@ -200,6 +202,7 @@ namespace MaaasClientAndroid.Controls
             {
                 layoutParams.RightMargin = thickness;
             }
+            _control.LayoutParameters = layoutParams; // Required to trigger real-time update
         }
 
         public override void SetThicknessBottom(int thickness)
@@ -209,6 +212,7 @@ namespace MaaasClientAndroid.Controls
             {
                 layoutParams.BottomMargin = thickness;
             }
+            _control.LayoutParameters = layoutParams; // Required to trigger real-time update
         }
     }
 

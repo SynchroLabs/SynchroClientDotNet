@@ -45,6 +45,7 @@
     <Compile Include="StateManager.cs" />
     <Compile Include="Transport.cs" />
     <Compile Include="TransportHttp.cs" />
+    <Compile Include="TransportWebSocket4Net.cs" />
     <Compile Include="Util.cs" />
     <Compile Include="ViewModel.cs" />
   </ItemGroup>

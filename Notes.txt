@@ -232,7 +232,6 @@ Controls -
             selection
             onItemClick (command)
 
-        !!! WinPhone - with select="None" should show some click indication/feedback
         !!! All - size to contents (?), at least as option (like wrap_contents) if no explicit size or fill
 
     Toggle
@@ -365,8 +364,6 @@ Client
     View/resource caching
 
 Server
-
-    Tune all existing server pages to work on all clients
 
     Test on iPad, Android tab (Nexus 7, Kindle Fire)
 
