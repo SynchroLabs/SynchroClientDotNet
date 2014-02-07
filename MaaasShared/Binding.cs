@@ -226,7 +226,7 @@ namespace MaaasCore
 
         public Boolean IsDirty { get; set; }
 
-        public ValueBinding(ViewModel viewModel, BindingContext bindingContext, string value, GetViewValue getViewValue, SetViewValue setViewValue)
+        public ValueBinding(ViewModel viewModel, BindingContext bindingContext, GetViewValue getViewValue, SetViewValue setViewValue)
         {
             _viewModel = viewModel;
             _bindingContext = bindingContext;

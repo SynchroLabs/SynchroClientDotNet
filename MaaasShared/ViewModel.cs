@@ -28,9 +28,9 @@ namespace MaaasCore
 
         public JObject RootObject { get { return _rootObject; } } // Only used by BindingContext - "internal"?
 
-        public ValueBinding CreateAndRegisterValueBinding(BindingContext bindingContext, string value, GetViewValue getValue, SetViewValue setValue)
+        public ValueBinding CreateAndRegisterValueBinding(BindingContext bindingContext, GetViewValue getValue, SetViewValue setValue)
         {
-            ValueBinding valueBinding = new ValueBinding(this, bindingContext, value, getValue, setValue);
+            ValueBinding valueBinding = new ValueBinding(this, bindingContext, getValue, setValue);
             _valueBindings.Add(valueBinding);
             return valueBinding;
         }

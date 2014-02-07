@@ -440,7 +440,7 @@ namespace MaaasCore
             if (value != null)
             {
                 BindingContext valueBindingContext = this.BindingContext.Select(value);
-                ValueBinding binding = ViewModel.CreateAndRegisterValueBinding(valueBindingContext, value, getValue, setValue);
+                ValueBinding binding = ViewModel.CreateAndRegisterValueBinding(valueBindingContext, getValue, setValue);
                 SetValueBinding(attributeName, binding);
 
                 // !!! Immediate content update during configuration.  Make sure this isn't an issue (that controls are fully formed and

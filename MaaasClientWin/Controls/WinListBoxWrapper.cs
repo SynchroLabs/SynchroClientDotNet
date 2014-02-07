@@ -11,6 +11,9 @@ namespace MaaasClientWin.Controls
 {
     class WinListBoxWrapper : WinControlWrapper
     {
+        bool _selectionChangingProgramatically = false;
+        JToken _localSelection;
+
         public WinListBoxWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
@@ -26,16 +29,39 @@ namespace MaaasClientWin.Controls
                 listbox.SelectionMode = SelectionMode.Multiple;
             }
 
-            JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "items");
+            JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "items", new string[] { "onItemClick" });
             if (bindingSpec != null)
             {
+                ProcessCommands(bindingSpec, new string[] { "onItemClick" });
+
                 if (bindingSpec["items"] != null)
                 {
-                    processElementBoundValue("items", (string)bindingSpec["items"], () => getListboxContents(listbox), value => this.setListboxContents(listbox, (JToken)value));
+                    string itemSelector = (string)bindingSpec["item"];
+                    if (itemSelector == null)
+                    {
+                        itemSelector = "$data";
+                    }
+
+                    processElementBoundValue(
+                        "items",
+                        (string)bindingSpec["items"],
+                        () => getListboxContents(listbox),
+                        value => this.setListboxContents(listbox, GetValueBinding("items").BindingContext, itemSelector));
                 }
+
                 if (bindingSpec["selection"] != null)
                 {
-                    processElementBoundValue("selection", (string)bindingSpec["selection"], () => getListboxSelection(listbox), value => this.setListboxSelection(listbox, (JToken)value));
+                    string selectionItem = (string)bindingSpec["selectionItem"];
+                    if (selectionItem == null)
+                    {
+                        selectionItem = "$data";
+                    }
+
+                    processElementBoundValue(
+                        "selection",
+                        (string)bindingSpec["selection"],
+                        () => getListboxSelection(listbox, selectionItem),
+                        value => this.setListboxSelection(listbox, selectionItem, (JToken)value));
                 }
             }
 
@@ -45,100 +71,149 @@ namespace MaaasClientWin.Controls
         public JToken getListboxContents(ListBox listbox)
         {
             Util.debug("Getting listbox contents");
-
             return new JArray(
-                from string item in listbox.Items
-                select new JValue(item)
+                from BindingContextListItem item in listbox.Items
+                select item.GetValue()
                 );
         }
 
-        public void setListboxContents(ListBox listbox, JToken contents)
+        public void setListboxContents(ListBox listbox, BindingContext bindingContext, string itemSelector)
         {
             Util.debug("Setting listbox contents");
 
-            // Keep track of currently selected item/items so we can restore after repopulating list
-            string[] selected = listbox.SelectedItems.OfType<string>().ToArray();
+            List<BindingContext> itemContexts = bindingContext.SelectEach("$data");
+
+            _selectionChangingProgramatically = true;
 
             listbox.Items.Clear();
-            if ((contents != null) && (contents.Type == JTokenType.Array))
-            {
-                // !!! Default itemValue is "$data"
-                foreach (JToken arrayElementBindingContext in (JArray)contents)
-                {
-                    // !!! If $data (default), then we get the value of the binding context iteration items.
-                    //     Otherwise, if there is a non-default itemData binding, we apply that.
-                    string value = (string)arrayElementBindingContext;
-                    Util.debug("adding listbox item: " + value);
-                    listbox.Items.Add(value);
-                }
 
-                foreach (string selection in selected)
-                {
-                    Util.debug("Previous selection: " + selection);
-                    int n = listbox.Items.IndexOf(selection);
-                    if (n >= 0)
-                    {
-                        Util.debug("Found previous selection in list, selecting it!");
-                        if (listbox.SelectionMode == SelectionMode.Single)
-                        {
-                            // If we're single select, we have to select the item via a valid single
-                            // select method, like below.  If you try to do it the multi select way by
-                            // modifying SelectedItems in single select, you get a "catastrophic" freakout.
-                            //
-                            listbox.SelectedIndex = n;
-                            break;
-                        }
-                        else
-                        {
-                            listbox.SelectedItems.Add(listbox.Items[n]);
-                        }
-                    }
-                }
+            foreach (BindingContext itemContext in itemContexts)
+            {
+                BindingContextListItem listItem = new BindingContextListItem(itemContext, itemSelector);
+                listbox.Items.Add(listItem);
             }
+
+            ValueBinding selectionBinding = GetValueBinding("selection");
+            if (selectionBinding != null)
+            {
+                // If there is a "selection" value binding, then we update the selection state from that after filling the list.
+                //
+                selectionBinding.UpdateViewFromViewModel();
+            }
+            else if (_localSelection != null)
+            {
+                // If there is not a "selection" value binding, then we use local selection state to restore the selection when
+                // re-filling the list.
+                //
+                this.setListboxSelection(listbox, "$data", _localSelection);
+            }
+
+            _selectionChangingProgramatically = false;
         }
 
-        public JToken getListboxSelection(ListBox listbox)
+        public JToken getListboxSelection(ListBox listbox, string selectionItem)
         {
             if (listbox.SelectionMode == SelectionMode.Multiple)
             {
                 return new JArray(
-                    from string item in listbox.SelectedItems
-                    select new JValue(item)
+                    from BindingContextListItem item in listbox.SelectedItems
+                    select item.GetSelection(selectionItem)
                     );
             }
             else
             {
-                return new JValue(listbox.SelectedItem);
+                BindingContextListItem item = (BindingContextListItem)listbox.SelectedItem;
+                if (item != null)
+                {
+                    return item.GetSelection(selectionItem);
+                }
+                return new JValue(false); // This is a "null" selection
             }
         }
 
-        public void setListboxSelection(ListBox listbox, JToken selection)
+        public void setListboxSelection(ListBox listbox, string selectionItem, JToken selection)
         {
-            if (listbox.SelectionMode == SelectionMode.Multiple)
+            _selectionChangingProgramatically = true;
+            if ((listbox.SelectionMode == SelectionMode.Multiple) && (selection is JArray))
             {
-                if (selection is JArray)
+                listbox.SelectedItems.Clear();
+                foreach (BindingContextListItem listItem in listbox.Items)
                 {
-                    listbox.SelectedItems.Clear();
                     JArray array = selection as JArray;
                     foreach (JToken item in array.Values())
                     {
-                        listbox.SelectedItems.Add(ToString(item));
+                        if (JToken.DeepEquals(item, listItem.GetSelection(selectionItem)))
+                        {
+                            listbox.SelectedItems.Add(listItem);
+                            break;
+                        }
                     }
-                }
-                else
-                {
-                    listbox.SelectedItem = ToString(selection);
                 }
             }
             else
             {
-                listbox.SelectedItem = ToString(selection);
+                bool itemSelected = false;
+                foreach (BindingContextListItem listItem in listbox.Items)
+                {
+                    if (JToken.DeepEquals(selection, listItem.GetSelection(selectionItem)))
+                    {
+                        listbox.SelectedItem = listItem;
+                        itemSelected = true;
+                        break;
+                    }
+                }
+
+                if (!itemSelected)
+                {
+                    listbox.SelectedItem = null;
+                }
             }
+            _selectionChangingProgramatically = false;
         }
 
         void listbox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            updateValueBindingForAttribute("selection");
+            Util.debug("Listbox selection changed");
+            ListBox listbox = (ListBox)sender;
+
+            ValueBinding selectionBinding = GetValueBinding("selection");
+            if (selectionBinding != null)
+            {
+                updateValueBindingForAttribute("selection");
+            }
+            else if (!_selectionChangingProgramatically)
+            {
+                _localSelection = this.getListboxSelection(listbox, "$data");
+            }
+
+            if (!_selectionChangingProgramatically)
+            {
+                Util.debug("Selection changed by user!");
+                CommandInstance command = GetCommand("onItemClick");
+                if (command != null)
+                {
+                    Util.debug("ListView item click with command: " + command);
+
+                    if (listbox.SelectionMode == SelectionMode.Single)
+                    {
+                        // For selection mode "Single", the command handler resolves its tokens relative to the item selected.
+                        //
+                        // There should always be a first "added" item, which represents the current selection.
+                        //
+                        if ((e.AddedItems != null) && (e.AddedItems.Count > 0))
+                        {
+                            BindingContextListItem listItem = (BindingContextListItem)e.AddedItems[0];
+                            StateManager.processCommand(command.Command, command.GetResolvedParameters(listItem.BindingContext));
+                        }
+                    }
+                    else if (listbox.SelectionMode == SelectionMode.Multiple)
+                    {
+                        // For selection mode "Multiple", the command hander resovles its tokens relative to the listbox, not any list item(s).
+                        //
+                        StateManager.processCommand(command.Command, command.GetResolvedParameters(this.BindingContext));
+                    }
+                }
+            }
         }
     }
 }
