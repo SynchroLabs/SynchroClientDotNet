@@ -179,6 +179,9 @@ namespace MaaasClientWinPhone.Controls
         ListViewSelectionMode _selectionMode = ListViewSelectionMode.Single;
         bool _targetingRequired = false;
 
+        bool _selectionChangingProgramatically = false;
+        JToken _localSelection;
+
         public WinPhoneListViewWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
@@ -265,6 +268,8 @@ namespace MaaasClientWinPhone.Controls
         {
             Util.debug("Setting listview contents");
 
+            _selectionChangingProgramatically = true;
+
             List<BindingContext> itemContexts = bindingContext.SelectEach(itemSelector);
 
             ListViewItems items = (ListViewItems)listview.ItemsSource;
@@ -295,18 +300,22 @@ namespace MaaasClientWinPhone.Controls
                 }
             }
 
-            // This notification that the list backing this view has changed happens after the underlying bound values, and thus the list
-            // view items themselves, have been updated.  We need to maintain the selection state, but that is difficult as items may
-            // have "moved" list positions without any specific notification (other than this broad notification that the list itself changed).
-            //
-            // To address this, we get the "selection" binding for this list view, if any, and force a view update to reset the selection
-            // state from the view model whenever the list bound to the list view changes (and after we've processed any adds/removes above).
-            //
             ValueBinding selectionBinding = GetValueBinding("selection");
             if (selectionBinding != null)
             {
+                // If there is a "selection" value binding, then we update the selection state from that after filling the list.
+                //
                 selectionBinding.UpdateViewFromViewModel();
             }
+            else if (_localSelection != null)
+            {
+                // If there is not a "selection" value binding, then we use local selection state to restore the selection when
+                // re-filling the list.
+                //
+                this.setListViewSelection(listview, "$data", _localSelection);
+            }
+
+            _selectionChangingProgramatically = false;
         }
 
         // To determine if an item should selected, get an item from the list, get the ElementMetaData.BindingContext.  Apply any
@@ -349,6 +358,8 @@ namespace MaaasClientWinPhone.Controls
         // 
         public void setListViewSelection(LongListSelector listview, string selectionItem, JToken selection)
         {
+            _selectionChangingProgramatically = true;
+
             ListViewItems items = (ListViewItems)listview.ItemsSource;
 
             if (_selectionMode == ListViewSelectionMode.Multiple)
@@ -388,11 +399,13 @@ namespace MaaasClientWinPhone.Controls
                     }
                 }
             }
+
+            _selectionChangingProgramatically = false;
         }
 
         void listview_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            // This is a way to implemented "item clicked"
+            // This is a way to implemente "item clicked"
             LongListSelector listview = sender as LongListSelector;
             if ((listview != null) && (listview.SelectedItem != null))
             {
@@ -412,16 +425,24 @@ namespace MaaasClientWinPhone.Controls
                         {
                             items.SelectedItems.Add(item);
                         }
-                        updateValueBindingForAttribute("selection");
                     }
                     else if (_selectionMode == ListViewSelectionMode.Single)
                     {
                         if (!item.Selected)
                         {
                             items.SelectedItem = item;
-                            updateValueBindingForAttribute("selection");
                         }
                     }
+                }
+
+                ValueBinding selectionBinding = GetValueBinding("selection");
+                if (selectionBinding != null)
+                {
+                    updateValueBindingForAttribute("selection");
+                }
+                else if (!_selectionChangingProgramatically)
+                {
+                    _localSelection = this.getListViewSelection(listview, "$data");
                 }
 
                 CommandInstance command = GetCommand("onItemClick");

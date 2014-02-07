@@ -17,23 +17,39 @@ namespace MaaasClientWinPhone.Controls
 {
     public class TextListViewItem : ListViewItem
     {
-        BindingContext _context;
+        BindingContext _bindingContext;
+        string _item;
 
-        public TextListViewItem(BindingContext context, ListViewSelectionMode selectionMode, bool targetingRequired)
+        public TextListViewItem(BindingContext bindingContext, string item, ListViewSelectionMode selectionMode, bool targetingRequired)
             : base(new TextBlock(), selectionMode, targetingRequired)
         {
-            _context = context;
-            ((TextBlock)_control).Text = WinPhoneControlWrapper.ToString(context.GetValue());
+            _bindingContext = bindingContext;
+            _item = item;
+            ((TextBlock)_control).Text = _bindingContext.Select(_item).GetValue().ToString();
         }
 
-        public BindingContext BindingContext { get { return _context; } }
-        public string Text { get { return ((TextBlock)_control).Text; } }
+        public BindingContext BindingContext { get { return _bindingContext; } }
+
+        public JToken GetValue()
+        {
+            return _bindingContext.Select("$data").GetValue();
+        }
+
+        public JToken GetSelection(string selectionItem)
+        {
+            return _bindingContext.Select(selectionItem).GetValue().DeepClone();
+        }
+
+        //public string Text { get { return ((TextBlock)_control).Text; } }
     }
 
     class WinPhoneListBoxWrapper : WinPhoneControlWrapper
     {
         ListViewSelectionMode _selectionMode = ListViewSelectionMode.Single;
         bool _targetingRequired = false;
+
+        bool _selectionChangingProgramatically = false;
+        JToken _localSelection;
 
         public WinPhoneListBoxWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
@@ -113,7 +129,7 @@ namespace MaaasClientWinPhone.Controls
         {
             return new JArray(
                 from item in (ListViewItems)listview.ItemsSource
-                select new JValue(((TextListViewItem)item).Text)
+                select new JValue(((TextListViewItem)item).GetValue())
                 );
         }
 
@@ -121,27 +137,33 @@ namespace MaaasClientWinPhone.Controls
         {
             Util.debug("Setting listview contents");
 
+            _selectionChangingProgramatically = true;
+
             ListViewItems items = (ListViewItems)listview.ItemsSource;
             items.Clear();
 
-            List<BindingContext> itemContexts = bindingContext.SelectEach(itemSelector);
+            List<BindingContext> itemContexts = bindingContext.SelectEach("$data");
             foreach(BindingContext context in itemContexts)
             {
-                items.Add(new TextListViewItem(context, _selectionMode, _targetingRequired));
+                items.Add(new TextListViewItem(context, itemSelector, _selectionMode, _targetingRequired));
             }
 
-            // This notification that the list backing this view has changed happens after the underlying bound values, and thus the list
-            // view items themselves, have been updated.  We need to maintain the selection state, but that is difficult as items may
-            // have "moved" list positions without any specific notification (other than this broad notification that the list itself changed).
-            //
-            // To address this, we get the "selection" binding for this list view, if any, and force a view update to reset the selection
-            // state from the view model whenever the list bound to the list view changes.
-            //
             ValueBinding selectionBinding = GetValueBinding("selection");
             if (selectionBinding != null)
             {
+                // If there is a "selection" value binding, then we update the selection state from that after filling the list.
+                //
                 selectionBinding.UpdateViewFromViewModel();
             }
+            else if (_localSelection != null)
+            {
+                // If there is not a "selection" value binding, then we use local selection state to restore the selection when
+                // re-filling the list.
+                //
+                this.setListViewSelection(listview, "$data", _localSelection);
+            }
+
+            _selectionChangingProgramatically = false;
         }
 
         public JToken getListViewSelection(LongListSelector listview, string selectionItem)
@@ -152,7 +174,7 @@ namespace MaaasClientWinPhone.Controls
             {
                 return new JArray(
                     from TextListViewItem selectedItem in items.SelectedItems
-                    select new JValue(selectedItem.Text)
+                    select selectedItem.GetSelection(selectionItem)
                 );
             }
             else if (_selectionMode == ListViewSelectionMode.Single)
@@ -160,7 +182,7 @@ namespace MaaasClientWinPhone.Controls
                 TextListViewItem selectedItem = items.SelectedItem as TextListViewItem;
                 if (selectedItem != null)
                 {
-                    return new JValue(selectedItem.Text);
+                    return selectedItem.GetSelection(selectionItem);
                 }
                 return new JValue(false); // This is a "null" selection
             }
@@ -190,7 +212,7 @@ namespace MaaasClientWinPhone.Controls
                         JArray array = selection as JArray;
                         foreach (JToken item in array.Children())
                         {
-                            if (ToString(item) == listItem.Text)
+                            if (JToken.DeepEquals(item, listItem.GetSelection(selectionItem)))
                             {
                                 items.SelectedItems.Add(listItem);
                                 break;
@@ -199,7 +221,7 @@ namespace MaaasClientWinPhone.Controls
                     }
                     else
                     {
-                        if (ToString(selection) == listItem.Text)
+                        if (JToken.DeepEquals(selection, listItem.GetSelection(selectionItem)))
                         {
                             items.SelectedItems.Add(listItem);
                         }
@@ -210,7 +232,7 @@ namespace MaaasClientWinPhone.Controls
             {
                 foreach (TextListViewItem listItem in listview.ItemsSource)
                 {
-                    if (ToString(selection) == listItem.Text)
+                    if (JToken.DeepEquals(selection, listItem.GetSelection(selectionItem)))
                     {
                         items.SelectedItem = listItem;
                     }
@@ -240,16 +262,24 @@ namespace MaaasClientWinPhone.Controls
                         {
                             items.SelectedItems.Add(item);
                         }
-                        updateValueBindingForAttribute("selection");
                     }
                     else if (_selectionMode == ListViewSelectionMode.Single)
                     {
                         if (!item.Selected)
                         {
                             items.SelectedItem = item;
-                            updateValueBindingForAttribute("selection");
                         }
                     }
+                }
+
+                ValueBinding selectionBinding = GetValueBinding("selection");
+                if (selectionBinding != null)
+                {
+                    updateValueBindingForAttribute("selection");
+                }
+                else if (!_selectionChangingProgramatically)
+                {
+                    _localSelection = this.getListViewSelection(listview, "$data");
                 }
 
                 CommandInstance command = GetCommand("onItemClick");
