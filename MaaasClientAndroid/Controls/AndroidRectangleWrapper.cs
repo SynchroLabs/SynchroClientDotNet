@@ -14,6 +14,7 @@ using Newtonsoft.Json.Linq;
 using Android.Graphics.Drawables;
 using Android.Graphics.Drawables.Shapes;
 using Android.Graphics;
+using Java.Lang;
 
 namespace MaaasClientAndroid.Controls
 {
@@ -85,7 +86,7 @@ namespace MaaasClientAndroid.Controls
         }
     }
 
-    public class DrawableView : View
+    public class DrawableView : View, Drawable.ICallback
     {
         Drawable _drawable;
 
@@ -93,10 +94,18 @@ namespace MaaasClientAndroid.Controls
             : base(context)
         {
             _drawable = drawable;
+            _drawable.SetCallback(this);
+        }
+
+        public override void InvalidateDrawable(Drawable who) 
+        {
+            base.InvalidateDrawable(who);
+            this.Invalidate();
         }
 
         protected override void OnDraw(Canvas canvas)
         {
+            base.OnDraw(canvas);
             _drawable.Draw(canvas);
         }
     }

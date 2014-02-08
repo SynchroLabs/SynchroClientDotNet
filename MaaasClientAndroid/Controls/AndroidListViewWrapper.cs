@@ -29,7 +29,9 @@ namespace MaaasClientAndroid.Controls
 
             this.LayoutParameters = new ListView.LayoutParams(ViewGroup.LayoutParams.FillParent, ViewGroup.LayoutParams.WrapContent, viewType);
 
-            this.AddView(contentView);
+            RelativeLayout.LayoutParams contentLayoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
+            contentLayoutParams.AddRule(LayoutRules.CenterVertical);
+            this.AddView(contentView, contentLayoutParams);
 
             if (_checkable)
             {
@@ -41,10 +43,10 @@ namespace MaaasClientAndroid.Controls
                 _checkBox = new CheckBox(this.Context);
                 _checkBox.Clickable = false;
                 _checkBox.Focusable = false;
-                RelativeLayout.LayoutParams relativeParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
-                relativeParams.AddRule(LayoutRules.AlignParentRight);
-                relativeParams.AddRule(LayoutRules.CenterVertical);
-                this.AddView(_checkBox, relativeParams);
+                RelativeLayout.LayoutParams checkboxLayoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
+                checkboxLayoutParams.AddRule(LayoutRules.AlignParentRight);
+                checkboxLayoutParams.AddRule(LayoutRules.CenterVertical);
+                this.AddView(_checkBox, checkboxLayoutParams);
             }
         }
 
@@ -151,6 +153,9 @@ namespace MaaasClientAndroid.Controls
 
     class AndroidListViewWrapper : AndroidControlWrapper
     {
+        bool _selectionChangingProgramatically = false;
+        JToken _localSelection;
+
         public AndroidListViewWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
@@ -193,13 +198,6 @@ namespace MaaasClientAndroid.Controls
                         itemSelector = "$data";
                     }
 
-                    // This is a little unusual, but what the list view needs to update its contents is actually not the "value" (which would
-                    // be the array of content items based on the "items" binding), but the binding context representing where those values are
-                    // in the view model.  It needs the binding context in part so that it can apply itemSelector to the iterated bindings to
-                    // produce the actual item binding contexts.  And of course it also needs the itemSelector value.  So we'll pass both of those
-                    // in the delegate (and ignore "value" altogether).  This is all perfectly fine, it's just not the normal "jam the value into
-                    // the control" kind of delegate, so it seemed prudent to note that here.
-                    //
                     processElementBoundValue(
                         "items",
                         (string)bindingSpec["items"],
@@ -266,13 +264,13 @@ namespace MaaasClientAndroid.Controls
         void listView_ItemSelected(object sender, AdapterView.ItemSelectedEventArgs e)
         {
             Util.debug("ListView item selected at position: " + e.Position);
-            this.listView_SelectionChanged();
+            this.listView_SelectionChanged((ListView)this.Control);
         }
 
         void listView_NothingSelected(object sender, AdapterView.NothingSelectedEventArgs e)
         {
             Util.debug("ListView nothing selected");
-            this.listView_SelectionChanged();
+            this.listView_SelectionChanged((ListView)this.Control);
         }
 
         static bool isListViewItemChecked(ListView listView, int position)
@@ -297,7 +295,7 @@ namespace MaaasClientAndroid.Controls
             {
                 bool itemChecked = isListViewItemChecked(listView, e.Position);
                 Util.debug("ListView item clicked, checked: " + itemChecked);
-                this.listView_SelectionChanged();
+                this.listView_SelectionChanged(listView);
             }
 
             CommandInstance command = GetCommand("onItemClick");
@@ -330,22 +328,26 @@ namespace MaaasClientAndroid.Controls
         {
             Util.debug("Setting listview contents");
 
+            _selectionChangingProgramatically = true;
+
             ListViewAdapter adapter = (ListViewAdapter)listView.Adapter;
             adapter.SetContents(bindingContext, itemSelector);
             adapter.NotifyDataSetChanged();
 
-            // This notification that the list backing this view has changed happens after the underlying bound values, and thus the list
-            // view items themselves, have been updated.  We need to maintain the selection state, but that is difficult as items may
-            // have "moved" list positions without any specific notification (other than this broad notification that the list itself changed).
-            //
-            // To address this, we get the "selection" binding for this list view, if any, and force a view update to reset the selection
-            // state from the view model whenever the list bound to the list view changes (and after we've processed any adds/removes above).
-            //
             ValueBinding selectionBinding = GetValueBinding("selection");
             if (selectionBinding != null)
             {
                 selectionBinding.UpdateViewFromViewModel();
             }
+            else if (_localSelection != null)
+            {
+                // If there is not a "selection" value binding, then we use local selection state to restore the selection when
+                // re-filling the list.
+                //
+                this.setListViewSelection(listView, "$data", _localSelection);
+            }
+
+            _selectionChangingProgramatically = false;
         }
 
         // To determine if an item should be selected, get an item from the list, get the ElementMetaData.BindingContext.  Apply any
@@ -398,10 +400,11 @@ namespace MaaasClientAndroid.Controls
         // 
         public void setListViewSelection(ListView listView, string selectionItem, JToken selection)
         {
+            _selectionChangingProgramatically = true;
+
             ListViewAdapter adapter = (ListViewAdapter)listView.Adapter;
 
-            var checkedItems = listView.CheckedItemPositions;
-            checkedItems.Clear();
+            listView.ClearChoices();
 
             for (int n = 0; n < adapter.Count; n++)
             {
@@ -413,7 +416,7 @@ namespace MaaasClientAndroid.Controls
                     {
                         if (JToken.DeepEquals(item, bindingContext.Select(selectionItem).GetValue()))
                         {
-                            checkedItems.Put(n, true);
+                            listView.SetItemChecked(n, true);
                             break;
                         }
                     }
@@ -422,15 +425,25 @@ namespace MaaasClientAndroid.Controls
                 {
                     if (JToken.DeepEquals(selection, bindingContext.Select(selectionItem).GetValue()))
                     {
-                        checkedItems.Put(n, true);
+                        listView.SetItemChecked(n, true);
                     }
                 }
             }
+
+            _selectionChangingProgramatically = false;
         }
 
-        void listView_SelectionChanged()
+        void listView_SelectionChanged(ListView listView)
         {
-            updateValueBindingForAttribute("selection");
+            ValueBinding selectionBinding = GetValueBinding("selection");
+            if (selectionBinding != null)
+            {
+                updateValueBindingForAttribute("selection");
+            }
+            else if (!_selectionChangingProgramatically)
+            {
+                _localSelection = this.getListViewSelection(listView, "$data");
+            }
         }
     }
 }

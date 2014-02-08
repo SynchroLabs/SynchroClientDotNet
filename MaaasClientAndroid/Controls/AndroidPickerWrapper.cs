@@ -14,10 +14,133 @@ using Newtonsoft.Json.Linq;
 
 namespace MaaasClientAndroid.Controls
 {
+    public class BindingContextListItem
+    {
+        BindingContext _bindingContext;
+        string _item;
+
+        public BindingContextListItem(BindingContext bindingContext, string item)
+        {
+            _bindingContext = bindingContext;
+            _item = item;
+        }
+
+        public BindingContext BindingContext { get { return _bindingContext; } }
+
+        public override string ToString()
+        {
+            return _bindingContext.Select(_item).GetValue().ToString();
+        }
+
+        public JToken GetValue()
+        {
+            return _bindingContext.Select("$data").GetValue();
+        }
+
+        public JToken GetSelection(string selectionItem)
+        {
+            return _bindingContext.Select(selectionItem).GetValue().DeepClone();
+        }
+    }
+
+    public class BindingContextPickerAdapter : BaseAdapter, ISpinnerAdapter
+    {
+        protected Context _context;
+        protected IList<View> _views = new List<View>(); 
+        
+        protected List<BindingContextListItem> _listItems = new List<BindingContextListItem>();
+
+        public BindingContextPickerAdapter(Context context)
+        {
+            _context = context;
+        }
+
+        public void SetContents(BindingContext bindingContext, string itemSelector)
+        {
+            _listItems.Clear();
+
+            List<BindingContext> itemBindingContexts = bindingContext.SelectEach("$data");
+            foreach (BindingContext itemBindingContext in itemBindingContexts)
+            {
+                _listItems.Add(new BindingContextListItem(itemBindingContext, itemSelector));
+            }
+        }
+
+        public BindingContextListItem GetItemAtPosition(int position)
+        {
+            return _listItems.ElementAt(position);
+        }
+
+        public override Java.Lang.Object GetItem(int position)
+        {
+            return null;
+        }
+
+        public override long GetItemId(int id)
+        {
+            return id;
+        }
+
+        public override int Count
+        {
+            get
+            {
+                return _listItems.Count();
+            }
+        }
+
+        public override View GetDropDownView(int position, View convertView, ViewGroup parent)
+        {
+            return GetCustomView(position, convertView, parent, true);
+        }
+
+        public override View GetView(int position, View convertView, ViewGroup parent)
+        {
+            return GetCustomView(position, convertView, parent, false);
+        }
+
+        private View GetCustomView(int position, View convertView, ViewGroup parent, bool dropdown)
+        {
+            BindingContextListItem item = _listItems.ElementAt(position);
+
+            var inflater = LayoutInflater.From(_context);
+            var view = convertView ?? inflater.Inflate((dropdown ? Android.Resource.Layout.SimpleSpinnerDropDownItem : Android.Resource.Layout.SimpleSpinnerItem), parent, false);
+
+            var text = view.FindViewById<TextView>(Android.Resource.Id.Text1);
+            if (text != null)
+                text.Text = item.ToString();
+
+            if (!_views.Contains(view))
+                _views.Add(view);
+
+            return view;
+        }
+
+        private void ClearViews()
+        {
+            foreach (var view in _views)
+            {
+                view.Dispose();
+            }
+            _views.Clear();
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            ClearViews();
+            base.Dispose(disposing);
+        }
+    }
+
     // Android "Spinner" - http://developer.android.com/guide/topics/ui/controls/spinner.html
     //
     class AndroidPickerWrapper : AndroidControlWrapper
     {
+        bool _selectionChangingProgramatically = false;
+        JToken _localSelection;
+
+        int _lastProgramaticallySelectedPosition = Spinner.InvalidPosition;
+
         public AndroidPickerWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
@@ -25,13 +148,145 @@ namespace MaaasClientAndroid.Controls
             Spinner picker = new Spinner(((AndroidControlWrapper)parent).Control.Context);
             this._control = picker;
 
+            BindingContextPickerAdapter adapter = new BindingContextPickerAdapter(((AndroidControlWrapper)parent).Control.Context);
+            picker.Adapter = adapter;
+
             applyFrameworkElementDefaults(picker);
 
-            // !!!
-            String[] values = new String[] { "One", "Two" };
-            ArrayAdapter adapter = new ArrayAdapter(((AndroidControlWrapper)parent).Control.Context, Android.Resource.Layout.SimpleSpinnerItem, values);
-            adapter.SetDropDownViewResource(Android.Resource.Layout.SimpleSpinnerDropDownItem);
-            picker.Adapter = adapter;
+            JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "items", new string[] { "onItemClick" });
+            if (bindingSpec != null)
+            {
+                ProcessCommands(bindingSpec, new string[] { "onItemClick" });
+
+                if (bindingSpec["items"] != null)
+                {
+                    string itemSelector = (string)bindingSpec["item"];
+                    if (itemSelector == null)
+                    {
+                        itemSelector = "$data";
+                    }
+
+                    processElementBoundValue(
+                        "items",
+                        (string)bindingSpec["items"],
+                        () => getPickerContents(picker),
+                        value => this.setPickerContents(picker, GetValueBinding("items").BindingContext, itemSelector));
+                }
+
+                if (bindingSpec["selection"] != null)
+                {
+                    string selectionItem = (string)bindingSpec["selectionItem"];
+                    if (selectionItem == null)
+                    {
+                        selectionItem = "$data";
+                    }
+
+                    processElementBoundValue(
+                        "selection",
+                        (string)bindingSpec["selection"],
+                        () => getPickerSelection(picker, selectionItem),
+                        value => this.setPickerSelection(picker, selectionItem, (JToken)value));
+                }
+            }
+
+            picker.ItemSelected += picker_ItemSelected;
+        }
+
+        public JToken getPickerContents(Spinner picker)
+        {
+            Util.debug("Getting picker contents - NOOP");
+            throw new NotImplementedException();
+        }
+
+        public void setPickerContents(Spinner picker, BindingContext bindingContext, string itemSelector)
+        {
+            Util.debug("Setting picker contents");
+
+            _selectionChangingProgramatically = true;
+
+            BindingContextPickerAdapter adapter = (BindingContextPickerAdapter)picker.Adapter;
+            adapter.SetContents(bindingContext, itemSelector);
+            adapter.NotifyDataSetChanged();
+
+            ValueBinding selectionBinding = GetValueBinding("selection");
+            if (selectionBinding != null)
+            {
+                selectionBinding.UpdateViewFromViewModel();
+            }
+            else if (_localSelection != null)
+            {
+                // If there is not a "selection" value binding, then we use local selection state to restore the selection when
+                // re-filling the list.
+                //
+                this.setPickerSelection(picker, "$data", _localSelection);
+            }
+
+            _selectionChangingProgramatically = false;
+        }
+
+        public JToken getPickerSelection(Spinner picker, string selectionItem)
+        {
+            BindingContextPickerAdapter adapter = (BindingContextPickerAdapter)picker.Adapter;
+            if (picker.SelectedItemPosition >= 0)
+            {
+                BindingContextListItem item = adapter.GetItemAtPosition(picker.SelectedItemPosition);
+                return item.GetSelection(selectionItem);
+            }
+            return new Newtonsoft.Json.Linq.JValue(false); // This is a "null" selection
+        }
+
+        public void setPickerSelection(Spinner picker, string selectionItem, JToken selection)
+        {
+            _selectionChangingProgramatically = true;
+
+            BindingContextPickerAdapter adapter = (BindingContextPickerAdapter)picker.Adapter;
+            for (int i = 0; i < adapter.Count; i++)
+            {
+                BindingContextListItem item = adapter.GetItemAtPosition(i);
+                if (JToken.DeepEquals(selection, item.GetSelection(selectionItem)))
+                {
+                    _lastProgramaticallySelectedPosition = i;
+                    picker.SetSelection(i);
+                    break;
+                }
+            }
+
+            _selectionChangingProgramatically = false;
+        }
+
+        void picker_ItemSelected(object sender, AdapterView.ItemSelectedEventArgs e)
+        {
+            Util.debug("Picker selection changed");
+            Spinner picker = (Spinner)sender;
+
+            ValueBinding selectionBinding = GetValueBinding("selection");
+            if (selectionBinding != null)
+            {
+                updateValueBindingForAttribute("selection");
+            }
+            else if (!_selectionChangingProgramatically)
+            {
+                _localSelection = this.getPickerSelection(picker, "$data");
+            }
+
+            // ItemSelected gets called (at least) once during construction of the view.  In order to distinguish this
+            // call from an actual user click we will test to see of the new selected item is different than the last 
+            // one we set programatically.
+            //
+            if ((!_selectionChangingProgramatically) && (_lastProgramaticallySelectedPosition != e.Position))
+            {
+                CommandInstance command = GetCommand("onItemClick");
+                if (command != null)
+                {
+                    Util.debug("Picker item click with command: " + command);
+
+                    // The item click command handler resolves its tokens relative to the item clicked (not the list view).
+                    //
+                    BindingContextPickerAdapter adapter = (BindingContextPickerAdapter)picker.Adapter;
+                    BindingContextListItem listItem = adapter.GetItemAtPosition(e.Position);
+                    StateManager.processCommand(command.Command, command.GetResolvedParameters(listItem.BindingContext));
+                }
+            }
         }
     }
 }

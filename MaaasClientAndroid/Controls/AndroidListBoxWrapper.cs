@@ -22,8 +22,92 @@ namespace MaaasClientAndroid.Controls
     //     https://github.com/android/platform_frameworks_base/tree/master/core/res/res/layout
     //
 
+    public class BindingContextListboxAdapter : BaseAdapter
+    {
+        protected Context _context;
+        protected IList<View> _views = new List<View>();
+
+        protected List<BindingContextListItem> _listItems = new List<BindingContextListItem>();
+        protected int _layoutResourceId;
+
+        public BindingContextListboxAdapter(Context context, int itemLayoutResourceId)
+        {
+            _context = context;
+            _layoutResourceId = itemLayoutResourceId;
+        }
+
+        public void SetContents(BindingContext bindingContext, string itemSelector)
+        {
+            _listItems.Clear();
+
+            List<BindingContext> itemBindingContexts = bindingContext.SelectEach("$data");
+            foreach (BindingContext itemBindingContext in itemBindingContexts)
+            {
+                _listItems.Add(new BindingContextListItem(itemBindingContext, itemSelector));
+            }
+        }
+
+        public BindingContextListItem GetItemAtPosition(int position)
+        {
+            return _listItems.ElementAt(position);
+        }
+
+        public override Java.Lang.Object GetItem(int position)
+        {
+            return null;
+        }
+
+        public override long GetItemId(int id)
+        {
+            return id;
+        }
+
+        public override int Count
+        {
+            get
+            {
+                return _listItems.Count();
+            }
+        }
+
+        public override View GetView(int position, View convertView, ViewGroup parent)
+        {
+            BindingContextListItem item = _listItems.ElementAt(position);
+
+            var inflater = LayoutInflater.From(_context);
+            var view = convertView ?? inflater.Inflate(_layoutResourceId, parent, false);
+
+            var text = view.FindViewById<TextView>(Android.Resource.Id.Text1);
+            if (text != null)
+                text.Text = item.ToString();
+
+            if (!_views.Contains(view))
+                _views.Add(view);
+
+            return view;
+        }
+
+        private void ClearViews()
+        {
+            foreach (var view in _views)
+            {
+                view.Dispose();
+            }
+            _views.Clear();
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            ClearViews();
+            base.Dispose(disposing);
+        }
+    }
+
     class AndroidListBoxWrapper : AndroidControlWrapper
     {
+        bool _selectionChangingProgramatically = false;
+        JToken _localSelection;
+
         public AndroidListBoxWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
@@ -50,8 +134,7 @@ namespace MaaasClientAndroid.Controls
                 }
             }
 
-            String[] values = new String[] { };
-            ArrayAdapter adapter = new ArrayAdapter(((AndroidControlWrapper)parent).Control.Context, listTemplate, values);
+            BindingContextListboxAdapter adapter = new BindingContextListboxAdapter(((AndroidControlWrapper)parent).Control.Context, listTemplate);
             listView.Adapter = adapter;
             
             setListViewHeightBasedOnChildren();
@@ -61,13 +144,35 @@ namespace MaaasClientAndroid.Controls
             JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "items");
             if (bindingSpec != null)
             {
+                ProcessCommands(bindingSpec, new string[] { "onItemClick" });
+
                 if (bindingSpec["items"] != null)
                 {
-                    processElementBoundValue("items", (string)bindingSpec["items"], () => getListboxContents(listView), value => this.setListboxContents(listView, (JToken)value));
+                    string itemSelector = (string)bindingSpec["item"];
+                    if (itemSelector == null)
+                    {
+                        itemSelector = "$data";
+                    }
+
+                    processElementBoundValue(
+                        "items", 
+                        (string)bindingSpec["items"], 
+                        () => getListboxContents(listView),
+                        value => this.setListboxContents(listView, GetValueBinding("items").BindingContext, itemSelector));
                 }
                 if (bindingSpec["selection"] != null)
                 {
-                    processElementBoundValue("selection", (string)bindingSpec["selection"], () => getListboxSelection(listView), value => this.setListboxSelection(listView, (JToken)value));
+                    string selectionItem = (string)bindingSpec["selectionItem"];
+                    if (selectionItem == null)
+                    {
+                        selectionItem = "$data";
+                    }
+
+                    processElementBoundValue(
+                        "selection", 
+                        (string)bindingSpec["selection"], 
+                        () => getListboxSelection(listView, selectionItem),
+                        value => this.setListboxSelection(listView, selectionItem, (JToken)value));
                 }
             }
 
@@ -104,20 +209,34 @@ namespace MaaasClientAndroid.Controls
         void listView_ItemSelected(object sender, AdapterView.ItemSelectedEventArgs e)
         {
             Util.debug("ListBox item selected at position: " + e.Position);
-            this.listbox_SelectionChanged();
+            this.listbox_SelectionChanged((ListView)this.Control);
         }
 
         void listView_NothingSelected(object sender, AdapterView.NothingSelectedEventArgs e)
         {
             Util.debug("ListBox nothing selected");
-            this.listbox_SelectionChanged();
+            this.listbox_SelectionChanged((ListView)this.Control);
         }
 
         void listView_ItemClick(object sender, AdapterView.ItemClickEventArgs e)
         {
             CheckedTextView itemView = (CheckedTextView)e.View;
             Util.debug("ListBox item clicked, text: " + itemView.Text + ", checked: " + itemView.Checked);
-            this.listbox_SelectionChanged();
+            this.listbox_SelectionChanged((ListView)this.Control);
+
+            ListView listView = (ListView)sender;
+
+            CommandInstance command = GetCommand("onItemClick");
+            if (command != null)
+            {
+                Util.debug("ListBox item click with command: " + command);
+
+                // The item click command handler resolves its tokens relative to the item clicked (not the list view).
+                //
+                BindingContextListboxAdapter adapter = (BindingContextListboxAdapter)listView.Adapter;
+                BindingContextListItem listItem = adapter.GetItemAtPosition(e.Position);
+                StateManager.processCommand(command.Command, command.GetResolvedParameters(listItem.BindingContext));
+            }
         }
 
         public JToken getListboxContents(ListView listView)
@@ -137,119 +256,114 @@ namespace MaaasClientAndroid.Controls
 
         }
 
-        public void setListboxContents(ListView listView, JToken contents)
+        public void setListboxContents(ListView listView, BindingContext bindingContext, string itemSelector)
         {
             Util.debug("Setting listbox contents");
 
-            ArrayAdapter adapter = (ArrayAdapter)listView.Adapter;
+            _selectionChangingProgramatically = true;
 
-            // Keep track of currently selected item/items so we can restore after repopulating list...
-            //
-            List<string> selected = new List<string>();
+            BindingContextListboxAdapter adapter = (BindingContextListboxAdapter)listView.Adapter;
+            adapter.SetContents(bindingContext, itemSelector);
+            adapter.NotifyDataSetChanged();
+
+            ValueBinding selectionBinding = GetValueBinding("selection");
+            if (selectionBinding != null)
+            {
+                selectionBinding.UpdateViewFromViewModel();
+            }
+            else if (_localSelection != null)
+            {
+                // If there is not a "selection" value binding, then we use local selection state to restore the selection when
+                // re-filling the list.
+                //
+                this.setListboxSelection(listView, "$data", _localSelection);
+            }
+
+            _selectionChangingProgramatically = false;
+        }
+
+        public JToken getListboxSelection(ListView listView, string selectionItem)
+        {
+            BindingContextListboxAdapter adapter = (BindingContextListboxAdapter)listView.Adapter;
+
+            List<BindingContextListItem> selectedListItems = new List<BindingContextListItem>();
             var checkedItems = listView.CheckedItemPositions;
             for (var i = 0; i < checkedItems.Size(); i++)
             {
                 int key = checkedItems.KeyAt(i);
                 if (checkedItems.Get(key))
                 {
-                    selected.Add(listView.GetItemAtPosition(key).ToString());
+                    selectedListItems.Add(adapter.GetItemAtPosition(key));
                 }
             }
-            checkedItems.Clear();
 
-            // Clear the list and refill...
-            //
-            adapter.Clear(); 
-            if ((contents != null) && (contents.Type == JTokenType.Array))
-            {
-                // !!! Default itemValue is "$data"
-                foreach (JToken arrayElementBindingContext in (JArray)contents)
-                {
-                    // !!! If $data (default), then we get the value of the binding context iteration items.
-                    //     Otherwise, if there is a non-default itemData binding, we apply that.
-                    string value = (string)arrayElementBindingContext;
-                    Util.debug("adding listbox item: " + value);
-                    adapter.Add(value);
-                }
-
-                // Reselect items...
-                //
-                for (int n = 0; n < listView.Count; n++)
-                {
-                    string listItem = listView.GetItemAtPosition(n).ToString();
-                    if (selected.Contains(listItem))
-                    {
-                        checkedItems.Put(n, true);
-                    }
-                }
-
-                adapter.NotifyDataSetChanged();
-                setListViewHeightBasedOnChildren(); // !!!?
-            }
-        }
-
-        public JToken getListboxSelection(ListView listView)
-        {
             if (listView.ChoiceMode == ChoiceMode.Multiple)
             {
-                List<string> selected = new List<string>();
-                var checkedItems = listView.CheckedItemPositions;
-                for (var i = 0; i < checkedItems.Size(); i++)
-                {
-                    int key = checkedItems.KeyAt(i);
-                    if (checkedItems.Get(key))
-                    {
-                        selected.Add(listView.GetItemAtPosition(key).ToString());
-                    }
-                }
-
                 return new JArray(
-                    from selection in selected
-                    select new Newtonsoft.Json.Linq.JValue(selection)
-                    );
+                    from BindingContextListItem listItem in selectedListItems
+                    select listItem.GetSelection(selectionItem)
+                );
             }
             else if (listView.ChoiceMode == ChoiceMode.Single)
             {
-                return new Newtonsoft.Json.Linq.JValue(listView.GetItemAtPosition(listView.CheckedItemPosition).ToString());
+                if (selectedListItems.Count > 0)
+                {
+                    return selectedListItems[0].GetSelection(selectionItem);
+                }
+                return new Newtonsoft.Json.Linq.JValue(false); // This is a "null" selection
             }
 
             return null;
         }
 
-        public void setListboxSelection(ListView listView, JToken selection)
+        public void setListboxSelection(ListView listView, string selectionItem, JToken selection)
         {
-            List<string> selected = new List<string>();
-            if (selection is JArray)
+            _selectionChangingProgramatically = true;
+
+            BindingContextListboxAdapter adapter = (BindingContextListboxAdapter)listView.Adapter;
+
+            listView.ClearChoices();
+
+            for (int n = 0; n < adapter.Count; n++)
             {
-                JArray array = selection as JArray;
-                foreach (JToken item in array.Values())
+                BindingContextListItem listItem = adapter.GetItemAtPosition(n);
+                if (selection is JArray)
                 {
-                    selected.Add(ToString(item));
+                    JArray array = selection as JArray;
+                    foreach (JToken item in array.Children())
+                    {
+                        if (JToken.DeepEquals(item, listItem.GetSelection(selectionItem)))
+                        {
+                            listView.SetItemChecked(n, true);
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    if (JToken.DeepEquals(selection, listItem.GetSelection(selectionItem)))
+                    {
+                        listView.SetItemChecked(n, true);
+                    }
                 }
             }
-            else
-            {
-                selected.Add(ToString(selection));
-            }
 
-            var checkedItems = listView.CheckedItemPositions;
-            checkedItems.Clear();
-            for (int n = 0; n < listView.Count; n++)
-            {
-                string listItem = listView.GetItemAtPosition(n).ToString();
-                if (selected.Contains(listItem))
-                {
-                    checkedItems.Put(n, true);
-                }
-            }
-
-            ArrayAdapter adapter = (ArrayAdapter)listView.Adapter;
-            adapter.NotifyDataSetChanged();
+            _selectionChangingProgramatically = false;
         }
 
-        void listbox_SelectionChanged()
+        void listbox_SelectionChanged(ListView listView)
         {
-            updateValueBindingForAttribute("selection");
+            Util.debug("Listbox selection changed");
+
+            ValueBinding selectionBinding = GetValueBinding("selection");
+            if (selectionBinding != null)
+            {
+                updateValueBindingForAttribute("selection");
+            }
+            else if (!_selectionChangingProgramatically)
+            {
+                _localSelection = this.getListboxSelection(listView, "$data");
+            }
         }
     }
 }

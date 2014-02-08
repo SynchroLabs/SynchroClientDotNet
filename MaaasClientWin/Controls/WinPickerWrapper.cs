@@ -37,22 +37,6 @@ namespace MaaasClientWin.Controls
         {
             return _bindingContext.Select(selectionItem).GetValue().DeepClone();
         }
-
-        public override bool Equals(System.Object obj)
-        {
-            BindingContextListItem item = obj as BindingContextListItem;
-            if (item == null)
-            {
-                return false;
-            }
-
-            return _bindingContext.BindingPath.Equals(item._bindingContext.BindingPath);
-        }
-
-        public override int GetHashCode()
-        {
-            return base.GetHashCode();
-        }
     }
 
     class WinPickerWrapper : WinControlWrapper
