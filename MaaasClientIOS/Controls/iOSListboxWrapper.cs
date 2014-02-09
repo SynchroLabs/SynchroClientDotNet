@@ -11,12 +11,6 @@ using System.Drawing;
 
 namespace MaaasClientIOS.Controls
 {
-    // See: 
-    //
-    //    http://docs.xamarin.com/guides/ios/user_interface/tables/
-    //
-    //    http://docs.xamarin.com/guides/ios/user_interface/tables/part_3_-_customizing_a_table's_appearance/
-
     abstract public class TableSourceItem
     {
         abstract public NSString CellIdentifier { get; }
@@ -103,20 +97,21 @@ namespace MaaasClientIOS.Controls
         }
     }
 
+    public delegate void OnSelectionChanged(TableSourceItem item);
     public delegate void OnItemClicked(TableSourceItem item);
 
     public class CheckableTableSource : UITableViewSource
     {
         protected List<CheckableTableSourceItem> _tableItems = new List<CheckableTableSourceItem>();
 
-        protected Action _onSelectionChange;
+        protected OnSelectionChanged _onSelectionChanged;
         protected OnItemClicked _onItemClicked;
         protected SelectionMode _selectionMode;
 
-        public CheckableTableSource(SelectionMode selectionMode, Action OnSelectionChange, OnItemClicked OnItemClicked = null)
+        public CheckableTableSource(SelectionMode selectionMode, OnSelectionChanged OnSelectionChanged, OnItemClicked OnItemClicked)
         {
             _selectionMode = selectionMode;
-            _onSelectionChange = OnSelectionChange;
+            _onSelectionChanged = OnSelectionChanged;
             _onItemClicked = OnItemClicked;
         }
 
@@ -172,14 +167,8 @@ namespace MaaasClientIOS.Controls
         {
             Util.debug("Getting row height for: " + indexPath);
             CheckableTableSourceItem item = _tableItems[indexPath.Row];
-            float height = item.GetHeightForRow(tableView);
-            if (height == -1)
-            {
-                height = base.GetHeightForRow(tableView, indexPath);
-            }
-            return height;
+            return item.GetHeightForRow(tableView);
         }
-
 
         public override void RowSelected(UITableView tableView, MonoTouch.Foundation.NSIndexPath indexPath)
         {
@@ -211,13 +200,12 @@ namespace MaaasClientIOS.Controls
                     selectedItem.SetChecked(tableView, !selectedItem.Checked);
                 }
 
-                if (_onSelectionChange != null)
+                if (_onSelectionChanged != null)
                 {
-                    _onSelectionChange();
+                    _onSelectionChanged(selectedItem.TableSourceItem);
                 }
             }
-
-            if (_onItemClicked != null)
+            else if ((_selectionMode == SelectionMode.None) && (_onItemClicked != null))
             {
                 _onItemClicked(selectedItem.TableSourceItem);
             }
@@ -241,17 +229,35 @@ namespace MaaasClientIOS.Controls
          */
     }
 
-    public class StringTableSourceItem : TableSourceItem
+    public class BindingContextAsStringTableSourceItem : TableSourceItem
     {
         static NSString _cellIdentifier = new NSString("StringTableCell");
         public override NSString CellIdentifier { get { return _cellIdentifier; } }
 
-        protected string _string;
-        public string String { get { return _string; } }
+        protected BindingContext _bindingContext;
+        protected string _itemSelector;
 
-        public StringTableSourceItem(string str)
+        public BindingContextAsStringTableSourceItem(BindingContext bindingContext, string itemSelector)
         {
-            _string = str;
+            _bindingContext = bindingContext;
+            _itemSelector = itemSelector;
+        }
+
+        public BindingContext BindingContext { get { return _bindingContext; } }
+
+        public override string ToString()
+        {
+            return _bindingContext.Select(_itemSelector).GetValue().ToString();
+        }
+
+        public JToken GetValue()
+        {
+            return _bindingContext.Select("$data").GetValue();
+        }
+
+        public JToken GetSelection(string selectionItem)
+        {
+            return _bindingContext.Select(selectionItem).GetValue().DeepClone();
         }
 
         public override UITableViewCell CreateCell(UITableView tableView)
@@ -261,28 +267,29 @@ namespace MaaasClientIOS.Controls
 
         public override void BindCell(UITableView tableView, UITableViewCell cell)
         {
-            cell.TextLabel.Text = _string;
-            // cell.DetailTextLabel.Text = "Details";
-            // cell.ImageView.Image
+            cell.TextLabel.Text = this.ToString();
         }
     }
 
-    public class CheckableStringTableSource : CheckableTableSource
+    public class BindingContextAsCheckableStringTableSource : CheckableTableSource
     {
-        public CheckableStringTableSource(SelectionMode selectionMode, Action OnSelectionChange)
-            : base(selectionMode, OnSelectionChange)
+        public BindingContextAsCheckableStringTableSource(SelectionMode selectionMode, OnSelectionChanged OnSelectionChanged, OnItemClicked OnItemClicked)
+            : base(selectionMode, OnSelectionChanged, OnItemClicked)
         {
         }
 
-        public void AddItem(string value, bool isChecked = false)
+        public void AddItem(BindingContext bindingContext, string itemSelector, bool isChecked = false)
         {
-            StringTableSourceItem item = new StringTableSourceItem(value);
+            BindingContextAsStringTableSourceItem item = new BindingContextAsStringTableSourceItem(bindingContext, itemSelector);
             _tableItems.Add(new CheckableTableSourceItem(item, NSIndexPath.FromItemSection(_tableItems.Count, 0)));
         }
     }
 
     class iOSListBoxWrapper : iOSControlWrapper
     {
+        bool _selectionChangingProgramatically = false;
+        JToken _localSelection;
+
         public iOSListBoxWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
@@ -296,7 +303,7 @@ namespace MaaasClientIOS.Controls
             // table.RegisterClassForCellReuse(typeof(TableCell), TableCell.CellIdentifier);
 
             SelectionMode selectionMode = ToSelectionMode((string)controlSpec["select"]);
-            table.Source = new CheckableStringTableSource(selectionMode, listbox_SelectionChanged);
+            table.Source = new BindingContextAsCheckableStringTableSource(selectionMode, listbox_SelectionChanged, listbox_ItemClicked);
 
             processElementDimensions(controlSpec, 150, 50);
             applyFrameworkElementDefaults(table);
@@ -304,52 +311,61 @@ namespace MaaasClientIOS.Controls
             JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "items");
             if (bindingSpec != null)
             {
+                ProcessCommands(bindingSpec, new string[] { "onItemClick" });
+
                 if (bindingSpec["items"] != null)
                 {
-                    processElementBoundValue("items", (string)bindingSpec["items"], () => getListboxContents(table), value => this.setListboxContents(table, (JToken)value));
+                    string itemSelector = (string)bindingSpec["item"];
+                    if (itemSelector == null)
+                    {
+                        itemSelector = "$data";
+                    }
+
+                    processElementBoundValue(
+                        "items",
+                        (string)bindingSpec["items"],
+                        () => getListboxContents(table),
+                        value => this.setListboxContents(table, GetValueBinding("items").BindingContext, itemSelector));
                 }
+
                 if (bindingSpec["selection"] != null)
                 {
-                    processElementBoundValue("selection", (string)bindingSpec["selection"], () => getListboxSelection(table), value => this.setListboxSelection(table, (JToken)value));
+                    string selectionItem = (string)bindingSpec["selectionItem"];
+                    if (selectionItem == null)
+                    {
+                        selectionItem = "$data";
+                    }
+
+                    processElementBoundValue(
+                        "selection",
+                        (string)bindingSpec["selection"],
+                        () => getListboxSelection(table, selectionItem),
+                        value => this.setListboxSelection(table, selectionItem, (JToken)value));
                 }
             }
         }
 
         public JToken getListboxContents(UITableView tableView)
         {
-            Util.debug("Getting listbox contents");
-
-            CheckableStringTableSource tableSource = (CheckableStringTableSource)tableView.Source;
-
-            return new JArray(
-                from item in tableSource.AllItems
-                select new Newtonsoft.Json.Linq.JValue(((StringTableSourceItem)item.TableSourceItem).String)
-                );
+            Util.debug("Get listbox contents - NOOP");
+            throw new NotImplementedException();
         }
 
-        public void setListboxContents(UITableView tableView, JToken contents)
+        public void setListboxContents(UITableView tableView, BindingContext bindingContext, string itemSelector)
         {
             Util.debug("Setting listbox contents");
 
-            CheckableStringTableSource tableSource = (CheckableStringTableSource)tableView.Source;
+            _selectionChangingProgramatically = true;
 
-            // Keep track of currently selected item/items so we can restore after repopulating list
-            JToken selection = getListboxSelection(tableView);
+            BindingContextAsCheckableStringTableSource tableSource = (BindingContextAsCheckableStringTableSource)tableView.Source;
 
             int oldCount = tableSource.AllItems.Count;
             tableSource.AllItems.Clear();
 
-            if ((contents != null) && (contents.Type == JTokenType.Array))
+            List<BindingContext> itemContexts = bindingContext.SelectEach("$data");
+            foreach (BindingContext itemContext in itemContexts)
             {
-                // !!! Default itemValue is "$data"
-                foreach (JToken arrayElementBindingContext in (JArray)contents)
-                {
-                    // !!! If $data (default), then we get the value of the binding context iteration items.
-                    //     Otherwise, if there is a non-default itemData binding, we apply that.
-                    string value = (string)arrayElementBindingContext;
-                    Util.debug("adding listbox item: " + value);
-                    tableSource.AddItem(value);
-                }
+                tableSource.AddItem(itemContext, itemSelector);
             }
 
             int newCount = tableSource.AllItems.Count;
@@ -391,12 +407,25 @@ namespace MaaasClientIOS.Controls
             }
             tableView.EndUpdates(); // applies the changes
 
-            setListboxSelection(tableView, selection);
+            ValueBinding selectionBinding = GetValueBinding("selection");
+            if (selectionBinding != null)
+            {
+                selectionBinding.UpdateViewFromViewModel();
+            }
+            else if (_localSelection != null)
+            {
+                // If there is not a "selection" value binding, then we use local selection state to restore the selection when
+                // re-filling the list.
+                //
+                this.setListboxSelection(tableView, "$data", _localSelection);
+            }
+
+            _selectionChangingProgramatically = false;
         }
 
-        public JToken getListboxSelection(UITableView tableView)
+        public JToken getListboxSelection(UITableView tableView, string selectionItem)
         {
-            CheckableStringTableSource tableSource = (CheckableStringTableSource)tableView.Source;
+            BindingContextAsCheckableStringTableSource tableSource = (BindingContextAsCheckableStringTableSource)tableView.Source;
 
             List<CheckableTableSourceItem> checkedItems = tableSource.CheckedItems;
 
@@ -404,50 +433,112 @@ namespace MaaasClientIOS.Controls
             {
                 return new JArray(
                     from item in checkedItems
-                    select new Newtonsoft.Json.Linq.JValue(((StringTableSourceItem)item.TableSourceItem).String)
+                    select ((BindingContextAsStringTableSourceItem)item.TableSourceItem).GetSelection(selectionItem)
                     );
             }
             else
             {
                 if (checkedItems.Count > 0)
                 {
-                    return new JValue(((StringTableSourceItem)checkedItems[0].TableSourceItem).String);
+                    return ((BindingContextAsStringTableSourceItem)checkedItems[0].TableSourceItem).GetSelection(selectionItem);
                 }
                 return new JValue(false); // This is a "null" selection
             }
         }
 
-        public void setListboxSelection(UITableView tableView, JToken selection)
+        public void setListboxSelection(UITableView tableView, string selectionItem, JToken selection)
         {
-            CheckableStringTableSource tableSource = (CheckableStringTableSource)tableView.Source;
+            _selectionChangingProgramatically = true;
 
-            // Get list of values to be selected...
-            //
-            List<string> selectedStrings = new List<string>();
-            if (selection is JArray)
-            {
-                JArray array = selection as JArray;
-                foreach (JToken item in array.Values())
-                {
-                    selectedStrings.Add(ToString(item));
-                }
-            }
-            else
-            {
-                selectedStrings.Add(ToString(selection));
-            }
+            BindingContextAsCheckableStringTableSource tableSource = (BindingContextAsCheckableStringTableSource)tableView.Source;
 
             // Go through all values and check as appropriate
             //
-            foreach (CheckableTableSourceItem item in tableSource.AllItems)
+            foreach (CheckableTableSourceItem tableSourceItem in tableSource.AllItems)
             {
-                item.SetChecked(tableView, selectedStrings.Contains(((StringTableSourceItem)item.TableSourceItem).String));
+                BindingContextAsStringTableSourceItem listItem = (BindingContextAsStringTableSourceItem)tableSourceItem.TableSourceItem;
+
+                bool itemChecked = false;
+
+                if (selection is JArray)
+                {
+                    JArray array = selection as JArray;
+                    foreach (JToken item in array.Children())
+                    {
+                        if (JToken.DeepEquals(item, listItem.GetSelection(selectionItem)))
+                        {
+                            tableSourceItem.SetChecked(tableView, true);
+                            itemChecked = true;
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    if (JToken.DeepEquals(selection, listItem.GetSelection(selectionItem)))
+                    {
+                        tableSourceItem.SetChecked(tableView, true);
+                        itemChecked = true;
+                    }
+                }
+
+                if (!itemChecked)
+                {
+                    tableSourceItem.SetChecked(tableView, false);
+                }
+            }
+
+            _selectionChangingProgramatically = false;
+        }
+
+        void listbox_ItemClicked(TableSourceItem item)
+        {
+            Util.debug("Listbox item clicked");
+
+            BindingContextAsStringTableSourceItem listItem = item as BindingContextAsStringTableSourceItem;
+            if (item != null)
+            {
+                CommandInstance command = GetCommand("onItemClick");
+                if (command != null)
+                {
+                    Util.debug("ListBox item click with command: " + command);
+
+                    // The item click command handler resolves its tokens relative to the item clicked (not the list view).
+                    //
+                    StateManager.processCommand(command.Command, command.GetResolvedParameters(listItem.BindingContext));
+                }
             }
         }
 
-        void listbox_SelectionChanged()
+        void listbox_SelectionChanged(TableSourceItem item)
         {
-            updateValueBindingForAttribute("selection");
+            Util.debug("Listbox selection changed");
+
+            UITableView tableView = (UITableView)this.Control;
+
+            ValueBinding selectionBinding = GetValueBinding("selection");
+            if (selectionBinding != null)
+            {
+                updateValueBindingForAttribute("selection");
+            }
+            else if (!_selectionChangingProgramatically)
+            {
+                _localSelection = this.getListboxSelection(tableView, "$data");
+            }
+
+            BindingContextAsStringTableSourceItem listItem = item as BindingContextAsStringTableSourceItem;
+            if (item != null)
+            {
+                CommandInstance command = GetCommand("onItemClick"); // !!! onSelectionChange
+                if (command != null)
+                {
+                    Util.debug("ListBox item click with command: " + command);
+
+                    // The item click command handler resolves its tokens relative to the item clicked (not the list view).
+                    //
+                    StateManager.processCommand(command.Command, command.GetResolvedParameters(listItem.BindingContext));
+                }
+            }
         }
     }
 }

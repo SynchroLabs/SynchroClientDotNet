@@ -17,19 +17,19 @@ namespace MaaasClientAndroid.Controls
     public class BindingContextListItem
     {
         BindingContext _bindingContext;
-        string _item;
+        string _itemSelector;
 
-        public BindingContextListItem(BindingContext bindingContext, string item)
+        public BindingContextListItem(BindingContext bindingContext, string itemSelector)
         {
             _bindingContext = bindingContext;
-            _item = item;
+            _itemSelector = itemSelector;
         }
 
         public BindingContext BindingContext { get { return _bindingContext; } }
 
         public override string ToString()
         {
-            return _bindingContext.Select(_item).GetValue().ToString();
+            return _bindingContext.Select(_itemSelector).GetValue().ToString();
         }
 
         public JToken GetValue()

@@ -81,12 +81,11 @@ namespace MaaasClientWin.Controls
         {
             Util.debug("Setting listbox contents");
 
-            List<BindingContext> itemContexts = bindingContext.SelectEach("$data");
-
             _selectionChangingProgramatically = true;
 
-            listbox.Items.Clear();
+            List<BindingContext> itemContexts = bindingContext.SelectEach("$data");
 
+            listbox.Items.Clear();
             foreach (BindingContext itemContext in itemContexts)
             {
                 BindingContextListItem listItem = new BindingContextListItem(itemContext, itemSelector);

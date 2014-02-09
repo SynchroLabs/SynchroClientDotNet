@@ -462,7 +462,7 @@ For each dimension, possible values:
 
 Font - cross platform
     
-    face = Mono, Serif, SanSerif - what about "System" (default)?
+    face = Mono, Serif, SanSerif - what about "System" (default, may vary, per platform, based on control type)?
     size = float (typographic points)
     bold = t/f
     italic = t/f
@@ -475,4 +475,22 @@ Font - cross platform
         fontsize: xx is equivalent to font: { size: xx } 
 
     !!! TODO: Custom font names (platform-specific), weights?
+
+=======================
+
+For ListView / ListBox
+
+    If selection.None: onItemClicked, context is item
+    If selection.Single: onSelectionChanged, context is item
+    If selection.Multiple: onSelectionChanged, context is items
+
+For Picker
+
+    onSelectionChanged, context is item
+
+No itemSelection is ListView (don't need it, as can specify further binding as needed in itemTemplate)
+
+Need to make sure list element lifecycle is properly managed (that bound children are removed)
+
+Need to recycle views on platforms that support it (future?)
 
