@@ -7,18 +7,23 @@ using MonoTouch.Foundation;
 using MonoTouch.UIKit;
 using MaaasCore;
 using Newtonsoft.Json.Linq;
+using System.Drawing;
 
 namespace MaaasClientIOS.Controls
 {
-    public class PickerModel : UIPickerViewModel
+    public class BindingContextPickerModel : UIPickerViewModel
     {
-        public IList<Object> values;
+        protected List<BindingContext> _bindingContexts;
+        protected string _itemSelector;
 
-        public event EventHandler<PickerChangedEventArgs> PickerChanged;
-
-        public PickerModel(IList<Object> values)
+        public BindingContextPickerModel() : base()
         {
-            this.values = values;
+        }
+
+        public void SetContents(BindingContext bindingContext, string itemSelector)
+        {
+            _bindingContexts = bindingContext.SelectEach("$data");
+            _itemSelector = itemSelector;
         }
 
         public override int GetComponentCount(UIPickerView picker)
@@ -28,12 +33,27 @@ namespace MaaasClientIOS.Controls
 
         public override int GetRowsInComponent(UIPickerView picker, int component)
         {
-            return values.Count;
+            return (_bindingContexts != null) ? _bindingContexts.Count : 0;
         }
 
         public override string GetTitle(UIPickerView picker, int row, int component)
         {
-            return values[row].ToString();
+            return _bindingContexts[row].Select(_itemSelector).GetValue().ToString();
+        }
+
+        public JToken GetValue(int row)
+        {
+            return _bindingContexts[row].Select("$data").GetValue();
+        }
+
+        public JToken GetSelection(int row, string selectionItem)
+        {
+            return _bindingContexts[row].Select(selectionItem).GetValue().DeepClone();
+        }
+
+        public BindingContext GetBindingContext(int row)
+        {
+            return _bindingContexts[row];
         }
 
         public override float GetRowHeight(UIPickerView picker, int component)
@@ -43,16 +63,21 @@ namespace MaaasClientIOS.Controls
 
         public override void Selected(UIPickerView picker, int row, int component)
         {
-            if (this.PickerChanged != null)
-            {
-                this.PickerChanged(this, new PickerChangedEventArgs { SelectedValue = values[row] });
-            }
+            // This fires whenever an item is selected in the picker view (meaning that the item has been
+            // scrolled to and highlighted, not that the user as necessarily "chosen" the value in the sense
+            // that we are interested in here).  So for that reason, this isn't really useful.  We instead
+            // watch the "Done" button and grab the selection when the picker is dismissed.
         }
     }
 
-    public class PickerChangedEventArgs : EventArgs
+    public class PickerTextField : UITextField
     {
-        public object SelectedValue { get; set; }
+        // This gets rid of the blinking caret when "editing" (which in our case, means having the picker input view up).
+        //
+        public override RectangleF GetCaretRectForPosition(UITextPosition position)
+        {
+            return RectangleF.Empty;
+        }
     }
 
     class iOSPickerWrapper : iOSControlWrapper
@@ -66,33 +91,30 @@ namespace MaaasClientIOS.Controls
         //
         //     https://github.com/xamarin/monotouch-samples/blob/master/MonoCatalog-MonoDevelop/PickerViewController.xib.cs
         //
+
+        bool _selectionChangingProgramatically = false;
+        JToken _localSelection;
+
+        int _lastSelectedPosition = -1;
+
+        PickerTextField _textBox;
+
         public iOSPickerWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
             Util.debug("Creating picker element");
 
-            UITextField textBox = new UITextField();
-            textBox.BorderStyle = UITextBorderStyle.RoundedRect;
+            _textBox = new PickerTextField();
+            _textBox.BorderStyle = UITextBorderStyle.RoundedRect;
 
-            this._control = textBox;
+            this._control = _textBox;
 
             processElementDimensions(controlSpec, 150, 50);
-            applyFrameworkElementDefaults(textBox);
-
-            List<Object> state_list = new List<Object>();
-            state_list.Add("ACT");
-            state_list.Add("NSW");
-            state_list.Add("NT");
-            state_list.Add("QLD");
-            state_list.Add("SA");
-            state_list.Add("TAS");
-            state_list.Add("VIC");
-            state_list.Add("WA");
-            PickerModel picker_model = new PickerModel(state_list);
+            applyFrameworkElementDefaults(_textBox);
 
             UIPickerView picker = new UIPickerView();
 
-            picker.Model = picker_model;
+            picker.Model = new BindingContextPickerModel();
             picker.ShowSelectionIndicator = true;
 
             UIToolbar toolbar = new UIToolbar();
@@ -102,27 +124,146 @@ namespace MaaasClientIOS.Controls
 
             UIBarButtonItem doneButton = new UIBarButtonItem("Done", UIBarButtonItemStyle.Done, (s, e) =>
             {
-                if (textBox.IsFirstResponder)
+                if (_textBox.IsFirstResponder)
                 {
-                    textBox.Text = picker_model.values[picker.SelectedRowInComponent(0)].ToString();
-                    textBox.ResignFirstResponder();
+                    int row = picker.SelectedRowInComponent(0);
+                    _textBox.Text = picker.Model.GetTitle(picker, row, 0);
+                    _textBox.ResignFirstResponder();
+                    this.picker_ItemSelected(picker, row);
                 }
             });
             toolbar.SetItems(new UIBarButtonItem[] { doneButton }, true);
 
-            textBox.InputView = picker;
-            textBox.InputAccessoryView = toolbar;
+            _textBox.InputView = picker;
+            _textBox.InputAccessoryView = toolbar;
 
-            // When the textbox is tapped (bringing up the picker), update the picker selection to match the textbox.
-            //
-            textBox.TouchDown += (sender, e) =>
+            JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "items", new string[] { "onItemClick" });
+            if (bindingSpec != null)
             {
-                // !!! Since the textbox is always set from the picker, this ends up being a no-op.  But if
-                //     the textbox value had some external way of being updated (data binding), then we'd need
-                //     to update the picker selection at the time of such update (or when clicked, as here).
+                ProcessCommands(bindingSpec, new string[] { "onItemClick" });
+
+                if (bindingSpec["items"] != null)
+                {
+                    string itemSelector = (string)bindingSpec["item"];
+                    if (itemSelector == null)
+                    {
+                        itemSelector = "$data";
+                    }
+
+                    processElementBoundValue(
+                        "items",
+                        (string)bindingSpec["items"],
+                        () => getPickerContents(picker),
+                        value => this.setPickerContents(picker, GetValueBinding("items").BindingContext, itemSelector));
+                }
+
+                if (bindingSpec["selection"] != null)
+                {
+                    string selectionItem = (string)bindingSpec["selectionItem"];
+                    if (selectionItem == null)
+                    {
+                        selectionItem = "$data";
+                    }
+
+                    processElementBoundValue(
+                        "selection",
+                        (string)bindingSpec["selection"],
+                        () => getPickerSelection(picker, selectionItem),
+                        value => this.setPickerSelection(picker, selectionItem, (JToken)value));
+                }
+            }
+        }
+
+        public JToken getPickerContents(UIPickerView picker)
+        {
+            Util.debug("Getting picker contents - NOOP");
+            throw new NotImplementedException();
+        }
+
+        public void setPickerContents(UIPickerView picker, BindingContext bindingContext, string itemSelector)
+        {
+            Util.debug("Setting picker contents");
+
+            _selectionChangingProgramatically = true;
+
+            BindingContextPickerModel model = (BindingContextPickerModel)picker.Model;
+            model.SetContents(bindingContext, itemSelector);
+
+            ValueBinding selectionBinding = GetValueBinding("selection");
+            if (selectionBinding != null)
+            {
+                selectionBinding.UpdateViewFromViewModel();
+            }
+            else if (_localSelection != null)
+            {
+                // If there is not a "selection" value binding, then we use local selection state to restore the selection when
+                // re-filling the list.
                 //
-                picker.Select(picker_model.values.IndexOf(textBox.Text), 0, true);
-            };
+                this.setPickerSelection(picker, "$data", _localSelection);
+            }
+
+            _selectionChangingProgramatically = false;
+        }
+        public JToken getPickerSelection(UIPickerView picker, string selectionItem)
+        {
+            BindingContextPickerModel model = (BindingContextPickerModel)picker.Model;
+
+            if (picker.SelectedRowInComponent(0) >= 0)
+            {
+                return model.GetSelection(picker.SelectedRowInComponent(0), selectionItem);
+            }
+            return new Newtonsoft.Json.Linq.JValue(false); // This is a "null" selection
+        }
+
+        public void setPickerSelection(UIPickerView picker, string selectionItem, JToken selection)
+        {
+            _selectionChangingProgramatically = true;
+
+            BindingContextPickerModel model = (BindingContextPickerModel)picker.Model;
+
+            for (int i = 0; i < model.GetRowsInComponent(picker, 0); i++)
+            {
+                if (JToken.DeepEquals(selection, model.GetSelection(i, selectionItem)))
+                {
+                    int row = picker.SelectedRowInComponent(0);
+                    _textBox.Text = picker.Model.GetTitle(picker, i, 0);
+                    _lastSelectedPosition = i;
+                    picker.Select(i, 0, true);
+                    break;
+                }
+            }
+
+            _selectionChangingProgramatically = false;
+        }
+
+        void picker_ItemSelected(UIPickerView picker, int row)
+        {
+            Util.debug("Picker selection changed");
+
+            ValueBinding selectionBinding = GetValueBinding("selection");
+            if (selectionBinding != null)
+            {
+                updateValueBindingForAttribute("selection");
+            }
+            else if (!_selectionChangingProgramatically)
+            {
+                _localSelection = this.getPickerSelection(picker, "$data");
+            }
+
+            if ((!_selectionChangingProgramatically) && (row != _lastSelectedPosition))
+            {
+                _lastSelectedPosition = row;
+                CommandInstance command = GetCommand("onItemClick");
+                if (command != null)
+                {
+                    Util.debug("Picker item click with command: " + command);
+
+                    // The item click command handler resolves its tokens relative to the item clicked (not the list view).
+                    //
+                    BindingContextPickerModel model = (BindingContextPickerModel)picker.Model;
+                    StateManager.processCommand(command.Command, command.GetResolvedParameters(model.GetBindingContext(row)));
+                }
+            }
         }
     }
 }
