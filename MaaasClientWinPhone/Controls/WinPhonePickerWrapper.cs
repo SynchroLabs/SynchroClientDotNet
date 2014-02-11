@@ -13,19 +13,19 @@ namespace MaaasClientWinPhone.Controls
     class BindingContextListItem
     {
         BindingContext _bindingContext;
-        string _item;
+        string _itemContent;
 
-        public BindingContextListItem(BindingContext bindingContext, string item)
+        public BindingContextListItem(BindingContext bindingContext, string itemContent)
         {
             _bindingContext = bindingContext;
-            _item = item;
+            _itemContent = itemContent;
         }
 
         public BindingContext BindingContext { get { return _bindingContext; } }
 
         public override string ToString()
         {
-            return _bindingContext.Select(_item).GetValue().ToString();
+            return PropertyValue.ExpandAsString(_itemContent, _bindingContext);
         }
 
         public JToken GetValue()
@@ -60,6 +60,8 @@ namespace MaaasClientWinPhone.Controls
         bool _selectionChangingProgramatically = false;
         JToken _localSelection;
 
+        static string[] Commands = new string[] { CommandName.OnSelectionChange };
+
         public WinPhonePickerWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
@@ -69,40 +71,29 @@ namespace MaaasClientWinPhone.Controls
 
             applyFrameworkElementDefaults(picker);
 
-            JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "items", new string[] { "onItemClick" });
-            if (bindingSpec != null)
+            JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "items", Commands);
+            ProcessCommands(bindingSpec, Commands);
+
+            if (bindingSpec["items"] != null)
             {
-                ProcessCommands(bindingSpec, new string[] { "onItemClick" });
+                string itemContent = (string)bindingSpec["itemContent"] ?? "{$data}";
 
-                if (bindingSpec["items"] != null)
-                {
-                    string itemSelector = (string)bindingSpec["item"];
-                    if (itemSelector == null)
-                    {
-                        itemSelector = "$data";
-                    }
+                processElementBoundValue(
+                    "items",
+                    (string)bindingSpec["items"],
+                    () => getPickerContents(picker),
+                    value => this.setPickerContents(picker, GetValueBinding("items").BindingContext, itemContent));
+            }
 
-                    processElementBoundValue(
-                        "items",
-                        (string)bindingSpec["items"],
-                        () => getPickerContents(picker),
-                        value => this.setPickerContents(picker, GetValueBinding("items").BindingContext, itemSelector));
-                }
+            if (bindingSpec["selection"] != null)
+            {
+                string selectionItem = (string)bindingSpec["selectionItem"] ?? "$data";
 
-                if (bindingSpec["selection"] != null)
-                {
-                    string selectionItem = (string)bindingSpec["selectionItem"];
-                    if (selectionItem == null)
-                    {
-                        selectionItem = "$data";
-                    }
-
-                    processElementBoundValue(
-                        "selection",
-                        (string)bindingSpec["selection"],
-                        () => getPickerSelection(picker, selectionItem),
-                        value => this.setPickerSelection(picker, selectionItem, (JToken)value));
-                }
+                processElementBoundValue(
+                    "selection",
+                    (string)bindingSpec["selection"],
+                    () => getPickerSelection(picker, selectionItem),
+                    value => this.setPickerSelection(picker, selectionItem, (JToken)value));
             }
 
             picker.SelectionChanged += picker_SelectionChanged;
@@ -117,7 +108,7 @@ namespace MaaasClientWinPhone.Controls
                 );
         }
 
-        public void setPickerContents(ListPicker picker, BindingContext bindingContext, string itemSelector)
+        public void setPickerContents(ListPicker picker, BindingContext bindingContext, string itemContent)
         {
             Util.debug("Setting picker contents");
 
@@ -129,7 +120,7 @@ namespace MaaasClientWinPhone.Controls
 
             foreach (BindingContext itemContext in itemContexts)
             {
-                BindingContextListItem pickerItem = new BindingContextListItem(itemContext, itemSelector);
+                BindingContextListItem pickerItem = new BindingContextListItem(itemContext, itemContent);
                 picker.Items.Add(pickerItem);
             }
 
@@ -204,7 +195,7 @@ namespace MaaasClientWinPhone.Controls
 
             if (!_selectionChangingProgramatically)
             {
-                CommandInstance command = GetCommand("onItemClick");
+                CommandInstance command = GetCommand(CommandName.OnSelectionChange);
                 if (command != null)
                 {
                     Util.debug("Picker item click with command: " + command);

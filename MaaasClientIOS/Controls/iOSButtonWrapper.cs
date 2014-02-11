@@ -13,6 +13,8 @@ namespace MaaasClientIOS.Controls
 {
     class iOSButtonWrapper : iOSControlWrapper
     {
+        static string[] Commands = new string[] { CommandName.OnClick };
+
         public iOSButtonWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
@@ -26,9 +28,10 @@ namespace MaaasClientIOS.Controls
 
             processElementProperty((string)controlSpec["caption"], value => button.SetTitle(ToString(value), UIControlState.Normal));
 
-            JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "onClick", new string[] { "onClick" });
-            ProcessCommands(bindingSpec, new string[] { "onClick" });
-            if (GetCommand("onClick") != null)
+            JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, CommandName.OnClick, Commands);
+            ProcessCommands(bindingSpec, Commands);
+
+            if (GetCommand(CommandName.OnClick) != null)
             {
                 button.TouchUpInside += button_Click;
             }
@@ -36,7 +39,7 @@ namespace MaaasClientIOS.Controls
 
         void button_Click(object sender, EventArgs e)
         {
-            CommandInstance command = GetCommand("onClick");
+            CommandInstance command = GetCommand(CommandName.OnClick);
             if (command != null)
             {
                 Util.debug("Button click with command: " + command);

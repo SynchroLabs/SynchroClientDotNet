@@ -12,6 +12,8 @@ namespace MaaasClientWin.Controls
 {
     class WinToggleSwitchWrapper : WinControlWrapper
     {
+        static string[] Commands = new string[] { CommandName.OnToggle };
+
         public WinToggleSwitchWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
@@ -21,7 +23,9 @@ namespace MaaasClientWin.Controls
 
             applyFrameworkElementDefaults(toggleSwitch);
 
-            JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "value", new string[] { "onToggle" });
+            JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "value", Commands);
+            ProcessCommands(bindingSpec, Commands);
+
             if (!processElementBoundValue("value", (string)bindingSpec["value"], () => { return toggleSwitch.IsOn; }, value => toggleSwitch.IsOn = ToBoolean(value)))
             {
                 processElementProperty((string)controlSpec["value"], value => toggleSwitch.IsOn = ToBoolean(value));
@@ -30,8 +34,6 @@ namespace MaaasClientWin.Controls
             processElementProperty((string)controlSpec["header"], value => toggleSwitch.Header = ToString(value));
             processElementProperty((string)controlSpec["onLabel"], value => toggleSwitch.OnContent = ToString(value));
             processElementProperty((string)controlSpec["offLabel"], value => toggleSwitch.OffContent = ToString(value));
-
-            ProcessCommands(bindingSpec, new string[] { "onToggle" });
 
             // Since the Toggled handler both updates the view model (locally) and may potentially have a command associated, 
             // we have to add handler in all cases (even when there is no command).
@@ -43,7 +45,7 @@ namespace MaaasClientWin.Controls
         {
             updateValueBindingForAttribute("value");
 
-            CommandInstance command = GetCommand("onToggle");
+            CommandInstance command = GetCommand(CommandName.OnToggle);
             if (command != null)
             {
                 Util.debug("ToggleSwitch toggled with command: " + command);

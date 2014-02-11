@@ -14,16 +14,16 @@ namespace MaaasClientIOS.Controls
     public class BindingContextPickerModel : UIPickerViewModel
     {
         protected List<BindingContext> _bindingContexts;
-        protected string _itemSelector;
+        protected string _itemContent;
 
         public BindingContextPickerModel() : base()
         {
         }
 
-        public void SetContents(BindingContext bindingContext, string itemSelector)
+        public void SetContents(BindingContext bindingContext, string itemContent)
         {
             _bindingContexts = bindingContext.SelectEach("$data");
-            _itemSelector = itemSelector;
+            _itemContent = itemContent;
         }
 
         public override int GetComponentCount(UIPickerView picker)
@@ -38,7 +38,7 @@ namespace MaaasClientIOS.Controls
 
         public override string GetTitle(UIPickerView picker, int row, int component)
         {
-            return _bindingContexts[row].Select(_itemSelector).GetValue().ToString();
+            return PropertyValue.ExpandAsString(_itemContent, _bindingContexts[row]);
         }
 
         public JToken GetValue(int row)
@@ -99,6 +99,8 @@ namespace MaaasClientIOS.Controls
 
         PickerTextField _textBox;
 
+        static string[] Commands = new string[] { CommandName.OnSelectionChange };
+
         public iOSPickerWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
@@ -137,40 +139,29 @@ namespace MaaasClientIOS.Controls
             _textBox.InputView = picker;
             _textBox.InputAccessoryView = toolbar;
 
-            JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "items", new string[] { "onItemClick" });
-            if (bindingSpec != null)
+            JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "items", Commands);
+            ProcessCommands(bindingSpec, Commands);
+
+            if (bindingSpec["items"] != null)
             {
-                ProcessCommands(bindingSpec, new string[] { "onItemClick" });
+                string itemContent = (string)bindingSpec["itemContent"] ?? "{$data}";
 
-                if (bindingSpec["items"] != null)
-                {
-                    string itemSelector = (string)bindingSpec["item"];
-                    if (itemSelector == null)
-                    {
-                        itemSelector = "$data";
-                    }
+                processElementBoundValue(
+                    "items",
+                    (string)bindingSpec["items"],
+                    () => getPickerContents(picker),
+                    value => this.setPickerContents(picker, GetValueBinding("items").BindingContext, itemContent));
+            }
 
-                    processElementBoundValue(
-                        "items",
-                        (string)bindingSpec["items"],
-                        () => getPickerContents(picker),
-                        value => this.setPickerContents(picker, GetValueBinding("items").BindingContext, itemSelector));
-                }
+            if (bindingSpec["selection"] != null)
+            {
+                string selectionItem = (string)bindingSpec["selectionItem"] ?? "$data";
 
-                if (bindingSpec["selection"] != null)
-                {
-                    string selectionItem = (string)bindingSpec["selectionItem"];
-                    if (selectionItem == null)
-                    {
-                        selectionItem = "$data";
-                    }
-
-                    processElementBoundValue(
-                        "selection",
-                        (string)bindingSpec["selection"],
-                        () => getPickerSelection(picker, selectionItem),
-                        value => this.setPickerSelection(picker, selectionItem, (JToken)value));
-                }
+                processElementBoundValue(
+                    "selection",
+                    (string)bindingSpec["selection"],
+                    () => getPickerSelection(picker, selectionItem),
+                    value => this.setPickerSelection(picker, selectionItem, (JToken)value));
             }
         }
 
@@ -180,14 +171,14 @@ namespace MaaasClientIOS.Controls
             throw new NotImplementedException();
         }
 
-        public void setPickerContents(UIPickerView picker, BindingContext bindingContext, string itemSelector)
+        public void setPickerContents(UIPickerView picker, BindingContext bindingContext, string itemContent)
         {
             Util.debug("Setting picker contents");
 
             _selectionChangingProgramatically = true;
 
             BindingContextPickerModel model = (BindingContextPickerModel)picker.Model;
-            model.SetContents(bindingContext, itemSelector);
+            model.SetContents(bindingContext, itemContent);
 
             ValueBinding selectionBinding = GetValueBinding("selection");
             if (selectionBinding != null)
@@ -253,7 +244,7 @@ namespace MaaasClientIOS.Controls
             if ((!_selectionChangingProgramatically) && (row != _lastSelectedPosition))
             {
                 _lastSelectedPosition = row;
-                CommandInstance command = GetCommand("onItemClick");
+                CommandInstance command = GetCommand(CommandName.OnSelectionChange);
                 if (command != null)
                 {
                     Util.debug("Picker item click with command: " + command);

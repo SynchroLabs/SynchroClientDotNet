@@ -94,7 +94,7 @@ namespace MaaasClientIOS.Controls
         protected iOSControlWrapper _parentControl;
         protected JObject _itemTemplate;
 
-        public CheckableBindingContextTableSource(iOSControlWrapper parentControl, JObject itemTemplate, SelectionMode selectionMode, OnSelectionChanged OnSelectionChanged, OnItemClicked OnItemClicked)
+        public CheckableBindingContextTableSource(iOSControlWrapper parentControl, JObject itemTemplate, ListSelectionMode selectionMode, OnSelectionChanged OnSelectionChanged, OnItemClicked OnItemClicked)
             : base(selectionMode, OnSelectionChanged, OnItemClicked)
         {
             _parentControl = parentControl;
@@ -123,6 +123,8 @@ namespace MaaasClientIOS.Controls
         bool _selectionChangingProgramatically = false;
         JToken _localSelection;
 
+        static string[] Commands = new string[] { CommandName.OnItemClick, CommandName.OnSelectionChange };
+
         public iOSListViewWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
@@ -139,46 +141,34 @@ namespace MaaasClientIOS.Controls
             //
             // table.RegisterClassForCellReuse(typeof(TableCell), TableCell.CellIdentifier);
 
-            SelectionMode selectionMode = ToSelectionMode((string)controlSpec["select"]);
+            ListSelectionMode selectionMode = ToListSelectionMode(controlSpec["select"]);
+
             table.Source = new CheckableBindingContextTableSource(this, (JObject)controlSpec["itemTemplate"], selectionMode, listview_SelectionChanged, listview_ItemClicked);
 
             processElementDimensions(controlSpec, 150, 50);
             applyFrameworkElementDefaults(table);
 
-            JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "items", new string[] { "onItemClick" });
-            if (bindingSpec != null)
+            JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "items", Commands);
+            ProcessCommands(bindingSpec, Commands);
+
+            if (bindingSpec["items"] != null)
             {
-                ProcessCommands(bindingSpec, new string[] { "onItemClick" });
+                processElementBoundValue(
+                    "items",
+                    (string)bindingSpec["items"],
+                    () => getListViewContents(table),
+                    value => this.setListViewContents(table, GetValueBinding("items").BindingContext));
+            }
 
-                if (bindingSpec["items"] != null)
-                {
-                    string itemSelector = (string)bindingSpec["item"];
-                    if (itemSelector == null)
-                    {
-                        itemSelector = "$data";
-                    }
+            if (bindingSpec["selection"] != null)
+            {
+                string selectionItem = (string)bindingSpec["selectionItem"] ?? "$data";
 
-                    processElementBoundValue(
-                        "items",
-                        (string)bindingSpec["items"],
-                        () => getListViewContents(table),
-                        value => this.setListViewContents(table, GetValueBinding("items").BindingContext, itemSelector));
-                }
-
-                if (bindingSpec["selection"] != null)
-                {
-                    string selectionItem = (string)bindingSpec["selectionItem"];
-                    if (selectionItem == null)
-                    {
-                        selectionItem = "$data";
-                    }
-
-                    processElementBoundValue(
-                        "selection",
-                        (string)bindingSpec["selection"],
-                        () => getListViewSelection(table, selectionItem),
-                        value => this.setListViewSelection(table, selectionItem, (JToken)value));
-                }
+                processElementBoundValue(
+                    "selection",
+                    (string)bindingSpec["selection"],
+                    () => getListViewSelection(table, selectionItem),
+                    value => this.setListViewSelection(table, selectionItem, (JToken)value));
             }
         }
 
@@ -188,7 +178,7 @@ namespace MaaasClientIOS.Controls
             throw new NotImplementedException();
         }
 
-        public void setListViewContents(UITableView tableView, BindingContext bindingContext, string itemSelector)
+        public void setListViewContents(UITableView tableView, BindingContext bindingContext)
         {
             Util.debug("Setting listview contents");
 
@@ -197,7 +187,7 @@ namespace MaaasClientIOS.Controls
             CheckableBindingContextTableSource tableSource = (CheckableBindingContextTableSource)tableView.Source;
 
             int oldCount = tableSource.AllItems.Count;
-            tableSource.SetContents(bindingContext, itemSelector);
+            tableSource.SetContents(bindingContext, "$data");
             int newCount = tableSource.AllItems.Count;
 
             List<NSIndexPath> reloadRows = new List<NSIndexPath>();
@@ -259,7 +249,7 @@ namespace MaaasClientIOS.Controls
 
             List<CheckableTableSourceItem> checkedItems = tableSource.CheckedItems;
 
-            if (tableSource.SelectionMode == SelectionMode.Multiple)
+            if (tableSource.SelectionMode == ListSelectionMode.Multiple)
             {
                 return new JArray(
                     from item in checkedItems
@@ -330,17 +320,23 @@ namespace MaaasClientIOS.Controls
         {
             Util.debug("Listview item clicked: " + itemClicked);
 
-            BindingContextTableSourceItem item = itemClicked as BindingContextTableSourceItem;
-            if (item != null)
+            UITableView tableView = (UITableView)this.Control;
+            CheckableBindingContextTableSource tableSource = (CheckableBindingContextTableSource)tableView.Source;
+
+            if (tableSource.SelectionMode == ListSelectionMode.None)
             {
-                CommandInstance command = GetCommand("onItemClick");
+                CommandInstance command = GetCommand(CommandName.OnItemClick);
                 if (command != null)
                 {
                     Util.debug("ListView item click with command: " + command);
 
-                    // The item click command handler resolves its tokens relative to the item clicked (not the list view).
-                    //
-                    StateManager.processCommand(command.Command, command.GetResolvedParameters(item.BindingContext));
+                    BindingContextTableSourceItem item = itemClicked as BindingContextTableSourceItem;
+                    if (item != null)
+                    {
+                        // The item click command handler resolves its tokens relative to the item clicked.
+                        //
+                        StateManager.processCommand(command.Command, command.GetResolvedParameters(item.BindingContext));
+                    }
                 }
             }
         }
@@ -350,6 +346,7 @@ namespace MaaasClientIOS.Controls
             Util.debug("Listview selection changed");
 
             UITableView tableView = (UITableView)this.Control;
+            CheckableBindingContextTableSource tableSource = (CheckableBindingContextTableSource)tableView.Source;
 
             ValueBinding selectionBinding = GetValueBinding("selection");
             if (selectionBinding != null)
@@ -361,17 +358,29 @@ namespace MaaasClientIOS.Controls
                 _localSelection = this.getListViewSelection(tableView, "$data");
             }
 
-            BindingContextTableSourceItem item = itemClicked as BindingContextTableSourceItem;
-            if (item != null)
+            if ((!_selectionChangingProgramatically) && (tableSource.SelectionMode != ListSelectionMode.None))
             {
-                CommandInstance command = GetCommand("onItemClick"); // !!! onSelectionChange
+                CommandInstance command = GetCommand(CommandName.OnSelectionChange);
                 if (command != null)
                 {
-                    Util.debug("ListView item click with command: " + command);
+                    Util.debug("ListView selection change with command: " + command);
 
-                    // The item click command handler resolves its tokens relative to the item clicked (not the list view).
-                    //
-                    StateManager.processCommand(command.Command, command.GetResolvedParameters(item.BindingContext));
+                    if (tableSource.SelectionMode == ListSelectionMode.Single)
+                    {
+                        BindingContextTableSourceItem item = itemClicked as BindingContextTableSourceItem;
+                        if (item != null)
+                        {
+                            // The selection change command handler resolves its tokens relative to the item selected when in single select mode.
+                            //
+                            StateManager.processCommand(command.Command, command.GetResolvedParameters(item.BindingContext));
+                        }
+                    }
+                    else if (tableSource.SelectionMode == ListSelectionMode.Multiple)
+                    {
+                        // The selection change command handler resolves its tokens relative to the list context when in multiple select mode.
+                        //
+                        StateManager.processCommand(command.Command, command.GetResolvedParameters(this.BindingContext));
+                    }
                 }
             }
         }

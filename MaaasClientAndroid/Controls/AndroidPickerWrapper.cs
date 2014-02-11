@@ -17,19 +17,19 @@ namespace MaaasClientAndroid.Controls
     public class BindingContextListItem
     {
         BindingContext _bindingContext;
-        string _itemSelector;
+        string _itemContent;
 
-        public BindingContextListItem(BindingContext bindingContext, string itemSelector)
+        public BindingContextListItem(BindingContext bindingContext, string itemContent)
         {
             _bindingContext = bindingContext;
-            _itemSelector = itemSelector;
+            _itemContent = itemContent;
         }
 
         public BindingContext BindingContext { get { return _bindingContext; } }
 
         public override string ToString()
         {
-            return _bindingContext.Select(_itemSelector).GetValue().ToString();
+            return PropertyValue.ExpandAsString(_itemContent, _bindingContext);
         }
 
         public JToken GetValue()
@@ -55,14 +55,14 @@ namespace MaaasClientAndroid.Controls
             _context = context;
         }
 
-        public void SetContents(BindingContext bindingContext, string itemSelector)
+        public void SetContents(BindingContext bindingContext, string itemContent)
         {
             _listItems.Clear();
 
             List<BindingContext> itemBindingContexts = bindingContext.SelectEach("$data");
             foreach (BindingContext itemBindingContext in itemBindingContexts)
             {
-                _listItems.Add(new BindingContextListItem(itemBindingContext, itemSelector));
+                _listItems.Add(new BindingContextListItem(itemBindingContext, itemContent));
             }
         }
 
@@ -141,6 +141,8 @@ namespace MaaasClientAndroid.Controls
 
         int _lastProgramaticallySelectedPosition = Spinner.InvalidPosition;
 
+        static string[] Commands = new string[] { CommandName.OnSelectionChange };
+
         public AndroidPickerWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
@@ -153,40 +155,29 @@ namespace MaaasClientAndroid.Controls
 
             applyFrameworkElementDefaults(picker);
 
-            JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "items", new string[] { "onItemClick" });
-            if (bindingSpec != null)
+            JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "items", Commands);
+            ProcessCommands(bindingSpec, Commands);
+
+            if (bindingSpec["items"] != null)
             {
-                ProcessCommands(bindingSpec, new string[] { "onItemClick" });
+                string itemContent = (string)bindingSpec["itemContent"] ?? "{$data}";
 
-                if (bindingSpec["items"] != null)
-                {
-                    string itemSelector = (string)bindingSpec["item"];
-                    if (itemSelector == null)
-                    {
-                        itemSelector = "$data";
-                    }
+                processElementBoundValue(
+                    "items",
+                    (string)bindingSpec["items"],
+                    () => getPickerContents(picker),
+                    value => this.setPickerContents(picker, GetValueBinding("items").BindingContext, itemContent));
+            }
 
-                    processElementBoundValue(
-                        "items",
-                        (string)bindingSpec["items"],
-                        () => getPickerContents(picker),
-                        value => this.setPickerContents(picker, GetValueBinding("items").BindingContext, itemSelector));
-                }
+            if (bindingSpec["selection"] != null)
+            {
+                string selectionItem = (string)bindingSpec["selectionItem"] ?? "$data";
 
-                if (bindingSpec["selection"] != null)
-                {
-                    string selectionItem = (string)bindingSpec["selectionItem"];
-                    if (selectionItem == null)
-                    {
-                        selectionItem = "$data";
-                    }
-
-                    processElementBoundValue(
-                        "selection",
-                        (string)bindingSpec["selection"],
-                        () => getPickerSelection(picker, selectionItem),
-                        value => this.setPickerSelection(picker, selectionItem, (JToken)value));
-                }
+                processElementBoundValue(
+                    "selection",
+                    (string)bindingSpec["selection"],
+                    () => getPickerSelection(picker, selectionItem),
+                    value => this.setPickerSelection(picker, selectionItem, (JToken)value));
             }
 
             picker.ItemSelected += picker_ItemSelected;
@@ -198,14 +189,14 @@ namespace MaaasClientAndroid.Controls
             throw new NotImplementedException();
         }
 
-        public void setPickerContents(Spinner picker, BindingContext bindingContext, string itemSelector)
+        public void setPickerContents(Spinner picker, BindingContext bindingContext, string itemContent)
         {
             Util.debug("Setting picker contents");
 
             _selectionChangingProgramatically = true;
 
             BindingContextPickerAdapter adapter = (BindingContextPickerAdapter)picker.Adapter;
-            adapter.SetContents(bindingContext, itemSelector);
+            adapter.SetContents(bindingContext, itemContent);
             adapter.NotifyDataSetChanged();
 
             ValueBinding selectionBinding = GetValueBinding("selection");
@@ -275,7 +266,7 @@ namespace MaaasClientAndroid.Controls
             //
             if ((!_selectionChangingProgramatically) && (_lastProgramaticallySelectedPosition != e.Position))
             {
-                CommandInstance command = GetCommand("onItemClick");
+                CommandInstance command = GetCommand(CommandName.OnSelectionChange);
                 if (command != null)
                 {
                     Util.debug("Picker item click with command: " + command);

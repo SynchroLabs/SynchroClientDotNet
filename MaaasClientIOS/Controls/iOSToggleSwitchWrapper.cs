@@ -12,6 +12,8 @@ namespace MaaasClientIOS.Controls
 {
     class iOSToggleSwitchWrapper : iOSControlWrapper
     {
+        static string[] Commands = new string[] { CommandName.OnToggle };
+
         public iOSToggleSwitchWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
@@ -24,7 +26,9 @@ namespace MaaasClientIOS.Controls
 
             applyFrameworkElementDefaults(toggleSwitch);
 
-            JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "value", new string[] { "onToggle" });
+            JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "value", Commands);
+            ProcessCommands(bindingSpec, Commands);
+
             if (!processElementBoundValue("value", (string)bindingSpec["value"], () => { return toggleSwitch.On; }, value => toggleSwitch.On = ToBoolean(value)))
             {
                 processElementProperty((string)controlSpec["value"], value => toggleSwitch.On = ToBoolean(value));
@@ -34,8 +38,6 @@ namespace MaaasClientIOS.Controls
             // !!! processElementProperty((string)controlSpec["onLabel"], value => toggleSwitch.TextOn = ToString(value));
             // !!! processElementProperty((string)controlSpec["offLabel"], value => toggleSwitch.TextOff = ToString(value));
 
-            ProcessCommands(bindingSpec, new string[] { "onToggle" });
-
             toggleSwitch.ValueChanged += toggleSwitch_ValueChanged;
         }
 
@@ -43,7 +45,7 @@ namespace MaaasClientIOS.Controls
         {
             updateValueBindingForAttribute("value");
 
-            CommandInstance command = GetCommand("onToggle");
+            CommandInstance command = GetCommand(CommandName.OnToggle);
             if (command != null)
             {
                 Util.debug("ToggleSwitch toggled with command: " + command);

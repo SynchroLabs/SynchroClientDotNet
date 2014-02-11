@@ -18,17 +18,22 @@ namespace MaaasClientWinPhone.Controls
     public class TextListViewItem : ListViewItem
     {
         BindingContext _bindingContext;
-        string _item;
+        string _itemContent;
 
-        public TextListViewItem(BindingContext bindingContext, string item, ListViewSelectionMode selectionMode, bool targetingRequired)
+        public TextListViewItem(BindingContext bindingContext, string itemContent, ListViewSelectionMode selectionMode, bool targetingRequired)
             : base(new TextBlock(), selectionMode, targetingRequired)
         {
             _bindingContext = bindingContext;
-            _item = item;
-            ((TextBlock)_control).Text = _bindingContext.Select(_item).GetValue().ToString();
+            _itemContent = itemContent;
+            ((TextBlock)_control).Text = this.ToString();
         }
 
         public BindingContext BindingContext { get { return _bindingContext; } }
+
+        public override string ToString()
+        {
+            return PropertyValue.ExpandAsString(_itemContent, _bindingContext);
+        }
 
         public JToken GetValue()
         {
@@ -45,16 +50,19 @@ namespace MaaasClientWinPhone.Controls
 
     class WinPhoneListBoxWrapper : WinPhoneControlWrapper
     {
-        ListViewSelectionMode _selectionMode = ListViewSelectionMode.Single;
+        ListViewSelectionMode _selectionMode = ListViewSelectionMode.None;
         bool _targetingRequired = false;
 
         bool _selectionChangingProgramatically = false;
         JToken _localSelection;
 
+        static string[] Commands = new string[] { CommandName.OnItemClick, CommandName.OnSelectionChange };
+
         public WinPhoneListBoxWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
             Util.debug("Creating listbox element");
+
             LongListSelector listView = new LongListSelector();
             this._control = listView;
 
@@ -64,64 +72,47 @@ namespace MaaasClientWinPhone.Controls
 
             applyFrameworkElementDefaults(listView);
 
-            // Get selection mode - single (default) or multiple - no dynamic values (we don't need this changing during execution).
-            if ((controlSpec["select"] != null) && ((string)controlSpec["select"] == "Multiple"))
+            ListSelectionMode mode = ToListSelectionMode(controlSpec["select"]);
+            switch (mode)
             {
-                _selectionMode = ListViewSelectionMode.Multiple;
-            }
-            else if ((controlSpec["select"] != null) && ((string)controlSpec["select"] == "None"))
-            {
-                _selectionMode = ListViewSelectionMode.None;
+                case ListSelectionMode.Single:
+                    _selectionMode = ListViewSelectionMode.Single;
+                    break;
+                case ListSelectionMode.Multiple:
+                    _selectionMode = ListViewSelectionMode.Multiple;
+                    break;
             }
 
             listView.ItemsSource = new ListViewItems();
 
-            JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "items", new string[] { "onItemClick" });
+            JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "items", Commands);
+            ProcessCommands(bindingSpec, Commands);
 
-            ProcessCommands(bindingSpec, new string[] { "onItemClick" });
-            if (GetCommand("onItemClick") != null)
+            if (GetCommand(CommandName.OnItemClick) != null)
             {
                 _targetingRequired = true;
             }
 
-            if (bindingSpec != null)
+            if (bindingSpec["items"] != null)
             {
-                if (bindingSpec["items"] != null)
-                {
-                    string itemSelector = (string)bindingSpec["item"];
-                    if (itemSelector == null)
-                    {
-                        itemSelector = "$data";
-                    }
+                string itemContent = (string)bindingSpec["itemContent"] ?? "{$data}";
 
-                    // This is a little unusual, but what the list view needs to update its contents is actually not the "value" (which would
-                    // be the array of content items based on the "items" binding), but the binding context representing where those values are
-                    // in the view model.  It needs the binding context in part so that it can apply itemSelector to the iterated bindings to
-                    // produce the actual item binding contexts.  And of course it also needs the itemSelector value.  So we'll pass both of those
-                    // in the delegate (and ignore "value" altogether).  This is all perfectly fine, it's just not the normal "jam the value into
-                    // the control" kind of delegate, so it seemed prudent to note that here.
-                    //
-                    processElementBoundValue(
-                        "items",
-                        (string)bindingSpec["items"],
-                        () => getListViewContents(listView),
-                        value => this.setListViewContents(listView, (JObject)controlSpec["itemTemplate"], GetValueBinding("items").BindingContext, itemSelector));
-                }
+                processElementBoundValue(
+                    "items",
+                    (string)bindingSpec["items"],
+                    () => getListViewContents(listView),
+                    value => this.setListViewContents(listView, (JObject)controlSpec["itemTemplate"], GetValueBinding("items").BindingContext, itemContent));
+            }
 
-                if (bindingSpec["selection"] != null)
-                {
-                    string selectionItem = (string)bindingSpec["selectionItem"];
-                    if (selectionItem == null)
-                    {
-                        selectionItem = "$data";
-                    }
+            if (bindingSpec["selection"] != null)
+            {
+                string selectionItem = (string)bindingSpec["selectionItem"] ?? "$data";
 
-                    processElementBoundValue(
-                        "selection",
-                        (string)bindingSpec["selection"],
-                        () => getListViewSelection(listView, selectionItem),
-                        value => this.setListViewSelection(listView, selectionItem, (JToken)value));
-                }
+                processElementBoundValue(
+                    "selection",
+                    (string)bindingSpec["selection"],
+                    () => getListViewSelection(listView, selectionItem),
+                    value => this.setListViewSelection(listView, selectionItem, (JToken)value));
             }
         }
 
@@ -133,7 +124,7 @@ namespace MaaasClientWinPhone.Controls
                 );
         }
 
-        public void setListViewContents(LongListSelector listview, JObject itemTemplate, BindingContext bindingContext, string itemSelector)
+        public void setListViewContents(LongListSelector listview, JObject itemTemplate, BindingContext bindingContext, string itemContent)
         {
             Util.debug("Setting listview contents");
 
@@ -145,7 +136,7 @@ namespace MaaasClientWinPhone.Controls
             List<BindingContext> itemContexts = bindingContext.SelectEach("$data");
             foreach(BindingContext context in itemContexts)
             {
-                items.Add(new TextListViewItem(context, itemSelector, _selectionMode, _targetingRequired));
+                items.Add(new TextListViewItem(context, itemContent, _selectionMode, _targetingRequired));
             }
 
             ValueBinding selectionBinding = GetValueBinding("selection");
@@ -190,13 +181,6 @@ namespace MaaasClientWinPhone.Controls
             return null;
         }
 
-        // This gets triggered when selection changes come in from the server (including when the selection is initially set),
-        // and it also gets triggered when the list itself changes (including when the list contents are intially set).  So 
-        // in the initial list/selection set case, this gets called twice.  On subsequent updates it's possible that this will
-        // be triggered by either a list change or a selection change from the server, or both.  There is no easy way currerntly
-        // to detect the "both" case (without exposing a lot more information here).  We're going to go ahead and live with the
-        // multiple calls.  It shouldn't hurt anything (they should produce the same result), it's just slightly inefficient.
-        // 
         public void setListViewSelection(LongListSelector listview, string selectionItem, JToken selection)
         {
             ListViewItems items = (ListViewItems)listview.ItemsSource;
@@ -242,7 +226,7 @@ namespace MaaasClientWinPhone.Controls
 
         void listview_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            // This is a way to implemented "item clicked"
+            // This is how we implement "item clicked"
             LongListSelector listview = sender as LongListSelector;
             if ((listview != null) && (listview.SelectedItem != null))
             {
@@ -282,14 +266,49 @@ namespace MaaasClientWinPhone.Controls
                     _localSelection = this.getListViewSelection(listview, "$data");
                 }
 
-                CommandInstance command = GetCommand("onItemClick");
-                if (command != null)
+                if (!_selectionChangingProgramatically)
                 {
-                    Util.debug("ListView item click with command: " + command);
-
-                    // The item click command handler resolves its tokens relative to the item clicked (not the list view).
+                    // Process commands
                     //
-                    StateManager.processCommand(command.Command, command.GetResolvedParameters(item.BindingContext));
+                    if (_selectionMode == ListViewSelectionMode.None)
+                    {
+                        CommandInstance command = GetCommand(CommandName.OnItemClick);
+                        if (command != null)
+                        {
+                            Util.debug("ListView item clicked with command: " + command);
+
+                            if (item != null)
+                            {
+                                // The item click command handler resolves its tokens relative to the item clicked.
+                                //
+                                StateManager.processCommand(command.Command, command.GetResolvedParameters(item.BindingContext));
+                            }
+                        }
+                    }
+                    else
+                    {
+                        CommandInstance command = GetCommand(CommandName.OnSelectionChange);
+                        if (command != null)
+                        {
+                            Util.debug("ListView selection changed with command: " + command);
+
+                            if (_selectionMode == ListViewSelectionMode.Single)
+                            {
+                                if (item != null)
+                                {
+                                    // The selection change command handler resolves its tokens relative to the item selected when in single select mode.
+                                    //
+                                    StateManager.processCommand(command.Command, command.GetResolvedParameters(item.BindingContext));
+                                }
+                            }
+                            else // ListViewSelectionMode.Multiple
+                            {
+                                // The selection change command handler resolves its tokens relative to the list context when in multiple select mode.
+                                //
+                                StateManager.processCommand(command.Command, command.GetResolvedParameters(this.BindingContext));
+                            }
+                        }
+                    }
                 }
 
                 listview.SelectedItem = null;

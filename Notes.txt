@@ -2,56 +2,47 @@
 Mobile Application As A Service (MAAAS) - Client
 =================================================
 
-List binding attributes
 
-    "items" - context for list of items - should be an array
-    "item"  - binding for individual list item (by default, just array element - $data?)
-    "itemValue" ? (equiv of itemTemplate) Property Value spec for item string construction - {$index - $last, $first}
-    "selection" 
-    "selectionItem"
+ListBox/ListView/Picker  
 
-    ToDo - implement item/selectionItem, generally refactor to work like ListView
+    Attributes
 
+        "select" - None, Single, Multiple (defaults to "Single").  Picker does not support this attribute, as it is always "Single".
 
-ListView binding attributes
+    Binding
 
-    "items" binding - the array of elements to add to the list view.
-    "item" binding - a path applied to each "items" element to determine the context to be added to list view (defaults to $data).  This allows for the list
-        view item to be a context other than the top-level enumerated element.
-    "itemTemplate" - layout specification for each item (must be a single element, though that element can be a container that contains other layout elements). 
+        "items" - the array of elements in the list.
 
-    "selection" binding - indicated an array to synchronize the selected item/items
+        ListBox/Picker
 
-    "selectionItem" (defaults to $data) - This is what is placed into "selection" (per item) and this is applied to each item in "items" for the purpose
-    of matching list view item with selection items when setting selection state for the list view.  For example, if the selectionItem was "{itemId}", then the
-    selection binding would be one or more elements of the "{itemId}" applied to the selected items.  When resetting item selection, "{itemId}" will be applied
-    to each list item, and the result will be compared with the value(s) in "selection" to see if the item should be selected.  In the case of the default, the
-    selection list will contain deep copies of the list view items, and the selection comparison will be a deep compare of those items with the list view items.
+            "itemValue" (defaults to "{$data}") - A token string applied to each "items" element to construct the string to display in the list box.
+                For example: "User: {firstName} {lastName}".
 
-    "onItemClick" command
+        ListView
 
+            "itemTemplate" - layout specification for each item (must be a single element, though that element can be a container that contains other layout elements). 
 
-    ToDo - What about list view header/footer (sections before/after the items)?
+        "selection" - the location in the view model where the current selection is maintained.  If select is Single, then the location referred to by selection
+             should contain a single item.  If select is Multiple, then the location referred to by selection should contain an array of zero or more items.
 
-    Example (onItemClicked):
+        "selectionItem" (defaults to $data) - This is what is placed into "selection" (per item) and this is applied to each item in "items" for the purpose
+            of matching list view item with selection items when setting selection state for the list view.  For example, if the selectionItem was "{itemId}", then
+            the selection binding would be one or more elements of the "{itemId}" applied to the selected items.  When resetting item selection, "{itemId}" will be
+            applied to each list item, and the result will be compared with the value(s) in "selection" to see if the item should be selected.  In the case of the
+            default, the selection list will contain deep copies of the list view items, and the selection comparison will be a deep compare of those items with the
+            list view items.
 
-        { type: "listview", select: "none", binding: { items: "contacts", selection: "selectedContacts", onItemClick: { command: "itemClicked", item: "{$data}" } }, itemTemplate:
-            { type: "stackpanel", orientation: "horizontal", contents: [
-                { type: "image", resource: "resources/user.png", height: 50, width: 50 },
-                { type: "stackpanel", orientation: "vertical", contents: [
-                    { type: "text", value: "{first}" },
-                    { type: "text", value: "{last}" },
-                ] },
-            ] },
-        },
+        Commands
 
-        exports.Commands = 
-        {
-            itemClicked: function(context, session, viewModel, params)
-            {
-                console.log("Item clicked, first name: " + params.item.first + ", last name: " + params.item.last);
-            },
-        }
+            If select is None:
+                onItemClick command - context is the item clicked
+
+            If select is Single:
+                onSelectionChange command - context is the item that is now selected
+
+            If select is Multiple:
+                onSelectionChange command - context is the listbox/listview context (not item-specific)
+
 
 Rebinding
 
@@ -205,34 +196,38 @@ Controls -
         Bindings:
             value
 
-    Listbox (data bound, should we support explicit contents also?)
+    Listbox
 
         Attributes:
             select = None, Single, Multiple
-            item
-            selectionItem
 
         Bindings:
             items
-            selection
-
-        Note: Windows uses ListBox, all others use ListView with simple text content (seems appropriate, easy to change if not)
-        !!! Test non-default selection context (all platforms)
-        !!! Should we support onItemClick (only WinPhone supports it now)?
-
-    Listview (data bound, should we support explicit contents also?)
-
-        Attributes:
-            select = None, Single, Multiple
             item
-            selectionItem
-
-        Bindings:
-            items
             selection
+            selectionItem
             onItemClick (command)
+            onSelectionChange (command)
+
+    Listview
+
+        Attributes:
+            select = None, Single, Multiple
+
+        Bindings:
+            items
+            item
+            selection
+            selectionItem
+            onItemClick (command)
+            onSelectionChange (command)
 
         !!! All - size to contents (?), at least as option (like wrap_contents) if no explicit size or fill
+
+    Picker
+
+        Bindings: 
+            (same as Listbox)
 
     Toggle
 
@@ -256,12 +251,6 @@ Controls -
 
 
     !!! TODO - 
-
-    Picker (choose one element from a list/listbox)
-        Win - ComboBox
-        WinPhone - ListPicker
-        iOS - Two controls - UIPickerView
-        Android - Spinner
 
     Table (aka Grid, like HTML table, rows/colums, typically not data bound)
 
@@ -478,17 +467,7 @@ Font - cross platform
 
 =======================
 
-For ListView / ListBox
-
-    If selection.None: onItemClicked, context is item
-    If selection.Single: onSelectionChanged, context is item
-    If selection.Multiple: onSelectionChanged, context is items
-
-For Picker
-
-    onSelectionChanged, context is item
-
-No itemSelection is ListView (don't need it, as can specify further binding as needed in itemTemplate)
+List stuff
 
 Need to make sure list element lifecycle is properly managed (that bound children are removed)
 

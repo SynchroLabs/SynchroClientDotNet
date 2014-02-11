@@ -156,6 +156,8 @@ namespace MaaasClientAndroid.Controls
         bool _selectionChangingProgramatically = false;
         JToken _localSelection;
 
+        static string[] Commands = new string[] { CommandName.OnItemClick, CommandName.OnSelectionChange };
+
         public AndroidListViewWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
@@ -164,18 +166,17 @@ namespace MaaasClientAndroid.Controls
             ListView listView = new ListView(((AndroidControlWrapper)parent).Control.Context);
             this._control = listView;
 
-            // Get selection mode - None (default), Single, or Multiple - no dynamic values (we don't need this changing during execution).
             ChoiceMode choiceMode = ChoiceMode.None;
-            if (controlSpec["select"] != null)
+
+            ListSelectionMode mode = ToListSelectionMode(controlSpec["select"]);
+            switch (mode)
             {
-                if ((string)controlSpec["select"] == "Single")
-                {
+                case ListSelectionMode.Single:
                     choiceMode = ChoiceMode.Single;
-                }
-                else if ((string)controlSpec["select"] == "Multiple")
-                {
+                    break;
+                case ListSelectionMode.Multiple:
                     choiceMode = ChoiceMode.Multiple;
-                }
+                    break;
             }
 
             ListViewAdapter adapter = new ListViewAdapter(((AndroidControlWrapper)parent).Control.Context, this, (JObject)controlSpec["itemTemplate"], choiceMode != ChoiceMode.None);
@@ -185,50 +186,37 @@ namespace MaaasClientAndroid.Controls
 
             applyFrameworkElementDefaults(listView);
 
-            JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "items", new string[] { "onItemClick" });
-            if (bindingSpec != null)
+            JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "items", Commands);
+            ProcessCommands(bindingSpec, Commands);
+
+            if (bindingSpec["items"] != null)
             {
-                ProcessCommands(bindingSpec, new string[] { "onItemClick" });
+                processElementBoundValue(
+                    "items",
+                    (string)bindingSpec["items"],
+                    () => getListViewContents(listView),
+                    value => this.setListViewContents(listView, GetValueBinding("items").BindingContext));
+            }
 
-                if (bindingSpec["items"] != null)
-                {
-                    string itemSelector = (string)bindingSpec["item"];
-                    if (itemSelector == null)
-                    {
-                        itemSelector = "$data";
-                    }
+            if (bindingSpec["selection"] != null)
+            {
+                string selectionItem = (string)bindingSpec["selectionItem"] ?? "$data";
 
-                    processElementBoundValue(
-                        "items",
-                        (string)bindingSpec["items"],
-                        () => getListViewContents(listView),
-                        value => this.setListViewContents(listView, GetValueBinding("items").BindingContext, itemSelector));
-                }
-
-                if (bindingSpec["selection"] != null)
-                {
-                    string selectionItem = (string)bindingSpec["selectionItem"];
-                    if (selectionItem == null)
-                    {
-                        selectionItem = "$data";
-                    }
-
-                    processElementBoundValue(
-                        "selection",
-                        (string)bindingSpec["selection"],
-                        () => getListViewSelection(listView, selectionItem),
-                        value => this.setListViewSelection(listView, selectionItem, (JToken)value));
-                }
+                processElementBoundValue(
+                    "selection",
+                    (string)bindingSpec["selection"],
+                    () => getListViewSelection(listView, selectionItem),
+                    value => this.setListViewSelection(listView, selectionItem, (JToken)value));
             }
 
             if (listView.ChoiceMode != ChoiceMode.None)
             {
                 // Have not witnessed these getting called (maybe they get called on kb or other non-touch interaction?).
-                // At any rate, if there is any change to the selection, we need to know about it, so we'll add these
-                // just to be safe.
+                // At any rate, if there is any change to the selection, we need to know about it, and may need to add these,
+                // but not safe to do so until we have an environment where they are testable.
                 //
-                listView.ItemSelected += listView_ItemSelected;
-                listView.NothingSelected += listView_NothingSelected;
+                // listView.ItemSelected += listView_ItemSelected;
+                // listView.NothingSelected += listView_NothingSelected;
             }
 
             // Since we need to handle the item click in order to update the selection state anyway, we'll always add
@@ -261,77 +249,20 @@ namespace MaaasClientAndroid.Controls
             this.updateSize();
         }
 
-        void listView_ItemSelected(object sender, AdapterView.ItemSelectedEventArgs e)
-        {
-            Util.debug("ListView item selected at position: " + e.Position);
-            this.listView_SelectionChanged((ListView)this.Control);
-        }
-
-        void listView_NothingSelected(object sender, AdapterView.NothingSelectedEventArgs e)
-        {
-            Util.debug("ListView nothing selected");
-            this.listView_SelectionChanged((ListView)this.Control);
-        }
-
-        static bool isListViewItemChecked(ListView listView, int position)
-        {
-            bool isChecked = false;
-            if (listView.ChoiceMode == ChoiceMode.Single)
-            {
-                isChecked = position == listView.CheckedItemPosition;
-            }
-            else if (listView.ChoiceMode == ChoiceMode.Multiple)
-            {
-                isChecked = listView.CheckedItemPositions.ValueAt(position);
-            }
-            return isChecked;
-        }
-
-        void listView_ItemClick(object sender, AdapterView.ItemClickEventArgs e)
-        {
-            ListView listView = (ListView)this.Control;
-
-            if (listView.ChoiceMode != ChoiceMode.None)
-            {
-                bool itemChecked = isListViewItemChecked(listView, e.Position);
-                Util.debug("ListView item clicked, checked: " + itemChecked);
-                this.listView_SelectionChanged(listView);
-            }
-
-            CommandInstance command = GetCommand("onItemClick");
-            if (command != null)
-            {
-                Util.debug("ListView item click with command: " + command);
-
-                // The item click command handler resolves its tokens relative to the item clicked (not the list view).
-                //
-                ListItemView listItemView = e.View as ListItemView;
-                if (listItemView != null)
-                {
-                    View contentView = listItemView.ContentView;
-                    ControlWrapper wrapper = this.getChildControlWrapper(contentView);
-                    if (wrapper != null)
-                    {
-                        StateManager.processCommand(command.Command, command.GetResolvedParameters(wrapper.BindingContext));
-                    }
-                }
-            }
-        }
-
         public JToken getListViewContents(ListView listbox)
         {
             Util.debug("Get listview contents - NOOP");
             throw new NotImplementedException();
         }
 
-        public void setListViewContents(ListView listView, BindingContext bindingContext, string itemSelector)
+        public void setListViewContents(ListView listView, BindingContext bindingContext)
         {
             Util.debug("Setting listview contents");
 
             _selectionChangingProgramatically = true;
 
             ListViewAdapter adapter = (ListViewAdapter)listView.Adapter;
-            adapter.SetContents(bindingContext, itemSelector);
+            adapter.SetContents(bindingContext, "$data");
             adapter.NotifyDataSetChanged();
 
             ValueBinding selectionBinding = GetValueBinding("selection");
@@ -433,16 +364,93 @@ namespace MaaasClientAndroid.Controls
             _selectionChangingProgramatically = false;
         }
 
-        void listView_SelectionChanged(ListView listView)
+        static bool isListViewItemChecked(ListView listView, int position)
         {
-            ValueBinding selectionBinding = GetValueBinding("selection");
-            if (selectionBinding != null)
+            bool isChecked = false;
+            if (listView.ChoiceMode == ChoiceMode.Single)
             {
-                updateValueBindingForAttribute("selection");
+                isChecked = position == listView.CheckedItemPosition;
             }
-            else if (!_selectionChangingProgramatically)
+            else if (listView.ChoiceMode == ChoiceMode.Multiple)
             {
-                _localSelection = this.getListViewSelection(listView, "$data");
+                isChecked = listView.CheckedItemPositions.ValueAt(position);
+            }
+            return isChecked;
+        }
+
+        void listView_ItemClick(object sender, AdapterView.ItemClickEventArgs e)
+        {
+            ListView listView = (ListView)this.Control;
+
+            if (listView.ChoiceMode != ChoiceMode.None)
+            {
+                ValueBinding selectionBinding = GetValueBinding("selection");
+                if (selectionBinding != null)
+                {
+                    updateValueBindingForAttribute("selection");
+                }
+                else if (!_selectionChangingProgramatically)
+                {
+                    _localSelection = this.getListViewSelection(listView, "$data");
+                }
+
+            }
+
+            if (!_selectionChangingProgramatically)
+            {
+                // Process commands
+                //
+                if (listView.ChoiceMode == ChoiceMode.None)
+                {
+                    CommandInstance command = GetCommand(CommandName.OnItemClick);
+                    if (command != null)
+                    {
+                        Util.debug("ListView item clicked with command: " + command);
+
+                        ListItemView listItemView = e.View as ListItemView;
+                        if (listItemView != null)
+                        {
+                            // The item click command handler resolves its tokens relative to the item clicked.
+                            //
+                            View contentView = listItemView.ContentView;
+                            ControlWrapper wrapper = this.getChildControlWrapper(contentView);
+                            if (wrapper != null)
+                            {
+                                StateManager.processCommand(command.Command, command.GetResolvedParameters(wrapper.BindingContext));
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    CommandInstance command = GetCommand(CommandName.OnSelectionChange);
+                    if (command != null)
+                    {
+                        Util.debug("ListView selection changed with command: " + command);
+
+                        if (listView.ChoiceMode == ChoiceMode.Single)
+                        {
+                            ListItemView listItemView = e.View as ListItemView;
+                            if (listItemView != null)
+                            {
+                                // The selection change command handler resolves its tokens relative to the item selected when in single select mode.
+                                //
+                                View contentView = listItemView.ContentView;
+                                ControlWrapper wrapper = this.getChildControlWrapper(contentView);
+                                if (wrapper != null)
+                                {
+                                    StateManager.processCommand(command.Command, command.GetResolvedParameters(wrapper.BindingContext));
+                                }
+                            }
+                        }
+                        else // ChoiceMode.Multiple
+                        {
+                            // The selection change command handler resolves its tokens relative to the list context when in multiple select mode.
+                            //
+                            StateManager.processCommand(command.Command, command.GetResolvedParameters(this.BindingContext));
+                        }
+                    }
+                }
             }
         }
     }

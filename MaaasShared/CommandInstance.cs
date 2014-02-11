@@ -7,6 +7,22 @@ using System.Threading.Tasks;
 
 namespace MaaasCore
 {
+    public class CommandName
+    {
+        private CommandName(string attribute) { Attribute = attribute; }
+
+        public string Attribute { get; private set; }
+
+        public override string ToString() { return Attribute; }
+
+        public static implicit operator String(CommandName commandName) { return commandName.Attribute; }
+
+        public static CommandName OnClick { get { return new CommandName("onClick"); } }
+        public static CommandName OnItemClick { get { return new CommandName("onItemClick"); } }
+        public static CommandName OnSelectionChange { get { return new CommandName("onSelectionChange"); } }
+        public static CommandName OnToggle { get { return new CommandName("onToggle"); } }
+    }
+
     // This class corresponds to an instance of a command in a view
     //
     public class CommandInstance

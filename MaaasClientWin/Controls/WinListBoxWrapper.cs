@@ -14,6 +14,10 @@ namespace MaaasClientWin.Controls
         bool _selectionChangingProgramatically = false;
         JToken _localSelection;
 
+        bool _selectionModeNone = false;
+
+        static string[] Commands = new string[] { CommandName.OnItemClick, CommandName.OnSelectionChange };
+
         public WinListBoxWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
@@ -23,46 +27,45 @@ namespace MaaasClientWin.Controls
 
             applyFrameworkElementDefaults(listbox);
 
-            // Get selection mode - single (default) or multiple - no dynamic values (we don't need this changing during execution).
-            if ((controlSpec["select"] != null) && ((string)controlSpec["select"] == "Multiple"))
+            ListSelectionMode mode = ToListSelectionMode(controlSpec["select"]);
+            switch (mode)
             {
-                listbox.SelectionMode = SelectionMode.Multiple;
+                case ListSelectionMode.None:
+                    // The Windows ListBox doesn't support a "None" selection mode, so we use Single and track the "None" ourselves.
+                    _selectionModeNone = true;
+                    listbox.SelectionMode = SelectionMode.Single;
+                    break;
+                case ListSelectionMode.Single:
+                    listbox.SelectionMode = SelectionMode.Single;
+                    break;
+                case ListSelectionMode.Multiple:
+                    listbox.SelectionMode = SelectionMode.Multiple;
+                    break;
             }
 
-            JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "items", new string[] { "onItemClick" });
-            if (bindingSpec != null)
+            JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "items", Commands);
+            ProcessCommands(bindingSpec, Commands);
+
+            if (bindingSpec["items"] != null)
             {
-                ProcessCommands(bindingSpec, new string[] { "onItemClick" });
+                string itemContent = (string)bindingSpec["itemContent"] ?? "{$data}";
 
-                if (bindingSpec["items"] != null)
-                {
-                    string itemSelector = (string)bindingSpec["item"];
-                    if (itemSelector == null)
-                    {
-                        itemSelector = "$data";
-                    }
+                processElementBoundValue(
+                    "items",
+                    (string)bindingSpec["items"],
+                    () => getListboxContents(listbox),
+                    value => this.setListboxContents(listbox, GetValueBinding("items").BindingContext, itemContent));
+            }
 
-                    processElementBoundValue(
-                        "items",
-                        (string)bindingSpec["items"],
-                        () => getListboxContents(listbox),
-                        value => this.setListboxContents(listbox, GetValueBinding("items").BindingContext, itemSelector));
-                }
+            if (bindingSpec["selection"] != null)
+            {
+                string selectionItem = (string)bindingSpec["selectionItem"] ?? "$data";
 
-                if (bindingSpec["selection"] != null)
-                {
-                    string selectionItem = (string)bindingSpec["selectionItem"];
-                    if (selectionItem == null)
-                    {
-                        selectionItem = "$data";
-                    }
-
-                    processElementBoundValue(
-                        "selection",
-                        (string)bindingSpec["selection"],
-                        () => getListboxSelection(listbox, selectionItem),
-                        value => this.setListboxSelection(listbox, selectionItem, (JToken)value));
-                }
+                processElementBoundValue(
+                    "selection",
+                    (string)bindingSpec["selection"],
+                    () => getListboxSelection(listbox, selectionItem),
+                    value => this.setListboxSelection(listbox, selectionItem, (JToken)value));
             }
 
             listbox.SelectionChanged += listbox_SelectionChanged;
@@ -77,7 +80,7 @@ namespace MaaasClientWin.Controls
                 );
         }
 
-        public void setListboxContents(ListBox listbox, BindingContext bindingContext, string itemSelector)
+        public void setListboxContents(ListBox listbox, BindingContext bindingContext, string itemContent)
         {
             Util.debug("Setting listbox contents");
 
@@ -88,7 +91,7 @@ namespace MaaasClientWin.Controls
             listbox.Items.Clear();
             foreach (BindingContext itemContext in itemContexts)
             {
-                BindingContextListItem listItem = new BindingContextListItem(itemContext, itemSelector);
+                BindingContextListItem listItem = new BindingContextListItem(itemContext, itemContent);
                 listbox.Items.Add(listItem);
             }
 
@@ -187,17 +190,14 @@ namespace MaaasClientWin.Controls
 
             if (!_selectionChangingProgramatically)
             {
-                Util.debug("Selection changed by user!");
-                CommandInstance command = GetCommand("onItemClick");
-                if (command != null)
+                if (_selectionModeNone)
                 {
-                    Util.debug("ListView item click with command: " + command);
-
-                    if (listbox.SelectionMode == SelectionMode.Single)
+                    CommandInstance command = GetCommand(CommandName.OnItemClick);
+                    if (command != null)
                     {
-                        // For selection mode "Single", the command handler resolves its tokens relative to the item selected.
+                        // For selection mode "None", the command handler resolves its tokens relative to the item selected.
                         //
-                        // There should always be a first "added" item, which represents the current selection.
+                        // There should always be a first "added" item, which represents the current selection (item clicked).
                         //
                         if ((e.AddedItems != null) && (e.AddedItems.Count > 0))
                         {
@@ -205,11 +205,33 @@ namespace MaaasClientWin.Controls
                             StateManager.processCommand(command.Command, command.GetResolvedParameters(listItem.BindingContext));
                         }
                     }
-                    else if (listbox.SelectionMode == SelectionMode.Multiple)
+                }
+                else
+                {
+                    Util.debug("Selection changed by user!");
+                    CommandInstance command = GetCommand(CommandName.OnSelectionChange);
+                    if (command != null)
                     {
-                        // For selection mode "Multiple", the command hander resovles its tokens relative to the listbox, not any list item(s).
-                        //
-                        StateManager.processCommand(command.Command, command.GetResolvedParameters(this.BindingContext));
+                        Util.debug("ListView item click with command: " + command);
+
+                        if (listbox.SelectionMode == SelectionMode.Single)
+                        {
+                            // For selection mode "Single", the command handler resolves its tokens relative to the item selected.
+                            //
+                            // There should always be a first "added" item, which represents the current selection.
+                            //
+                            if ((e.AddedItems != null) && (e.AddedItems.Count > 0))
+                            {
+                                BindingContextListItem listItem = (BindingContextListItem)e.AddedItems[0];
+                                StateManager.processCommand(command.Command, command.GetResolvedParameters(listItem.BindingContext));
+                            }
+                        }
+                        else if (listbox.SelectionMode == SelectionMode.Multiple)
+                        {
+                            // For selection mode "Multiple", the command hander resovles its tokens relative to the listbox, not any list item(s).
+                            //
+                            StateManager.processCommand(command.Command, command.GetResolvedParameters(this.BindingContext));
+                        }
                     }
                 }
             }

@@ -183,7 +183,7 @@ namespace MaaasCore
 
         public static string ExpandAsString(string tokenString, BindingContext bindingContext)
         {
-            return (string)Expand(tokenString, bindingContext);
+            return Expand(tokenString, bindingContext).ToString();
         }
     }
 

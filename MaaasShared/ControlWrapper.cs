@@ -7,6 +7,13 @@ using System.Threading.Tasks;
 
 namespace MaaasCore
 {
+    public enum ListSelectionMode : uint
+    {
+        None,
+        Single,
+        Multiple
+    }
+    
     public enum FontFaceType
     {
         FONT_DEFAULT,
@@ -59,11 +66,11 @@ namespace MaaasCore
             _commands[attribute] = command;
         }
 
-        public CommandInstance GetCommand(string attribute)
+        public CommandInstance GetCommand(CommandName commandName)
         {
-            if (_commands.ContainsKey(attribute))
+            if (_commands.ContainsKey(commandName.Attribute))
             {
-                return _commands[attribute];
+                return _commands[commandName.Attribute];
             }
             return null;
         }
@@ -171,6 +178,30 @@ namespace MaaasCore
         public double ToDeviceUnitsFromTypographicPoints(object value)
         {
             return ToDeviceUnits(StateManager.DeviceMetrics.TypographicPointsToMaaasUnits(ToDouble(value)));
+        }
+
+        static public ListSelectionMode ToListSelectionMode(object value, ListSelectionMode defaultSelectionMode = ListSelectionMode.Single)
+        {
+            if (value is ListSelectionMode)
+            {
+                return (ListSelectionMode)value;
+            }
+
+            ListSelectionMode selectionMode = defaultSelectionMode;
+            string selectionModeValue = ToString(value);
+            if (selectionModeValue == "None")
+            {
+                selectionMode = ListSelectionMode.None;
+            }
+            else if (selectionModeValue == "Single")
+            {
+                selectionMode = ListSelectionMode.Single;
+            }
+            else if (selectionModeValue == "Multiple")
+            {
+                selectionMode = ListSelectionMode.Multiple;
+            }
+            return selectionMode;
         }
 
         // Silverlight colors

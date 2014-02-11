@@ -12,10 +12,13 @@ namespace MaaasClientWinPhone.Controls
 {
     class WinPhoneButtonWrapper : WinPhoneControlWrapper
     {
+        static string[] Commands = new string[] { CommandName.OnClick };
+
         public WinPhoneButtonWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
             Util.debug("Creating button element with caption of: " + controlSpec["caption"]);
+
             Button button = new Button();
             this._control = button;
 
@@ -25,9 +28,10 @@ namespace MaaasClientWinPhone.Controls
 
             processElementProperty((string)controlSpec["caption"], value => button.Content = ToString(value));
 
-            JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "onClick", new string[] { "onClick" });
-            ProcessCommands(bindingSpec, new string[] { "onClick" });
-            if (GetCommand("onClick") != null)
+            JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, CommandName.OnClick, Commands);
+            ProcessCommands(bindingSpec, Commands);
+
+            if (GetCommand(CommandName.OnClick) != null)
             {
                 button.Click += button_Click;
             }
@@ -35,7 +39,7 @@ namespace MaaasClientWinPhone.Controls
 
         void button_Click(object sender, RoutedEventArgs e)
         {
-            CommandInstance command = GetCommand("onClick");
+            CommandInstance command = GetCommand(CommandName.OnClick);
             if (command != null)
             {
                 Util.debug("Button click with command: " + command);

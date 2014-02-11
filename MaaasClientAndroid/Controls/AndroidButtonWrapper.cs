@@ -16,6 +16,8 @@ namespace MaaasClientAndroid.Controls
 {
     class AndroidButtonWrapper : AndroidControlWrapper
     {
+        static string[] Commands = new string[] { CommandName.OnClick };
+
         public AndroidButtonWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
@@ -27,9 +29,10 @@ namespace MaaasClientAndroid.Controls
 
             processElementProperty((string)controlSpec["caption"], value => button.Text = ToString(value));
 
-            JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "onClick", new string[] { "onClick" });
-            ProcessCommands(bindingSpec, new string[] { "onClick" });
-            if (GetCommand("onClick") != null)
+            JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, CommandName.OnClick, Commands);
+            ProcessCommands(bindingSpec, Commands);
+
+            if (GetCommand(CommandName.OnClick) != null)
             {
                 button.Click += button_Click;
             }
@@ -37,7 +40,7 @@ namespace MaaasClientAndroid.Controls
 
         void button_Click(object sender, EventArgs e)
         {
-            CommandInstance command = GetCommand("onClick");
+            CommandInstance command = GetCommand(CommandName.OnClick);
             if (command != null)
             {
                 Util.debug("Button click with command: " + command);
