@@ -53,6 +53,54 @@ Property binding expressions/directives:
 		Logical (charCount >= 240)
 		Type conversion (str(240 - charCount))
 
+=======================
+
+Layout Filtering
+
+A node with the single "filter" attribute will chose one child node contained in the filter attribute to replace that node.  The first
+child node that matches all filter criteria is promoted to replace the filter node.  The filter criteria attributes are as follows:
+
+filterOS: Windows, WinPhone, Android, iOS
+filterDeviceType: Phone, Tablet
+filterDeviceClass: Phone, Phablet, MiniTablet, Tablet 
+
+If the filter criteria attribute contains a value, then that value will be compared to the appropriate device metrics value.  If the
+filter criteria attribute contains a list of values, then if any of those values matches the appropriate device metrics value, then
+that is considered a match.  If multiple filter criteria attributes are present, all must match in order for the node to be considered
+a match.  The first node encountered that does not fail to match all filter criteria will be promoted to replace the top level filter
+node.
+
+Examples:
+
+{ filter: [
+    { control: "text", filterOS: ["Windows", "WinPhone"], value: "Microsoft Rules!" },
+    { control: "text", value: "Microsoft does not rule" },
+]}
+
+{ filter: [
+    { control: "text", filterDeviceType: "Tablet", value: "Tablets Rule!" },
+    { control: "text", filterDeviceType: "Phone", value: "Phones Rule!" },
+]}
+
+=======================
+
+Device Metrics
+
+The server has access to the following device metrics (via session.DeviceMetrics)
+
+os - Windows, WinPhone, Android, iOS
+osName
+deviceName
+deviceType - Phone, Tablet
+deviceClass - Phone, Phablet, MiniTablet, Tablet
+scalingFactor
+widthInches
+heightInches
+widthUnits
+heightUnits
+
+=======================
+
 Controls - 
 
     Windows:
@@ -314,7 +362,7 @@ Client
 
     Look at perf (especially on iOS - maybe just related to console logging)
 
-    Investigate initial image load issue (DNS failure) on Android
+    Investigate initial image load issue on Android (DNS failure?), WinPhone (sim only?)
 
     View/resource caching
 
@@ -323,10 +371,6 @@ Client
 Server
 
     Test on iPad, Android tab (Nexus 7, Kindle Fire)
-
-    Communicate device metrics to server, create server page to report metrics (os, device, type, portrait/landscape-first, size in inches)
-
-    Layout filtering mechanism (so different layouts, sections of layouts, maybe even attributes, can be provided based on OS, type, portrait/landscape first, maybe even size)
 
     Persistent client state
         Use cookies?  homegrown cookie-like method?.  Needs to work with any driver.  Backed by Redis or similar
@@ -439,10 +483,3 @@ Need to make sure list element lifecycle is properly managed (that bound childre
 
 Need to recycle views on platforms that support it (future?)
 
-=======================
-
-Layout Filtering
-
-{ filter: [
-    { control: "stackPanel", filterPlatform: ["Win", "WinPhone"], filterDeviceType: "Tablet", filterDeviceClass: "" },
-]}
