@@ -69,10 +69,11 @@ namespace MaaasClientWinPhone
 
         public WinPhoneDeviceMetrics() : base()
         {
-            _os = "Windows Phone";
-            _deviceName = "Windows Device"; // !!! Actual device manufaturer/model would be nice
+            _os = "WinPhone";
+            _osName = "Windows Phone";
+            _deviceName = "Windows Phone Device"; // !!! Actual device manufaturer/model would be nice
 
-            _deviceType = MaaasDeviceType.Phone;
+            _deviceClass = MaaasDeviceClass.Phone;
 
             _widthDeviceUnits = Application.Current.Host.Content.ActualWidth;
             _heightDeviceUnits = Application.Current.Host.Content.ActualHeight;

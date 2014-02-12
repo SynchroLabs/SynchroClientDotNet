@@ -76,7 +76,7 @@ namespace MaaasCore
                 // There is a collection of page elements, create a default container (vertical stackpanel), make it the root, and populate it...
                 //
                 JObject controlSpec = new JObject(
-                    new JProperty("type", "stackpanel"),
+                    new JProperty("control", "stackpanel"),
                     new JProperty("orientation", "vertical"),
                     new JProperty("contents", elements)
                 );

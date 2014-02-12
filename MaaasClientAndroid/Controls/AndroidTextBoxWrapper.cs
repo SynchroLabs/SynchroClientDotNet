@@ -25,7 +25,7 @@ namespace MaaasClientAndroid.Controls
             EditText editText = new EditText(((AndroidControlWrapper)parent).Control.Context);
             this._control = editText;
 
-            if ((string)controlSpec["type"] == "password")
+            if ((string)controlSpec["control"] == "password")
             {
                 // You have to tell it it's text (in addition to password) or the password doesn't work...
                 editText.InputType = InputTypes.ClassText | InputTypes.TextVariationPassword;

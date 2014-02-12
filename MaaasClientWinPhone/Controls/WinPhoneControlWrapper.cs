@@ -305,7 +305,7 @@ namespace MaaasClientWinPhone.Controls
         {
             WinPhoneControlWrapper controlWrapper = null;
 
-            switch ((string)controlSpec["type"])
+            switch ((string)controlSpec["control"])
             {
                 case "border":
                     controlWrapper = new WinPhoneBorderWrapper(parent, bindingContext, controlSpec);
@@ -376,7 +376,7 @@ namespace MaaasClientWinPhone.Controls
                 WinPhoneControlWrapper controlWrapper = CreateControl(this, controlContext, controlSpec);
                 if (controlWrapper == null)
                 {
-                    Util.debug("WARNING: Unable to create control of type: " + controlSpec["type"]);
+                    Util.debug("WARNING: Unable to create control of type: " + controlSpec["control"]);
                 }
                 else if (OnCreateControl != null)
                 {

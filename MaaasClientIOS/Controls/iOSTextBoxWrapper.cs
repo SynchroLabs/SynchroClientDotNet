@@ -21,7 +21,7 @@ namespace MaaasClientIOS.Controls
             UITextField textBox = new UITextField();
             this._control = textBox;
 
-            if ((string)controlSpec["type"] == "password")
+            if ((string)controlSpec["control"] == "password")
             {
                 textBox.SecureTextEntry = true;
             }

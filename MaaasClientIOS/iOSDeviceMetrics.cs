@@ -30,6 +30,7 @@ namespace MaaasClientIOS
         public iOSDeviceMetrics() : base()
         {
             _os = "iOS";
+            _osName = "iOS";
 
             // Device         Screen size  Logical resolution  Logical ppi  Width (in)  Height (in)
             // =============  ===========  ==================  ===========  ==========  ===========
@@ -43,7 +44,7 @@ namespace MaaasClientIOS
 
             if (UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Phone)
             {
-                _deviceType = MaaasDeviceType.Phone;
+                _deviceClass = MaaasDeviceClass.Phone;
                 _widthInches = 1.963f;
                 if (UIScreen.MainScreen.Bounds.Height == 568)
                 {
@@ -57,14 +58,14 @@ namespace MaaasClientIOS
             }
             else if (iPadMini())
             {
-                _deviceType = MaaasDeviceType.MiniTablet;
+                _deviceClass = MaaasDeviceClass.MiniTablet;
                 _widthInches = 4.712f;
                 _heightInches = 6.282f;
                 _deviceName = "iPad Mini";
             }
             else
             {
-                _deviceType = MaaasDeviceType.Tablet;
+                _deviceClass = MaaasDeviceClass.Tablet;
                 _widthInches = 5.818f;
                 _heightInches = 7.758f;
                 _deviceName = "iPad";

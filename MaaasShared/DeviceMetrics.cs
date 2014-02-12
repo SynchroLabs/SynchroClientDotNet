@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace MaaasCore
 {
-    public enum MaaasDeviceType
+    public enum MaaasDeviceClass
     {
         Phone      = 0, // 3.5"-5" phones
         Phablet    = 1, // 5"-6" big phones (Nokia 1520)
@@ -14,11 +14,20 @@ namespace MaaasCore
         Tablet     = 3  // 9"+ tablets (iPad, Surface, etc)
     }
 
+    public enum MaaasDeviceType
+    {
+        Phone = MaaasDeviceClass.Phone,
+        Tablet = MaaasDeviceClass.Tablet
+    }
+
     public class MaaasDeviceMetrics
     {
-        protected MaaasDeviceType _deviceType = MaaasDeviceType.Phone;
+        protected MaaasDeviceClass _deviceClass = MaaasDeviceClass.Phone;
 
-        protected string _os = "Unknown"; // !!! OS version would be nice
+        protected string _os = "Unknown"; // Short name for filtering, ie: Windows, WinPhone, iOS, Android
+        protected string _osName = "Unknown";
+        // !!! OS version would be nice
+
         protected string _deviceName = "Unknown";
 
         protected double _widthInches = 0;
@@ -36,13 +45,19 @@ namespace MaaasCore
         // Device details
         //
         public string OS { get { return _os; } }
+        public string OSName { get { return _osName; } }
         public string DeviceName { get { return _deviceName; } }
 
         // Device type
         //
-        public MaaasDeviceType DeviceType { get { return _deviceType; } }
-        public bool IsPhone { get { return _deviceType == MaaasDeviceType.Phone || _deviceType == MaaasDeviceType.Phablet; } }
-        public bool IsTablet { get { return _deviceType == MaaasDeviceType.Tablet || _deviceType == MaaasDeviceType.MiniTablet; } }
+        public MaaasDeviceClass DeviceClass { get { return _deviceClass; } }
+        public MaaasDeviceType DeviceType
+        {
+            get
+            {
+                return ((_deviceClass == MaaasDeviceClass.Phone) || (_deviceClass == MaaasDeviceClass.Phablet)) ? MaaasDeviceType.Phone : MaaasDeviceType.Tablet;
+            }
+        }
 
         // Physical dimensions of device
         //
@@ -63,27 +78,27 @@ namespace MaaasCore
         //
         public double ScalingFactor { get { return _scalingFactor; } }
 
-        // !!! Coordinate space mapping
+        // Coordinate space mapping
         //
-        //     Note: In the explanations below, all units attributed to a device or OS are "device units" (meaning whatever unit
-        //     coordinate/size metric is used on the device).  These are typically scaled or transformed in some way by the device
-        //     operating system to map to the underlying display pixels (and will in fact be scaled on most contemporary devices, 
-        //     which will have displays with significantly higher actual native pixel resolutions).
+        // Note: In the explanations below, all units attributed to a device or OS are "device units" (meaning whatever unit
+        // coordinate/size metric is used on the device).  These are typically scaled or transformed in some way by the device
+        // operating system to map to the underlying display pixels (and will in fact be scaled on most contemporary devices, 
+        // which will have displays with significantly higher actual native pixel resolutions).
         //
-        //     For "phone-like" (portrait-first) devices we will scale the display to be 480 Maaas units wide, and maintain the device
-        //     aspect ratio - meaning that the height in Maaas units will vary from 720 (3.5" iPhone/iPod) to 853 (16:9 Win/Android
-        //     phone).  This will work well as the Windows phones are already 480 logical units wide, and the iOS devices are 
-        //     320 (so it's a simple 1.5x transform).  The Android devices will use pixel widths, but will typically be a pretty
-        //     clean transform (the screens will tend to be 480, 720, or 1080 pixels).
+        // For "phone-like" (portrait-first) devices we will scale the display to be 480 Maaas units wide, and maintain the device
+        // aspect ratio - meaning that the height in Maaas units will vary from 720 (3.5" iPhone/iPod) to 853 (16:9 Win/Android
+        // phone).  This will work well as the Windows phones are already 480 logical units wide, and the iOS devices are 
+        // 320 (so it's a simple 1.5x transform).  The Android devices will use pixel widths, but will typically be a pretty
+        // clean transform (the screens will tend to be 480, 720, or 1080 pixels).
         //
-        //     For "tablet-like" (landscape-first) devices we will scale the display to be 768 Maaas units tall, and maintain the device
-        //     aspect ratio - meaning that the width in Maaas units will vary from 1024 (iPad/iPad Mini) to 1368 (Surface), with other
-        //     tablets falling somewhere in this range.  This means we will not need to do any scaling on iOS or Windows, and that the
-        //     android transforms will be fairly clean.
+        // For "tablet-like" (landscape-first) devices we will scale the display to be 768 Maaas units tall, and maintain the device
+        // aspect ratio - meaning that the width in Maaas units will vary from 1024 (iPad/iPad Mini) to 1368 (Surface), with other
+        // tablets falling somewhere in this range.  This means we will not need to do any scaling on iOS or Windows, and that the
+        // android transforms will be fairly clean.
         //     
         public double MaaasUnitsToDeviceUnits(double maaasUnits)
         {
-            if (this.IsPhone)
+            if (this.DeviceType == MaaasDeviceType.Phone)
             {
                 return _widthDeviceUnits / 480 * maaasUnits;
             }

@@ -3,47 +3,6 @@ Mobile Application As A Service (MAAAS) - Client
 =================================================
 
 
-ListBox/ListView/Picker  
-
-    Attributes
-
-        "select" - None, Single, Multiple (defaults to "Single").  Picker does not support this attribute, as it is always "Single".
-
-    Binding
-
-        "items" - the array of elements in the list.
-
-        ListBox/Picker
-
-            "itemValue" (defaults to "{$data}") - A token string applied to each "items" element to construct the string to display in the list box.
-                For example: "User: {firstName} {lastName}".
-
-        ListView
-
-            "itemTemplate" - layout specification for each item (must be a single element, though that element can be a container that contains other layout elements). 
-
-        "selection" - the location in the view model where the current selection is maintained.  If select is Single, then the location referred to by selection
-             should contain a single item.  If select is Multiple, then the location referred to by selection should contain an array of zero or more items.
-
-        "selectionItem" (defaults to $data) - This is what is placed into "selection" (per item) and this is applied to each item in "items" for the purpose
-            of matching list view item with selection items when setting selection state for the list view.  For example, if the selectionItem was "{itemId}", then
-            the selection binding would be one or more elements of the "{itemId}" applied to the selected items.  When resetting item selection, "{itemId}" will be
-            applied to each list item, and the result will be compared with the value(s) in "selection" to see if the item should be selected.  In the case of the
-            default, the selection list will contain deep copies of the list view items, and the selection comparison will be a deep compare of those items with the
-            list view items.
-
-        Commands
-
-            If select is None:
-                onItemClick command - context is the item clicked
-
-            If select is Single:
-                onSelectionChange command - context is the item that is now selected
-
-            If select is Multiple:
-                onSelectionChange command - context is the listbox/listview context (not item-specific)
-
-
 Rebinding
 
     Note: I'm pretty sure this all got fixed - verify
@@ -196,38 +155,45 @@ Controls -
         Bindings:
             value
 
-    Listbox
+    ListBox/ListView/Picker  
 
-        Attributes:
-            select = None, Single, Multiple
+        Attributes
 
-        Bindings:
-            items
-            item
-            selection
-            selectionItem
-            onItemClick (command)
-            onSelectionChange (command)
+            "select" - None, Single, Multiple (defaults to "Single").  Picker does not support this attribute, as it is always "Single".
 
-    Listview
+        Binding
 
-        Attributes:
-            select = None, Single, Multiple
+            "items" - the array of elements in the list.
 
-        Bindings:
-            items
-            item
-            selection
-            selectionItem
-            onItemClick (command)
-            onSelectionChange (command)
+            ListBox/Picker
 
-        !!! All - size to contents (?), at least as option (like wrap_contents) if no explicit size or fill
+                "itemValue" (defaults to "{$data}") - a token string applied to each "items" element to construct the string to display in the list.
+                    For example: "User: {firstName} {lastName}".
 
-    Picker
+            ListView
 
-        Bindings: 
-            (same as Listbox)
+                "itemTemplate" - layout specification for each item (must be a single element, though that element can be a container that contains other layout elements). 
+
+            "selection" - the location in the view model where the current selection is maintained.  If select is Single, then the location referred to by selection
+                 should contain a single item.  If select is Multiple, then the location referred to by selection should contain an array of zero or more items.
+
+            "selectionItem" (defaults to $data) - This is what is placed into "selection" (per item) and this is applied to each item in "items" for the purpose
+                of matching items with selection items when setting selection state for the control.  For example, if the selectionItem was "{itemId}", then the
+                selection binding would be one or more elements of the "{itemId}" applied to the selected items.  When resetting item selection, "{itemId}" will be
+                applied to each list item, and the result will be compared with the value(s) in "selection" to see if the item should be selected.  In the case of the
+                default, the selection list will contain deep copies of the list view items, and the selection comparison will be a deep compare of those items with the
+                list view items.
+
+            Commands
+
+                If select is None:
+                    onItemClick command - context is the item clicked
+
+                If select is Single:
+                    onSelectionChange command - context is the item that is now selected
+
+                If select is Multiple:
+                    onSelectionChange command - context is the listbox/listview context (not item-specific)
 
     Toggle
 
@@ -319,11 +285,11 @@ Controls -
 
 	    Semantic zoom
 
-	    Web view
-
 	    Windows contracts?  Sharing, settings, search...
 
         Stepper (up/down)
+            iOS - UIStepper
+            No other platform has a control / standard (just use side-by-side buttons of appropriate style)
 
         SplitView (maybe only for landscape-first devices, fallback to multi-view for portrait-first)
 
@@ -335,7 +301,7 @@ Misc Control stuff
 
 Client
 
-    Configuration of server on client, maybe menu of servers so you can pick on as top level screen
+    Configuration of server on client, maybe menu of servers so you can pick one as top level screen
        - Enter via address, get server identifier from server and use that in menu (maybe in addition to address)
 
     Transaction synchronization, "waiting" indicator (if > .5 seconds maybe), retry if fails?
@@ -458,10 +424,10 @@ Font - cross platform
 
     font: { face: "Serif", size: 12, bold: true, italic: false }
 
-    Also provided as convenience parameter (since it is commom to specify on the size):
+    Also provided as convenience parameter (since it is commom to specify only the size):
 
     fontsize: float (typographic points)
-        fontsize: xx is equivalent to font: { size: xx } 
+        "fontsize: xx" is equivalent to "font: { size: xx }"
 
     !!! TODO: Custom font names (platform-specific), weights?
 
@@ -473,3 +439,10 @@ Need to make sure list element lifecycle is properly managed (that bound childre
 
 Need to recycle views on platforms that support it (future?)
 
+=======================
+
+Layout Filtering
+
+{ filter: [
+    { control: "stackPanel", filterPlatform: ["Win", "WinPhone"], filterDeviceType: "Tablet", filterDeviceClass: "" },
+]}

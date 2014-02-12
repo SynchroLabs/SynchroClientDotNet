@@ -60,6 +60,22 @@ namespace MaaasCore
             return new Uri("http://" + _host + "/api/" + path);
         }
 
+        JObject PackageDeviceMetrics()
+        {
+            return new JObject(
+                new JProperty("os", this.DeviceMetrics.OS),
+                new JProperty("osName", this.DeviceMetrics.OSName),
+                new JProperty("deviceName", this.DeviceMetrics.DeviceName),
+                new JProperty("deviceType", this.DeviceMetrics.DeviceType.ToString()),
+                new JProperty("deviceClass", this.DeviceMetrics.DeviceClass.ToString()),
+                new JProperty("scalingFactor", this.DeviceMetrics.ScalingFactor),
+                new JProperty("widthInches", this.DeviceMetrics.WidthInches),
+                new JProperty("heightInches", this.DeviceMetrics.HeightInches),
+                new JProperty("widthUnits", this.DeviceMetrics.WidthDeviceUnits),
+                new JProperty("heightUnits", this.DeviceMetrics.HeightDeviceUnits)
+            );
+        }
+
         void ProcessJsonResponse(JObject responseAsJSON)
         {
             Util.debug("Got response: " + responseAsJSON);
@@ -92,10 +108,13 @@ namespace MaaasCore
 
         public async Task loadLayout()
         {
+            // !!! This is the closest thing we have to "initiate session" right now...
+            //
             Util.debug("Load layout for path: " + this.Path);
 
             JObject requestObject = new JObject(
-                new JProperty("Path", this.Path)
+                new JProperty("Path", this.Path),
+                new JProperty("DeviceMetrics", this.PackageDeviceMetrics())
             );
 
             await _transport.sendMessage(requestObject, this.ProcessJsonResponse);

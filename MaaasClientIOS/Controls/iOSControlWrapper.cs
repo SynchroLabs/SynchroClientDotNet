@@ -776,7 +776,7 @@ namespace MaaasClientIOS.Controls
         {
             iOSControlWrapper controlWrapper = null;
 
-            switch ((string)controlSpec["type"])
+            switch ((string)controlSpec["control"])
             {
                 case "border":
                     controlWrapper = new iOSBorderWrapper(parent, bindingContext, controlSpec);
@@ -847,7 +847,7 @@ namespace MaaasClientIOS.Controls
                 iOSControlWrapper controlWrapper = CreateControl(this, controlContext, controlSpec);
                 if (controlWrapper == null)
                 {
-                    Util.debug("WARNING: Unable to create control of type: " + controlSpec["type"]);
+                    Util.debug("WARNING: Unable to create control of type: " + controlSpec["control"]);
                 }
                 else if (OnCreateControl != null)
                 {
