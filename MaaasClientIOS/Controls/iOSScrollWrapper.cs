@@ -13,8 +13,11 @@ namespace MaaasClientIOS.Controls
 {
     class AutoSizingScrollView : UIScrollView
     {
-        public AutoSizingScrollView() : base()
+        protected Orientation _orientation;
+
+        public AutoSizingScrollView(Orientation orientation) : base()
         {
+            _orientation = orientation;
         }
 
         public override void LayoutSubviews()
@@ -27,14 +30,23 @@ namespace MaaasClientIOS.Controls
                 SizeF size = new SizeF(this.ContentSize);
                 foreach (UIView view in this.Subviews)
                 {
-                    if ((view.Frame.X + view.Frame.Width) > size.Width)
+                    if (_orientation == Orientation.Vertical)
                     {
-                        size.Width = view.Frame.X + view.Frame.Width;
+                        // Vertical scroll, size to content height
+                        //
+                        if ((view.Frame.Y + view.Frame.Height) > size.Height)
+                        {
+                            size.Height = view.Frame.Y + view.Frame.Height;
+                        }
                     }
-
-                    if ((view.Frame.Y + view.Frame.Height) > size.Height)
+                    else
                     {
-                        size.Height = view.Frame.Y + view.Frame.Height;
+                        // Horizontal scroll, size to content width
+                        //
+                        if ((view.Frame.X + view.Frame.Width) > size.Width)
+                        {
+                            size.Width = view.Frame.X + view.Frame.Width;
+                        }
                     }
                 }
                 this.ContentSize = size;
@@ -51,20 +63,12 @@ namespace MaaasClientIOS.Controls
         {
             Util.debug("Creating scroll element");
 
+            Orientation orientation = ToOrientation((string)controlSpec["orientation"], Orientation.Vertical);
+
             // https://developer.apple.com/library/ios/documentation/WindowsViews/Conceptual/UIScrollView_pg/Introduction/Introduction.html
             //
-            UIScrollView scroller = new AutoSizingScrollView(); // UIScrollView();
+            UIScrollView scroller = new AutoSizingScrollView(orientation);
             this._control = scroller;
-
-            Orientation orientation = ToOrientation((string)controlSpec["orientation"], Orientation.Vertical);
-            if (orientation == Orientation.Vertical)
-            {
-                // !!! Vertical (default)
-            }
-            else
-            {
-                // !!! Horizontal
-            }
 
             processElementDimensions(controlSpec, 150, 50);
             applyFrameworkElementDefaults(scroller);

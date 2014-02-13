@@ -134,7 +134,6 @@ namespace MaaasClientAndroid.Controls
 
         void drawableView_LayoutChange(object sender, View.LayoutChangeEventArgs e)
         {
-            Util.debug("Rect Layout change!!!!");
             _rect.Width = this.Width;
             _rect.Height = this.Height;
         }

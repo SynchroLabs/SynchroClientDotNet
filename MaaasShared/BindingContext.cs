@@ -179,7 +179,7 @@ namespace MaaasCore
                 }
             }
 
-            // !!! Token could not be bound at this time (no corresponding view model item) - no value returned!
+            // Token could not be bound at this time (no corresponding view model item) - no value returned!
             return null;
         }
 
@@ -196,7 +196,7 @@ namespace MaaasCore
                 }
             }
 
-            // !!! Token could not be bound at this time (no corresponding view model item) - value not set!
+            // Token could not be bound at this time (no corresponding view model item) - value not set!
             return false;
         }
 

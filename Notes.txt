@@ -4,15 +4,16 @@ Mobile Application As A Service (MAAAS) - Client
 
 Binding context specifiers
 
-    Binding token paths
-        [viewModel.]attribute
-        [viewModel.]children[1].childAttribute
+    Binding paths -
+        [viewModel.]someProperty
+        [viewmodel.]someObject.someProperty
+        [viewModel.]someArray[1].someProperty
 
     Binding path tokens - 
         $root - Selects the root of the view model.
         $parent - Selects the parent of the current binding context.
-        $data - Selects the value of the current binding context
-        $index - Produces a numeric index representing the position of an iterated binding context
+        $data - Selects the value of the current binding context.
+        $index - Produces a numeric value representing the position (zero-based index) of an iterated binding context
 
     Each item has a binding context, which is determined before the item is created/processed by inspecting the
     "binding" attribute to look for a "foreach" or "with" binding context specifier.
@@ -30,7 +31,7 @@ Binding context specifiers
 
 Property binding expressions/directives:
 
-	One time using ^ (default is one way binding)
+	One-time using ^ (default is one-way binding)
 
     Expression support (TODO !!!):
 
@@ -333,13 +334,9 @@ Controls -
             iOS - UIStepper
             No other platform has a control / standard (just use side-by-side buttons of appropriate style)
 
-        SplitView (maybe only for landscape-first devices, fallback to multi-view for portrait-first)
-
 Misc Control stuff
 
-    Color spec should support 8 byte form with alpha specified
-    Separate binding ability of RGBA elements would be a neat parlor trick (maybe later)
-
+    Separate binding ability of ARGB elements would be a neat parlor trick (maybe later)
 
 Client
 

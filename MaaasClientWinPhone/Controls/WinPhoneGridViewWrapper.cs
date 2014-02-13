@@ -30,7 +30,7 @@ namespace MaaasClientWinPhone.Controls
 
             applyFrameworkElementDefaults(gridView);
 
-            // !!! TODO
+            // !!! TODO - Implement Win Phone grid view
         }
     }
 }

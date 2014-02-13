@@ -27,7 +27,7 @@ namespace MaaasClientIOS.Controls
             processElementDimensions(controlSpec, 150, 50);
             applyFrameworkElementDefaults(gridView);
 
-            // !!! TODO
+            // !!! TODO - iOS Grid View
         }
     }
 }

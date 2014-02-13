@@ -388,12 +388,31 @@ namespace MaaasCore
             if (colorValue.StartsWith("#"))
             {
                 colorValue = colorValue.Replace("#", "");
-                if (colorValue.Length == 6)
+                try 
                 {
-                    return new ColorARGB(255,
-                        byte.Parse(colorValue.Substring(0, 2), System.Globalization.NumberStyles.HexNumber),
-                        byte.Parse(colorValue.Substring(2, 2), System.Globalization.NumberStyles.HexNumber),
-                        byte.Parse(colorValue.Substring(4, 2), System.Globalization.NumberStyles.HexNumber));
+                    if (colorValue.Length == 6)
+                    {
+                        return new ColorARGB(255,
+                            byte.Parse(colorValue.Substring(0, 2), System.Globalization.NumberStyles.HexNumber),
+                            byte.Parse(colorValue.Substring(2, 2), System.Globalization.NumberStyles.HexNumber),
+                            byte.Parse(colorValue.Substring(4, 2), System.Globalization.NumberStyles.HexNumber));
+                    }
+                    else if (colorValue.Length == 8)
+                    {
+                        return new ColorARGB(
+                            byte.Parse(colorValue.Substring(0, 2), System.Globalization.NumberStyles.HexNumber),
+                            byte.Parse(colorValue.Substring(2, 2), System.Globalization.NumberStyles.HexNumber),
+                            byte.Parse(colorValue.Substring(4, 2), System.Globalization.NumberStyles.HexNumber),
+                            byte.Parse(colorValue.Substring(6, 2), System.Globalization.NumberStyles.HexNumber));
+                    }
+                    else
+                    {
+                        Util.debug("Incorrect length for hex color specification - must be 6 (RRGGBB) or 8 (AARRGGBB) hex digits, was " + colorValue.Length + " digits");
+                    }
+                }
+                catch (Exception e)
+                {
+                    Util.debug("Exception parsing hex value in color specification, details: " +  e.Message);
                 }
             }
             else
@@ -405,10 +424,11 @@ namespace MaaasCore
                 }
                 else
                 {
-                    // !!! Color name not found
+                    Util.debug("Color name '" + colorValue + "' was not found, please choose a color name from the Microsoft SilverLight color set");
                 }
             }
 
+            // !!! Should we do something other than return null for a bad color name/spec?
             return null;
         }
 
@@ -474,9 +494,7 @@ namespace MaaasCore
                 ValueBinding binding = ViewModel.CreateAndRegisterValueBinding(valueBindingContext, getValue, setValue);
                 SetValueBinding(attributeName, binding);
 
-                // !!! Immediate content update during configuration.  Make sure this isn't an issue (that controls are fully formed and
-                //     ready for content to be set, and that we don't double set the content in a content update immediately after this, or if
-                //     we do, it's not annoying).
+                // Immediate content update during configuration. 
                 binding.UpdateViewFromViewModel(); 
 
                 return true;
@@ -507,10 +525,7 @@ namespace MaaasCore
                 PropertyBinding binding = ViewModel.CreateAndRegisterPropertyBinding(this.BindingContext, value, setValue);
                 _propertyBindings.Add(binding);
 
-                // !!! Immediate content update during configuration.  Make sure this isn't an issue (that controls are fully formed and
-                //     ready for content to be set, and that we don't double set the content in a content update immediately after this, or if
-                //     we do, it's not annoying).
-                //
+                // Immediate content update during configuration.
                 binding.UpdateViewFromViewModel(); 
             }
             else

@@ -258,14 +258,6 @@ namespace MaaasClientWin.Controls
 
         protected void processCommonFrameworkElementProperies(JObject controlSpec)
         {
-            // !!! TODO: more common framework element properties...
-            //
-            //           VerticalAlignment [ Top, Center, Bottom, Stretch ]
-            //           HorizontalAlignment [ Left, Center, Right, Stretch ] 
-            //           Background (brush) - also, what about image?
-            //           Padding, border, etc.
-            //
-
             Util.debug("Processing framework element properties");
             processElementProperty((string)controlSpec["name"], value => this.Control.Name = ToString(value));
             processElementProperty((string)controlSpec["height"], value => this.Control.Height = ToDeviceUnits(value));

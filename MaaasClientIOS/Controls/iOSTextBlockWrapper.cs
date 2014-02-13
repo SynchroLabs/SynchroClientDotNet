@@ -51,9 +51,19 @@ namespace MaaasClientIOS.Controls
 
             processElementProperty((string)controlSpec["value"], value => 
             {
-                // !!! We really only want to size to fix the height and/or width if not specied expicitly
                 textBlock.Text = ToString(value);
                 textBlock.SizeToFit();
+
+                // !!! We really only want to size to fit the height and/or width if not specied expicitly.  If we had a way to 
+                //     track the explicit vs default height/width setting, we could use something like the below to compute the
+                //     other dimension...
+                //
+                /*
+                RectangleF frame = textBlock.Frame;
+                SizeF size = textBlock.SizeThatFits(frame.Size);
+                frame.Size = size;
+                textBlock.Frame = frame;
+                 */
             });
         }
     }

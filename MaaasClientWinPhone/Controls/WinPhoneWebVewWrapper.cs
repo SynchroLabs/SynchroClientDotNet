@@ -24,7 +24,7 @@ namespace MaaasClientWinPhone.Controls
 
             applyFrameworkElementDefaults(webView);
 
-            // !!! TODO
+            // !!! TODO - Windows Phone Web View
             processElementProperty((string)controlSpec["contents"], value => webView.NavigateToString(ToString(value)));
             processElementProperty((string)controlSpec["url"], value => webView.Navigate(new Uri(ToString(value))));
 

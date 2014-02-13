@@ -21,7 +21,7 @@ namespace MaaasClientWin.Controls
 
             applyFrameworkElementDefaults(gridView);
 
-            // !!! TODO
+            // !!! TODO - Implement Windows Grid View
         }
     }
 }

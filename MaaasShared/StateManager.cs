@@ -23,17 +23,6 @@ namespace MaaasCore
             _viewModel = new ViewModel();
             _host = host;
 
-            /* !!! Refactor - Need to pass transport in from client - always use http for now...
-             * 
-            if (transport == "websocket")
-            {
-                 _transport = new TransportWs(host);
-            }
-            else
-            {
-                _transport = new TransportHttp(host + "/api");
-            }
-            */
             _transport = transport;
 
             _deviceMetrics = deviceMetrics;
@@ -114,7 +103,7 @@ namespace MaaasCore
 
             JObject requestObject = new JObject(
                 new JProperty("Path", this.Path),
-                new JProperty("DeviceMetrics", this.PackageDeviceMetrics())
+                new JProperty("DeviceMetrics", this.PackageDeviceMetrics()) // Send over device metrics
             );
 
             await _transport.sendMessage(requestObject, this.ProcessJsonResponse);

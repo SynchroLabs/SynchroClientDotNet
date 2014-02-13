@@ -37,16 +37,16 @@ namespace MaaasClientAndroid.Controls
             _control = control as TextView;
         }
 
-        // !!! The SetTypeface method used below takes an "extra" stlye param, which is documented as:
+        // The SetTypeface method used below takes an "extra" stlye param, which is documented as:
         //
-        //         "Sets the typeface and style in which the text should be displayed, and turns on the fake bold and italic bits
-        //          in the Paint if the Typeface that you provided does not have all the bits in the style that you specified."
+        //     "Sets the typeface and style in which the text should be displayed, and turns on the fake bold and italic bits
+        //      in the Paint if the Typeface that you provided does not have all the bits in the style that you specified."
         //
-        //     When using this method with such a font (like the default system monospace font), this works fine unless you are
-        //     trying to set the style from any non-normal value to normal, in which case it fails to restore it to normal.
-        //     Not sure if this is an Android TextView bug or a Xamarin bug, but would guess the former.  Setting the typeface
-        //     to a face that does support the style bits, then setting it to the proper typeface with the extra style param
-        //     seems to work (and doesn't produce any visible flickering or other artifacts).  So we're going with that for now.
+        // When using this method with such a font (like the default system monospace font), this works fine unless you are
+        // trying to set the style from any non-normal value to normal, in which case it fails to restore it to normal.
+        // Not sure if this is an Android TextView bug or a Xamarin bug, but would guess the former.  Setting the typeface
+        // to a face that does support the style bits, then setting it to the proper typeface with the extra style param
+        // seems to work (and doesn't produce any visible flickering or other artifacts).  So we're going with that for now.
         //
         protected void setStyledTypeface(Typeface tf)
         {
@@ -467,7 +467,6 @@ namespace MaaasClientAndroid.Controls
 
             processThicknessProperty(controlSpec["margin"], new MarginThicknessSetter(this));
             // Since some controls have to treat padding differently, the padding attribute is handled by the individual control classes
-            // processThicknessProperty(controlSpec["padding"], new PaddingThicknessSetter(this.Control));
 
             if (!(this is AndroidBorderWrapper) && !(this is AndroidRectangleWrapper))
             {

@@ -30,7 +30,7 @@ namespace MaaasClientAndroid.Controls
 
             applyFrameworkElementDefaults(gridView);
 
-            // !!! TODO
+            // !!! TODO - Implement Android Grid View
         }
     }
 }
