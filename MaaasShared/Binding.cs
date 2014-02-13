@@ -139,8 +139,18 @@ namespace MaaasCore
             {
                 Util.debug("Found boundtoken: " + m.Groups[1]);
                 string token = m.Groups[1].ToString();
-                _boundTokens.Add(bindingContext.Select(token));
-                return "{" + tokenIndex++ + "}";
+                if (token.StartsWith("^"))
+                {
+                    // One time binding, resolve now...
+                    token = token.Substring(1);
+                    return bindingContext.Select(token).GetValue().ToString();
+                }
+                else
+                {
+                    // Normal token binding, record binding context and return format spec token...
+                    _boundTokens.Add(bindingContext.Select(token));
+                    return "{" + tokenIndex++ + "}";
+                }
             });
         }
 

@@ -2,31 +2,17 @@
 Mobile Application As A Service (MAAAS) - Client
 =================================================
 
-
-Rebinding
-
-    Note: I'm pretty sure this all got fixed - verify
-
-    The problem is that bindings are established using the tokens from the viewmodel.  So it is currently
-    impossible to create a binding for which the token doesn't exist (and this same issue would be a problem
-    when any intermeidate binding context isn't represented by a token).
-
-	If "resolved binding" (taking into consideration the binding context, which can include binding tokens) exists
-	at the time of initial binding, a valid path can be constructed.  If not, this binding would have to be 
-	re-attempted each time the client view model changes (from the server?) to see if the binding can then be
-	established.  Do we really need to support that (binding contexts that aren't available in the initial state)?
-
-        - What if a control binds to an item that is not present on the origina view model, but shows up later?
-        - What if a control binds to an item on the view model, and that item goes away later?
-	
-	Investigate maintaining path/parentage on replaced tokens.
-	How do binding tokens ($root, $parent, etc) fit in to this?
-
-	For array bindings, update repeated items (remove all and re-add?), use stored template to create items? (I'm thinking no)
-
 Binding context specifiers
 
-    !!! Document binding tokens - $root, $parent, etc
+    Binding token paths
+        [viewModel.]attribute
+        [viewModel.]children[1].childAttribute
+
+    Binding path tokens - 
+        $root - Selects the root of the view model.
+        $parent - Selects the parent of the current binding context.
+        $data - Selects the value of the current binding context
+        $index - Produces a numeric index representing the position of an iterated binding context
 
     Each item has a binding context, which is determined before the item is created/processed by inspecting the
     "binding" attribute to look for a "foreach" or "with" binding context specifier.
@@ -44,11 +30,11 @@ Binding context specifiers
 
 Property binding expressions/directives:
 
-	Negation using !, such as visibility="{!isVisible}"
 	One time using ^ (default is one way binding)
 
-    Real expression support:
+    Expression support (TODO !!!):
 
+    	Simple negation using !, such as visibility="{!isVisible}"
 		Mathematical (240 - charCount)
 		Logical (charCount >= 240)
 		Type conversion (str(240 - charCount))
@@ -57,30 +43,38 @@ Property binding expressions/directives:
 
 Layout Filtering
 
-A node with the single "filter" attribute will chose one child node contained in the filter attribute to replace that node.  The first
-child node that matches all filter criteria is promoted to replace the filter node.  The filter criteria attributes are as follows:
+A node with the single "filter" attribute will chose one child node contained in the filter attribute to replace the filter node.
+The first child node that does not fail to match all provided filter criteria is promoted to replace the filter node.  The filter
+criteria attributes are as follows:
 
-filterOS: Windows, WinPhone, Android, iOS
-filterDeviceType: Phone, Tablet
-filterDeviceClass: Phone, Phablet, MiniTablet, Tablet 
+    filterOS: Windows, WinPhone, Android, iOS
+    filterDeviceType: Phone, Tablet
+    filterDeviceClass: Phone, Phablet, MiniTablet, Tablet 
 
 If the filter criteria attribute contains a value, then that value will be compared to the appropriate device metrics value.  If the
-filter criteria attribute contains a list of values, then if any of those values matches the appropriate device metrics value, then
-that is considered a match.  If multiple filter criteria attributes are present, all must match in order for the node to be considered
-a match.  The first node encountered that does not fail to match all filter criteria will be promoted to replace the top level filter
-node.
+filter criteria attribute contains a list of values, then if any of those values matches the appropriate device metrics value, that
+is considered a match.  If multiple filter criteria attributes are present, all must match in order for the node to be considered a
+match.  The first node encountered that does not fail to match all provided filter criteria will be promoted to replace the top level
+filter node.  A child node can be provided that has no filter criteria, where such node will be a "default".  It is also possible that
+there will be cases where no node satisfies all provided criteria, in which case no result is provided (the filter element will just
+be removed from the layout).
 
 Examples:
-
-{ filter: [
-    { control: "text", filterOS: ["Windows", "WinPhone"], value: "Microsoft Rules!" },
-    { control: "text", value: "Microsoft does not rule" },
-]}
 
 { filter: [
     { control: "text", filterDeviceType: "Tablet", value: "Tablets Rule!" },
     { control: "text", filterDeviceType: "Phone", value: "Phones Rule!" },
 ]}
+
+{ filter: [
+    { control: "text", filterOS: ["Windows", "WinPhone"], value: "Microsoft Rules!" },
+    { control: "text", value: "Microsoft does not rule" }, // Default
+]}
+
+{ filter: [
+    { control: "text", filterOS: "iOS", value: "iOS Rules!" }, // This if matches, otherwise nothing
+]}
+
 
 =======================
 
@@ -183,7 +177,7 @@ Controls -
     Textbox / Password
 
         Attributes:
-            value
+            value (bound only?)
 
         Bindings:
             value
@@ -249,7 +243,7 @@ Controls -
         !!! Binding mappings (true/false, string on/off or other arbitrary values)
 
         Attributes:
-            value
+            value (binding only?)
 
         Bindings:
             value
@@ -459,21 +453,30 @@ For each dimension, possible values:
 
 =======================
 
-Font - cross platform
+Color attribute
+
+=======================
+
+Thickness attribute
+
+=======================
+
+Font attribute
     
-    face = Mono, Serif, SanSerif - what about "System" (default, may vary, per platform, based on control type)?
+    face = Mono, Serif, SanSerif
     size = float (typographic points)
     bold = t/f
     italic = t/f
 
     font: { face: "Serif", size: 12, bold: true, italic: false }
 
+    Note: If no "face" value is provide, the font face will be the default face for the control/element (which will often vary
+          by control/element type and by platform, and is usually what you want).
+
     Also provided as convenience parameter (since it is commom to specify only the size):
 
-    fontsize: float (typographic points)
-        "fontsize: xx" is equivalent to "font: { size: xx }"
-
-    !!! TODO: Custom font names (platform-specific), weights?
+        fontsize: float (typographic points)
+            "fontsize: xx" is equivalent to "font: { size: xx }"
 
 =======================
 
@@ -482,4 +485,8 @@ List stuff
 Need to make sure list element lifecycle is properly managed (that bound children are removed)
 
 Need to recycle views on platforms that support it (future?)
+
+=======================
+
+!!! TODO: Custom font names (platform-specific), weights?
 
