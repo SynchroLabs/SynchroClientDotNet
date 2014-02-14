@@ -31,7 +31,7 @@ namespace MaasClient.Core
             _uri = new Uri("ws://" + host);
         }
 
-        public async Task sendMessage(JObject requestObject, Action<JObject> responseHandler)
+        public override async Task sendMessage(string sessionId, JObject requestObject, Action<JObject> responseHandler)
         {
             try
             {
@@ -81,6 +81,10 @@ namespace MaasClient.Core
                     webSocket.Closed += Closed;
 
                     Util.debug("Connecting to WebSocket server on: " + _uri);
+                    if (sessionId != null)
+                    {
+                        webSocket.SetRequestHeader(Transport.SessionIdHeader, sessionId);
+                    }
                     await webSocket.ConnectAsync(_uri);
                     Util.debug("Connected to WebSocket server on: " + _uri);
                     _ws = webSocket; // Only store it after successfully connecting.

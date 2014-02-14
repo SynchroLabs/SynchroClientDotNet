@@ -1,3 +1,5 @@
+#if !NETFX_CORE
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -39,7 +41,7 @@ namespace MaaasShared
             _responseHandler(responseObject);
         }
 
-        public async Task sendMessage(JObject requestObject, Action<JObject> responseHandler)
+        public override async Task sendMessage(string sessionId, JObject requestObject, Action<JObject> responseHandler)
         {
             try
             {
@@ -49,7 +51,16 @@ namespace MaaasShared
                 // Have we connected yet?
                 if (webSocket == null)
                 {
-                    webSocket = new WebSocket(_uri);
+                    if (sessionId != null)
+                    {
+                        var customHeaderItems = new List<KeyValuePair<string, string>> { { Transport.SessionIdHeader, sessionId } };
+                        webSocket = new WebSocket(_uri, "", null, customHeaderItems, "", "", WebSocketVersion.Rfc6455);
+                    }
+                    else
+                    {
+                        webSocket = new WebSocket(_uri);
+                    }
+
                     webSocket.NoDelay = true;
 
                     webSocket.Opened += new EventHandler(websocket_Opened);
@@ -116,5 +127,6 @@ namespace MaaasShared
         }
     }
 }
+#endif
 
 

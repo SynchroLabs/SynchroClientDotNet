@@ -14,6 +14,8 @@ namespace MaaasShared
         private HttpClient _httpClient;
         private Uri _uri;
 
+        private string _sessionId;
+
         public TransportHttp(string host)
         {
             _uri = new Uri("http://" + host);
@@ -33,8 +35,13 @@ namespace MaaasShared
             _httpClient = client;
         }
 
-        public async Task sendMessage(JObject requestObject, Action<JObject> responseHandler)
+        public override async Task sendMessage(string sessionId, JObject requestObject, Action<JObject> responseHandler)
         {
+            if ((_sessionId == null) && (sessionId != null))
+            {
+                _sessionId = sessionId;
+                _httpClient.DefaultRequestHeaders.Add(Transport.SessionIdHeader, _sessionId);
+            }
             StringContent jsonContent = new StringContent(requestObject.ToString(), System.Text.Encoding.UTF8, "application/json");
             var response = await _httpClient.PostAsync(_uri, jsonContent);
             response.EnsureSuccessStatusCode();

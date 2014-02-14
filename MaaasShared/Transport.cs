@@ -7,8 +7,10 @@ using System.Threading.Tasks;
 
 namespace MaaasCore
 {
-    public interface Transport
+    public abstract class Transport
     {
-        Task sendMessage(JObject requestObject, Action<JObject> responseHandler);
+        public static string SessionIdHeader = "Maaas-Session-Id";
+
+        public abstract Task sendMessage(string sessionId, JObject requestObject, Action<JObject> responseHandler);
     }
 }

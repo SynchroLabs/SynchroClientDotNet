@@ -140,10 +140,9 @@ Controls -
 
     ScrollView
 
-        !!! iOS - Constrain scroll to horizontal or vertical
-
-        orientation = [Vertical], Horizontal
-        contents
+        Attributes:
+            orientation = [Vertical], Horizontal
+            contents
 
     Stackpanel
 
@@ -334,9 +333,6 @@ Controls -
             iOS - UIStepper
             No other platform has a control / standard (just use side-by-side buttons of appropriate style)
 
-Misc Control stuff
-
-    Separate binding ability of ARGB elements would be a neat parlor trick (maybe later)
 
 Client
 
@@ -348,7 +344,7 @@ Client
     Set icon, title, supported orientation (maybe dynamic - only portrait on phone, only landscape on tab?)
     Deploy on all devices for demo
 
-    Store/restrore state as required (should just be client cookie/id and current page so can re-load as needed)
+    Store/restore state as required (should just be client cookie/id and current page so can re-load as needed)
         - Requires persistent client state mechanism on server
 
     Look at perf (especially on iOS - maybe just related to console logging)
@@ -364,7 +360,17 @@ Server
     Test on iPad, Android tab (Nexus 7, Kindle Fire)
 
     Persistent client state
-        Use cookies?  homegrown cookie-like method?.  Needs to work with any driver.  Backed by Redis or similar
+        Use cookies?  homegrown cookie-like method?.  Needs to work with any driver.  
+        Backed by Redis or similar, maybe Windows Azure Cache Services + db?
+        New session
+            Create session db entry, insert into cache, return session id
+        On request start
+            Get session from cache, if not in cache, lookin in db, if not in db, return "session not found" - trigger client to establish new session
+            Otherwise record copy of session
+        On request end
+            Diff session, if changed, write updated session to db and cache
+
+        Http needs to send session id on every request, websockets only when starting socket
 
     Cache
         View cache - negotiate view cache state so that server knows whether you need a given view or have it (to avoid round trips)?
@@ -373,6 +379,15 @@ Server
 
     Implement PropertyCross
 
+Misc
+
+    Separate binding ability of ARGB elements would be a neat parlor trick (maybe later)
+
+    List stuff
+        Need to make sure list element lifecycle is properly managed (that bound children are removed)
+        Need to recycle views on platforms that support it (future?)
+
+    Custom font names (platform-specific), weights (other than bold, per platform)?
 
 ================================================================================
 
@@ -476,14 +491,4 @@ Font attribute
             "fontsize: xx" is equivalent to "font: { size: xx }"
 
 =======================
-
-List stuff
-
-Need to make sure list element lifecycle is properly managed (that bound children are removed)
-
-Need to recycle views on platforms that support it (future?)
-
-=======================
-
-!!! TODO: Custom font names (platform-specific), weights?
 

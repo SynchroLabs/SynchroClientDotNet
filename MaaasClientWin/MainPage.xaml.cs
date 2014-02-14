@@ -1,5 +1,6 @@
 ﻿using MaaasCore;
 using MaaasShared;
+using MaasClient.Core;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -38,7 +39,10 @@ namespace MaaasClientWin
             this.mainScroll.HorizontalScrollBarVisibility = ScrollBarVisibility.Auto;
             this.mainScroll.VerticalScrollBarVisibility = ScrollBarVisibility.Auto;
 
-            _stateManager = new StateManager(_host, new TransportHttp(_host + "/api"), deviceMetrics);
+            //Transport transport = new TransportHttp(_host + "/api");
+            Transport transport = new TransportWs(_host);
+
+            _stateManager = new StateManager(_host, transport, deviceMetrics);
             _pageView = new WinPageView(_stateManager, _stateManager.ViewModel, this.mainScroll);
             _stateManager.Path = "menu";
 

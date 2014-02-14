@@ -18,6 +18,8 @@ namespace MaaasCore
 
         MaaasDeviceMetrics _deviceMetrics;
 
+        string _sessionId;
+
         public StateManager(string host, Transport transport, MaaasDeviceMetrics deviceMetrics)
         {
             _viewModel = new ViewModel();
@@ -68,6 +70,16 @@ namespace MaaasCore
         void ProcessJsonResponse(JObject responseAsJSON)
         {
             Util.debug("Got response: " + responseAsJSON);
+
+            if (responseAsJSON["NewSessionId"] != null)
+            {
+                if (_sessionId != null)
+                {
+                    // Existing client SessionId was replaced by server!
+                }
+                _sessionId = responseAsJSON["NewSessionId"].ToString();
+            }
+
             if (responseAsJSON["ViewModel"] != null)
             {
                 JObject jsonViewModel = responseAsJSON["ViewModel"] as JObject;
@@ -106,7 +118,7 @@ namespace MaaasCore
                 new JProperty("DeviceMetrics", this.PackageDeviceMetrics()) // Send over device metrics
             );
 
-            await _transport.sendMessage(requestObject, this.ProcessJsonResponse);
+            await _transport.sendMessage(_sessionId, requestObject, this.ProcessJsonResponse);
         }
 
         public async void processCommand(string command, JObject parameters = null)
@@ -139,7 +151,7 @@ namespace MaaasCore
                 );
             }
 
-            await _transport.sendMessage(requestObject, this.ProcessJsonResponse);
+            await _transport.sendMessage(_sessionId, requestObject, this.ProcessJsonResponse);
         }
     }
 }
