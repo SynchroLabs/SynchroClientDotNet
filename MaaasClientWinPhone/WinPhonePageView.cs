@@ -1,5 +1,6 @@
 ﻿using MaaasClientWinPhone.Controls;
 using MaaasCore;
+using Microsoft.Phone.Shell;
 using Microsoft.Xna.Framework.GamerServices;
 using Newtonsoft.Json.Linq;
 using System;
@@ -15,14 +16,16 @@ using System.Windows.Controls;
 
 namespace MaaasClientWinPhone
 {
-    class WinPhonePageView : PageView
+    public class WinPhonePageView : PageView
     {
+        MainPage _page;
         WinPhoneControlWrapper _rootControlWrapper;
 
-        public WinPhonePageView(StateManager stateManager, ViewModel viewModel, ContentControl contentControl) :
+        public WinPhonePageView(StateManager stateManager, ViewModel viewModel, MainPage page, ContentControl contentControl) :
             base(stateManager, viewModel)
         {
-            _rootControlWrapper = new WinPhoneControlWrapper(_stateManager, _viewModel, _viewModel.RootBindingContext, contentControl);
+            _page = page;
+            _rootControlWrapper = new WinPhoneControlWrapper(this, _stateManager, _viewModel, _viewModel.RootBindingContext, contentControl);
         }
 
         public override ControlWrapper CreateRootContainerControl(JObject controlSpec)
@@ -30,8 +33,41 @@ namespace MaaasClientWinPhone
             return WinPhoneControlWrapper.CreateControl(_rootControlWrapper, _viewModel.RootBindingContext, controlSpec);
         }
 
+        protected IApplicationBar ShowAppBar()
+        {
+            if (_page.ApplicationBar == null)
+            {
+                _page.ApplicationBar = new ApplicationBar();
+
+                _page.ApplicationBar.Mode = ApplicationBarMode.Default;
+                _page.ApplicationBar.Opacity = 1.0;
+                _page.ApplicationBar.IsVisible = true;
+                _page.ApplicationBar.IsMenuEnabled = true;
+            }
+
+            return _page.ApplicationBar;
+        }
+
+        protected void DestroyAppBar()
+        {
+            _page.ApplicationBar = null;
+        }
+
+        public void AddAppBarIconButton(ApplicationBarIconButton button)
+        {
+            IApplicationBar appBar = this.ShowAppBar();
+            appBar.Buttons.Add(button);
+        }
+
+        public void AddAppBarMenuItem(ApplicationBarMenuItem menuItem)
+        {
+            IApplicationBar appBar = this.ShowAppBar();
+            appBar.MenuItems.Add(menuItem);
+        }
+
         public override void ClearContent()
         {
+            DestroyAppBar();
             ContentControl contentControl = (ContentControl)_rootControlWrapper.Control;
             contentControl.Content = null;
             _rootControlWrapper.ChildControls.Clear();

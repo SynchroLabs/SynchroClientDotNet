@@ -518,7 +518,7 @@ namespace MaaasClientAndroid.Controls
 
             switch ((string)controlSpec["control"])
             {
-                case "action":
+                case "actionBar.item":
                     controlWrapper = new AndroidActionWrapper(parent, bindingContext, controlSpec);
                     break;
                 case "border":

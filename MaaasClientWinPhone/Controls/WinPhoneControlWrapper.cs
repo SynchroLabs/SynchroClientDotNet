@@ -305,6 +305,10 @@ namespace MaaasClientWinPhone.Controls
 
             switch ((string)controlSpec["control"])
             {
+                case "appBar.button":
+                case "appBar.menuItem":
+                    controlWrapper = new WinPhoneAppBarWrapper(parent, bindingContext, controlSpec);
+                    break;
                 case "border":
                     controlWrapper = new WinPhoneBorderWrapper(parent, bindingContext, controlSpec);
                     break;

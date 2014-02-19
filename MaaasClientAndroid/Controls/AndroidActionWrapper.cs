@@ -21,13 +21,13 @@ namespace MaaasClientAndroid.Controls
         public AndroidActionWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
-            Util.debug("Creating action bar item with title of: " + controlSpec["title"]);
+            Util.debug("Creating action bar item with title of: " + controlSpec["text"]);
 
             this._isVisualElement = false;
 
             AndroidActionBarItem actionBarItem = _pageView.CreateAndAddActionBarItem();
 
-            processElementProperty((string)controlSpec["title"], value => actionBarItem.Title = ToString(value));
+            processElementProperty((string)controlSpec["text"], value => actionBarItem.Title = ToString(value));
 
             JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, CommandName.OnClick, Commands);
             ProcessCommands(bindingSpec, Commands);

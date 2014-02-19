@@ -316,7 +316,7 @@ namespace MaaasClientWin.Controls
                 case "canvas":
                     controlWrapper = new WinCanvasWrapper(parent, bindingContext, controlSpec);
                     break;
-                case "command":
+                case "commandBar.button":
                     controlWrapper = new WinCommandWrapper(parent, bindingContext, controlSpec);
                     break;
                 case "edit":

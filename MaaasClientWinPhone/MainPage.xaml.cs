@@ -31,7 +31,7 @@ namespace MaaasClientWinPhone
             WinPhoneDeviceMetrics deviceMetrics = new WinPhoneDeviceMetrics();
 
             _stateManager = new StateManager(_host, new TransportHttp(_host + "/api"), deviceMetrics);
-            _pageView = new WinPhonePageView(_stateManager, _stateManager.ViewModel, this.mainScroll);
+            _pageView = new WinPhonePageView(_stateManager, _stateManager.ViewModel, this, this.mainScroll);
 
             this.BackKeyPress += MainPage_BackKeyPress;
             this.Loaded += MainPage_Loaded;

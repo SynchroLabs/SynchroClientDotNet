@@ -20,12 +20,12 @@ namespace MaaasClientWin.Controls
         public WinCommandWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
-            Util.debug("Creating command element with label of: " + controlSpec["label"]);
+            Util.debug("Creating command element with label of: " + controlSpec["text"]);
 
             AppBarButton button = new AppBarButton();
             this._control = button;
 
-            processElementProperty((string)controlSpec["label"], value => button.Label = ToString(value));
+            processElementProperty((string)controlSpec["text"], value => button.Label = ToString(value));
             processElementProperty((string)controlSpec["icon"], value => 
             {   
                 Symbol iconSymbol;
