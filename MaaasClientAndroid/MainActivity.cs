@@ -20,8 +20,41 @@ namespace MaaasClientAndroid
         static string _host = Util.getMaaasHost();
 
         StateManager _stateManager;
-        PageView _pageView;
+        AndroidPageView _pageView;
 
+        // http://developer.android.com/guide/topics/ui/actionbar.html
+        //
+        // http://android-developers.blogspot.com/2012/01/say-goodbye-to-menu-button.html
+        //
+
+        public override bool OnCreateOptionsMenu(IMenu menu)
+        {
+            return _pageView.OnCreateOptionsMenu(menu);
+        }
+
+        public override bool OnPrepareOptionsMenu(IMenu menu)
+        {
+            return base.OnPrepareOptionsMenu(menu);
+        }
+
+        public override bool OnOptionsItemSelected(IMenuItem item)
+        {
+
+            if (item.ItemId == Android.Resource.Id.Home)
+            {
+                return _pageView.OnCommandBarUp(item);
+            }
+            else if (_pageView.OnOptionsItemSelected(item))
+            {
+                // Page view handled the item
+                return true;
+            }
+            else
+            {
+                return base.OnOptionsItemSelected(item);
+            }
+        }
+        
         async protected override void OnCreate(Bundle bundle)
         {
             base.OnCreate(bundle);

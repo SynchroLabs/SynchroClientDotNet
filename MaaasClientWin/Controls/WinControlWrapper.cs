@@ -82,15 +82,20 @@ namespace MaaasClientWin.Controls
         protected FrameworkElement _control;
         public FrameworkElement Control { get { return _control; } }
 
-        public WinControlWrapper(StateManager stateManager, ViewModel viewModel, BindingContext bindingContext, FrameworkElement control) :
+        protected WinPageView _pageView;
+        public WinPageView PageView { get { return _pageView; } }
+
+        public WinControlWrapper(WinPageView pageView, StateManager stateManager, ViewModel viewModel, BindingContext bindingContext, FrameworkElement control) :
             base(stateManager, viewModel, bindingContext)
         {
+            _pageView = pageView;
             _control = control;
         }
 
         public WinControlWrapper(ControlWrapper parent, BindingContext bindingContext, FrameworkElement control = null) :
             base(parent, bindingContext)
         {
+            _pageView = ((WinControlWrapper)parent).PageView;
             _control = control;
         }
 
@@ -291,9 +296,9 @@ namespace MaaasClientWin.Controls
             return null;
         }
 
-        public static WinControlWrapper WrapControl(StateManager stateManager, ViewModel viewModel, BindingContext bindingContext, FrameworkElement control)
+        public static WinControlWrapper WrapControl(WinPageView pageView, StateManager stateManager, ViewModel viewModel, BindingContext bindingContext, FrameworkElement control)
         {
-            return new WinControlWrapper(stateManager, viewModel, bindingContext, control);
+            return new WinControlWrapper(pageView, stateManager, viewModel, bindingContext, control);
         }
 
         public static WinControlWrapper CreateControl(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec)
@@ -310,6 +315,9 @@ namespace MaaasClientWin.Controls
                     break;
                 case "canvas":
                     controlWrapper = new WinCanvasWrapper(parent, bindingContext, controlSpec);
+                    break;
+                case "command":
+                    controlWrapper = new WinCommandWrapper(parent, bindingContext, controlSpec);
                     break;
                 case "edit":
                     controlWrapper = new WinTextBoxWrapper(parent, bindingContext, controlSpec);
@@ -375,7 +383,10 @@ namespace MaaasClientWin.Controls
                 }
                 else if (OnCreateControl != null)
                 {
-                    OnCreateControl(controlSpec, controlWrapper);
+                    if (controlWrapper.IsVisualElement)
+                    {
+                        OnCreateControl(controlSpec, controlWrapper);
+                    }
                 }
             });
         }

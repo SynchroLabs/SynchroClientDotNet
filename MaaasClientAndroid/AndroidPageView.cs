@@ -16,16 +16,41 @@ using Android.Util;
 
 namespace MaaasClientAndroid
 {
-    class AndroidPageView  : PageView
+    public class AndroidActionBarItem
+    {
+        protected string _title;
+        protected Action _onItemSelected;
+        // !!! icon 
+        // !!! ShowAsAction
+
+        public string Title
+        {
+            get { return _title; }
+            set
+            {
+                _title = value;
+            }
+        }
+
+        public Action OnItemSelected { get { return _onItemSelected; } set { _onItemSelected = value; } }
+
+        public AndroidActionBarItem()
+        {
+        }
+    }
+
+    public class AndroidPageView  : PageView
     {
         Activity _activity;
         AndroidControlWrapper _rootControlWrapper;
+
+        List<AndroidActionBarItem> _actionBarItems = new List<AndroidActionBarItem>();
 
         public AndroidPageView(StateManager stateManager, ViewModel viewModel, Activity activity, ViewGroup panel) :
             base(stateManager, viewModel)
         {
             _activity = activity;
-            _rootControlWrapper = new AndroidControlWrapper(_stateManager, _viewModel, _viewModel.RootBindingContext, panel);
+            _rootControlWrapper = new AndroidControlWrapper(this, _stateManager, _viewModel, _viewModel.RootBindingContext, panel);
         }
 
         public override ControlWrapper CreateRootContainerControl(JObject controlSpec)
@@ -33,8 +58,60 @@ namespace MaaasClientAndroid
             return AndroidControlWrapper.CreateControl(_rootControlWrapper, _viewModel.RootBindingContext, controlSpec);
         }
 
+        public AndroidActionBarItem CreateAndAddActionBarItem()
+        {
+            AndroidActionBarItem actionBarItem = new AndroidActionBarItem();
+            this._actionBarItems.Add(actionBarItem);
+            return actionBarItem;
+        }
+
+        public bool OnCreateOptionsMenu(IMenu menu)
+        {
+            Util.debug("Option menu created");
+            if (_actionBarItems.Count > 0)
+            {
+                foreach(var actionBarItem in _actionBarItems)
+                {
+                    var item = menu.Add(0, 0, 0, actionBarItem.Title);
+                    // item.SetIcon(Android.Resource.Drawable.IcDelete);
+                    // item.SetShowAsAction(ShowAsAction.IfRoom);
+                }
+                return true;
+            }
+            else // No items
+            {
+                return false;
+            }
+        }
+
+        public bool OnOptionsItemSelected(IMenuItem item)
+        {
+            if ((item.ItemId >= 0) && (item.ItemId < _actionBarItems.Count))
+            {
+                AndroidActionBarItem actionBarItem = _actionBarItems[item.ItemId];
+                Util.debug("Action bar item selected - id: " + item.ItemId + ", title: " + actionBarItem.Title);
+                if (actionBarItem.OnItemSelected != null)
+                {
+                    actionBarItem.OnItemSelected();
+                }
+                return true;
+            }
+
+            return false;
+        }
+
+        public bool OnCommandBarUp(IMenuItem item)
+        {
+            Util.debug("Command bar Up button pushed");
+            this.OnBackCommand();
+            return true;
+        }
+
         public override void ClearContent()
         {
+            this._actionBarItems.Clear();
+            this._activity.InvalidateOptionsMenu();
+
             ViewGroup panel = (ViewGroup)_rootControlWrapper.Control;
             panel.RemoveAllViews(); 
             _rootControlWrapper.ChildControls.Clear();
@@ -48,6 +125,9 @@ namespace MaaasClientAndroid
                 panel.AddView(((AndroidControlWrapper)content).Control);
             }
             _rootControlWrapper.ChildControls.Add(content);
+
+            this._activity.ActionBar.SetDisplayHomeAsUpEnabled(this.HasBackCommand);
+            this._activity.InvalidateOptionsMenu();
         }
 
         //

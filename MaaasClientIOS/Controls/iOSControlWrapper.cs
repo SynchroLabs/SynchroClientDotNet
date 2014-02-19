@@ -489,17 +489,22 @@ namespace MaaasClientIOS.Controls
         protected UIView _control;
         public UIView Control { get { return _control; } }
 
+        protected iOSPageView _pageView;
+        public iOSPageView PageView { get { return _pageView; } }
+
         protected UIEdgeInsets _margin = new UIEdgeInsets(0, 0, 0, 0);
 
-        public iOSControlWrapper(StateManager stateManager, ViewModel viewModel, BindingContext bindingContext, UIView control) :
+        public iOSControlWrapper(iOSPageView pageView, StateManager stateManager, ViewModel viewModel, BindingContext bindingContext, UIView control) :
             base(stateManager, viewModel, bindingContext)
         {
+            _pageView = pageView;
             _control = control;
         }
 
         public iOSControlWrapper(ControlWrapper parent, BindingContext bindingContext, UIView control = null) :
             base(parent, bindingContext)
         {
+            _pageView = ((iOSControlWrapper)parent).PageView;
             _control = control;
         }
 
@@ -767,9 +772,9 @@ namespace MaaasClientIOS.Controls
             return null;
         }
 
-        public static iOSControlWrapper WrapControl(StateManager stateManager, ViewModel viewModel, BindingContext bindingContext, UIView control)
+        public static iOSControlWrapper WrapControl(iOSPageView pageView, StateManager stateManager, ViewModel viewModel, BindingContext bindingContext, UIView control)
         {
-            return new iOSControlWrapper(stateManager, viewModel, bindingContext, control);
+            return new iOSControlWrapper(pageView, stateManager, viewModel, bindingContext, control);
         }
 
         public static iOSControlWrapper CreateControl(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec)
@@ -851,7 +856,10 @@ namespace MaaasClientIOS.Controls
                 }
                 else if (OnCreateControl != null)
                 {
-                    OnCreateControl(controlSpec, controlWrapper);
+                    if (controlWrapper.IsVisualElement)
+                    {
+                        OnCreateControl(controlSpec, controlWrapper);
+                    }
                 }
             });
         }

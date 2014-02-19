@@ -41,6 +41,9 @@ namespace MaaasCore
         List<PropertyBinding> _propertyBindings = new List<PropertyBinding>();
         List<ControlWrapper> _childControls = new List<ControlWrapper>();
 
+        protected bool _isVisualElement = true;
+        public bool IsVisualElement { get { return _isVisualElement; } }
+
         public ControlWrapper(StateManager stateManager, ViewModel viewModel, BindingContext bindingContext)
         {
             _stateManager = stateManager;

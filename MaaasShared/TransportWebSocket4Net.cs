@@ -53,7 +53,8 @@ namespace MaaasShared
                 {
                     if (sessionId != null)
                     {
-                        var customHeaderItems = new List<KeyValuePair<string, string>> { { Transport.SessionIdHeader, sessionId } };
+                        var customHeaderItems = new List<KeyValuePair<string, string>>();
+                        customHeaderItems.Add(new KeyValuePair<string, string>(Transport.SessionIdHeader, sessionId));
                         webSocket = new WebSocket(_uri, "", null, customHeaderItems, "", "", WebSocketVersion.Rfc6455);
                     }
                     else

@@ -81,15 +81,20 @@ namespace MaaasClientWinPhone.Controls
         protected FrameworkElement _control;
         public FrameworkElement Control { get { return _control; } }
 
-        public WinPhoneControlWrapper(StateManager stateManager, ViewModel viewModel, BindingContext bindingContext, FrameworkElement control) :
+        protected WinPhonePageView _pageView;
+        public WinPhonePageView PageView { get { return _pageView; } }
+
+        public WinPhoneControlWrapper(WinPhonePageView pageView, StateManager stateManager, ViewModel viewModel, BindingContext bindingContext, FrameworkElement control) :
             base(stateManager, viewModel, bindingContext)
         {
+            _pageView = pageView;
             _control = control;
         }
 
         public WinPhoneControlWrapper(ControlWrapper parent, BindingContext bindingContext, FrameworkElement control = null) :
             base(parent, bindingContext)
         {
+            _pageView = ((WinPhoneControlWrapper)parent).PageView;
             _control = control;
         }
 
@@ -289,9 +294,9 @@ namespace MaaasClientWinPhone.Controls
             return null;
         }
 
-        public static WinPhoneControlWrapper WrapControl(StateManager stateManager, ViewModel viewModel, BindingContext bindingContext, FrameworkElement control)
+        public static WinPhoneControlWrapper WrapControl(WinPhonePageView pageView, StateManager stateManager, ViewModel viewModel, BindingContext bindingContext, FrameworkElement control)
         {
-            return new WinPhoneControlWrapper(stateManager, viewModel, bindingContext, control);
+            return new WinPhoneControlWrapper(pageView, stateManager, viewModel, bindingContext, control);
         }
 
         public static WinPhoneControlWrapper CreateControl(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec)
@@ -373,7 +378,10 @@ namespace MaaasClientWinPhone.Controls
                 }
                 else if (OnCreateControl != null)
                 {
-                    OnCreateControl(controlSpec, controlWrapper);
+                    if (controlWrapper.IsVisualElement)
+                    {
+                        OnCreateControl(controlSpec, controlWrapper);
+                    }
                 }
             });
         }

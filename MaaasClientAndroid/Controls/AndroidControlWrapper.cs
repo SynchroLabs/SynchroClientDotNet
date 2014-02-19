@@ -256,23 +256,28 @@ namespace MaaasClientAndroid.Controls
         protected View _control;
         public View Control { get { return _control; } }
 
+        protected AndroidPageView _pageView;
+        public AndroidPageView PageView { get { return _pageView; } }
+
         protected int _height = ViewGroup.LayoutParams.WrapContent;
         protected int _width = ViewGroup.LayoutParams.WrapContent;
 
-        public AndroidControlWrapper(StateManager stateManager, ViewModel viewModel, BindingContext bindingContext, View control) :
+        public AndroidControlWrapper(AndroidPageView pageView, StateManager stateManager, ViewModel viewModel, BindingContext bindingContext, View control) :
             base(stateManager, viewModel, bindingContext)
         {
+            _pageView = pageView;
             _control = control;
         }
 
         public AndroidControlWrapper(ControlWrapper parent, BindingContext bindingContext) :
             base(parent, bindingContext)
         {
+            _pageView = ((AndroidControlWrapper)parent).PageView;
         }
 
         public void InitializeLayoutParameters()
         {
-            if (_control.LayoutParameters == null)
+            if (_isVisualElement && (_control.LayoutParameters == null))
             {
                 _control.LayoutParameters = new ViewGroup.MarginLayoutParams(_width, _height);
             }
@@ -280,21 +285,24 @@ namespace MaaasClientAndroid.Controls
 
         public void updateSize()
         {
-            InitializeLayoutParameters();
-
-            // We don't want to overwrite an actual height/width value with WrapContent...
-            //
-            if (_width != ViewGroup.LayoutParams.WrapContent)
+            if (_isVisualElement)
             {
-                _control.LayoutParameters.Width = _width;
-            }
+                InitializeLayoutParameters();
 
-            if (_height != ViewGroup.LayoutParams.WrapContent)
-            {
-                _control.LayoutParameters.Height = _height;
-            }
+                // We don't want to overwrite an actual height/width value with WrapContent...
+                //
+                if (_width != ViewGroup.LayoutParams.WrapContent)
+                {
+                    _control.LayoutParameters.Width = _width;
+                }
 
-            _control.RequestLayout();
+                if (_height != ViewGroup.LayoutParams.WrapContent)
+                {
+                    _control.LayoutParameters.Height = _height;
+                }
+
+                _control.RequestLayout();
+            }
         }
 
         public int Width 
@@ -499,9 +507,9 @@ namespace MaaasClientAndroid.Controls
             return null;
         }
 
-        public static AndroidControlWrapper WrapControl(StateManager stateManager, ViewModel viewModel, BindingContext bindingContext, View control)
+        public static AndroidControlWrapper WrapControl(AndroidPageView pageView, StateManager stateManager, ViewModel viewModel, BindingContext bindingContext, View control)
         {
-            return new AndroidControlWrapper(stateManager, viewModel, bindingContext, control);
+            return new AndroidControlWrapper(pageView, stateManager, viewModel, bindingContext, control);
         }
 
         public static AndroidControlWrapper CreateControl(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec)
@@ -510,6 +518,9 @@ namespace MaaasClientAndroid.Controls
 
             switch ((string)controlSpec["control"])
             {
+                case "action":
+                    controlWrapper = new AndroidActionWrapper(parent, bindingContext, controlSpec);
+                    break;
                 case "border":
                     controlWrapper = new AndroidBorderWrapper(parent, bindingContext, controlSpec);
                     break;
@@ -567,7 +578,10 @@ namespace MaaasClientAndroid.Controls
             {
                 controlWrapper.processCommonFrameworkElementProperies(controlSpec);
                 parent.ChildControls.Add(controlWrapper);
-                controlWrapper.Control.Tag = new WrapperHolder(controlWrapper);
+                if (controlWrapper.Control != null)
+                {
+                    controlWrapper.Control.Tag = new WrapperHolder(controlWrapper);
+                }
             }
 
             return controlWrapper;
@@ -584,7 +598,10 @@ namespace MaaasClientAndroid.Controls
                 }
                 else if (OnCreateControl != null)
                 {
-                    OnCreateControl(controlSpec, controlWrapper);
+                    if (controlWrapper.IsVisualElement)
+                    {
+                        OnCreateControl(controlSpec, controlWrapper);
+                    }
                 }
             });
         }

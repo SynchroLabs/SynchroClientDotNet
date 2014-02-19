@@ -13,12 +13,16 @@ namespace MaaasClientWin
 {
     class WinPageView : PageView
     {
+        Page _page;
         WinControlWrapper _rootControlWrapper;
 
-        public WinPageView(StateManager stateManager, ViewModel viewModel, ContentControl contentControl) :
+        public Page Page { get { return _page; } }
+
+        public WinPageView(StateManager stateManager, ViewModel viewModel, Page page, ContentControl contentControl) :
             base(stateManager, viewModel)
         {
-            _rootControlWrapper = new WinControlWrapper(_stateManager, _viewModel, _viewModel.RootBindingContext, contentControl);
+            _page = page;
+            _rootControlWrapper = new WinControlWrapper(this, _stateManager, _viewModel, _viewModel.RootBindingContext, contentControl);
         }
 
         public override ControlWrapper CreateRootContainerControl(JObject controlSpec)
@@ -31,6 +35,7 @@ namespace MaaasClientWin
             ContentControl contentControl = (ContentControl)_rootControlWrapper.Control;
             contentControl.Content = null;
             _rootControlWrapper.ChildControls.Clear();
+            ClearAppBars();
         }
 
         public override void SetContent(ControlWrapper content)
@@ -41,6 +46,12 @@ namespace MaaasClientWin
                 contentControl.Content = ((WinControlWrapper)content).Control;
             }
             _rootControlWrapper.ChildControls.Add(content);
+        }
+
+        public void ClearAppBars()
+        {
+            _page.TopAppBar = null;
+            _page.BottomAppBar = null;
         }
 
         //

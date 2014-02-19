@@ -122,6 +122,7 @@
     <Compile Include="AndroidDeviceMetrics.cs" />
     <Compile Include="AndroidPageView.cs" />
     <Compile Include="AndroidTransportWs.cs" />
+    <Compile Include="Controls\AndroidActionWrapper.cs" />
     <Compile Include="Controls\AndroidBorderWrapper.cs" />
     <Compile Include="Controls\AndroidButtonWrapper.cs" />
     <Compile Include="Controls\AndroidCanvasWrapper.cs" />

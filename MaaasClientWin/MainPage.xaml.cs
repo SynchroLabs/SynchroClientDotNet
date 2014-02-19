@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Windows.Input;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.Graphics.Display;
@@ -28,7 +29,7 @@ namespace MaaasClientWin
         static string _host = Util.getMaaasHost();
 
         StateManager _stateManager;
-        PageView _pageView;
+        WinPageView _pageView;
 
         public BasicPage()
         {
@@ -43,7 +44,7 @@ namespace MaaasClientWin
             Transport transport = new TransportWs(_host);
 
             _stateManager = new StateManager(_host, transport, deviceMetrics);
-            _pageView = new WinPageView(_stateManager, _stateManager.ViewModel, this.mainScroll);
+            _pageView = new WinPageView(_stateManager, _stateManager.ViewModel, this, this.mainScroll);
             _stateManager.Path = "menu";
 
             this.Loaded += BasicPage_Loaded; 
