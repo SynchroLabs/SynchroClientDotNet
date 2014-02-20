@@ -28,6 +28,29 @@ namespace MaaasClientAndroid.Controls
             AndroidActionBarItem actionBarItem = _pageView.CreateAndAddActionBarItem();
 
             processElementProperty((string)controlSpec["text"], value => actionBarItem.Title = ToString(value));
+            processElementProperty((string)controlSpec["icon"], value => actionBarItem.Icon = ToString(value));
+            processElementProperty((string)controlSpec["enabled"], value => actionBarItem.IsEnabled = ToBoolean(value));
+
+            actionBarItem.ShowAsAction = ShowAsAction.Never;
+            if (controlSpec["showAsAction"] != null)
+            {
+                if ((string)controlSpec["showAsAction"] == "Always")
+                {
+                    actionBarItem.ShowAsAction = ShowAsAction.Always;
+                }
+                else if ((string)controlSpec["showAsAction"] == "IfRoom")
+                {
+                    actionBarItem.ShowAsAction = ShowAsAction.IfRoom;
+                }
+            }
+
+            if (controlSpec["showActionAsText"] != null)
+            {
+                if (ToBoolean(controlSpec["showActionAsText"]))
+                {
+                    actionBarItem.ShowAsAction |= ShowAsAction.WithText;
+                }
+            }
 
             JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, CommandName.OnClick, Commands);
             ProcessCommands(bindingSpec, Commands);

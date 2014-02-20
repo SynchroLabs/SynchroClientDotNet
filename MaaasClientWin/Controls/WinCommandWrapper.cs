@@ -61,7 +61,7 @@ namespace MaaasClientWin.Controls
             if (commandBar != null)
             {
                 this._isVisualElement = false;
-                if (((string)controlSpec["commandBar"]) != "Secondary")
+                if (((string)controlSpec["commandType"]) != "Secondary")
                 {
                     commandBar.PrimaryCommands.Add(button);
                 }

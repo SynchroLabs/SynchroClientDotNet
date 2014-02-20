@@ -576,7 +576,10 @@ namespace MaaasClientAndroid.Controls
 
             if (controlWrapper != null)
             {
-                controlWrapper.processCommonFrameworkElementProperies(controlSpec);
+                if (controlWrapper.Control != null)
+                {
+                    controlWrapper.processCommonFrameworkElementProperies(controlSpec);
+                }
                 parent.ChildControls.Add(controlWrapper);
                 if (controlWrapper.Control != null)
                 {

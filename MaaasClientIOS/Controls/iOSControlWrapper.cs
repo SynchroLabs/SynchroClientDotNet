@@ -807,6 +807,9 @@ namespace MaaasClientIOS.Controls
                 case "listview":
                     controlWrapper = new iOSListViewWrapper(parent, bindingContext, controlSpec);
                     break;
+                case "navBar.button":
+                    controlWrapper = new iOSToolBarWrapper(parent, bindingContext, controlSpec);
+                    break;
                 case "password":
                     controlWrapper = new iOSTextBoxWrapper(parent, bindingContext, controlSpec);
                     break;
@@ -831,6 +834,9 @@ namespace MaaasClientIOS.Controls
                 case "toggle":
                     controlWrapper = new iOSToggleSwitchWrapper(parent, bindingContext, controlSpec);
                     break;
+                case "toolBar.button":
+                    controlWrapper = new iOSToolBarWrapper(parent, bindingContext, controlSpec);
+                    break;
                 case "webview":
                     controlWrapper = new iOSWebViewWrapper(parent, bindingContext, controlSpec);
                     break;
@@ -838,7 +844,10 @@ namespace MaaasClientIOS.Controls
 
             if (controlWrapper != null)
             {
-                controlWrapper.processCommonFrameworkElementProperies(controlSpec);
+                if (controlWrapper.Control != null)
+                {
+                    controlWrapper.processCommonFrameworkElementProperies(controlSpec);
+                }
                 parent.ChildControls.Add(controlWrapper);
             }
 

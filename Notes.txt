@@ -257,6 +257,12 @@ Controls -
 
         !!! How do we talk to the webview?  Use it for OAuth for example?
 
+    App/Command/Action bar:
+
+        Windows: commandBar.button
+        WinPhone: appBar.button / appBar.menuItem
+        Android: actionBar.item
+        iOS: navBar.button / toolBar.button
 
     !!! TODO - 
 

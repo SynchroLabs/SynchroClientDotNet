@@ -13,15 +13,29 @@ using MaaasCore;
 using MaaasClientAndroid.Controls;
 using Newtonsoft.Json.Linq;
 using Android.Util;
+using Android.Graphics;
+using Android.Graphics.Drawables;
 
 namespace MaaasClientAndroid
 {
     public class AndroidActionBarItem
     {
+        protected Context _context;
+
         protected string _title;
+        protected string _iconName;
+        protected int _iconResourceId;
+        protected Drawable _icon;
+        protected Drawable _iconDisabled;
+        protected bool _enabled = true;
         protected Action _onItemSelected;
-        // !!! icon 
-        // !!! ShowAsAction
+        protected ShowAsAction _showAsAction = ShowAsAction.Never;  // [Always, Never, IfRoom] | WithText
+        protected IMenuItem _menuItem;
+
+        public AndroidActionBarItem(Context context)
+        {
+            _context = context;
+        }
 
         public string Title
         {
@@ -32,10 +46,89 @@ namespace MaaasClientAndroid
             }
         }
 
+        public ShowAsAction ShowAsAction 
+        { 
+            get { return _showAsAction; } 
+            set 
+            {
+                _showAsAction = value; 
+                if (_menuItem != null)
+                {
+                    _menuItem.SetShowAsAction(_showAsAction);
+                }
+            } 
+        }
+
+        protected void updateIconOnMenuItem()
+        {
+            if ((_menuItem != null) && (_iconResourceId > 0))
+            {
+                if (_enabled)
+                {
+                    if (_menuItem.Icon != _icon)
+                    {
+                        _menuItem.SetIcon(_icon);
+                    }
+                }
+                else
+                {
+                    if (_iconDisabled == null)
+                    {
+                        // !!! This is probably not the best was to show the icon as disabled, but it works for now...
+                        _iconDisabled = _context.Resources.GetDrawable(_iconResourceId);
+                        _iconDisabled.Mutate().SetColorFilter(Color.Gray, PorterDuff.Mode.SrcIn);
+                    }
+
+                    if (_menuItem.Icon != _iconDisabled)
+                    {
+                        _menuItem.SetIcon(_iconDisabled);
+                    }
+                }
+            }
+        }
+
+        public string Icon
+        {
+            get { return _iconName; }
+            set
+            {
+                _iconName = value;
+                _iconResourceId = (int)typeof(Resource.Drawable).GetField(_iconName).GetValue(null);
+                if (_iconResourceId > 0)
+                {
+                    _icon = _context.Resources.GetDrawable(_iconResourceId);
+                }
+
+                updateIconOnMenuItem();
+            }
+        }
+
+        public bool IsEnabled
+        {
+            get { return _enabled; }
+            set
+            {
+                _enabled = value;
+                if (_menuItem != null)
+                {
+                    updateIconOnMenuItem();
+                    _menuItem.SetEnabled(_enabled);
+                }
+            }
+        }
+
         public Action OnItemSelected { get { return _onItemSelected; } set { _onItemSelected = value; } }
 
-        public AndroidActionBarItem()
-        {
+        public IMenuItem MenuItem 
+        { 
+            get { return _menuItem; } 
+            set 
+            {
+                _menuItem = value;
+                _menuItem.SetShowAsAction(_showAsAction);
+                updateIconOnMenuItem();
+                _menuItem.SetEnabled(_enabled);
+            } 
         }
     }
 
@@ -60,7 +153,7 @@ namespace MaaasClientAndroid
 
         public AndroidActionBarItem CreateAndAddActionBarItem()
         {
-            AndroidActionBarItem actionBarItem = new AndroidActionBarItem();
+            AndroidActionBarItem actionBarItem = new AndroidActionBarItem(_activity.ApplicationContext);
             this._actionBarItems.Add(actionBarItem);
             return actionBarItem;
         }
@@ -70,11 +163,11 @@ namespace MaaasClientAndroid
             Util.debug("Option menu created");
             if (_actionBarItems.Count > 0)
             {
+                int pos = 0;
                 foreach(var actionBarItem in _actionBarItems)
                 {
-                    var item = menu.Add(0, 0, 0, actionBarItem.Title);
-                    // item.SetIcon(Android.Resource.Drawable.IcDelete);
-                    // item.SetShowAsAction(ShowAsAction.IfRoom);
+                    actionBarItem.MenuItem = menu.Add(0, pos, pos, actionBarItem.Title);
+                    pos++;
                 }
                 return true;
             }

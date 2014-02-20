@@ -48,6 +48,8 @@ namespace MaaasClientWinPhone.Controls
 
             _isVisualElement = false;
 
+            processElementProperty((string)controlSpec["enabled"], value => appBarMenuItem.IsEnabled = ToBoolean(value));
+
             JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, CommandName.OnClick, Commands);
             ProcessCommands(bindingSpec, Commands);
 
