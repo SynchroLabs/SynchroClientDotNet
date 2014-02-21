@@ -122,33 +122,132 @@ namespace MaaasCore
         }
     }
 
+    // PropertyValue objects maintain a list of things that provide values to the expanded output.  Some of
+    // things things are binding contexts that will be evalutated each time the underlying value changes (one-way
+    // bindings), but some of them will be resolved based on the initial view model contents at the time of
+    // creation (one-time bindings).  This object accomodates both states and provides a convenient way to determine
+    // which type of binding it is, and to extract the resolved/expanded value without needing to know which type
+    // of binding it is.
+    //
+    public class BoundAndPossiblyResolvedToken
+    {
+        BindingContext _bindingContext;
+        JToken _resolvedValue;
+
+        public BoundAndPossiblyResolvedToken(BindingContext bindingContext)
+        {
+            _bindingContext = bindingContext;
+        }
+
+        public BindingContext BindingContext { get { return _bindingContext; } }
+
+        public bool Resolved { get { return _resolvedValue != null; } }
+
+        public JToken ResolvedValue
+        {
+            get
+            {
+                if (_resolvedValue != null)
+                {
+                    return _resolvedValue;
+                }
+                else
+                {
+                    return _bindingContext.GetValue();
+                }
+            }
+        }
+
+        public JToken Resolve()
+        {
+            // Since we're potentially storing this over time and don't want any underlying view model changes
+            // to impact this value, we need to clone it.
+            //
+            _resolvedValue = _bindingContext.GetValue().DeepClone();
+            return _resolvedValue;
+        }
+    }
+
+    // Property values consist of a string containing one or more "tokens", where such tokens are surrounded by curly brackets.
+    // If the token starts with ^, then it is a "one-time" binding, otherwise it is a "one-way" (continuously updated) binding.
+    // Tokens that will resolve to numeric values may be followed by a colon and subsequent format specifier, using the .NET
+    // Framework 4.5 format specifiers for numeric values.
+    //
+    // For example: 
+    //
+    //    "The scaling factor is {^scalingFactor:P2}".  
+    //
+    // The token is a one-time binding that will resolve to a number and then be formatted as a percentage with two decimal places:
+    //
+    //    "The scaling factor is 140.00 %"
+    //
     public class PropertyValue
     {
         private static Regex _braceContentsRE = new Regex(@"{([^}]*)}");
 
         private string _formatString;
-        private List<BindingContext> _boundTokens;
+        private List<BoundAndPossiblyResolvedToken> _boundTokens;
 
-        public List<BindingContext> BindingContexts { get { return _boundTokens; } }
+        // Construct and return the unresolved binding contexts (the one-way bindings, excluding the one-time bindings)
+        //
+        public List<BindingContext> BindingContexts 
+        { 
+            get
+            {
+                List<BindingContext> bindingContexts = new List<BindingContext>();
+                foreach (var boundToken in _boundTokens)
+                {
+                    if (!boundToken.Resolved)
+                    {
+                        bindingContexts.Add(boundToken.BindingContext);
+                    }
+                }
+                return bindingContexts;
+            }
+        }
 
         public PropertyValue(string tokenString, BindingContext bindingContext)
         {
-            _boundTokens = new List<BindingContext>();
+            _boundTokens = new List<BoundAndPossiblyResolvedToken>();
             int tokenIndex = 0;
             _formatString = _braceContentsRE.Replace(tokenString, delegate(Match m)
             {
                 Util.debug("Found boundtoken: " + m.Groups[1]);
+
+                // Parse out any format specifier...
+                //
                 string token = m.Groups[1].ToString();
+                string format = null;
+                if (token.Contains(':'))
+                {
+                    string[] result = token.Split(':');
+                    token = result[0];
+                    format = result[1];
+                }
+
+                // Parse out and record any one-time binding indicator
+                //
+                bool oneTimeBinding = false;
                 if (token.StartsWith("^"))
                 {
-                    // One time binding, resolve now...
                     token = token.Substring(1);
-                    return bindingContext.Select(token).GetValue().ToString();
+                    oneTimeBinding = true;
+                }
+
+                BoundAndPossiblyResolvedToken boundToken = new BoundAndPossiblyResolvedToken(bindingContext.Select(token));
+                _boundTokens.Add(boundToken);
+
+                if (oneTimeBinding)
+                {
+                    boundToken.Resolve();
+                }
+
+                if (format != null)
+                {
+                    return "{" + tokenIndex++ + ":" + format + "}";
                 }
                 else
                 {
-                    // Normal token binding, record binding context and return format spec token...
-                    _boundTokens.Add(bindingContext.Select(token));
                     return "{" + tokenIndex++ + "}";
                 }
             });
@@ -162,21 +261,39 @@ namespace MaaasCore
                 // a value of any type (not just string), and we want to preserve that type, so we process
                 // that special case here...
                 //
-                BindingContext tokenContext = _boundTokens[0];
-                return tokenContext.GetValue();
+                BoundAndPossiblyResolvedToken token = _boundTokens[0];
+                return token.ResolvedValue;
             }
             else
             {
-                // Otherwise we replace all tokens with their string values...
+                // Otherwise we replace all tokens with their values.  We convert numbers to their appropriate
+                // types so that any format specifiers can be applied.  Note that we could easily add date support
+                // here for data/time/timespan formatting if needed.
                 //
-                string[] expandedTokens = new string[_boundTokens.Count];
+                object[] resolvedTokens = new object[_boundTokens.Count];
                 for (var i = 0; i < _boundTokens.Count; i++)
                 {
-                    BindingContext tokenContext = _boundTokens[i];
-                    expandedTokens[i] = (string)tokenContext.GetValue();
+                    BoundAndPossiblyResolvedToken token = _boundTokens[i];
+                    JToken value = token.ResolvedValue;
+                    if (value == null)
+                    {
+                        resolvedTokens[i] = "";
+                    }
+                    else if (value.Type == JTokenType.Float)
+                    {
+                        resolvedTokens[i] = (double)value;
+                    }
+                    else if (value.Type == JTokenType.Integer)
+                    {
+                        resolvedTokens[i] = (int)value;
+                    }
+                    else
+                    {
+                        resolvedTokens[i] = (string)value;
+                    }
                 }
 
-                return String.Format(_formatString, expandedTokens);
+                return String.Format(_formatString, resolvedTokens);
             }
         }
 
