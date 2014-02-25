@@ -35,6 +35,8 @@ Property binding expressions/directives:
 
     Format specifier (numeric values) - {counter:F2} resolves to N.NN
 
+        http://msdn.microsoft.com/en-us/library/dwhawy9k(v=vs.110).aspx
+
     Expression support (TODO !!!):
 
     	Simple negation using !, such as visibility="{!isVisible}"
@@ -49,6 +51,15 @@ Layout Filtering
 !!! Think about item filtering (show this item if it passes all filters, otherwise don't) in addition to current "filter" mechanism
     (which is really "selectFirst").  Also, sometimes want a group of items to pass filter conditions, but no easy way to do that
     now short of jamming extra stackpanels in there to contain them.
+
+    ===> Items with filter criteria should be included if filter criteria match, otherwise excluded (also supports stand-alone /
+         one-off filterer items)
+    ===> To select first qualifying child node: { select: "first", contents: [] }
+    ===> To select all qualifying child nodes: { select: "all", contents: [] }
+
+    First remove all non-qualifying nodes (recursively)
+    Then process all select: first
+    Finally, process all select: all
 
 A node with the single "filter" attribute will chose one child node contained in the filter attribute to replace the filter node.
 The first child node that does not fail to match all provided filter criteria is promoted to replace the filter node.  The filter
@@ -504,3 +515,4 @@ Font attribute
 
 =======================
 
+Android icons
