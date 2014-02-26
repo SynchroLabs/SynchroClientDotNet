@@ -48,51 +48,82 @@ Property binding expressions/directives:
 
 Layout Filtering
 
-!!! Think about item filtering (show this item if it passes all filters, otherwise don't) in addition to current "filter" mechanism
-    (which is really "selectFirst").  Also, sometimes want a group of items to pass filter conditions, but no easy way to do that
-    now short of jamming extra stackpanels in there to contain them.
-
-    ===> Items with filter criteria should be included if filter criteria match, otherwise excluded (also supports stand-alone /
-         one-off filterer items)
-    ===> To select first qualifying child node: { select: "first", contents: [] }
-    ===> To select all qualifying child nodes: { select: "all", contents: [] }
-
-    First remove all non-qualifying nodes (recursively)
-    Then process all select: first
-    Finally, process all select: all
-
-A node with the single "filter" attribute will chose one child node contained in the filter attribute to replace the filter node.
-The first child node that does not fail to match all provided filter criteria is promoted to replace the filter node.  The filter
-criteria attributes are as follows:
+Any node may contain filter criteria (one or more filter criteria attributes).  The filter criteria attributes are as follows:
 
     filterOS: Windows, WinPhone, Android, iOS
     filterDeviceType: Phone, Tablet
     filterDeviceClass: Phone, Phablet, MiniTablet, Tablet 
 
-If the filter criteria attribute contains a value, then that value will be compared to the appropriate device metrics value.  If the
-filter criteria attribute contains a list of values, then if any of those values matches the appropriate device metrics value, that
-is considered a match.  If multiple filter criteria attributes are present, all must match in order for the node to be considered a
-match.  The first node encountered that does not fail to match all provided filter criteria will be promoted to replace the top level
-filter node.  A child node can be provided that has no filter criteria, where such node will be a "default".  It is also possible that
-there will be cases where no node satisfies all provided criteria, in which case no result is provided (the filter element will just
-be removed from the layout).
+If the filter criteria attribute contains a single value, then that value will be compared to the appropriate device metrics value.
+If the filter criteria attribute contains a list of values, then each value in the list will be compared to the appropriate device
+metrics value to see if any of them match.
+
+If any filter criteria attribute is not a match, then the node is excluded from the view layout.
+
+For example:
+
+    { control: "text", filterDeviceType: "Tablet", value: "Tablets Rule!" }
+    { control: "text", filterOS: ["Windows", "WinPhone"], value: "Microsoft OS", fontsize: 12 },
+
+In addition, there are selector node types that can assist in scenarious where more complex filtering logic is required.
+
+    select:First - This will select the first child node to replace this node (after removing any non-qualifying nodes based on
+                   filter criteria).
+
+    select:All - This will select all child nodes to replace this node (typically used to group like items)
+
+    Note: select:First and node disqualification via filter criteria are performed first, for the entire layout, followed by select:All.
+          This allows select:All nodes to be contained in a select:First node (a common scenario).
 
 Examples:
 
-{ filter: [
-    { control: "text", filterDeviceType: "Tablet", value: "Tablets Rule!" },
-    { control: "text", filterDeviceType: "Phone", value: "Phones Rule!" },
-]}
+    // No select here, just to show that you can use filters on standalone nodes...
+    //
+    { control: "text", filterDeviceType: "Phone", value: "Primary orientation is Portrait (phone)", fontsize: 12 },
+    { control: "text", filterDeviceType: "Tablet", value: "Primary orientation is Landscape (tablet)", fontsize: 12 },
 
-{ filter: [
-    { control: "text", filterOS: ["Windows", "WinPhone"], value: "Microsoft Rules!" },
-    { control: "text", value: "Microsoft does not rule" }, // Default
-]}
+    // Here is a select:First that will work just as if the items were not included in a select first (since exactly
+    // one of the children will be valid on any given platform).
+    //
+    { select: "First", contents: [
+        { control: "text", filterOS: "Windows", value: "Windows Rules!", fontsize: 12 },
+        { control: "text", filterOS: "WinPhone", value: "Windows Phone Rules!", fontsize: 12 },
+        { control: "text", filterOS: "Android", value: "Android Rules!", fontsize: 12 },
+        { control: "text", filterOS: "iOS", value: "iOS Rules!", fontsize: 12 },
+        ]},
 
-{ filter: [
-    { control: "text", filterOS: "iOS", value: "iOS Rules!" }, // This if matches, otherwise nothing
-]}
+    // This is the real use-case for select:First, where there would be one or more filtered children with an unfiltered
+    // "default" at the bottom...
+    //
+    { select: "First", contents: [
+        { control: "text", filterOS: ["Windows", "WinPhone"], value: "Microsoft OS", fontsize: 12 },
+        { control: "text", value: "Non-Microsoft OS", fontsize: 12 },
+        ]},
 
+    // select:First using select:All children for grouping...
+    //
+    { select: "First", contents: [
+        { select: "All", filterOS: "Windows", contents: [
+            { control: "commandBar.button", text: "Add", icon: "Add", commandBar: "Bottom", commandType: "Secondary", binding: "increment" },
+            { control: "commandBar.button", text: "Subtract", icon: "Remove", commandBar: "Bottom", commandType: "Secondary", binding: "decrement"},
+            { control: "commandBar.button", text: "Reset", icon: "Stop", commandBar: "Bottom", binding: "reset" },
+            ]},
+        { select: "All", filterOS: "WinPhone", contents: [
+            { control: "appBar.button", text: "Add", icon: "add",  binding: "increment" },
+            { control: "appBar.button", text: "Subtract", icon: "minus", binding: "decrement"},
+            { control: "appBar.button", text: "Reset", icon: "refresh", binding: "reset" },
+            ]},
+        { select: "All", filterOS: "Android", contents: [
+            { control: "actionBar.item", text: "Add", binding: "increment" },
+            { control: "actionBar.item", text: "Subtract", binding: "decrement", enabled: "{count}" },
+            { control: "actionBar.item", text: "Reset", icon: "ic_action_refresh", showAsAction: "IfRoom", binding: "reset" },
+            ]},
+        { select: "All", filterOS: "iOS", contents: [
+            { control: "navBar.button", systemItem: "Trash", binding: "reset", enabled: "{count}" },
+            { control: "toolBar.button", text: "Add", icon: "plus-symbol-mini", binding: "increment" },
+            { control: "toolBar.button", text: "Subtract", icon: "minus-symbol-mini", binding: "decrement" },
+            ]},
+        ]},
 
 =======================
 
