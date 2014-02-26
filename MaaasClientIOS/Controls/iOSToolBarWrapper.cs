@@ -27,7 +27,7 @@ namespace MaaasClientIOS.Controls
 
             if (controlSpec["systemItem"] != null)
             {
-                // System items: 
+                // System items:                         
                 //
                 //     Done, Cancel, Edit, Save, Add, Compose, Reply, Action, Organize, Bookmarks, Search, Refresh, Stop, 
                 //     Camera, Trash, Play, Pause, Rewind, FastForward, Undo, Redo, PageCurl

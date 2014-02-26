@@ -78,7 +78,7 @@ namespace MaaasClientWinPhone
             _widthDeviceUnits = Application.Current.Host.Content.ActualWidth;
             _heightDeviceUnits = Application.Current.Host.Content.ActualHeight;
 
-            _scalingFactor = Application.Current.Host.Content.ScaleFactor;
+            _scalingFactor = Application.Current.Host.Content.ScaleFactor / 100;
 
             // We check extended screen info, and if present, use that (as it will give us accurate information)
             //
