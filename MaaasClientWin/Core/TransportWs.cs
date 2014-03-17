@@ -75,6 +75,7 @@ namespace MaasClient.Core
                         {
                             WebErrorStatus status = WebSocketError.GetStatus(ex.GetBaseException().HResult);
                             // Add your specific error-handling code here.
+                            Util.debug("Exception in WebSocket response: " + ex.ToString());
                         }
                     };
 
@@ -104,6 +105,7 @@ namespace MaasClient.Core
             {
                 WebErrorStatus status = WebSocketError.GetStatus(ex.GetBaseException().HResult);
                 // Add your specific error-handling code here.
+                Util.debug("Exception in WebSocket request: " + ex.ToString());
             }
         }
 

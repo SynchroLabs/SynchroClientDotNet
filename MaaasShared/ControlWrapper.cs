@@ -108,18 +108,34 @@ namespace MaaasCore
 
         public static String ToString(object value)
         {
-            if (value == null)
+            string result = "";
+
+            if (value != null)
             {
-                return "";
+                if (value is JToken)
+                {
+                    var token = value as JToken;
+                    if (token != null)
+                    {
+                        switch (token.Type)
+                        {
+                            case JTokenType.Array:
+                                JArray array = token as JArray;
+                                result = array.Count.ToString();
+                                break;
+                            default:
+                                result = token.ToString();
+                                break;
+                        }
+                    }
+                }
+                else
+                {
+                    result = value.ToString();
+                }
             }
-            else if (value is JToken)
-            {
-                return (string)(JToken)value;
-            }
-            else
-            {
-                return (string)value;
-            }
+
+            return result;
         }
 
         public static Boolean ToBoolean(object value)

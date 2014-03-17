@@ -41,7 +41,7 @@ namespace MaaasClientWin
             this.mainScroll.VerticalScrollBarVisibility = ScrollBarVisibility.Auto;
 
             //Transport transport = new TransportHttp(_host + "/api");
-            Transport transport = new TransportWs(_host);
+            Transport transport = new TransportWs(_host + "/api");
 
             _stateManager = new StateManager(_host, transport, deviceMetrics);
             _pageView = new WinPageView(_stateManager, _stateManager.ViewModel, this, this.mainScroll);

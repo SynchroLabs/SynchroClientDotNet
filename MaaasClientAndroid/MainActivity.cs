@@ -73,7 +73,7 @@ namespace MaaasClientAndroid
             // _stateManager = new StateManager(_host, new TransportHttp(httpClient, _host + "/api"));
             //
             // Transport transport = new TransportHttp(_host + "/api")
-            Transport transport = new AndroidTransportWs(this, _host);
+            Transport transport = new AndroidTransportWs(this, _host + "/api");
 
             _stateManager = new StateManager(_host, transport, deviceMetrics);
             _pageView = new AndroidPageView(_stateManager, _stateManager.ViewModel, this, layout);

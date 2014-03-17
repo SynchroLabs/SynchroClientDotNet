@@ -289,7 +289,7 @@ namespace MaaasCore
                     }
                     else
                     {
-                        resolvedTokens[i] = (string)value;
+                        resolvedTokens[i] = ControlWrapper.ToString(value);
                     }
                 }
 

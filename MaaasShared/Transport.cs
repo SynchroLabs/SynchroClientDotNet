@@ -9,7 +9,7 @@ namespace MaaasCore
 {
     public abstract class Transport
     {
-        public static string SessionIdHeader = "Maaas-Session-Id";
+        public static string SessionIdHeader = "Maaas-API-Session-Id";
 
         public abstract Task sendMessage(string sessionId, JObject requestObject, Action<JObject> responseHandler);
     }

@@ -11,8 +11,10 @@ namespace MaaasCore
     {
         public static string getMaaasHost()
         {
-            // string host = "maaas.io:1337"; // "maaas.azurewebsites.net";
-            string host = "192.168.1.144:1337"; // "localhost:1337";
+            //string host = "maaas.cloudapp.net"; // "maaas.io"; // "maaas.azurewebsites.net";
+            // string host = "192.168.1.105:1337"; // "localhost:1337";
+            string host = "localhost:1337";
+            //string host = "127.0.0.1";
             return host;
         }
 

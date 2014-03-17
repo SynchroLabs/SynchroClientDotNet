@@ -307,6 +307,8 @@ Controls -
 
     App/Command/Action bar:
 
+        !!! Document each, document available values for symbols/icons
+
         Windows: commandBar.button
         WinPhone: appBar.button / appBar.menuItem
         Android: actionBar.item
@@ -352,8 +354,6 @@ Controls -
     ========================
 
         !!! Survey controls on all platforms to make complete list (especially Android/iOS)
-
-	    AppBar/CommandBar and buttons (app bar button for round app bar buttons that can be used anywhere)
 
 	    Checkbox/radio buttons
 
@@ -545,5 +545,3 @@ Font attribute
             "fontsize: xx" is equivalent to "font: { size: xx }"
 
 =======================
-
-Android icons
