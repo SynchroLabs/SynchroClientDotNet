@@ -26,8 +26,6 @@ namespace MaaasClientWin
     /// </summary>
     public sealed partial class BasicPage : MaaasClientWin.Common.LayoutAwarePage
     {
-        static string _host = Util.getMaaasHost();
-
         StateManager _stateManager;
         WinPageView _pageView;
 
@@ -35,25 +33,11 @@ namespace MaaasClientWin
         {
             this.InitializeComponent();
 
-            WinDeviceMetrics deviceMetrics = new WinDeviceMetrics();
-
             this.mainScroll.HorizontalScrollBarVisibility = ScrollBarVisibility.Auto;
             this.mainScroll.VerticalScrollBarVisibility = ScrollBarVisibility.Auto;
 
-            //Transport transport = new TransportHttp(_host + "/api");
-            Transport transport = new TransportWs(_host + "/api");
-
-            _stateManager = new StateManager(_host, transport, deviceMetrics);
-            _pageView = new WinPageView(_stateManager, _stateManager.ViewModel, this, this.mainScroll);
-            _stateManager.Path = "menu";
-
             this.Loaded += BasicPage_Loaded; 
             this.backButton.Click += backButton_Click;
-
-            _pageView.setPageTitle = title => this.pageTitle.Text = title;
-            _pageView.setBackEnabled = isEnabled => this.backButton.IsEnabled = isEnabled;
-
-            _stateManager.SetProcessingHandlers(json => _pageView.ProcessPageView(json), json => _pageView.ProcessMessageBox(json));
         }
 
         async void BasicPage_Loaded(object sender, RoutedEventArgs e)
@@ -77,6 +61,22 @@ namespace MaaasClientWin
         /// session.  This will be null the first time a page is visited.</param>
         protected override void LoadState(Object navigationParameter, Dictionary<String, Object> pageState)
         {
+            MaaasApp maaasApp = navigationParameter as MaaasApp;
+            Util.debug("Launching app at endpoint: " + maaasApp.Endpoint);
+
+            WinDeviceMetrics deviceMetrics = new WinDeviceMetrics();
+
+            Transport transport = new TransportHttp(maaasApp.Endpoint + "/api");
+            //Transport transport = new TransportWs(maaasApp.Endpoint + "/api");
+
+            _stateManager = new StateManager(maaasApp.Endpoint, transport, deviceMetrics);
+            _stateManager.Path = "menu";
+            _pageView = new WinPageView(_stateManager, _stateManager.ViewModel, this, this.mainScroll);
+
+            _pageView.setPageTitle = title => this.pageTitle.Text = title;
+            _pageView.setBackEnabled = isEnabled => this.backButton.IsEnabled = isEnabled;
+
+            _stateManager.SetProcessingHandlers(json => _pageView.ProcessPageView(json), json => _pageView.ProcessMessageBox(json));
         }
 
         /// <summary>

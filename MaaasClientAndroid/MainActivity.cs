@@ -14,7 +14,7 @@ using Android.Util;
 
 namespace MaaasClientAndroid
 {
-    [Activity(Label = "Loading...", MainLauncher = true, Icon = "@drawable/icon", Theme = "@android:style/Theme.Holo")]
+    [Activity(Label = "MaaaS IO", MainLauncher = true, Icon = "@drawable/icon", Theme = "@android:style/Theme.Holo")]
     public class MainActivity : Activity
     {
         static string _host = Util.getMaaasHost();
@@ -72,8 +72,8 @@ namespace MaaasClientAndroid
             // HttpClient httpClient = new HttpClient(new OkHttpNetworkHandler());
             // _stateManager = new StateManager(_host, new TransportHttp(httpClient, _host + "/api"));
             //
-            // Transport transport = new TransportHttp(_host + "/api")
-            Transport transport = new AndroidTransportWs(this, _host + "/api");
+            Transport transport = new TransportHttp(_host + "/api");
+            //Transport transport = new AndroidTransportWs(this, _host + "/api");
 
             _stateManager = new StateManager(_host, transport, deviceMetrics);
             _pageView = new AndroidPageView(_stateManager, _stateManager.ViewModel, this, layout);

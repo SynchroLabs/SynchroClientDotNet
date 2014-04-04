@@ -2,147 +2,6 @@
 Mobile Application As A Service (MAAAS) - Client
 =================================================
 
-Binding context specifiers
-
-    Binding paths -
-        [viewModel.]someProperty
-        [viewmodel.]someObject.someProperty
-        [viewModel.]someArray[1].someProperty
-
-    Binding path tokens - 
-        $root - Selects the root of the view model.
-        $parent - Selects the parent of the current binding context.
-        $data - Selects the value of the current binding context.
-        $index - Produces a numeric value representing the position (zero-based index) of an iterated binding context
-
-    Each item has a binding context, which is determined before the item is created/processed by inspecting the
-    "binding" attribute to look for a "foreach" or "with" binding context specifier.
-
-        foreach: "foos" (for each element in array "foos", create an instance of this visual element and set the
-                         binding context for the visual element to the array element).
-
-        with: "foo.bar" (select the element foo.bar from the current binding context as the new binding context
-                         for the visual element).
-
-        Note that it is possible to use "foreach" and "with" together - in which case "foreach" is applied first
-        and "with" is applied to each element in the foreach array.  This allows for path navigation both up to,
-        and then after, the context to be iterated.
-
-
-Property binding expressions/directives:
-
-	One-time using ^ (default is one-way binding)
-
-    Format specifier (numeric values) - {counter:F2} resolves to N.NN
-
-        http://msdn.microsoft.com/en-us/library/dwhawy9k(v=vs.110).aspx
-
-    Expression support (TODO !!!):
-
-    	Simple negation using !, such as visibility="{!isVisible}"
-		Mathematical (240 - charCount)
-		Logical (charCount >= 240)
-		Type conversion (str(240 - charCount))
-
-=======================
-
-Layout Filtering
-
-Any node may contain filter criteria (one or more filter criteria attributes).  The filter criteria attributes are as follows:
-
-    filterOS: Windows, WinPhone, Android, iOS
-    filterDeviceType: Phone, Tablet
-    filterDeviceClass: Phone, Phablet, MiniTablet, Tablet 
-
-If the filter criteria attribute contains a single value, then that value will be compared to the appropriate device metrics value.
-If the filter criteria attribute contains a list of values, then each value in the list will be compared to the appropriate device
-metrics value to see if any of them match.
-
-If any filter criteria attribute is not a match, then the node is excluded from the view layout.
-
-For example:
-
-    { control: "text", filterDeviceType: "Tablet", value: "Tablets Rule!" }
-    { control: "text", filterOS: ["Windows", "WinPhone"], value: "Microsoft OS", fontsize: 12 },
-
-In addition, there are selector node types that can assist in scenarious where more complex filtering logic is required.
-
-    select:First - This will select the first child node to replace this node (after removing any non-qualifying nodes based on
-                   filter criteria).
-
-    select:All - This will select all child nodes to replace this node (typically used to group like items)
-
-    Note: select:First and node disqualification via filter criteria are performed first, for the entire layout, followed by select:All.
-          This allows select:All nodes to be contained in a select:First node (a common scenario).
-
-Examples:
-
-    // No select here, just to show that you can use filters on standalone nodes...
-    //
-    { control: "text", filterDeviceType: "Phone", value: "Primary orientation is Portrait (phone)", fontsize: 12 },
-    { control: "text", filterDeviceType: "Tablet", value: "Primary orientation is Landscape (tablet)", fontsize: 12 },
-
-    // Here is a select:First that will work just as if the items were not included in a select first (since exactly
-    // one of the children will be valid on any given platform).
-    //
-    { select: "First", contents: [
-        { control: "text", filterOS: "Windows", value: "Windows Rules!", fontsize: 12 },
-        { control: "text", filterOS: "WinPhone", value: "Windows Phone Rules!", fontsize: 12 },
-        { control: "text", filterOS: "Android", value: "Android Rules!", fontsize: 12 },
-        { control: "text", filterOS: "iOS", value: "iOS Rules!", fontsize: 12 },
-        ]},
-
-    // This is the real use-case for select:First, where there would be one or more filtered children with an unfiltered
-    // "default" at the bottom...
-    //
-    { select: "First", contents: [
-        { control: "text", filterOS: ["Windows", "WinPhone"], value: "Microsoft OS", fontsize: 12 },
-        { control: "text", value: "Non-Microsoft OS", fontsize: 12 },
-        ]},
-
-    // select:First using select:All children for grouping...
-    //
-    { select: "First", contents: [
-        { select: "All", filterOS: "Windows", contents: [
-            { control: "commandBar.button", text: "Add", icon: "Add", commandBar: "Bottom", commandType: "Secondary", binding: "increment" },
-            { control: "commandBar.button", text: "Subtract", icon: "Remove", commandBar: "Bottom", commandType: "Secondary", binding: "decrement"},
-            { control: "commandBar.button", text: "Reset", icon: "Stop", commandBar: "Bottom", binding: "reset" },
-            ]},
-        { select: "All", filterOS: "WinPhone", contents: [
-            { control: "appBar.button", text: "Add", icon: "add",  binding: "increment" },
-            { control: "appBar.button", text: "Subtract", icon: "minus", binding: "decrement"},
-            { control: "appBar.button", text: "Reset", icon: "refresh", binding: "reset" },
-            ]},
-        { select: "All", filterOS: "Android", contents: [
-            { control: "actionBar.item", text: "Add", binding: "increment" },
-            { control: "actionBar.item", text: "Subtract", binding: "decrement", enabled: "{count}" },
-            { control: "actionBar.item", text: "Reset", icon: "ic_action_refresh", showAsAction: "IfRoom", binding: "reset" },
-            ]},
-        { select: "All", filterOS: "iOS", contents: [
-            { control: "navBar.button", systemItem: "Trash", binding: "reset", enabled: "{count}" },
-            { control: "toolBar.button", text: "Add", icon: "plus-symbol-mini", binding: "increment" },
-            { control: "toolBar.button", text: "Subtract", icon: "minus-symbol-mini", binding: "decrement" },
-            ]},
-        ]},
-
-=======================
-
-Device Metrics
-
-The server has access to the following device metrics (via session.DeviceMetrics)
-
-os - Windows, WinPhone, Android, iOS
-osName
-deviceName
-deviceType - Phone, Tablet
-deviceClass - Phone, Phablet, MiniTablet, Tablet
-scalingFactor
-widthInches
-heightInches
-widthUnits
-heightUnits
-
-=======================
 
 Controls - 
 
@@ -163,156 +22,6 @@ Controls -
     ======================================
 
     !!! All - document binding details, all supported attributes (specify which ones can use binding tokens), show sample usage
-
-    Border
-
-        Attributes:
-            border (color)
-            borderThickness
-            cornerRadius
-            padding
-            background (color)
-            alignContentV = Top, [Center], Bottom
-            alignContentH = Left, [Center], Right
-            contents
-
-    Canvas (child elements have positioning properties)
-
-        !!! Explicit size vs wrap content (not sure wrap content is even working on all platforms)
-
-        !!! Z-order spec for contents (vs order added as it is now)?
-
-		{ type: "canvas", contents: [
-		    { type: "text", value: "Somevalue", top: 10, left: 25 },
-		] };
-
-    ScrollView
-
-        Attributes:
-            orientation = [Vertical], Horizontal
-            contents
-
-    Stackpanel
-
-        Attributes:
-            orientation = [Vertical], Horizontal
-            alignContentV = Top, [Center], Bottom
-            alignContentH = [Left], Center, Right
-            padding
-            contents
-
-    Button
-
-        Attributes:
-            caption
-
-        Bindings:
-            onClick (command + params)
-
-    Image
-
-        Attributes:
-            resource
-
-    Rectangle
-
-        Attributes:
-            border (color)
-            borderThickness
-            cornerRadius
-            fill (color)
-
-    Textbox / Password
-
-        Attributes:
-            value (bound only?)
-
-        Bindings:
-            value
-
-    Textblock
-
-        Attributes:
-            value
-
-    Slider
-
-        Attributes:
-            value (bound only?)
-            minimum
-            maximum
-
-        Bindings:
-            value
-
-    ListBox/ListView/Picker  
-
-        Attributes
-
-            "select" - None, Single, Multiple (defaults to "Single").  Picker does not support this attribute, as it is always "Single".
-
-        Binding
-
-            "items" - the array of elements in the list.
-
-            ListBox/Picker
-
-                "itemValue" (defaults to "{$data}") - a token string applied to each "items" element to construct the string to display in the list.
-                    For example: "User: {firstName} {lastName}".
-
-            ListView
-
-                "itemTemplate" - layout specification for each item (must be a single element, though that element can be a container that contains other layout elements). 
-
-            "selection" - the location in the view model where the current selection is maintained.  If select is Single, then the location referred to by selection
-                 should contain a single item.  If select is Multiple, then the location referred to by selection should contain an array of zero or more items.
-
-            "selectionItem" (defaults to $data) - This is what is placed into "selection" (per item) and this is applied to each item in "items" for the purpose
-                of matching items with selection items when setting selection state for the control.  For example, if the selectionItem was "{itemId}", then the
-                selection binding would be one or more elements of the "{itemId}" applied to the selected items.  When resetting item selection, "{itemId}" will be
-                applied to each list item, and the result will be compared with the value(s) in "selection" to see if the item should be selected.  In the case of the
-                default, the selection list will contain deep copies of the list view items, and the selection comparison will be a deep compare of those items with the
-                list view items.
-
-            Commands
-
-                If select is None:
-                    onItemClick command - context is the item clicked
-
-                If select is Single:
-                    onSelectionChange command - context is the item that is now selected
-
-                If select is Multiple:
-                    onSelectionChange command - context is the listbox/listview context (not item-specific)
-
-    Toggle
-
-        !!! Resolve platform differences (title, on/off state description, switch labels)
-        !!! Binding mappings (true/false, string on/off or other arbitrary values)
-
-        Attributes:
-            value (binding only?)
-
-        Bindings:
-            value
-            onToggle (command + params)
-
-    WebView
-
-        Attributes:
-            contents (html string)
-            url
-
-        !!! How do we talk to the webview?  Use it for OAuth for example?
-
-    App/Command/Action bar:
-
-        !!! Document each, document available values for symbols/icons
-
-        Windows: commandBar.button
-        WinPhone: appBar.button / appBar.menuItem
-        Android: actionBar.item
-        iOS: navBar.button / toolBar.button
 
     !!! TODO - 
 
@@ -393,6 +102,14 @@ Client
     Configuration of server on client, maybe menu of servers so you can pick one as top level screen
        - Enter via address, get server identifier from server and use that in menu (maybe in addition to address)
 
+       Launcher screen, comes up on startup - has Maaas.io name/logo
+       List of Apps with add/remove
+       On add - prompt for server address, connect to that server to get info, add to app list using info from server
+          Endpoint: maaas.io, App: demo
+          Endpoint: 127.0.0.1, App: demo (sandbox)
+       Click app to launch (if fails or times out, back to launcher)
+
+
     Transaction synchronization, "waiting" indicator (if > .5 seconds maybe), retry if fails?
 
     Set icon, title, supported orientation (maybe dynamic - only portrait on phone, only landscape on tab?)
@@ -419,7 +136,7 @@ Server
         New session
             Create session db entry, insert into cache, return session id
         On request start
-            Get session from cache, if not in cache, lookin in db, if not in db, return "session not found" - trigger client to establish new session
+            Get session from cache, if not in cache, look in db, if not in db, return "session not found" - trigger client to establish new session
             Otherwise record copy of session
         On request end
             Diff session, if changed, write updated session to db and cache
@@ -429,7 +146,7 @@ Server
     Cache
         View cache - negotiate view cache state so that server knows whether you need a given view or have it (to avoid round trips)?
 
-    Hotloading (test for new, later will always load/hotload as needed)
+    Hotloading (will need work on cluster deployment)
 
     Implement PropertyCross
 
@@ -440,6 +157,7 @@ Misc
     List stuff
         Need to make sure list element lifecycle is properly managed (that bound children are removed)
         Need to recycle views on platforms that support it (future?)
+        Android is too agressive about recycling (maybe) - in propery cross list images load as scrolled (even ones previously loaded)
 
     Custom font names (platform-specific), weights (other than bold, per platform)?
 
@@ -474,7 +192,7 @@ iOS
 
 =======================
 
-Everything should have margin and Border/StackPanel (at least) should obey them
+Everything should have margin, and Border/StackPanel (at least) should obey them
 Border and StackPanel should have padding 
 
 Containers
@@ -506,7 +224,7 @@ Dynamic sizing
 
 For each dimension, possible values:
 
-    Unspecified (default to Wrap)
+    Wrap (default)
     Fill
     Explicit
 
@@ -517,31 +235,22 @@ For each dimension, possible values:
     What about:
         star value means fill parent, unspecified means wrap content
 
-=======================
-
-Color attribute
 
 =======================
 
-Thickness attribute
+Device features
+   Location
+   Photo picker / camera
+   Maps
+   Phone/SMS (?)
+   "Built-in" apps - FB/Twitter/etc
 
 =======================
 
-Font attribute
-    
-    face = Mono, Serif, SanSerif
-    size = float (typographic points)
-    bold = t/f
-    italic = t/f
-
-    font: { face: "Serif", size: 12, bold: true, italic: false }
-
-    Note: If no "face" value is provide, the font face will be the default face for the control/element (which will often vary
-          by control/element type and by platform, and is usually what you want).
-
-    Also provided as convenience parameter (since it is commom to specify only the size):
-
-        fontsize: float (typographic points)
-            "fontsize: xx" is equivalent to "font: { size: xx }"
-
-=======================
+Misc
+-------
+Scroll to top of page on transition (Windows, at least)
+Default margin (all)
+Control sizing when not specified (especially iOS/Android) - review
+Text - if width specified and height not specified, should wrap, grow vertically, as required
+Control sizing - fill to height/width, less margin?

@@ -56,6 +56,19 @@
     <Reference Include="System" />
     <Reference Include="System.Net.Http" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="icons\cloud_system_128.png" />
+    <Content Include="icons\cloud_system_16.png" />
+    <Content Include="icons\cloud_system_20.png" />
+    <Content Include="icons\cloud_system_24.png" />
+    <Content Include="icons\cloud_system_256.png" />
+    <Content Include="icons\cloud_system_32.png" />
+    <Content Include="icons\cloud_system_48.png" />
+    <Content Include="icons\cloud_system_512.png" />
+    <Content Include="icons\cloud_system_64.png" />
+    <Content Include="icons\cloud_system_72.png" />
+    <Content Include="icons\cloud_system_96.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
