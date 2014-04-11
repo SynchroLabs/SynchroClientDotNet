@@ -34,41 +34,13 @@ namespace MaaasClientAndroid.Controls
 
             processElementProperty((string)controlSpec["orientation"], value => layout.Orientation = ToOrientation(value, Orientation.Vertical), Orientation.Vertical);
 
-            processElementProperty((string)controlSpec["alignContentH"], value => layout.SetHorizontalGravity(ToHorizontalAlignment(value, GravityFlags.Left)), GravityFlags.Left);
-            processElementProperty((string)controlSpec["alignContentV"], value => layout.SetVerticalGravity(ToVerticalAlignment(value, GravityFlags.Center)), GravityFlags.Center);
-
             processThicknessProperty(controlSpec["padding"], new PaddingThicknessSetter(this.Control));
 
             if (controlSpec["contents"] != null)
             {
                 createControls((JArray)controlSpec["contents"], (childControlSpec, childControlWrapper) =>
                 {
-                    LinearLayout.LayoutParams layoutParams = null;
-
-                    if (childControlWrapper.Control.LayoutParameters != null)
-                    {
-                        if (childControlWrapper.Control.LayoutParameters is ViewGroup.MarginLayoutParams)
-                        {
-                            layoutParams = new LinearLayout.LayoutParams((ViewGroup.MarginLayoutParams)childControlWrapper.Control.LayoutParameters);
-                        }
-                        else
-                        {
-                            layoutParams = new LinearLayout.LayoutParams(childControlWrapper.Control.LayoutParameters);
-                        }
-                    }
-                    else
-                    {
-                        layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WrapContent, LinearLayout.LayoutParams.WrapContent);
-                    }
-
-                    // In order to align each item independantly, just set the Gravity for the item...
-                    //
-                    // layoutParams.Gravity = GravityFlags.Bottom;
-                    //
-
-                    childControlWrapper.Control.LayoutParameters = layoutParams;
-
-                    layout.AddView(childControlWrapper.Control);
+                    childControlWrapper.AddToLinearLayout(layout, childControlSpec);
                 });
             }
 

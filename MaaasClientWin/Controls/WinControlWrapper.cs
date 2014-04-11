@@ -132,13 +132,17 @@ namespace MaaasClientWin.Controls
             {
                 alignment = HorizontalAlignment.Left;
             }
-            if (alignmentValue == "Right")
+            else if (alignmentValue == "Right")
             {
                 alignment = HorizontalAlignment.Right;
             }
             else if (alignmentValue == "Center")
             {
                 alignment = HorizontalAlignment.Center;
+            }
+            else if (alignmentValue == "Stretch")
+            {
+                alignment = HorizontalAlignment.Stretch;
             }
             return alignment;
         }
@@ -156,13 +160,17 @@ namespace MaaasClientWin.Controls
             {
                 alignment = VerticalAlignment.Top;
             }
-            if (alignmentValue == "Bottom")
+            else if (alignmentValue == "Bottom")
             {
                 alignment = VerticalAlignment.Bottom;
             }
             else if (alignmentValue == "Center")
             {
                 alignment = VerticalAlignment.Center;
+            }
+            else if (alignmentValue == "Stretch")
+            {
+                alignment = VerticalAlignment.Stretch;
             }
             return alignment;
         }
@@ -259,14 +267,45 @@ namespace MaaasClientWin.Controls
         {
             //element.Margin = defaultThickness;
             element.HorizontalAlignment = HorizontalAlignment.Left;
+            element.VerticalAlignment = VerticalAlignment.Top;
+        }
+
+        protected void setHeight(FrameworkElement control, object value)
+        {
+            string heightString = ToString(value);
+            if (heightString.IndexOf("*") >= 0)
+            {
+                Util.debug("Got star height string: " + value);
+                control.VerticalAlignment = VerticalAlignment.Stretch;
+            }
+            else
+            {
+                control.Height = ToDeviceUnits(value);
+            }
+        }
+
+        protected void setWidth(FrameworkElement control, object value)
+        {
+            string widthString = ToString(value);
+            if (widthString.IndexOf("*") >= 0)
+            {
+                Util.debug("Got star width string: " + value);
+                control.HorizontalAlignment = HorizontalAlignment.Stretch;
+            }
+            else
+            {
+                control.Width = ToDeviceUnits(value);
+            }
         }
 
         protected void processCommonFrameworkElementProperies(JObject controlSpec)
         {
             Util.debug("Processing framework element properties");
             processElementProperty((string)controlSpec["name"], value => this.Control.Name = ToString(value));
-            processElementProperty((string)controlSpec["height"], value => this.Control.Height = ToDeviceUnits(value));
-            processElementProperty((string)controlSpec["width"], value => this.Control.Width = ToDeviceUnits(value));
+            processElementProperty((string)controlSpec["horizontalAlignment"], value => this.Control.HorizontalAlignment = ToHorizontalAlignment(value));
+            processElementProperty((string)controlSpec["verticalAlignment"], value => this.Control.VerticalAlignment = ToVerticalAlignment(value));
+            processElementProperty((string)controlSpec["height"], value => setHeight(this.Control, value));
+            processElementProperty((string)controlSpec["width"], value => setWidth(this.Control, value));
             processElementProperty((string)controlSpec["minheight"], value => this.Control.MinHeight = ToDouble(value));
             processElementProperty((string)controlSpec["minwidth"], value => this.Control.MinWidth = ToDouble(value));
             processElementProperty((string)controlSpec["maxheight"], value => this.Control.MaxHeight = ToDouble(value));

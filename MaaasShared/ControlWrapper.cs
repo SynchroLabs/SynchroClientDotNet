@@ -96,6 +96,22 @@ namespace MaaasCore
         // Value conversion helpers
         //
 
+        public static int GetStarCount(string starString)
+        {
+            int starCnt = 0;
+            if ((starString != null) && (starString.EndsWith("*")))
+            {
+                starCnt = 1;
+                string valueString = starString.Replace("*","");
+                if (valueString.Length > 0)
+                {
+                    starCnt = Convert.ToInt32(valueString);
+                }
+            }
+
+            return starCnt;
+        }
+
         public static Double ToDouble(object value)
         {
             if (value is JValue)
@@ -501,7 +517,6 @@ namespace MaaasCore
                 fontSetter.SetSize(ToDeviceUnitsFromTypographicPoints(value));
             });
         }
-
 
         // Process a value binding on an element.  If a value is supplied, a value binding to that binding context will be created.
         //

@@ -18,12 +18,7 @@ namespace MaaasClientWin.Controls
     class WinStackPanelWrapper : WinControlWrapper
     {
         Border _border;
-        StackPanel _stackPanel;
-        protected HorizontalAlignment _hAlign;
-        protected VerticalAlignment _vAlign;
-
-        public HorizontalAlignment HorizontalAlignment { get { return _hAlign; } set { _hAlign = value; updateContentAlignment(); } }
-        public VerticalAlignment VerticalAlignment { get { return _vAlign; } set { _vAlign = value; updateContentAlignment(); } }
+        Grid _grid;
 
         public WinStackPanelWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
@@ -33,43 +28,72 @@ namespace MaaasClientWin.Controls
             // In order to get padding support, we put a Border around the StackPanel...
             //
             _border = new Border();
-            _stackPanel = new StackPanel();
-            _border.Child = _stackPanel;
+
+            // In order to be able to distribute "extra" space between controls (required for flexible layout), we had
+            // to move away from the Windows StackPanel (which can't do that) and move to the Grid (which can).  So now
+            // every stack panel is actually a Grid (with a single row or column, depending on orientation).
+            //
+            _grid = new Grid();
+            _border.Child = _grid;
             this._control = _border;
 
             applyFrameworkElementDefaults(_border);
 
-            processElementProperty((string)controlSpec["orientation"], value => _stackPanel.Orientation = ToOrientation(value, Orientation.Vertical), Orientation.Vertical);
+            Orientation orientation = ToOrientation(controlSpec["orientation"], Orientation.Vertical);
 
-            // Win/WinPhone support individual content item alignment in stack panels, but Android does not, so for now we're 
-            // just going to be dumb like Android and align all items the same way.  If we did add item alignment support back at
-            // some point, this attribute could still serve as the default item alignment.
+            // !!! For debug - show outline...
             //
-            processElementProperty((string)controlSpec["alignContentH"], value => this.HorizontalAlignment = ToHorizontalAlignment(value, HorizontalAlignment.Left), HorizontalAlignment.Left);
-            processElementProperty((string)controlSpec["alignContentV"], value => this.VerticalAlignment = ToVerticalAlignment(value, VerticalAlignment.Center), VerticalAlignment.Center);
+            //_border.BorderBrush = ToBrush("White");
+            //_border.BorderThickness = new Thickness(2);
 
             processThicknessProperty(controlSpec["padding"], value => _border.Padding = (Thickness)value);
 
             if (controlSpec["contents"] != null)
             {
+                int index = 0;
                 createControls((JArray)controlSpec["contents"], (childControlSpec, childControlWrapper) =>
                 {
-                    // childControlWrapper.processElementProperty((string)childControlSpec["align"], value => childControlWrapper.Control.HorizontalAlignment = ToHorizontalAlignment(value));
-                    childControlWrapper.Control.HorizontalAlignment = _hAlign;
-                    // childControlWrapper.processElementProperty((string)childControlSpec["align"], value => childControlWrapper.Control.VerticalAlignment = ToVerticalAlignment(value));
-                    childControlWrapper.Control.VerticalAlignment = _vAlign;
+                    if (orientation == Orientation.Horizontal)
+                    {
+                        ColumnDefinition colDef = new ColumnDefinition();
 
-                    _stackPanel.Children.Add(childControlWrapper.Control);
+                        int starCount = GetStarCount((string)childControlSpec["width"]);
+                        if (starCount > 0)
+                        {
+                            colDef.Width = new GridLength(starCount, GridUnitType.Star);
+                        }
+                        else
+                        {
+                            colDef.Width = new GridLength(1, GridUnitType.Auto);
+                        }
+
+                        _grid.ColumnDefinitions.Add(colDef);
+
+                        Grid.SetColumn(childControlWrapper.Control, index);
+                    }
+                    else
+                    {
+                        RowDefinition rowDef = new RowDefinition();
+
+                        int starCount = GetStarCount((string)childControlSpec["height"]);
+                        if (starCount > 0)
+                        {
+                            rowDef.Height = new GridLength(starCount, GridUnitType.Star);
+                        }
+                        else
+                        {
+                            rowDef.Height = new GridLength(1, GridUnitType.Auto);
+                        }
+
+                        _grid.RowDefinitions.Add(rowDef);
+
+                        Grid.SetRow(childControlWrapper.Control, index);
+                    }
+
+                    _grid.Children.Add(childControlWrapper.Control);
+
+                    index++;
                 });
-            }
-        }
-
-        void updateContentAlignment()
-        {
-            foreach (Control child in _stackPanel.Children)
-            {
-                child.HorizontalAlignment = _hAlign;
-                child.VerticalAlignment = _vAlign;
             }
         }
     }

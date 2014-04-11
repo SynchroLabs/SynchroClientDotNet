@@ -126,45 +126,31 @@ namespace MaaasClientAndroid.Controls
             processElementProperty((string)controlSpec["background"], value => _rect.SetFillColor(ToColor(value)));
             processThicknessProperty(controlSpec["padding"], borderThicknessSetter);
 
-            processElementProperty((string)controlSpec["alignContentH"], value => _layout.SetHorizontalGravity(ToHorizontalAlignment(value, GravityFlags.Center)), GravityFlags.Center);
-            processElementProperty((string)controlSpec["alignContentV"], value => _layout.SetVerticalGravity(ToVerticalAlignment(value, GravityFlags.Center)), GravityFlags.Center);
-
             // In theory we're only jamming one child in here (so it doesn't really matter whether the linear layout is
-            // horizontal or vertical.
+            // horizontal or vertical).
             //
+            _layout.Orientation = Orientation.Vertical;
+
+            // Since the orientation is vertical, the item gravity will control the horizontal alignment of the item.
+            // For vertical alignment, we need to set the gravity of the container itself (to specify how the container
+            // should align the totality of its contents, which in this case is just the one item).  We default to centered,
+            // but bind the child's verticalAlignment to the container gravity when the child is processed below.
+            //
+            _layout.SetGravity(GravityFlags.CenterVertical); 
+
             if (controlSpec["contents"] != null)
             {
                 createControls((JArray)controlSpec["contents"], (childControlSpec, childControlWrapper) =>
                 {
-                    LinearLayout.LayoutParams layoutParams = null;
-
-                    if (childControlWrapper.Control.LayoutParameters != null)
-                    {
-                        if (childControlWrapper.Control.LayoutParameters is ViewGroup.MarginLayoutParams)
-                        {
-                            layoutParams = new LinearLayout.LayoutParams((ViewGroup.MarginLayoutParams)childControlWrapper.Control.LayoutParameters);
-                        }
-                        else
-                        {
-                            layoutParams = new LinearLayout.LayoutParams(childControlWrapper.Control.LayoutParameters);
-                        }
-                    }
-                    else
-                    {
-                        layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WrapContent, LinearLayout.LayoutParams.WrapContent);
-                    }
-
-                    childControlWrapper.Control.LayoutParameters = layoutParams;
-
-                    _layout.AddView(childControlWrapper.Control);
+                    childControlWrapper.AddToLinearLayout(_layout, childControlSpec);
+                    processElementProperty((string)childControlSpec["verticalAlignment"], value => _layout.SetGravity(ToVerticalAlignment(value)));
                 });
             }
         }
 
         void _layout_LayoutChange(object sender, View.LayoutChangeEventArgs e)
         {
-            _rect.Height = _layout.Height;
-            _rect.Width = _layout.Width;
+            _rect.SetBounds(0, 0, _layout.Width, _layout.Height);
         }
     }
 }

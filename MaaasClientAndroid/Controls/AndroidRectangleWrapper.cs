@@ -20,8 +20,6 @@ namespace MaaasClientAndroid.Controls
 {
     public class MaaasRectDrawable : GradientDrawable
     {
-        int _width = 100;
-        int _height = 100;
         int _strokeWidth = 0;
         float _radius = 0;
 
@@ -32,27 +30,7 @@ namespace MaaasClientAndroid.Controls
             : base()
         {
             this.SetShape(ShapeType.Rectangle);
-            this.SetBounds(0, 0, _width, _height);
-        }
-
-        public int Width
-        {
-            get { return _width; }
-            set
-            {
-                _width = value;
-                this.SetBounds(0, 0, _width, _height);
-            }
-        }
-
-        public int Height
-        {
-            get { return _height; }
-            set
-            {
-                _height = value;
-                this.SetBounds(0, 0, _width, _height);
-            }
+            this.SetBounds(0, 0, 0, 0);
         }
 
         public void SetFillColor(Color color)
@@ -88,9 +66,9 @@ namespace MaaasClientAndroid.Controls
 
     public class DrawableView : View, Drawable.ICallback
     {
-        Drawable _drawable;
+        GradientDrawable _drawable;
 
-        public DrawableView(Context context, Drawable drawable)
+        public DrawableView(Context context, GradientDrawable drawable)
             : base(context)
         {
             _drawable = drawable;
@@ -101,6 +79,13 @@ namespace MaaasClientAndroid.Controls
         {
             base.InvalidateDrawable(who);
             this.Invalidate();
+        }
+
+        protected override void OnSizeChanged(int w, int h, int oldw, int oldh)
+        {
+            Util.debug("OnSizeChanged - w: " + w + ", h: " + h);
+            base.OnSizeChanged(w, h, oldw, oldh);
+            _drawable.SetBounds(0, 0, w, h);
         }
 
         protected override void OnDraw(Canvas canvas)
@@ -122,20 +107,12 @@ namespace MaaasClientAndroid.Controls
             DrawableView drawableView = new DrawableView(((AndroidControlWrapper)parent).Control.Context, _rect);
             this._control = drawableView;
 
-            drawableView.LayoutChange += drawableView_LayoutChange;
-
             applyFrameworkElementDefaults(drawableView);
 
             processElementProperty((string)controlSpec["border"], value => _rect.SetStrokeColor(ToColor(value)));
             processElementProperty((string)controlSpec["borderThickness"], value => _rect.SetStrokeWidth((int)ToDeviceUnits(value)));
             processElementProperty((string)controlSpec["cornerRadius"], value => _rect.SetCornerRadius((float)ToDeviceUnits(value)));
             processElementProperty((string)controlSpec["fill"], value => _rect.SetFillColor(ToColor(value)));
-        }
-
-        void drawableView_LayoutChange(object sender, View.LayoutChangeEventArgs e)
-        {
-            _rect.Width = this.Width;
-            _rect.Height = this.Height;
         }
     }
 }

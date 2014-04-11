@@ -92,7 +92,7 @@ namespace MaaasClientAndroid.Controls
         {
             if (_control != null)
             {
-                // !!! These seem to be equivalent, but produce fonts that are larger than on other platforms (for glyph span is the specified height, 
+                // !!! These seem to be equivalent, but produce fonts that are larger than on other platforms (the glyph span is the specified height, 
                 //     with the total box being a fair amount larger, as opposed to most platforms where the box is the specified height).
                 //
                 _control.SetTextSize(ComplexUnitType.Px, (float)size);
@@ -181,8 +181,8 @@ namespace MaaasClientAndroid.Controls
             if (layoutParams != null)
             {
                 layoutParams.LeftMargin = thickness;
+                _control.LayoutParameters = layoutParams; // Required to trigger real-time update
             }
-            _control.LayoutParameters = layoutParams; // Required to trigger real-time update
         }
 
         public override void SetThicknessTop(int thickness)
@@ -191,8 +191,8 @@ namespace MaaasClientAndroid.Controls
             if (layoutParams != null)
             {
                 layoutParams.TopMargin = thickness;
+                _control.LayoutParameters = layoutParams; // Required to trigger real-time update
             }
-            _control.LayoutParameters = layoutParams; // Required to trigger real-time update
         }
 
         public override void SetThicknessRight(int thickness)
@@ -201,8 +201,8 @@ namespace MaaasClientAndroid.Controls
             if (layoutParams != null)
             {
                 layoutParams.RightMargin = thickness;
+                _control.LayoutParameters = layoutParams; // Required to trigger real-time update
             }
-            _control.LayoutParameters = layoutParams; // Required to trigger real-time update
         }
 
         public override void SetThicknessBottom(int thickness)
@@ -211,8 +211,8 @@ namespace MaaasClientAndroid.Controls
             if (layoutParams != null)
             {
                 layoutParams.BottomMargin = thickness;
+                _control.LayoutParameters = layoutParams; // Required to trigger real-time update
             }
-            _control.LayoutParameters = layoutParams; // Required to trigger real-time update
         }
     }
 
@@ -327,6 +327,105 @@ namespace MaaasClientAndroid.Controls
             }
         }
 
+        public void AddToLinearLayout(LinearLayout layout, JObject childControlSpec)
+        {
+            LinearLayout.LayoutParams linearLayoutParams = this.Control.LayoutParameters as LinearLayout.LayoutParams;
+
+            if (linearLayoutParams == null)
+            {
+                // Here we are essentially "upgrading" any current LayoutParams to LinearLayout.LayoutParams (if needed)
+                //
+                // The LinearLayout.LayoutParams constructor is too dumb to look at the class of the LayoutParams passed in, and
+                // instead requires you to bind to the correct constructor variant based on the class of the provided layout params.
+                //
+                if (this.Control.LayoutParameters is ViewGroup.MarginLayoutParams)
+                {
+                    linearLayoutParams = new LinearLayout.LayoutParams((ViewGroup.MarginLayoutParams)this.Control.LayoutParameters);
+                }
+                else if (this.Control.LayoutParameters != null)
+                {
+                    linearLayoutParams = new LinearLayout.LayoutParams(this.Control.LayoutParameters);
+                }
+                else
+                {
+                    linearLayoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WrapContent, LinearLayout.LayoutParams.WrapContent);
+                }
+
+                // The control might have had gravity (h/v alignment) set before getting added to the linear layout, and if so, we 
+                // want to pick up those values in the new LayoutParams now...
+                //
+                linearLayoutParams.Gravity = VerticalAlignment | HorizontalAlignment;
+            }
+
+            int heightStarCount = GetStarCount((string)childControlSpec["height"]);
+            int widthStarCount = GetStarCount((string)childControlSpec["width"]);
+
+            if (layout.Orientation == Orientation.Horizontal)
+            {
+                if (heightStarCount > 0)
+                {
+                    linearLayoutParams.Height = LinearLayout.LayoutParams.MatchParent;
+                }
+
+                if (widthStarCount > 0)
+                {
+                    linearLayoutParams.Width = 0;
+                    linearLayoutParams.Weight = widthStarCount;
+                }
+            }
+            else // Orientation.Vertical
+            {
+                if (widthStarCount > 0)
+                {
+                    linearLayoutParams.Width = LinearLayout.LayoutParams.MatchParent;
+                }
+                
+                if (heightStarCount > 0)
+                {
+                    linearLayoutParams.Height = 0;
+                    linearLayoutParams.Weight = heightStarCount;
+                }
+            }
+
+            this.Control.LayoutParameters = linearLayoutParams;
+
+            layout.AddView(this.Control);
+        }
+
+        protected void updateGravity()
+        {
+            if (this.Control.LayoutParameters != null)
+            {
+                LinearLayout.LayoutParams linearLayoutParams = this.Control.LayoutParameters as LinearLayout.LayoutParams;
+                if (linearLayoutParams != null)
+                {
+                    linearLayoutParams.Gravity = _horizontalAlignment | _verticalAlignment;
+                }
+            }
+        }
+
+        protected GravityFlags _verticalAlignment = GravityFlags.Top;
+        public GravityFlags VerticalAlignment
+        {
+            get { return _verticalAlignment; }
+            set
+            {
+                _verticalAlignment = value;
+                updateGravity();
+            }
+        }
+
+        protected GravityFlags _horizontalAlignment = GravityFlags.Left;
+        public GravityFlags HorizontalAlignment
+        {
+            get { return _horizontalAlignment; }
+            set
+            {
+                _horizontalAlignment = value;
+                updateGravity();
+            }
+        }
+
         public Orientation ToOrientation(object value, Orientation defaultOrientation = Orientation.Horizontal)
         {
             if (value is Orientation)
@@ -360,13 +459,17 @@ namespace MaaasClientAndroid.Controls
             {
                 alignment = GravityFlags.Left;
             }
-            if (alignmentValue == "Right")
+            else if (alignmentValue == "Right")
             {
                 alignment = GravityFlags.Right;
             }
             else if (alignmentValue == "Center")
             {
                 alignment = GravityFlags.Center;
+            }
+            else if (alignmentValue == "Stretch")
+            {
+                alignment = GravityFlags.FillHorizontal;
             }
             return alignment;
         }
@@ -384,13 +487,17 @@ namespace MaaasClientAndroid.Controls
             {
                 alignment = GravityFlags.Top;
             }
-            if (alignmentValue == "Bottom")
+            else if (alignmentValue == "Bottom")
             {
                 alignment = GravityFlags.Bottom;
             }
             else if (alignmentValue == "Center")
             {
                 alignment = GravityFlags.Center;
+            }
+            else if (alignmentValue == "Stretch")
+            {
+                alignment = GravityFlags.FillVertical;
             }
             return alignment;
         }
@@ -453,6 +560,34 @@ namespace MaaasClientAndroid.Controls
             }
         }
 
+        protected void setHeight(object value)
+        {
+            string heightString = ToString(value);
+            if (heightString.IndexOf("*") >= 0)
+            {
+                Util.debug("Got star height string: " + value);
+                // this.Height = 0; // ViewGroup.LayoutParams.MatchParent;
+            }
+            else
+            {
+                this.Height = (int)ToDeviceUnits(value);
+            }
+        }
+
+        protected void setWidth(object value)
+        {
+            string widthString = ToString(value);
+            if (widthString.IndexOf("*") >= 0)
+            {
+                Util.debug("Got star width string: " + value);
+                // this.Width = 0; // ViewGroup.LayoutParams.MatchParent;
+            }
+            else
+            {
+                this.Width = (int)ToDeviceUnits(value);
+            }
+        }
+
         protected void processCommonFrameworkElementProperies(JObject controlSpec)
         {
             // !!! This could be a little more thourough ;)
@@ -460,15 +595,19 @@ namespace MaaasClientAndroid.Controls
 
             //processElementProperty((string)controlSpec["name"], value => this.Control.Name = ToString(value));
 
-            processElementProperty((string)controlSpec["height"], value => this.Height = (int)ToDeviceUnits(value));
-            processElementProperty((string)controlSpec["width"], value => this.Width = (int)ToDeviceUnits(value));
-            this.updateSize();
+            processElementProperty((string)controlSpec["horizontalAlignment"], value => this.HorizontalAlignment = ToHorizontalAlignment(value));
+            processElementProperty((string)controlSpec["verticalAlignment"], value => this.VerticalAlignment = ToVerticalAlignment(value));
+
+            processElementProperty((string)controlSpec["height"], value => setHeight(value));
+            processElementProperty((string)controlSpec["width"], value => setWidth(value));
+            updateSize(); // To init the layout params
 
             processElementProperty((string)controlSpec["minheight"], value => this.Control.SetMinimumHeight((int)ToDeviceUnits(value)));
             processElementProperty((string)controlSpec["minwidth"], value => this.Control.SetMinimumWidth((int)ToDeviceUnits(value)));
 
-            //processElementProperty((string)controlSpec["maxheight"], value => this.Control.MaxHeight = ToDouble(value));
-            //processElementProperty((string)controlSpec["maxwidth"], value => this.Control.MaxWidth = ToDouble(value));
+            //processElementProperty((string)controlSpec["maxheight"], value => this.Control.MaxHeight = ToDouble(value)); // !!! Device units?
+            //processElementProperty((string)controlSpec["maxwidth"], value => this.Control.MaxWidth = ToDouble(value));   // !!! Device units?
+
             processElementProperty((string)controlSpec["opacity"], value => this.Control.Alpha = (float)ToDouble(value));
             processElementProperty((string)controlSpec["visibility"], value => this.Control.Visibility = ToBoolean(value) ? ViewStates.Visible : ViewStates.Gone);
             processElementProperty((string)controlSpec["enabled"], value => this.Control.Enabled = ToBoolean(value));

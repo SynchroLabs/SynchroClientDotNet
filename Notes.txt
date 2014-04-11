@@ -21,8 +21,6 @@ Controls -
     Implemented 
     ======================================
 
-    !!! All - document binding details, all supported attributes (specify which ones can use binding tokens), show sample usage
-
     !!! TODO - 
 
     Table (aka Grid, like HTML table, rows/colums, typically not data bound)
@@ -99,16 +97,6 @@ Controls -
 
 Client
 
-    Configuration of server on client, maybe menu of servers so you can pick one as top level screen
-       - Enter via address, get server identifier from server and use that in menu (maybe in addition to address)
-
-       Launcher screen, comes up on startup - has Maaas.io name/logo
-       List of Apps with add/remove
-       On add - prompt for server address, connect to that server to get info, add to app list using info from server
-          Endpoint: maaas.io, App: demo
-          Endpoint: 127.0.0.1, App: demo (sandbox)
-       Click app to launch (if fails or times out, back to launcher)
-
 
     Transaction synchronization, "waiting" indicator (if > .5 seconds maybe), retry if fails?
 
@@ -129,24 +117,6 @@ Client
 Server
 
     Test on iPad, Android tab (Nexus 7, Kindle Fire)
-
-    Persistent client state
-        Use cookies?  homegrown cookie-like method?.  Needs to work with any driver.  
-        Backed by Redis or similar, maybe Windows Azure Cache Services + db?
-        New session
-            Create session db entry, insert into cache, return session id
-        On request start
-            Get session from cache, if not in cache, look in db, if not in db, return "session not found" - trigger client to establish new session
-            Otherwise record copy of session
-        On request end
-            Diff session, if changed, write updated session to db and cache
-
-        Http needs to send session id on every request, websockets only when starting socket
-
-    Cache
-        View cache - negotiate view cache state so that server knows whether you need a given view or have it (to avoid round trips)?
-
-    Hotloading (will need work on cluster deployment)
 
     Implement PropertyCross
 
@@ -218,9 +188,45 @@ Dynamic sizing
 
         For Grid: http://msdn.microsoft.com/en-us/library/system.windows.gridunittype(v=vs.110).aspx (GridLength/GridUnitType)
 
+        If stackpanel size is fixed (or known)
+          For each dimension:
+            If child dimension is: *
+               Set to min-size (or 0, if none)
+               Size (or compute size) of stackpanel in dimension
+               Subtract size from maximum/actual size, compute remainder
+               Divide remainder between * items (respecting min/max for each)
+
+        For vertical stackpanel, use grid with row definitions
+            If item width is * -> item horizontal alignment is stretch
+            If item height is * -> row height is * (also vertical alignment stretch?)
+        For horizontal stackpanel, use grid with column definitions
+            If item width is * -> column width is * (also horizontal alignment stretch?)
+            If item height is * -> item vertical alignment is stretch
+
     Android - concept of "weight" (at least in some panels)
 
         No WrapPanel, but some comparable "FlowLayout" solutions: http://slodge.blogspot.no/2013/01/an-mono-for-android-wrappanelflowlayout.html
+
+        For Android LinearLayout (StackPanel equiv)
+          Item "Gravity" - individual item alignment, including stretch h/v
+            Use stretch alignment for perpendicular to orientation Star sizing, for example:
+              If horizontal layout and item height is *, set item gravity to fill_vertical
+          Weight - If non-zero, portion of extra space (weight divided by weight-sum, as with * sizing in Windows Grid)
+            Use weight for parallel to orientation Star sizing, for example:
+              If horizontal layout and item width is *, set item weight to 1 (or x for x*)
+
+
+        Note: In Android, both Border and StackPanel containers are implemented as LinearLayout
+
+        http://developer.android.com/guide/topics/ui/declaring-layout.html
+
+        android.view.ViewGroup.LayoutParams (height, width)
+            android.view.ViewGroup.MarginLayoutParams (adds margins)
+                android.widget.LinearLayout.LayoutParams (add gravity, weight)
+                android.widget.RelativeLayout.LayoutParams (ListView item only, vertical centering, layout with checkbox if specified)
+	        android.widget.AbsoluteLayout.LayoutParams (adds x, y - Canvas only)
+            android.widget.AbsListView.LayoutParams (adds viewType - ListView item only)
+
 
 For each dimension, possible values:
 
@@ -254,3 +260,54 @@ Default margin (all)
 Control sizing when not specified (especially iOS/Android) - review
 Text - if width specified and height not specified, should wrap, grow vertically, as required
 Control sizing - fill to height/width, less margin?
+
+
+========================================
+
+{ control: "stackpanel", orientation: "Vertical", contents: [
+    { control: "text", value: "Caption", fontsize: 10, width: 140, foreground: "Red" },
+    { control: "rectangle", height: 100, width: 100, fill: "Green" },
+    ]
+},
+
+=========================================
+
+Containers: 
+    Single: ScrollView, Border
+    Multiple: StackPanel, Grid (to be implemented)
+
+Every control is contained in some other control, except the top level control, which is owned by the "page" (and is sized explicitly to the available page size)
+
+Document top level control logic (Depends on whether your top level "elements" attribute has more than one child? Always get the scroller?)
+
+Every control needs to be aligned in their parent
+    Horizontal:  Left, Center, Right, Stretch ("fill_horizontal" on Android) - document defaults (verify)
+    Vertical: Top, Center, Right, Stretch ("fill_vertical" on Android) - document defaults (verify)
+
+Every control has a size (height/width)
+    If dimension unspecified, and control is itself a container, which has contents, considered "wrap_content" (otherwise?  0?)
+    If dimension is Star (* or n*), then ... (fill_parent?)
+
+Every control may have margins (in all four directions), which must be obeyed (by parent)
+
+Control min/max size (do we even need this concept?)
+
+For containers that can contain multiple controls, need way to allocate flexible size between them
+    Star sizing (Windows) and Layout weight (Android) indicate proportion of allocation of "extra" space
+    Windows also has a concept of Auto (divide "extra" space proportionately based on size of contents)
+
+For stack panel, alignment makes sense in the opposite dimension as orientation -
+    For example, in a vertical stack panel each item might horizontally aligned left, center, right, or stretch,
+    but in the vertical dimension (the dimension in which the items are "stacked"), alignment makes no sense.  The
+    exception to this would be for a "stretch" alignment / star sizing (where you aren't using alignment to specify
+    where the control should fit within the available space, you're just indicating that you want extra space, and
+    the control is going to consume all of it).
+
+==========================================
+
+{ control: "stackpanel", width: "*", height: "*", margin: { top: 10, left: 10, right: 10 }, orientation: "Vertical", contents: [
+    { control: "text", value: "Caption", fontsize: 10, foreground: "Red" },
+    { control: "rectangle", height: "*", width: "*", fill: "Green" },
+    ]
+},
+
