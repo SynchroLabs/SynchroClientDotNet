@@ -31,9 +31,16 @@ namespace MaaasClientIOS
 
     class PageContentScrollView : UIScrollView
     {
-        public PageContentScrollView(RectangleF rect)
+        iOSControlWrapper _content;
+
+        public PageContentScrollView(RectangleF rect, iOSControlWrapper content)
             : base(rect)
         {
+            _content = content;
+            if (_content != null)
+            {
+                this.AddSubview(_content.Control);
+            }
         }
 
         public override void LayoutSubviews()
@@ -41,21 +48,36 @@ namespace MaaasClientIOS
             if (!Dragging && !Decelerating)
             {
                 // Util.debug("Laying out sub view");
-
-                SizeF size = new SizeF(this.ContentSize);
-
-                // Size width to parent width (to achieve vertical-only scroll)
-                size.Width = this.Superview.Frame.Width;
-
-                foreach (UIView view in this.Subviews)
+                if (_content != null)
                 {
-                    // Size height of content area to height of contained views...
-                    if ((view.Frame.Y + view.Frame.Height) > size.Height)
+                    // Size child (content) to parent as appropriate
+                    //
+                    RectangleF frame = _content.Control.Frame;
+
+                    if (_content.FrameProperties.HeightSpec == SizeSpec.FillParent)
                     {
-                        size.Height = view.Frame.Y + view.Frame.Height;
+                        frame.Height = this.Frame.Height;
                     }
+
+                    if (_content.FrameProperties.WidthSpec == SizeSpec.FillParent)
+                    {
+                        frame.Width = this.Frame.Width;
+                    }
+
+                    _content.Control.Frame = frame;
+
+                    // Set scroll content area based on size of contents
+                    //
+                    SizeF size = new SizeF(this.ContentSize);
+
+                    // Size width of scroll content area to container width (to achieve vertical-only scroll)
+                    size.Width = this.Superview.Frame.Width;
+
+                    // Size height of scroll content area to height of contained views...
+                    size.Height = _content.Control.Frame.Y + _content.Control.Frame.Height;
+
+                    this.ContentSize = size;
                 }
-                this.ContentSize = size;
             }
 
             base.LayoutSubviews();
@@ -240,12 +262,10 @@ namespace MaaasClientIOS
 
             // Create the main content area (scroll view) and add the page content to it...
             //
-            _contentScrollView = new PageContentScrollView(contentRect);
+            _contentScrollView = new PageContentScrollView(contentRect, (iOSControlWrapper)content);
             panel.AddSubview(_contentScrollView);
             if (content != null)
             {
-                UIView childView = ((iOSControlWrapper)content).Control;
-                _contentScrollView.AddSubview(childView);
                 // We're adding the content to the _rootControlWrapper child list, even thought the scroll view
                 // is actually in between (in the view heirarchy) - but that shouldn't be a problem.
                 _rootControlWrapper.ChildControls.Add(content);

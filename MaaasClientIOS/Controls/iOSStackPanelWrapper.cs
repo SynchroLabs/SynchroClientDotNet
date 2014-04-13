@@ -11,14 +11,44 @@ using System.Drawing;
 
 namespace MaaasClientIOS.Controls
 {
+    // "Star space" is the term used to refer to the allocation of "extra" space based on star heights
+    // or widths (for example, a width of "2*" means the element wants a 2x pro-rata allocation of
+    // any extra space available).
+    //
+    // By managing the total available star space, and returning to each caller their proportion of the
+    // remaining unallocated space, we will ensure that the final consumer will get the remainder
+    // of the total space (this mitigates rounding errors to some extent by at least guaranteeing
+    // that the total space usage is correct).
+    //
+    public class StarSpaceManager
+    {
+        protected int _totalStars = 0;
+        protected float _totalStarSpace = 0.0f;
+
+        public StarSpaceManager(int totalStars, float totalStarSpace)
+        {
+            _totalStars = totalStars;
+            _totalStarSpace = totalStarSpace;
+        }
+
+        public float GetStarSpace(int numStars)
+        {
+            float starSpace = 0.0f;
+            if (_totalStars > 0)
+            {
+                starSpace = (_totalStarSpace/_totalStars) * numStars;
+                _totalStars -= numStars;
+                _totalStarSpace -= starSpace;
+            }
+            return starSpace;
+        }
+    }
+
     class StackPanelView : PaddedView
     {
         protected iOSControlWrapper _controlWrapper;
         protected Orientation _orientation;
         protected float _spacing = 10;
-        protected FrameProperties _frameProps;
-        protected HorizontalAlignment _hAlign;
-        protected VerticalAlignment _vAlign;
 
         public StackPanelView(iOSControlWrapper controlWrapper)
             : base()
@@ -36,28 +66,6 @@ namespace MaaasClientIOS.Controls
             } 
         }
 
-        public FrameProperties FrameProperties { get { return _frameProps; } set { _frameProps = value; } }
-
-        public HorizontalAlignment HorizontalAlignment 
-        { 
-            get { return _hAlign; } 
-            set 
-            { 
-                _hAlign = value;
-                this.SetNeedsLayout();
-            } 
-        }
-
-        public VerticalAlignment VerticalAlignment 
-        {
-            get { return _vAlign; } 
-            set 
-            {
-                _vAlign = value;
-                this.SetNeedsLayout();
-            } 
-        }
-
         public override void AddSubview(UIView view)
         {
             base.AddSubview(view);
@@ -69,30 +77,79 @@ namespace MaaasClientIOS.Controls
 
             base.LayoutSubviews();
 
-            // Determine the maximum subview size in each dimension (for item alignment later).
+            // Determine the maximum subview size in the dimension perpendicular to the orientation, and the total
+            // subview allocation in the orientation direction.
             //
+            int totalStars = 0;
+
+            float totalAllocatedHeight = 0;
+            float totalAllocatedWidth = 0;
+
             SizeF maxDimensions = new SizeF(0, 0);
+
             foreach (UIView childView in this.Subviews)
             {
-                UIEdgeInsets margin = new UIEdgeInsets(0 ,0, 0, 0);
                 iOSControlWrapper childControlWrapper = _controlWrapper.getChildControlWrapper(childView);
-                if (childControlWrapper != null)
+
+                // For FillParent ("star sized") elements, we don't want to count the current value in that dimension in
+                // the maximum or total values (those items will grow to fit when we arrange them later).
+                //
+                float countedChildHeight = (childControlWrapper.FrameProperties.StarHeight == 0) ? childView.Frame.Height : 0;
+                float countedChildWidth = (childControlWrapper.FrameProperties.StarWidth == 0) ? childView.Frame.Width : 0;
+
+                UIEdgeInsets margin = childControlWrapper.Margin;
+
+                if (_orientation == Orientation.Horizontal)
                 {
-                    margin = childControlWrapper.Margin;
+                    // Determine total width allocation
+                    totalAllocatedWidth += countedChildWidth + (margin.Left + margin.Right);
+                    totalStars += childControlWrapper.FrameProperties.StarWidth;
+
+                    // Determine max height 
+                    maxDimensions.Height = Math.Max(maxDimensions.Height, countedChildHeight + (margin.Top + margin.Bottom));
+                }
+                else // Orientation.Vertical
+                {
+                    // Determine total height allocation
+                    totalAllocatedHeight += countedChildHeight + (margin.Top + margin.Bottom);
+                    totalStars += childControlWrapper.FrameProperties.StarHeight;
+
+                    // Determine max width
+                    maxDimensions.Width = Math.Max(maxDimensions.Width, countedChildWidth + (margin.Left + margin.Right));
+                }
+            }
+
+            // This is how much "extra" space we have in the orientation direction
+            float totalStarSpace = 0.0f;
+
+            if (_orientation == Orientation.Horizontal)
+            {
+                if (_controlWrapper.FrameProperties.WidthSpec != SizeSpec.WrapContent)
+                {
+                    totalStarSpace = Math.Max(0, this.Frame.Width - totalAllocatedWidth);
                 }
 
-                maxDimensions.Width = Math.Max(maxDimensions.Width, childView.Frame.Width + margin.Left + margin.Right);
-                maxDimensions.Height = Math.Max(maxDimensions.Height, childView.Frame.Height + margin.Top + margin.Bottom);
+                if (_controlWrapper.FrameProperties.HeightSpec != SizeSpec.WrapContent)
+                {
+                    maxDimensions.Height = this.Frame.Height;
+                }
             }
 
-            if (_frameProps.WidthSpecified)
+            if (_orientation == Orientation.Vertical)
             {
-                maxDimensions.Width = this.Frame.Width;
+
+                if (_controlWrapper.FrameProperties.HeightSpec != SizeSpec.WrapContent)
+                {
+                    totalStarSpace = Math.Max(0, this.Frame.Height - totalAllocatedHeight);
+                }
+
+                if (_controlWrapper.FrameProperties.WidthSpec != SizeSpec.WrapContent)
+                {
+                    maxDimensions.Width = this.Frame.Width;
+                }
             }
-            if (_frameProps.HeightSpecified)
-            {
-                maxDimensions.Height = this.Frame.Height;
-            }
+
+            StarSpaceManager starSpaceManager = new StarSpaceManager(totalStars, totalStarSpace);
 
             float _currTop = _padding.Top;
             float _currLeft = _padding.Left;
@@ -105,48 +162,80 @@ namespace MaaasClientIOS.Controls
             //
             foreach (UIView childView in this.Subviews)
             {
-                UIEdgeInsets margin = new UIEdgeInsets(0, 0, 0, 0);
                 iOSControlWrapper childControlWrapper = _controlWrapper.getChildControlWrapper(childView);
-                if (childControlWrapper != null)
-                {
-                    margin = childControlWrapper.Margin;
-                }
+                UIEdgeInsets margin = childControlWrapper.Margin;
 
                 RectangleF childFrame = childView.Frame;
 
                 if (_orientation == Orientation.Horizontal)
                 {
+                    if (childControlWrapper.FrameProperties.StarWidth > 0)
+                    {
+                        childFrame.Width = starSpaceManager.GetStarSpace(childControlWrapper.FrameProperties.StarWidth);
+                    }
+
                     // Set the horizontal position (considering margin overlap)
                     childFrame.X = _currLeft + Math.Max(lastMargin.Right, margin.Left);
 
                     // Set the vertical position based on aligment (default Top)
                     childFrame.Y = _currTop + margin.Top;
-                    if (_vAlign == VerticalAlignment.Center)
+
+                    if (childControlWrapper.FrameProperties.HeightSpec == SizeSpec.FillParent)
                     {
-                        // Should we consider margin when centering?  For now, we don't.
-                        childFrame.Y = _currTop + ((maxDimensions.Height - childFrame.Height) / 2);
+                        // Filling to parent height (already top aligned, so set width relative to parent,
+                        // accounting for margins.
+                        //
+                        childFrame.Height = this.Frame.Height - (margin.Top + margin.Bottom);
                     }
-                    else if (_vAlign == VerticalAlignment.Bottom)
+                    else
                     {
-                        childFrame.Y = _currTop + (maxDimensions.Height - childFrame.Height) - margin.Bottom;
+                        // Explicit height - align as needed.
+                        //
+                        if (childControlWrapper.VerticalAlignment == VerticalAlignment.Center)
+                        {
+                            // Should we consider margin when centering?  For now, we don't.
+                            childFrame.Y = _currTop + ((maxDimensions.Height - childFrame.Height) / 2);
+                        }
+                        else if (childControlWrapper.VerticalAlignment == VerticalAlignment.Bottom)
+                        {
+                            childFrame.Y = _currTop + (maxDimensions.Height - childFrame.Height) - margin.Bottom;
+                        }
                     }
                     _currLeft = childFrame.X + childFrame.Width;
                 }
                 else // Orientation.Vertical
                 {
+                    if (childControlWrapper.FrameProperties.StarHeight > 0)
+                    {
+                        childFrame.Height = starSpaceManager.GetStarSpace(childControlWrapper.FrameProperties.StarHeight);
+                    }
+
                     // Set the vertical position (considering margin overlap)
                     childFrame.Y = _currTop + Math.Max(lastMargin.Bottom, margin.Top);
 
                     // Set the horizontal position based on aligment (default Left)
                     childFrame.X = _currLeft + margin.Left;
-                    if (_hAlign == HorizontalAlignment.Center)
+
+                    if (childControlWrapper.FrameProperties.WidthSpec == SizeSpec.FillParent)
                     {
-                        // Should we consider margin when centering?  For now, we don't.
-                        childFrame.X = _currLeft + ((maxDimensions.Width - childFrame.Width) / 2);
+                        // Filling to parent width (already left aligned, so set width relative to parent,
+                        // accounting for margins.
+                        //
+                        childFrame.Width = this.Frame.Width - (margin.Left + margin.Right);
                     }
-                    else if (_hAlign == HorizontalAlignment.Right)
+                    else
                     {
-                        childFrame.X = _currLeft + (maxDimensions.Width - childFrame.Width) - margin.Right;
+                        // Explicit height - align as needed.
+                        //
+                        if (childControlWrapper.HorizontalAlignment == HorizontalAlignment.Center)
+                        {
+                            // Should we consider margin when centering?  For now, we don't.
+                            childFrame.X = _currLeft + ((maxDimensions.Width - childFrame.Width) / 2);
+                        }
+                        else if (childControlWrapper.HorizontalAlignment == HorizontalAlignment.Right)
+                        {
+                            childFrame.X = _currLeft + (maxDimensions.Width - childFrame.Width) - margin.Right;
+                        }
                     }
                     _currTop = childFrame.Y + childFrame.Height;
                 }
@@ -171,14 +260,14 @@ namespace MaaasClientIOS.Controls
 
             // See if the stack panel might have changed size (based on content)
             //
-            if (!_frameProps.WidthSpecified || !_frameProps.HeightSpecified)
+            if ((_controlWrapper.FrameProperties.WidthSpec == SizeSpec.WrapContent) || (_controlWrapper.FrameProperties.HeightSpec == SizeSpec.WrapContent))
             {
                 SizeF panelSize = this.Frame.Size;
-                if (!_frameProps.HeightSpecified)
+                if (_controlWrapper.FrameProperties.HeightSpec == SizeSpec.WrapContent)
                 {
                     panelSize.Height = newPanelSize.Height;
                 }
-                if (!_frameProps.WidthSpecified)
+                if (_controlWrapper.FrameProperties.WidthSpec == SizeSpec.WrapContent)
                 {
                     panelSize.Width = newPanelSize.Width;
                 }
@@ -209,13 +298,11 @@ namespace MaaasClientIOS.Controls
             StackPanelView stackPanel = new StackPanelView(this);
             this._control = stackPanel;
 
-            stackPanel.FrameProperties = processElementDimensions(controlSpec, 0, 0);
+            processElementDimensions(controlSpec, 0, 0);
             applyFrameworkElementDefaults(stackPanel);
 
             processElementProperty((string)controlSpec["orientation"], value => stackPanel.Orientation = ToOrientation(value, Orientation.Vertical), Orientation.Vertical);
 
-            processElementProperty((string)controlSpec["alignContentH"], value => stackPanel.HorizontalAlignment = ToHorizontalAlignment(value, HorizontalAlignment.Left), HorizontalAlignment.Left);
-            processElementProperty((string)controlSpec["alignContentV"], value => stackPanel.VerticalAlignment = ToVerticalAlignment(value, VerticalAlignment.Center), VerticalAlignment.Center);
             processThicknessProperty(controlSpec["padding"], new PaddedViewThicknessSetter(stackPanel));
 
             if (controlSpec["contents"] != null)

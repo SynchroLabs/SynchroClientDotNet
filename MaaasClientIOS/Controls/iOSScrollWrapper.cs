@@ -13,10 +13,12 @@ namespace MaaasClientIOS.Controls
 {
     class AutoSizingScrollView : UIScrollView
     {
+        protected iOSControlWrapper _controlWrapper;
         protected Orientation _orientation;
 
-        public AutoSizingScrollView(Orientation orientation) : base()
+        public AutoSizingScrollView(iOSControlWrapper controlWrapper, Orientation orientation) : base()
         {
+            _controlWrapper = controlWrapper;
             _orientation = orientation;
         }
 
@@ -30,9 +32,19 @@ namespace MaaasClientIOS.Controls
                 SizeF size = new SizeF(this.ContentSize);
                 foreach (UIView view in this.Subviews)
                 {
+                    iOSControlWrapper childControlWrapper = _controlWrapper.getChildControlWrapper(view);
+                    RectangleF childFrame = view.Frame;
+
                     if (_orientation == Orientation.Vertical)
                     {
-                        // Vertical scroll, size to content height
+                        // Vertical scroll, child width is FillParent
+                        //
+                        if (childControlWrapper.FrameProperties.WidthSpec == SizeSpec.FillParent)
+                        {
+                            childFrame.Width = this.Frame.Width;
+                        }
+
+                        // Vertical scroll, size scroll area to content height
                         //
                         if ((view.Frame.Y + view.Frame.Height) > size.Height)
                         {
@@ -41,13 +53,22 @@ namespace MaaasClientIOS.Controls
                     }
                     else
                     {
-                        // Horizontal scroll, size to content width
+                        // Horizontal scroll, child height is FillParent
+                        //
+                        if (childControlWrapper.FrameProperties.HeightSpec == SizeSpec.FillParent)
+                        {
+                            childFrame.Height = this.Frame.Height;
+                        }
+
+                        // Horizontal scroll, size scroll area to content width
                         //
                         if ((view.Frame.X + view.Frame.Width) > size.Width)
                         {
                             size.Width = view.Frame.X + view.Frame.Width;
                         }
                     }
+
+                    view.Frame = childFrame;
                 }
                 this.ContentSize = size;
             }
@@ -67,7 +88,7 @@ namespace MaaasClientIOS.Controls
 
             // https://developer.apple.com/library/ios/documentation/WindowsViews/Conceptual/UIScrollView_pg/Introduction/Introduction.html
             //
-            UIScrollView scroller = new AutoSizingScrollView(orientation);
+            UIScrollView scroller = new AutoSizingScrollView(this, orientation);
             this._control = scroller;
 
             processElementDimensions(controlSpec, 150, 50);

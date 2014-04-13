@@ -36,10 +36,20 @@ namespace MaaasClientIOS.Controls
         Vertical
     }
 
+    public enum SizeSpec : uint
+    {
+        WrapContent,
+        Explicit,
+        FillParent
+    }
+
     public class FrameProperties
     {
-        public bool WidthSpecified = false;
-        public bool HeightSpecified = false;
+        public SizeSpec WidthSpec = SizeSpec.WrapContent;
+        public SizeSpec HeightSpec = SizeSpec.WrapContent;
+
+        public int StarWidth = 0;
+        public int StarHeight = 0;
     }
 
     //
@@ -494,6 +504,10 @@ namespace MaaasClientIOS.Controls
 
         protected UIEdgeInsets _margin = new UIEdgeInsets(0, 0, 0, 0);
 
+        public FrameProperties FrameProperties = new FrameProperties();
+        public HorizontalAlignment HorizontalAlignment = HorizontalAlignment.Left;
+        public VerticalAlignment VerticalAlignment = VerticalAlignment.Top;
+
         public iOSControlWrapper(iOSPageView pageView, StateManager stateManager, ViewModel viewModel, BindingContext bindingContext, UIView control) :
             base(stateManager, viewModel, bindingContext)
         {
@@ -693,35 +707,59 @@ namespace MaaasClientIOS.Controls
 
         protected FrameProperties processElementDimensions(JObject controlSpec, float defaultWidth = 100, float defaultHeight = 100)
         {
-            FrameProperties frameProps = new FrameProperties();
-            frameProps.HeightSpecified = ((string)controlSpec["height"] != null);
-            frameProps.WidthSpecified = ((string)controlSpec["width"] != null);
-
             this.Control.Frame = new RectangleF(0, 0, defaultWidth, defaultHeight);
 
-            processElementProperty((string)controlSpec["height"], value => 
+            // Process star sizing...
+            //
+            int heightStarCount = GetStarCount((string)controlSpec["height"]);
+            if (heightStarCount > 0)
             {
-                RectangleF frame = this.Control.Frame;
-                frame.Height = (float)ToDeviceUnits(value);
-                this.Control.Frame = frame;
-                if (this.Control.Superview != null)
-                {
-                    this.Control.Superview.SetNeedsLayout();
-                }
-            });
-
-            processElementProperty((string)controlSpec["width"], value => 
+                this.FrameProperties.HeightSpec = SizeSpec.FillParent;
+                this.FrameProperties.StarHeight = heightStarCount;
+            }
+            else
             {
-                RectangleF frame = this.Control.Frame;
-                frame.Width = (float)ToDeviceUnits(value);
-                this.Control.Frame = frame;
-                if (this.Control.Superview != null)
+                if ((string)controlSpec["height"] != null)
                 {
-                    this.Control.Superview.SetNeedsLayout();
+                    this.FrameProperties.HeightSpec = SizeSpec.Explicit;
                 }
-            });
+                processElementProperty((string)controlSpec["height"], value =>
+                {
+                    RectangleF frame = this.Control.Frame;
+                    frame.Height = (float)ToDeviceUnits(value);
+                    this.Control.Frame = frame;
+                    if (this.Control.Superview != null)
+                    {
+                        this.Control.Superview.SetNeedsLayout();
+                    }
+                });
+            }
 
-            return frameProps;
+            int widthStarCount = GetStarCount((string)controlSpec["width"]);
+            if (widthStarCount > 0)
+            {
+                this.FrameProperties.WidthSpec = SizeSpec.FillParent;
+                this.FrameProperties.StarWidth = widthStarCount; 
+            }
+            else
+            {
+                if ((string)controlSpec["width"] != null)
+                {
+                    this.FrameProperties.WidthSpec = SizeSpec.Explicit;
+                }
+                processElementProperty((string)controlSpec["width"], value =>
+                {
+                    RectangleF frame = this.Control.Frame;
+                    frame.Width = (float)ToDeviceUnits(value);
+                    this.Control.Frame = frame;
+                    if (this.Control.Superview != null)
+                    {
+                        this.Control.Superview.SetNeedsLayout();
+                    }
+                });
+            }
+
+            return this.FrameProperties;
         }
 
         protected void processCommonFrameworkElementProperies(JObject controlSpec)
@@ -734,6 +772,9 @@ namespace MaaasClientIOS.Controls
             //processElementProperty((string)controlSpec["minwidth"], value => this.Control.MinWidth = ToDouble(value));
             //processElementProperty((string)controlSpec["maxheight"], value => this.Control.MaxHeight = ToDouble(value));
             //processElementProperty((string)controlSpec["maxwidth"], value => this.Control.MaxWidth = ToDouble(value));
+
+            processElementProperty((string)controlSpec["horizontalAlignment"], value => this.HorizontalAlignment = ToHorizontalAlignment(value));
+            processElementProperty((string)controlSpec["verticalAlignment"], value => this.VerticalAlignment = ToVerticalAlignment(value));
 
             processElementProperty((string)controlSpec["opacity"], value => this.Control.Layer.Opacity = (float)ToDouble(value));
 
