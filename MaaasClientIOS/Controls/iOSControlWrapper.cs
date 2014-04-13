@@ -505,8 +505,34 @@ namespace MaaasClientIOS.Controls
         protected UIEdgeInsets _margin = new UIEdgeInsets(0, 0, 0, 0);
 
         public FrameProperties FrameProperties = new FrameProperties();
-        public HorizontalAlignment HorizontalAlignment = HorizontalAlignment.Left;
-        public VerticalAlignment VerticalAlignment = VerticalAlignment.Top;
+
+        protected HorizontalAlignment _horizontalAlignment = HorizontalAlignment.Left;
+        public HorizontalAlignment HorizontalAlignment
+        {
+            get { return _horizontalAlignment; }
+            set
+            {
+                _horizontalAlignment = value;
+                if (_control.Superview != null)
+                {
+                    _control.Superview.SetNeedsLayout();
+                }
+            }
+        }
+
+        protected VerticalAlignment _verticalAlignment = VerticalAlignment.Top;
+        public VerticalAlignment VerticalAlignment
+        {
+            get { return _verticalAlignment; }
+            set
+            {
+                _verticalAlignment = value;
+                if (_control.Superview != null)
+                {
+                    _control.Superview.SetNeedsLayout();
+                }
+            }
+        }
 
         public iOSControlWrapper(iOSPageView pageView, StateManager stateManager, ViewModel viewModel, BindingContext bindingContext, UIView control) :
             base(stateManager, viewModel, bindingContext)

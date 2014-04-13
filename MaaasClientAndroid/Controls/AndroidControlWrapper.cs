@@ -400,6 +400,7 @@ namespace MaaasClientAndroid.Controls
                 if (linearLayoutParams != null)
                 {
                     linearLayoutParams.Gravity = _horizontalAlignment | _verticalAlignment;
+                    _control.RequestLayout();
                 }
             }
         }
