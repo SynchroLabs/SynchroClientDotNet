@@ -41,6 +41,8 @@ namespace MaaasClientAndroid.Controls
                 scroller = hScroller;
             }
 
+            scroller.ChildViewAdded += scroller_ChildViewAdded;
+
             _control = scroller;
             _control.OverScrollMode = OverScrollMode.Never;
 
@@ -52,6 +54,45 @@ namespace MaaasClientAndroid.Controls
                 {
                     scroller.AddView(childControlWrapper.Control);
                 });
+            }
+        }
+
+
+        // When we add a child view to a ScrollView and that child has a variable size in the dimension
+        // of the scroll, the MatchParent does not actually cause the child to fill the scroll area.
+        // Instead, we have to set the FillViewport property on the ScrollView.  This will cause the
+        // child to be at least as large as the scroll content area in the dimension of the scroll, 
+        // but if the child is larger, it will work fine (it will actually scroll).
+        //
+        // Variable ("star" or MatchParent) sizing perpendicular to the direction of scroll works just
+        // fine without our help.
+        //
+        void scroller_ChildViewAdded(object sender, ViewGroup.ChildViewAddedEventArgs e)
+        {
+            ScrollView scrollView = sender as ScrollView;
+            if (scrollView != null)
+            {
+                if (e.Child.LayoutParameters.Height == ViewGroup.LayoutParams.MatchParent)
+                {
+                    scrollView.FillViewport = true;
+                }
+                else
+                {
+                    scrollView.FillViewport = false;
+                }
+            }
+
+            HorizontalScrollView hScrollView = sender as HorizontalScrollView;
+            if (hScrollView != null)
+            {
+                if (e.Child.LayoutParameters.Width == ViewGroup.LayoutParams.MatchParent)
+                {
+                    hScrollView.FillViewport = true;
+                }
+                else
+                {
+                    hScrollView.FillViewport = false;
+                }
             }
         }
     }

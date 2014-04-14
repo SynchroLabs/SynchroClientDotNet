@@ -311,7 +311,10 @@ namespace MaaasClientAndroid.Controls
             set 
             {
                 _width = value;
-                _control.SetMinimumWidth(value);
+                if (_width >= 0)
+                {
+                    _control.SetMinimumWidth(value);
+                }
                 this.updateSize();
             }
         }
@@ -322,7 +325,10 @@ namespace MaaasClientAndroid.Controls
             set
             {
                 _height = value;
-                _control.SetMinimumHeight(value);
+                if (_height >= 0)
+                {
+                    _control.SetMinimumHeight(value);
+                }
                 this.updateSize();
             }
         }
@@ -567,7 +573,7 @@ namespace MaaasClientAndroid.Controls
             if (heightString.IndexOf("*") >= 0)
             {
                 Util.debug("Got star height string: " + value);
-                // this.Height = 0; // ViewGroup.LayoutParams.MatchParent;
+                this.Height = ViewGroup.LayoutParams.MatchParent;
             }
             else
             {
@@ -581,7 +587,7 @@ namespace MaaasClientAndroid.Controls
             if (widthString.IndexOf("*") >= 0)
             {
                 Util.debug("Got star width string: " + value);
-                // this.Width = 0; // ViewGroup.LayoutParams.MatchParent;
+                this.Width = ViewGroup.LayoutParams.MatchParent;
             }
             else
             {
