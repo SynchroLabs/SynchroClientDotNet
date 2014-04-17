@@ -107,6 +107,7 @@ Client
         - Requires persistent client state mechanism on server
 
     Look at perf (especially on iOS - maybe just related to console logging)
+	    - Much better when not debugging
 
     Investigate initial image load issue on Android (DNS failure?), WinPhone (sim only?)
 
@@ -160,87 +161,10 @@ iOS
 
     !!! Padding for controls that support it natively via ContentInset/ContentEdgeInset?  Override padding properties in derived control wrappers?
 
-=======================
+Summary:
 
-Everything should have margin, and Border/StackPanel (at least) should obey them
-Border and StackPanel should have padding 
-
-Containers
-
-    ListView (can ignore margin/padding)
-    StackPanel
-    Border
-    ScrollView
-    Canvas (can ignore padding, child margins)
-
-
-Dynamic sizing
-    Win - 
-        Layout logic - http://msdn.microsoft.com/en-us/library/ms745058(v=vs.110).aspx
-        FrameworkElement.MeasureOverride()
-
-        FrameworkElement.Height/Width must be Double.NaN (which is the default) for autosizing to work
-        FrameworkElement.HorizontalAlignment/VerticalAlignment must also be "Stretch" (which is the default), for autosizing to work
-
-        In a panel with a single child, Double.NaN/Stretch works in either dimension (scrollview should be the same)
-        In a stackpanel, with multiple children, autosizing only works perpendicular to the layout (so items in a vertical stack panel can
-        auto-size to the width of the panel, but not the height, which kind of makes sense)
-
-        For Grid: http://msdn.microsoft.com/en-us/library/system.windows.gridunittype(v=vs.110).aspx (GridLength/GridUnitType)
-
-        If stackpanel size is fixed (or known)
-          For each dimension:
-            If child dimension is: *
-               Set to min-size (or 0, if none)
-               Size (or compute size) of stackpanel in dimension
-               Subtract size from maximum/actual size, compute remainder
-               Divide remainder between * items (respecting min/max for each)
-
-        For vertical stackpanel, use grid with row definitions
-            If item width is * -> item horizontal alignment is stretch
-            If item height is * -> row height is * (also vertical alignment stretch?)
-        For horizontal stackpanel, use grid with column definitions
-            If item width is * -> column width is * (also horizontal alignment stretch?)
-            If item height is * -> item vertical alignment is stretch
-
-    Android - concept of "weight" (at least in some panels)
-
-        No WrapPanel, but some comparable "FlowLayout" solutions: http://slodge.blogspot.no/2013/01/an-mono-for-android-wrappanelflowlayout.html
-
-        For Android LinearLayout (StackPanel equiv)
-          Item "Gravity" - individual item alignment, including stretch h/v
-            Use stretch alignment for perpendicular to orientation Star sizing, for example:
-              If horizontal layout and item height is *, set item gravity to fill_vertical
-          Weight - If non-zero, portion of extra space (weight divided by weight-sum, as with * sizing in Windows Grid)
-            Use weight for parallel to orientation Star sizing, for example:
-              If horizontal layout and item width is *, set item weight to 1 (or x for x*)
-
-
-        Note: In Android, both Border and StackPanel containers are implemented as LinearLayout
-
-        http://developer.android.com/guide/topics/ui/declaring-layout.html
-
-        android.view.ViewGroup.LayoutParams (height, width)
-            android.view.ViewGroup.MarginLayoutParams (adds margins)
-                android.widget.LinearLayout.LayoutParams (add gravity, weight)
-                android.widget.RelativeLayout.LayoutParams (ListView item only, vertical centering, layout with checkbox if specified)
-	        android.widget.AbsoluteLayout.LayoutParams (adds x, y - Canvas only)
-            android.widget.AbsListView.LayoutParams (adds viewType - ListView item only)
-
-
-For each dimension, possible values:
-
-    Wrap (default)
-    Fill
-    Explicit
-
-    If Wrap or Fill, also consider:
-        min
-        max
-
-    What about:
-        star value means fill parent, unspecified means wrap content
-
+	Every control supports margin, and Border/StackPanel (at least) obey them
+    Border and StackPanel support padding 
 
 =======================
 
@@ -258,56 +182,41 @@ Misc
 Scroll to top of page on transition (Windows, at least)
 Default margin (all)
 Control sizing when not specified (especially iOS/Android) - review
+
 Text - if width specified and height not specified, should wrap, grow vertically, as required
-Control sizing - fill to height/width, less margin?
+   - What if width unspecified or star, but control is still constrained horizontally at some width by parent, how do we detect/handle that?
+   - If height is wrap, then on layout, size to height (relayout if height changes)?
 
+Image control 
+    height and width attributes dertermine display size (as normal for control)
+	Scaling mode (all support: none, fit, fill, stretch)
+	   Also would be nice for layout to synthesize: fit-height, fit-width (and combine with "wrap" semantic for auto-sizing on opposite dimension)
+	Scaling factor?
+	Alignment of image?
+	   H align for none, fit (and fit-height if supported)
+	   V align for none, fit (and fit-width if supported)
 
-========================================
+	How does wrap sizing work with this?
 
-{ control: "stackpanel", orientation: "Vertical", contents: [
-    { control: "text", value: "Caption", fontsize: 10, width: 140, foreground: "Red" },
-    { control: "rectangle", height: 100, width: 100, fill: "Green" },
-    ]
-},
+	Example: 
+	    Image scale fit-to-width, image height is unspecified ("wrap" height should be based on scaled height)
 
 =========================================
 
-Containers: 
-    Single: ScrollView, Border
-    Multiple: StackPanel, Grid (to be implemented)
+Text flow test
+   Android +
+   WinPhone +
+   Windows -
+      On Windows, top level stack panel is in page scroll view and can grow to width past screen width
+	  (if stack panel width is constrained, wrapping works fine)
+   iOS 
+      Assume this one will take some work
+	     propx_main - no wrapping
+		 textflow - no wrapping (also, due to def size, edit control didn't grow)
 
-Every control is contained in some other control, except the top level control, which is owned by the "page" (and is sized explicitly to the available page size)
-
-Document top level control logic (Depends on whether your top level "elements" attribute has more than one child? Always get the scroller?)
-
-Every control needs to be aligned in their parent
-    Horizontal:  Left, Center, Right, Stretch ("fill_horizontal" on Android) - document defaults (verify)
-    Vertical: Top, Center, Right, Stretch ("fill_vertical" on Android) - document defaults (verify)
-
-Every control has a size (height/width)
-    If dimension unspecified, and control is itself a container, which has contents, considered "wrap_content" (otherwise?  0?)
-    If dimension is Star (* or n*), then ... (fill_parent?)
-
-Every control may have margins (in all four directions), which must be obeyed (by parent)
-
-Control min/max size (do we even need this concept?)
-
-For containers that can contain multiple controls, need way to allocate flexible size between them
-    Star sizing (Windows) and Layout weight (Android) indicate proportion of allocation of "extra" space
-    Windows also has a concept of Auto (divide "extra" space proportionately based on size of contents)
-
-For stack panel, alignment makes sense in the opposite dimension as orientation -
-    For example, in a vertical stack panel each item might horizontally aligned left, center, right, or stretch,
-    but in the vertical dimension (the dimension in which the items are "stacked"), alignment makes no sense.  The
-    exception to this would be for a "stretch" alignment / star sizing (where you aren't using alignment to specify
-    where the control should fit within the available space, you're just indicating that you want extra space, and
-    the control is going to consume all of it).
-
-==========================================
-
-{ control: "stackpanel", width: "*", height: "*", margin: { top: 10, left: 10, right: 10 }, orientation: "Vertical", contents: [
-    { control: "text", value: "Caption", fontsize: 10, foreground: "Red" },
-    { control: "rectangle", height: "*", width: "*", fill: "Green" },
-    ]
-},
+iOS control sizing
+   Changing size or content can affect layout and resulting size
+   Size change from h/w property
+   Size change from container
+   Content change (text, font, etc)
 

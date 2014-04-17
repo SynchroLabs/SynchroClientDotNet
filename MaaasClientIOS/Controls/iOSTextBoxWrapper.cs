@@ -28,15 +28,15 @@ namespace MaaasClientIOS.Controls
 
             textBox.BorderStyle = UITextBorderStyle.RoundedRect;
 
-            processElementDimensions(controlSpec, 150, 50);
-            //textBox.AutoresizingMask = UIViewAutoresizing.FlexibleWidth | UIViewAutoresizing.FlexibleTopMargin | UIViewAutoresizing.FlexibleBottomMargin;
-
+            processElementDimensions(controlSpec, 100); // Default width of 100
+            
             applyFrameworkElementDefaults(textBox);
 
             JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "value");
             if (!processElementBoundValue("value", (string)bindingSpec["value"], () => { return textBox.Text; }, value => textBox.Text = ToString(value)))
             {
                 processElementProperty((string)controlSpec["value"], value => textBox.Text = ToString(value));
+                textBox.SizeToFit();
             }
 
             textBox.EditingChanged += textBox_EditingChanged;

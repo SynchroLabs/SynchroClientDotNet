@@ -222,7 +222,7 @@ namespace MaaasClientIOS.Controls
 
                 // Update the content position
                 //
-                _childView.Frame = childFrame;
+                _childView.Frame = childFrame; // !!! Size child
 
                 // See if the border panel might have changed size (based on content)
                 //

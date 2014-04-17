@@ -239,7 +239,7 @@ namespace MaaasClientIOS.Controls
                     }
                     _currTop = childFrame.Y + childFrame.Height;
                 }
-                childView.Frame = childFrame;
+                childView.Frame = childFrame; // !!! Size child
 
                 if ((childFrame.X + childFrame.Width + margin.Right) > newPanelSize.Width)
                 {

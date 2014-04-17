@@ -13,7 +13,7 @@ namespace MaaasCore
         {
             //string host = "maaas.cloudapp.net";
             //string host = "maaas.io"; 
-            string host = "192.168.1.134:1337"; // "localhost:1337";
+            string host = "192.168.1.168:1337"; // "localhost:1337";
             //string host = "localhost:1337";
             //string host = "127.0.0.1";
             return host;

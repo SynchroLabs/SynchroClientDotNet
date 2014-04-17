@@ -28,6 +28,12 @@ namespace MaaasClientIOS.Controls
             UIImageView image = new UIImageView();            
             this._control = image;
 
+            // !!! Image scaling
+            //
+            // image.ContentMode = UIViewContentMode.ScaleToFill;     // Stretch to fill 
+            // image.ContentMode = UIViewContentMode.ScaleAspectFit;  // Fit preserving aspect
+            // image.ContentMode = UIViewContentMode.ScaleAspectFill; // Fill preserving aspect
+
             processElementDimensions(controlSpec, 128, 128);
             applyFrameworkElementDefaults(image);
             processElementProperty((string)controlSpec["resource"], value => image.SetImageUrl(createNSUrl(this.StateManager.buildUri(ToString(value)))));

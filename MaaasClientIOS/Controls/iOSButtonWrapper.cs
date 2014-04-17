@@ -23,10 +23,14 @@ namespace MaaasClientIOS.Controls
             UIButton button = UIButton.FromType(UIButtonType.RoundedRect);
             this._control = button;
 
-            processElementDimensions(controlSpec, 150, 50);
+            processElementDimensions(controlSpec);
             applyFrameworkElementDefaults(button);
 
-            processElementProperty((string)controlSpec["caption"], value => button.SetTitle(ToString(value), UIControlState.Normal));
+            processElementProperty((string)controlSpec["caption"], value => 
+            {
+                button.SetTitle(ToString(value), UIControlState.Normal);
+                this.SizeToFit();
+            });
 
             JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, CommandName.OnClick, Commands);
             ProcessCommands(bindingSpec, Commands);

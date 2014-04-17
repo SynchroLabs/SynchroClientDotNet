@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Controls;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
 namespace MaaasClientWinPhone.Controls
@@ -18,6 +19,12 @@ namespace MaaasClientWinPhone.Controls
             Util.debug("Creating image element");
             Image image = new Image();
             this._control = image;
+
+            // !!! Image scaling
+            //
+            // image.Stretch = Stretch.Fill;          // Stretch to fill 
+            // image.Stretch = Stretch.Uniform;       // Fit preserving aspect
+            // image.Stretch = Stretch.UniformToFill; // Fill preserving aspect
 
             applyFrameworkElementDefaults(image);
             image.Height = 128; // Sizes will be overriden by the generic height/width property handlers, but

@@ -731,8 +731,54 @@ namespace MaaasClientIOS.Controls
             // !!! This could be a little more thourough ;)
         }
 
-        protected FrameProperties processElementDimensions(JObject controlSpec, float defaultWidth = 100, float defaultHeight = 100)
+        protected SizeF SizeThatFits(SizeF size)
         {
+            SizeF sizeThatFits = new SizeF(size);
+
+            if ((this.FrameProperties.HeightSpec == SizeSpec.WrapContent) && (this.FrameProperties.WidthSpec == SizeSpec.WrapContent))
+            {
+                // If both dimensions are WrapContent, then we want to make the control as small as possible in both dimensions, without
+                // respect to how big the client would like to make it.
+                //
+                sizeThatFits = this.Control.SizeThatFits(new SizeF(0, 0)); // Compute height and width
+            }
+            else if (this.FrameProperties.HeightSpec == SizeSpec.WrapContent)
+            {
+                // If only the height is WrapContent, then we obey the current width and attempt to compute the height.
+                //
+                sizeThatFits = this.Control.SizeThatFits(new SizeF(this.Control.Frame.Size.Width, 0)); // Compute height
+                sizeThatFits.Width = this.Control.Frame.Size.Width; // Maintain width
+            }
+            else if (this.FrameProperties.WidthSpec == SizeSpec.WrapContent)
+            {
+                // If only the width is WrapContent, then we obey the current hiights and attempt to compute the width.
+                //
+                sizeThatFits = this.Control.SizeThatFits(new SizeF(0, this.Control.Frame.Size.Height)); // Compute width
+                sizeThatFits.Height = this.Control.Frame.Height; // Maintain height
+            }
+
+            return sizeThatFits;
+        }
+
+        protected void SizeToFit()
+        {
+            SizeF size = this.SizeThatFits(new SizeF(0, 0));
+            RectangleF frame = this.Control.Frame;
+            frame.Size = size;
+            this.Control.Frame = frame;
+        }
+
+        protected FrameProperties processElementDimensions(JObject controlSpec, float defaultWidth = 0, float defaultHeight = 0)
+        {
+            if (defaultWidth == 0)
+            {
+                defaultWidth = this.Control.IntrinsicContentSize.Width;
+            }
+            if (defaultHeight == 0)
+            {
+                defaultHeight = this.Control.IntrinsicContentSize.Height;
+            }
+
             this.Control.Frame = new RectangleF(0, 0, defaultWidth, defaultHeight);
 
             // Process star sizing...
@@ -758,6 +804,7 @@ namespace MaaasClientIOS.Controls
                     {
                         this.Control.Superview.SetNeedsLayout();
                     }
+                    //this.SizeToFit();
                 });
             }
 
@@ -782,6 +829,7 @@ namespace MaaasClientIOS.Controls
                     {
                         this.Control.Superview.SetNeedsLayout();
                     }
+                    //this.SizeToFit();
                 });
             }
 

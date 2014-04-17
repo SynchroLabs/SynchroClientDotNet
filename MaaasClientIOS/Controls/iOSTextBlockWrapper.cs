@@ -11,11 +11,90 @@ using System.Drawing;
 
 namespace MaaasClientIOS.Controls
 {
+    class ResizableLabel : UILabel 
+    {
+        protected FrameProperties _frameProperties;
+        protected SizeF _lastComputedSize;
+
+        public ResizableLabel(FrameProperties frameProperties) : base()
+        {
+            _frameProperties = frameProperties;
+            _lastComputedSize = new SizeF(0, 0);
+        }
+
+        public override string Text
+        {
+            get
+            {
+                return base.Text;
+            }
+            set
+            {
+                base.Text = value;
+                this.UpdateSize();
+            }
+        }
+
+        protected void UpdateComputedSize(SizeF size)
+        {
+            _lastComputedSize.Width = size.Width;
+            _lastComputedSize.Height = size.Height;
+
+            RectangleF frame = this.Frame;
+            frame.Size = size;
+            this.Frame = frame;
+        }
+
+        public override void LayoutSubviews()
+        {
+            base.LayoutSubviews();
+
+            if ((this.Frame.Size.Width != _lastComputedSize.Width) || (this.Frame.Size.Height != _lastComputedSize.Height))
+            {
+                // Util.debug("Resizable label - layoutSubviews() - new size - h: " + this.Frame.Size.Height + ", w: " + this.Frame.Size.Width);
+                //
+                this.UpdateSize();
+            }
+        }
+
+        public void UpdateSize()
+        {
+            if ((_frameProperties.HeightSpec == SizeSpec.WrapContent) && (_frameProperties.WidthSpec == SizeSpec.WrapContent))
+            {
+                // If both dimensions are WrapContent, then we don't care what the current dimensions are, we just sizeToFit (note
+                // that this will not do any line wrapping and will consume the width of the string as a single line).
+                //
+                this.Lines = 1;
+                SizeF size = this.SizeThatFits(new SizeF(0, 0)); // Compute height and width
+                this.UpdateComputedSize(size);
+            }
+            else if (_frameProperties.HeightSpec == SizeSpec.WrapContent)
+            {
+                // If only the height is WrapContent, then we obey the current width and set the height based on how tall the text would
+                // be when wrapped at the current width.  
+                //
+                SizeF size = this.SizeThatFits(new SizeF(this.Frame.Size.Width, 0)); // Compute height
+                size.Width = this.Frame.Size.Width; // Maintain width
+                this.UpdateComputedSize(size);
+            }
+            else if (_frameProperties.WidthSpec == SizeSpec.WrapContent)
+            {
+                // If only the width is WrapContent then we'll get the maximum width assuming the text is on a single line and we'll 
+                // set the width to that and leave the height alone (kind of a non-sensical case).
+                //
+                SizeF size = this.SizeThatFits(new SizeF(0, 0)); // Compute width
+                size.Height = this.Frame.Height; // Maintain height
+                this.UpdateComputedSize(size);
+            }
+        }
+    }
+
     class TextBlockFontSetter : iOSFontSetter
     {
-        UILabel _label;
+        ResizableLabel _label;
 
-        public TextBlockFontSetter(UILabel label) : base(label.Font)
+        public TextBlockFontSetter(ResizableLabel label)
+            : base(label.Font)
         {
             _label = label;
         }
@@ -23,7 +102,7 @@ namespace MaaasClientIOS.Controls
         public override void setFont(UIFont font)
         {
             _label.Font = font;
-            _label.SizeToFit(); // Might want to do this conditionally based on how control size was specified.
+            _label.UpdateSize();
         }
     }
 
@@ -34,10 +113,13 @@ namespace MaaasClientIOS.Controls
         {
             Util.debug("Creating text block element with text of: " + controlSpec["value"]);
 
-            UILabel textBlock = new UILabel();
+            ResizableLabel textBlock = new ResizableLabel(this.FrameProperties);
+            textBlock.Lines = 0;
+            textBlock.LineBreakMode = UILineBreakMode.WordWrap;
+
             this._control = textBlock;
 
-            processElementDimensions(controlSpec, 150, 50);
+            processElementDimensions(controlSpec, 0, 0);
             applyFrameworkElementDefaults(textBlock);
 
             processElementProperty((string)controlSpec["foreground"], value =>
@@ -52,18 +134,23 @@ namespace MaaasClientIOS.Controls
             processElementProperty((string)controlSpec["value"], value => 
             {
                 textBlock.Text = ToString(value);
-                textBlock.SizeToFit();
+            });
 
-                // !!! We really only want to size to fit the height and/or width if not specied expicitly.  If we had a way to 
-                //     track the explicit vs default height/width setting, we could use something like the below to compute the
-                //     other dimension...
-                //
-                /*
-                RectangleF frame = textBlock.Frame;
-                SizeF size = textBlock.SizeThatFits(frame.Size);
-                frame.Size = size;
-                textBlock.Frame = frame;
-                 */
+            processElementProperty((string)controlSpec["textAlignment"], value =>
+            {
+                String alignString = ToString(value);
+                if (alignString == "Left")
+                {
+                    textBlock.TextAlignment = UITextAlignment.Left;
+                }
+                if (alignString == "Center")
+                {
+                    textBlock.TextAlignment = UITextAlignment.Center;
+                }
+                else if (alignString == "Right")
+                {
+                    textBlock.TextAlignment = UITextAlignment.Right;
+                }
             });
         }
     }
