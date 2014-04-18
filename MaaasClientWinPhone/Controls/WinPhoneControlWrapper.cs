@@ -304,10 +304,10 @@ namespace MaaasClientWinPhone.Controls
             processElementProperty((string)controlSpec["verticalAlignment"], value => this.Control.VerticalAlignment = ToVerticalAlignment(value));
             processElementProperty((string)controlSpec["height"], value => setHeight(this.Control, value));
             processElementProperty((string)controlSpec["width"], value => setWidth(this.Control, value)); 
-            processElementProperty((string)controlSpec["minheight"], value => this.Control.MinHeight = ToDouble(value)); // !!! device units?
-            processElementProperty((string)controlSpec["minwidth"], value => this.Control.MinWidth = ToDouble(value));   // !!! device units?
-            processElementProperty((string)controlSpec["maxheight"], value => this.Control.MaxHeight = ToDouble(value)); // !!! device units?
-            processElementProperty((string)controlSpec["maxwidth"], value => this.Control.MaxWidth = ToDouble(value));   // !!! device units?
+            processElementProperty((string)controlSpec["minheight"], value => this.Control.MinHeight = ToDeviceUnits(value));
+            processElementProperty((string)controlSpec["minwidth"], value => this.Control.MinWidth = ToDeviceUnits(value));
+            processElementProperty((string)controlSpec["maxheight"], value => this.Control.MaxHeight = ToDeviceUnits(value));
+            processElementProperty((string)controlSpec["maxwidth"], value => this.Control.MaxWidth = ToDeviceUnits(value));
             processElementProperty((string)controlSpec["opacity"], value => this.Control.Opacity = ToDouble(value));
             processElementProperty((string)controlSpec["visibility"], value => this.Control.Visibility = ToBoolean(value) ? Visibility.Visible : Visibility.Collapsed);
             processThicknessProperty(controlSpec["margin"], value => this.Control.Margin = (Thickness)value);

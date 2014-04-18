@@ -842,10 +842,10 @@ namespace MaaasClientIOS.Controls
             Util.debug("Processing framework element properties");
 
             //processElementProperty((string)controlSpec["name"], value => this.Control.Name = ToString(value));
-            //processElementProperty((string)controlSpec["minheight"], value => this.Control.MinHeight = ToDouble(value));
-            //processElementProperty((string)controlSpec["minwidth"], value => this.Control.MinWidth = ToDouble(value));
-            //processElementProperty((string)controlSpec["maxheight"], value => this.Control.MaxHeight = ToDouble(value));
-            //processElementProperty((string)controlSpec["maxwidth"], value => this.Control.MaxWidth = ToDouble(value));
+            //processElementProperty((string)controlSpec["minheight"], value => this.Control.MinHeight = ToDeviceUnits(value));
+            //processElementProperty((string)controlSpec["minwidth"], value => this.Control.MinWidth = ToDeviceUnits(value));
+            //processElementProperty((string)controlSpec["maxheight"], value => this.Control.MaxHeight = ToDeviceUnits(value));
+            //processElementProperty((string)controlSpec["maxwidth"], value => this.Control.MaxWidth = ToDeviceUnits(value));
 
             processElementProperty((string)controlSpec["horizontalAlignment"], value => this.HorizontalAlignment = ToHorizontalAlignment(value));
             processElementProperty((string)controlSpec["verticalAlignment"], value => this.VerticalAlignment = ToVerticalAlignment(value));

@@ -203,20 +203,44 @@ Image control
 
 =========================================
 
-Text flow test
-   Android +
-   WinPhone +
-   Windows -
-      On Windows, top level stack panel is in page scroll view and can grow to width past screen width
-	  (if stack panel width is constrained, wrapping works fine)
-   iOS 
-      Assume this one will take some work
-	     propx_main - no wrapping
-		 textflow - no wrapping (also, due to def size, edit control didn't grow)
+Min/max height/width
+  Win/WinPhone - supported
+  Android - only min supported (not sure how hard max would be to add)
+  iOS - Neither supported, but new sizing code should make it fairly straightforward
 
-iOS control sizing
-   Changing size or content can affect layout and resulting size
-   Size change from h/w property
-   Size change from container
-   Content change (text, font, etc)
+=========================================
+
+Make demo apps not suck on iOS (default control margin/padding/spacing/alignment seems to be the main issue)
+
+==========================================
+New icon and splash screen (as appropriate) - All platforms
+Deploy to all platforms
+Use new icon image and complimentary border on Menu page
+Make menu page data-driven (for each)
+New icon for image page?
+New icon on web site?
+Push updated samples to Maaas.io
+
+==========================================
+
+Priority: min, max, value
+
+result = min;
+if (value > min)
+{
+    result = value;
+	if (max > min)
+	{
+	    if (value > max)
+		{
+		    result = value;
+		}
+	}
+}
+
+If max >= min:
+    min(max(val, min), max)
+
+  
+
 

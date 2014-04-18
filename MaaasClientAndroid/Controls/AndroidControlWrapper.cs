@@ -612,8 +612,8 @@ namespace MaaasClientAndroid.Controls
             processElementProperty((string)controlSpec["minheight"], value => this.Control.SetMinimumHeight((int)ToDeviceUnits(value)));
             processElementProperty((string)controlSpec["minwidth"], value => this.Control.SetMinimumWidth((int)ToDeviceUnits(value)));
 
-            //processElementProperty((string)controlSpec["maxheight"], value => this.Control.MaxHeight = ToDouble(value)); // !!! Device units?
-            //processElementProperty((string)controlSpec["maxwidth"], value => this.Control.MaxWidth = ToDouble(value));   // !!! Device units?
+            //processElementProperty((string)controlSpec["maxheight"], value => this.Control.MaxHeight = ToDeviceUnits(value));
+            //processElementProperty((string)controlSpec["maxwidth"], value => this.Control.MaxWidth = ToDeviceUnits(value));
 
             processElementProperty((string)controlSpec["opacity"], value => this.Control.Alpha = (float)ToDouble(value));
             processElementProperty((string)controlSpec["visibility"], value => this.Control.Visibility = ToBoolean(value) ? ViewStates.Visible : ViewStates.Gone);
