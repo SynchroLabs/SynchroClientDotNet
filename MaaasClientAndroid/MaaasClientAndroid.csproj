@@ -140,6 +140,7 @@
     <Compile Include="Controls\AndroidTextBoxWrapper.cs" />
     <Compile Include="Controls\AndroidToggleSwitchWrapper.cs" />
     <Compile Include="Controls\AndroidWebViewWrapper.cs" />
+    <Compile Include="Controls\AndroidWrapPanelWrapper.cs" />
     <Compile Include="MainActivity.cs" />
     <Compile Include="Resources\Resource.Designer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

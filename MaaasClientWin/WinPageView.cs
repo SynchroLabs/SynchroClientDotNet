@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.UI.Popups;
+using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
 namespace MaaasClientWin
@@ -41,6 +42,47 @@ namespace MaaasClientWin
         public override void SetContent(ControlWrapper content)
         {
             ContentControl contentControl = (ContentControl)_rootControlWrapper.Control;
+            ScrollViewer mainScroll = contentControl as ScrollViewer;
+
+            WinControlWrapper controlWrapper = content as WinControlWrapper;
+
+            if (mainScroll != null)
+            {
+                if (controlWrapper != null)
+                {
+                    // Default scroll behavior had the effect of allowing the contained item to grow
+                    // unbounded (when using "Stretch" sizing).  So for example, if you had a text item 
+                    // that spanned the content area and was sized with "*", once it filled the space it
+                    // would continue to expand (growing the scroll content) instead of wrapping to the 
+                    // scroll content area.  
+                    //
+                    // To address this, we disable scrolling in the dimension of any "stretch" sizing, which
+                    // will contain the child in that dimension.
+                    //
+                    if (controlWrapper.Control.HorizontalAlignment == HorizontalAlignment.Stretch)
+                    {
+                        mainScroll.HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled;
+                        mainScroll.HorizontalScrollMode = ScrollMode.Disabled;
+                    }
+                    else
+                    {
+                        mainScroll.HorizontalScrollBarVisibility = ScrollBarVisibility.Auto;
+                        mainScroll.HorizontalScrollMode = ScrollMode.Enabled;
+                    }
+
+                    if (controlWrapper.Control.VerticalAlignment == VerticalAlignment.Stretch)
+                    {
+                        mainScroll.VerticalScrollBarVisibility = ScrollBarVisibility.Disabled;
+                        mainScroll.VerticalScrollMode = ScrollMode.Disabled;
+                    }
+                    else
+                    {
+                        mainScroll.VerticalScrollBarVisibility = ScrollBarVisibility.Auto;
+                        mainScroll.VerticalScrollMode = ScrollMode.Enabled;
+                    }
+                }
+            }
+
             if (content != null)
             {
                 contentControl.Content = ((WinControlWrapper)content).Control;

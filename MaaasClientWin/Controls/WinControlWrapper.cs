@@ -400,6 +400,9 @@ namespace MaaasClientWin.Controls
                 case "webview":
                     controlWrapper = new WinWebViewWrapper(parent, bindingContext, controlSpec);
                     break;
+                case "wrappanel":
+                    controlWrapper = new WinWrapPanelWrapper(parent, bindingContext, controlSpec);
+                    break;
             }
 
             if (controlWrapper != null)

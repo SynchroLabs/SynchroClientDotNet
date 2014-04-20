@@ -955,6 +955,9 @@ namespace MaaasClientIOS.Controls
                 case "webview":
                     controlWrapper = new iOSWebViewWrapper(parent, bindingContext, controlSpec);
                     break;
+                case "wrappanel":
+                    controlWrapper = new iOSWrapPanelWrapper(parent, bindingContext, controlSpec);
+                    break;
             }
 
             if (controlWrapper != null)

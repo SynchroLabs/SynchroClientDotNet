@@ -212,6 +212,40 @@ namespace MaaasClientAndroid
 
         public override void SetContent(ControlWrapper content)
         {
+            AndroidControlWrapper controlWrapper = content as AndroidControlWrapper;
+
+            // Default scroll behavior had the effect of allowing the contained item to grow
+            // unbounded when its content was sized as "match parent" (or "*").  So for example,
+            // if you had a vertical stack panel with a height of "*", which contained a vertical
+            // wrap panel that also had a height of "*", once the wrap panel filled the space, it
+            // would continue to expand (growing the scroll content) instead of wrapping to the 
+            // scroll content area.  
+            //
+            // Since there is no way to disable scrolling in a ScrollView (at least not such that 
+            // it will constrain its content size), we have to use a scroll view as the root only
+            // when the contents is intended to scroll (meaning that the contents has an explicit
+            // size or is sized as "wrap content".  Otherwise, we just use a stack panel that will
+            // constrain the vertical size of the contents (and not scroll, obviously).
+            //
+            if (controlWrapper.Height == ViewGroup.LayoutParams.MatchParent)
+            {
+                if (_rootControlWrapper.Control is ScrollView)
+                {
+                    var newRootView = new LinearLayout(_activity);
+                    _activity.SetContentView(newRootView);
+                    _rootControlWrapper = new AndroidControlWrapper(this, _stateManager, _viewModel, _viewModel.RootBindingContext, newRootView);
+                }
+            }
+            else
+            {
+                if (_rootControlWrapper.Control is LinearLayout)
+                {
+                    var newRootView = new ScrollView(_activity);
+                    _activity.SetContentView(newRootView);
+                    _rootControlWrapper = new AndroidControlWrapper(this, _stateManager, _viewModel, _viewModel.RootBindingContext, newRootView);
+                }
+            }
+
             ViewGroup panel = (ViewGroup)_rootControlWrapper.Control;
             if (content != null)
             {

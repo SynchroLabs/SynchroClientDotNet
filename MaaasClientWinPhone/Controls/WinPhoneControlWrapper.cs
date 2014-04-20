@@ -399,6 +399,9 @@ namespace MaaasClientWinPhone.Controls
                 case "webview":
                     controlWrapper = new WinPhoneWebViewWrapper(parent, bindingContext, controlSpec);
                     break;
+                case "wrappanel":
+                    controlWrapper = new WinPhoneWrapPanelWrapper(parent, bindingContext, controlSpec);
+                    break;
             }
 
             if (controlWrapper != null)

@@ -133,6 +133,7 @@
     <Compile Include="Controls\iOSToggleSwitchWrapper.cs" />
     <Compile Include="Controls\iOSToolBarWrapper.cs" />
     <Compile Include="Controls\iOSWebViewWrapper.cs" />
+    <Compile Include="Controls\iOSWrapPanelWrapper.cs" />
     <Compile Include="iOSDeviceMetrics.cs" />
     <Compile Include="iOSPageView.cs" />
     <Compile Include="iOSTransportWs.cs" />

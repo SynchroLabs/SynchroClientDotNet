@@ -23,21 +23,30 @@ Controls -
 
     !!! TODO - 
 
+    WrapPanel (pretty much there)
+
+        Win\WinPhone
+		   - Item alignment (always top/left now)
+        Android - FlowLayout 
+		   - Needs margin-based layout
+		   - Needs fixed size support
+		   - Item alignment (gravity)?
+        iOS -  UICollectionViewFlowLayout
+		   - Needs fixed size support
+		   - Items always aligned center (opposite orientation) and rows/cols justified (unless implement custom layout)
+
+        All 
+		   - Data bound "view" version would be nice...
+		   - Auto-scrolling in overflow dimension (iOS does this now)
+
     Table (aka Grid, like HTML table, rows/colums, typically not data bound)
 
         Win/WinPhone - Grid
         Android - 
             TableLayout ?
             GridLayout - http://android-developers.blogspot.com/2011/11/new-layout-widgets-space-and-gridlayout.html
-                Requires v11 (4.0/ICS) or v7 support library
+                Requires v11 (4.0/ICS) or v7 support library (does not distribute extra space)
         iOS - Ouch!
-
-    WrapPanel
-
-        Win/WinPhone - WrapPanel
-        Android - FlowLayout - from here: http://forums.xamarin.com/discussion/comment/156
-            Also - http://slodge.blogspot.no/2013/01/an-mono-for-android-wrappanelflowlayout.html
-        iOS -  UICollectionViewFlowLayout?
 
     GridView (flowing, scrolling grid) - Ideally support either data bound or explicit contents
         Win/WinPhone/Android - GridView
@@ -54,7 +63,6 @@ Controls -
 
     !!! A GridView is really just a WrapPanel where every item is the same size.  Review use cases and functionality of platform
         controls and see if we can combine this into a single concept/implementation.
-
 
 
     Not Implemented Yet
@@ -97,6 +105,9 @@ Controls -
 
 Client
 
+    Investigate why client pukes and dies if server is restarted during session
+
+	Communications exception handling / retry (for demo, at least)
 
     Transaction synchronization, "waiting" indicator (if > .5 seconds maybe), retry if fails?
 
@@ -216,7 +227,6 @@ Make demo apps not suck on iOS (default control margin/padding/spacing/alignment
 New icon and splash screen (as appropriate) - All platforms
 Deploy to all platforms
 Use new icon image and complimentary border on Menu page
-Make menu page data-driven (for each)
 New icon for image page?
 New icon on web site?
 Push updated samples to Maaas.io

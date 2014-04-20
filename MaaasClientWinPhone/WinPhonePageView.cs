@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Controls;
 
 // Transitions
@@ -76,6 +77,43 @@ namespace MaaasClientWinPhone
         public override void SetContent(ControlWrapper content)
         {
             ContentControl contentControl = (ContentControl)_rootControlWrapper.Control;
+            ScrollViewer mainScroll = contentControl as ScrollViewer;
+
+            WinPhoneControlWrapper controlWrapper = content as WinPhoneControlWrapper;
+
+            if (mainScroll != null)
+            {
+                if (controlWrapper != null)
+                {
+                    // Default scroll behavior had the effect of allowing the contained item to grow
+                    // unbounded (when using "Stretch" sizing).  So for example, if you had a text item 
+                    // that spanned the content area and was sized with "*", once it filled the space it
+                    // would continue to expand (growing the scroll content) instead of wrapping to the 
+                    // scroll content area.  
+                    //
+                    // To address this, we disable scrolling in the dimension of any "stretch" sizing, which
+                    // will contain the child in that dimension.
+                    //
+                    if (controlWrapper.Control.HorizontalAlignment == HorizontalAlignment.Stretch)
+                    {
+                        mainScroll.HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled;
+                    }
+                    else
+                    {
+                        mainScroll.HorizontalScrollBarVisibility = ScrollBarVisibility.Auto;
+                    }
+
+                    if (controlWrapper.Control.VerticalAlignment == VerticalAlignment.Stretch)
+                    {
+                        mainScroll.VerticalScrollBarVisibility = ScrollBarVisibility.Disabled;
+                    }
+                    else
+                    {
+                        mainScroll.VerticalScrollBarVisibility = ScrollBarVisibility.Auto;
+                    }
+                }
+            }
+
             if (content != null)
             {
                 contentControl.Content = (((WinPhoneControlWrapper)content).Control);

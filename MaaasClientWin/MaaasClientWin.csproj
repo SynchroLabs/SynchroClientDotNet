@@ -154,6 +154,7 @@
     <Compile Include="Controls\WinRectangleWrapper.cs" />
     <Compile Include="Controls\WinScrollWrapper.cs" />
     <Compile Include="Controls\WinWebViewWrapper.cs" />
+    <Compile Include="Controls\WinWrapPanelWrapper.cs" />
     <Compile Include="Launcher.xaml.cs">
       <DependentUpon>Launcher.xaml</DependentUpon>
     </Compile>

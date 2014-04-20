@@ -33,15 +33,6 @@ namespace MaaasClientWin
         {
             this.InitializeComponent();
 
-            // Setting the horizontal scroll to Auto had the effect of allowing the contained item to grow
-            // unbounded (when using "Stretch" sizing).  So for example, if you had a text item that spanned
-            // the content area and was sized with "*", once it filled the space it would continue to expand
-            // (growing the scroll content) instead of wrapping to the scroll content area.  
-            //
-            // this.mainScroll.HorizontalScrollBarVisibility = ScrollBarVisibility.Auto;
-
-            this.mainScroll.VerticalScrollBarVisibility = ScrollBarVisibility.Auto;
-
             this.Loaded += BasicPage_Loaded; 
             this.backButton.Click += backButton_Click;
         }
