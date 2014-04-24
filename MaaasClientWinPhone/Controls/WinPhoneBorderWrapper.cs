@@ -24,9 +24,9 @@ namespace MaaasClientWinPhone.Controls
             applyFrameworkElementDefaults(_border);
 
             processElementProperty((string)controlSpec["border"], value => _border.BorderBrush = ToBrush(value));
-            processThicknessProperty(controlSpec["borderThickness"], value => _border.BorderThickness = (Thickness)value);
+            processThicknessProperty(controlSpec["borderThickness"], () => _border.BorderThickness, value => _border.BorderThickness = (Thickness)value);
             processElementProperty((string)controlSpec["cornerRadius"], value => _border.CornerRadius = new CornerRadius(ToDouble(value)));
-            processThicknessProperty(controlSpec["padding"], value => _border.Padding = (Thickness)value);
+            processThicknessProperty(controlSpec["padding"], () => _border.Padding, value => _border.Padding = (Thickness)value);
             // "background" color handled by base class
 
             if (controlSpec["contents"] != null)

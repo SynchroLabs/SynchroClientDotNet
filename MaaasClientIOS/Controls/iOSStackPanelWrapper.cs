@@ -239,7 +239,12 @@ namespace MaaasClientIOS.Controls
                     }
                     _currTop = childFrame.Y + childFrame.Height;
                 }
-                childView.Frame = childFrame; // !!! Size child
+                childView.Frame = childFrame; // <== This is where we size child (the frame may or may not have actually changed)
+
+                // It seems like calling LayoutSubviews after you resize a contained view is the contract (more efficient to do this
+                // only when the child size actually changed).
+                //
+                childView.LayoutSubviews(); 
 
                 if ((childFrame.X + childFrame.Width + margin.Right) > newPanelSize.Width)
                 {
@@ -299,7 +304,7 @@ namespace MaaasClientIOS.Controls
             this._control = stackPanel;
 
             processElementDimensions(controlSpec, 0, 0);
-            applyFrameworkElementDefaults(stackPanel);
+            applyFrameworkElementDefaults(stackPanel, false);
 
             processElementProperty((string)controlSpec["orientation"], value => stackPanel.Orientation = ToOrientation(value, Orientation.Vertical), Orientation.Vertical);
 

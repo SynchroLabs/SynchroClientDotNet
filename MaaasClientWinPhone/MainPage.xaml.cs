@@ -42,6 +42,10 @@ namespace MaaasClientWinPhone
 
             _stateManager.SetProcessingHandlers(json => _pageView.ProcessPageView(json), json => _pageView.ProcessMessageBox(json));
 
+            // http://msdn.microsoft.com/en-us/library/windowsphone/develop/ff769552(v=vs.105).aspx
+            Thickness overhang = (Thickness)Application.Current.Resources["PhoneTouchTargetOverhang"];
+            Util.debug("Overhang: " + overhang);
+
             // Sample code to localize the ApplicationBar
             //BuildLocalizedApplicationBar();
         }

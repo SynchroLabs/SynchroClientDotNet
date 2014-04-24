@@ -136,6 +136,24 @@ namespace MaaasClientIOS.Controls
                 textBlock.Text = ToString(value);
             });
 
+            processElementProperty((string)controlSpec["ellipsize"], value =>
+            {
+                // Other trimming options:
+                //
+                //   UILineBreakMode.HeadTruncation;
+                //   UILineBreakMode.MiddleTruncation;
+                //
+                bool bEllipsize = ToBoolean(value);
+                if (bEllipsize)
+                {
+                    textBlock.LineBreakMode = UILineBreakMode.TailTruncation;
+                }
+                else
+                {
+                    textBlock.LineBreakMode = UILineBreakMode.WordWrap;
+                }
+            });
+
             processElementProperty((string)controlSpec["textAlignment"], value =>
             {
                 String alignString = ToString(value);

@@ -414,7 +414,7 @@ namespace MaaasClientWin.Controls
             processElementProperty((string)controlSpec["itemHeight"], value => _panel.ItemHeight = ToDeviceUnits(value));
             processElementProperty((string)controlSpec["itemWidth"], value => _panel.ItemWidth = ToDeviceUnits(value));
 
-            processThicknessProperty(controlSpec["padding"], value => _border.Padding = (Thickness)value);
+            processThicknessProperty(controlSpec["padding"], () => _border.Padding, value => _border.Padding = (Thickness)value);
 
             if (controlSpec["contents"] != null)
             {

@@ -28,6 +28,25 @@ namespace MaaasClientAndroid.Controls
 
             processElementProperty((string)controlSpec["value"], value => textView.Text = ToString(value));
 
+            processElementProperty((string)controlSpec["ellipsize"], value =>
+            {
+                // Other trimming options:
+                //
+                //   Android.Text.TextUtils.TruncateAt.Start;
+                //   Android.Text.TextUtils.TruncateAt.Middle;
+                //   Android.Text.TextUtils.TruncateAt.Marquee;
+                //
+                bool bEllipsize = ToBoolean(value);
+                if (bEllipsize)
+                {
+                    textView.Ellipsize = Android.Text.TextUtils.TruncateAt.End;
+                }
+                else
+                {
+                    textView.Ellipsize = null;
+                }
+            });
+
             processElementProperty((string)controlSpec["textAlignment"], value =>
             {
                 // This gravity here specifies how this control's contents should be aligned within the control box, whereas

@@ -17,6 +17,8 @@ using System.Net.Http;
 using System.Net;
 using System.Threading;
 using ModernHttpClient;
+using Java.Net;
+using Java.IO;
 
 namespace MaaasClientAndroid.Controls
 {
@@ -87,6 +89,22 @@ namespace MaaasClientAndroid.Controls
             // hostLookup("fbcdn-profile-a.akamaihd.net");
 
             Util.debug("Getting read the try to load image from: " + uri);
+
+            /*
+	        try 
+            {
+		        URL url = new URL(uri.ToString());
+		        HttpURLConnection connection = (HttpURLConnection)url.OpenConnection();
+		        connection.DoInput = true;
+		        connection.Connect();
+                Bitmap bitmap = BitmapFactory.DecodeStream(connection.InputStream);
+                ctx.Post(_ => { image.SetImageBitmap(bitmap); }, null);
+            }
+            catch (IOException e) 
+            {
+		        e.PrintStackTrace();
+	        }
+            */
 
             using (var client = new HttpClient(new OkHttpNetworkHandler()))
             {

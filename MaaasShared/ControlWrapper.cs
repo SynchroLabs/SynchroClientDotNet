@@ -92,6 +92,30 @@ namespace MaaasCore
             return null;
         }
 
+        // Given min and max range limiters, either of which may be undefined (double.NaN), and a target value,
+        // determine the range-limited value.
+        // 
+        // !!! Use this for min/max height/width, as needed...
+        //
+        public static double getRangeLimitedValue(double value, double min, double max)
+        {
+            double result = value;
+
+            if (!double.IsNaN(min) && (min > result))
+            {
+                // There is a min value and it's greater than the current value...
+                result = min;
+            }
+
+            if (!double.IsNaN(max) && (max < result))
+            {
+                // There is a max value, and it's less than the current value...
+                result = max;
+            }
+
+            return result;
+        }
+
         //
         // Value conversion helpers
         //

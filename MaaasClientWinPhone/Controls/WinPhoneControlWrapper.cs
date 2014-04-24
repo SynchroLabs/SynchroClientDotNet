@@ -222,7 +222,7 @@ namespace MaaasClientWinPhone.Controls
             }
         }
 
-        public void processThicknessProperty(JToken thicknessAttributeValue, SetViewValue setThickness)
+        public void processThicknessProperty(JToken thicknessAttributeValue, GetViewValue getThickness, SetViewValue setThickness)
         {
             if (thicknessAttributeValue is JValue)
             {
@@ -230,38 +230,41 @@ namespace MaaasClientWinPhone.Controls
                 {
                     Thickness thickness = new Thickness(ToDouble(value));
                     setThickness(thickness);
-                }, "0");
+                });
             }
             else if (thicknessAttributeValue is JObject)
             {
                 JObject marginObject = thicknessAttributeValue as JObject;
-                Thickness thickness = new Thickness();
 
                 processElementProperty((string)marginObject.Property("left"), value =>
                 {
+                    Thickness thickness = (Thickness)getThickness();
                     thickness.Left = ToDouble(value);
                     setThickness(thickness);
-                }, "0");
+                });
                 processElementProperty((string)marginObject.Property("top"), value =>
                 {
+                    Thickness thickness = (Thickness)getThickness();
                     thickness.Top = ToDouble(value);
                     setThickness(thickness);
-                }, "0");
+                });
                 processElementProperty((string)marginObject.Property("right"), value =>
                 {
+                    Thickness thickness = (Thickness)getThickness();
                     thickness.Right = ToDouble(value);
                     setThickness(thickness);
-                }, "0");
+                });
                 processElementProperty((string)marginObject.Property("bottom"), value =>
                 {
+                    Thickness thickness = (Thickness)getThickness();
                     thickness.Bottom = ToDouble(value);
                     setThickness(thickness);
-                }, "0");
+                });
             }
         }
         static Thickness defaultThickness = new Thickness(0, 0, 10, 10);
 
-        protected void applyFrameworkElementDefaults(FrameworkElement element)
+        protected void applyFrameworkElementDefaults(FrameworkElement element, bool applyMargins = true)
         {
             //element.Margin = defaultThickness;
             element.HorizontalAlignment = HorizontalAlignment.Left;
@@ -310,7 +313,7 @@ namespace MaaasClientWinPhone.Controls
             processElementProperty((string)controlSpec["maxwidth"], value => this.Control.MaxWidth = ToDeviceUnits(value));
             processElementProperty((string)controlSpec["opacity"], value => this.Control.Opacity = ToDouble(value));
             processElementProperty((string)controlSpec["visibility"], value => this.Control.Visibility = ToBoolean(value) ? Visibility.Visible : Visibility.Collapsed);
-            processThicknessProperty(controlSpec["margin"], value => this.Control.Margin = (Thickness)value);
+            processThicknessProperty(controlSpec["margin"], () => this.Control.Margin, value => this.Control.Margin = (Thickness)value);
             processFontAttribute(controlSpec, new WinPhoneFontSetter(this.Control));
 
             // These elements are very common among derived classes, so we'll do some runtime reflection...

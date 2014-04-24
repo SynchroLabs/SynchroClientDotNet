@@ -32,11 +32,11 @@ namespace MaaasClientWinPhone.Controls
             _border.Child = _grid;
             this._control = _border;
 
-            applyFrameworkElementDefaults(_border);
+            applyFrameworkElementDefaults(_border, false);
 
             Orientation orientation = ToOrientation(controlSpec["orientation"], Orientation.Vertical);
 
-            processThicknessProperty(controlSpec["padding"], value => _border.Padding = (Thickness)value);
+            processThicknessProperty(controlSpec["padding"], () => _border.Padding, value => _border.Padding = (Thickness)value);
 
             if (controlSpec["contents"] != null)
             {

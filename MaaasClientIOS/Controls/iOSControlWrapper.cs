@@ -701,7 +701,7 @@ namespace MaaasClientIOS.Controls
                 processElementProperty((string)thicknessAttributeValue, value =>
                 {
                     thicknessSetter.SetThickness((int)ToDeviceUnits(value));
-                }, "0");
+                });
             }
             else if (thicknessAttributeValue is JObject)
             {
@@ -710,30 +710,38 @@ namespace MaaasClientIOS.Controls
                 processElementProperty((string)marginObject.Property("left"), value =>
                 {
                     thicknessSetter.SetThicknessLeft((int)ToDeviceUnits(value));
-                }, "0");
+                });
                 processElementProperty((string)marginObject.Property("top"), value =>
                 {
                     thicknessSetter.SetThicknessTop((int)ToDeviceUnits(value));
-                }, "0");
+                });
                 processElementProperty((string)marginObject.Property("right"), value =>
                 {
                     thicknessSetter.SetThicknessRight((int)ToDeviceUnits(value));
-                }, "0");
+                });
                 processElementProperty((string)marginObject.Property("bottom"), value =>
                 {
                     thicknessSetter.SetThicknessBottom((int)ToDeviceUnits(value));
-                }, "0");
+                });
             }
         }
 
-        protected void applyFrameworkElementDefaults(UIView element)
+        protected void applyFrameworkElementDefaults(UIView element, bool applyMargins = true)
         {
             // !!! This could be a little more thourough ;)
+
+            if (applyMargins)
+            {
+                this.MarginLeft = (float)ToDeviceUnits(10);
+                this.MarginTop = (float)ToDeviceUnits(10);
+                this.MarginRight = (float)ToDeviceUnits(10);
+                this.MarginBottom = (float)ToDeviceUnits(10);
+            }
         }
 
         protected SizeF SizeThatFits(SizeF size)
         {
-            SizeF sizeThatFits = new SizeF(size);
+            SizeF sizeThatFits = new SizeF(size); // Default to size given ("fill parent")
 
             if ((this.FrameProperties.HeightSpec == SizeSpec.WrapContent) && (this.FrameProperties.WidthSpec == SizeSpec.WrapContent))
             {
@@ -755,6 +763,17 @@ namespace MaaasClientIOS.Controls
                 //
                 sizeThatFits = this.Control.SizeThatFits(new SizeF(0, this.Control.Frame.Size.Height)); // Compute width
                 sizeThatFits.Height = this.Control.Frame.Height; // Maintain height
+            }
+            else // No content wrapping in either dimension...
+            {
+                if (this.FrameProperties.HeightSpec != SizeSpec.FillParent)
+                {
+                    sizeThatFits.Height = this.Control.Frame.Height;
+                }
+                if (this.FrameProperties.WidthSpec != SizeSpec.FillParent)
+                {
+                    sizeThatFits.Width = this.Control.Frame.Width;
+                }                
             }
 
             return sizeThatFits;

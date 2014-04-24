@@ -105,8 +105,6 @@ Controls -
 
 Client
 
-    Investigate why client pukes and dies if server is restarted during session
-
 	Communications exception handling / retry (for demo, at least)
 
     Transaction synchronization, "waiting" indicator (if > .5 seconds maybe), retry if fails?
@@ -120,7 +118,9 @@ Client
     Look at perf (especially on iOS - maybe just related to console logging)
 	    - Much better when not debugging
 
-    Investigate initial image load issue on Android (DNS failure?), WinPhone (sim only?)
+    Investigate initial image load issues:
+	    Android  - Java.Net.UnknownHostException - No address associated with this hostname (low level DNS calls also fail)
+		WinPhone (sim only?)
 
     View/resource caching
 
@@ -190,9 +190,6 @@ Device features
 
 Misc
 -------
-Scroll to top of page on transition (Windows, at least)
-Default margin (all)
-Control sizing when not specified (especially iOS/Android) - review
 
 Text - if width specified and height not specified, should wrap, grow vertically, as required
    - What if width unspecified or star, but control is still constrained horizontally at some width by parent, how do we detect/handle that?
@@ -221,36 +218,21 @@ Min/max height/width
 
 =========================================
 
+Scroll app root scroller to top on page transition (at least on Windows)
+
 Make demo apps not suck on iOS (default control margin/padding/spacing/alignment seems to be the main issue)
+
+Default margin (all)
+Control sizing when not specified (especially iOS/Android) - review
 
 ==========================================
 New icon and splash screen (as appropriate) - All platforms
 Deploy to all platforms
 Use new icon image and complimentary border on Menu page
-New icon for image page?
-New icon on web site?
-Push updated samples to Maaas.io
+Push updated code/samples to Maaas.io
 
-==========================================
+WinPhone - why the hell does the page scroll side-to-side?
 
-Priority: min, max, value
-
-result = min;
-if (value > min)
-{
-    result = value;
-	if (max > min)
-	{
-	    if (value > max)
-		{
-		    result = value;
-		}
-	}
-}
-
-If max >= min:
-    min(max(val, min), max)
-
-  
+Make stackpanel orientation animatable (or change demo so it doesn't need to be for now)
 
 

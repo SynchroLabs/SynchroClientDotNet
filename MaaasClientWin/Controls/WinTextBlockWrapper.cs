@@ -26,6 +26,26 @@ namespace MaaasClientWin.Controls
 
             processElementProperty((string)controlSpec["value"], value => textBlock.Text = ToString(value));
 
+            processElementProperty((string)controlSpec["ellipsize"], value =>
+            {
+                // Other trimming options:
+                //
+                //   TextTrimming.Clip;
+                //   TextTrimming.WordEllipsis;
+                //
+                bool bEllipsize = ToBoolean(value);
+                if (bEllipsize)
+                {
+                    textBlock.TextWrapping = TextWrapping.NoWrap;
+                    textBlock.TextTrimming = TextTrimming.CharacterEllipsis;
+                }
+                else
+                {
+                    textBlock.TextWrapping = TextWrapping.Wrap;
+                    textBlock.TextTrimming = TextTrimming.None;
+                }
+            });
+
             processElementProperty((string)controlSpec["textAlignment"], value =>
             {
                 String alignString = ToString(value);
