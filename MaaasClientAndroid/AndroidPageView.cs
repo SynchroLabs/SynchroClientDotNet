@@ -206,6 +206,13 @@ namespace MaaasClientAndroid
             this._activity.InvalidateOptionsMenu();
 
             ViewGroup panel = (ViewGroup)_rootControlWrapper.Control;
+
+            ScrollView mainScroller = panel as ScrollView;
+            if (mainScroller != null)
+            {
+                mainScroller.ScrollTo(0, 0);
+            }
+
             panel.RemoveAllViews(); 
             _rootControlWrapper.ChildControls.Clear();
         }

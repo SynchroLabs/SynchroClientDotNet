@@ -70,6 +70,18 @@ namespace MaaasClientWinPhone
         {
             DestroyAppBar();
             ContentControl contentControl = (ContentControl)_rootControlWrapper.Control;
+
+            ScrollViewer mainScroll = contentControl as ScrollViewer;
+            if (mainScroll != null)
+            {
+                // Reset the scroll to the top (you have to do it here while the content is still present.  It doesn't
+                // work if you do it after removing the content, or after adding the new content (at least not immediately
+                // after).
+                //
+                mainScroll.ScrollToHorizontalOffset(0);
+                mainScroll.ScrollToVerticalOffset(0);
+            }
+
             contentControl.Content = null;
             _rootControlWrapper.ChildControls.Clear();
         }
@@ -118,6 +130,7 @@ namespace MaaasClientWinPhone
             {
                 contentControl.Content = (((WinPhoneControlWrapper)content).Control);
             }
+
             _rootControlWrapper.ChildControls.Add(content);
         }
 

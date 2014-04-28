@@ -34,6 +34,17 @@ namespace MaaasClientWin
         public override void ClearContent()
         {
             ContentControl contentControl = (ContentControl)_rootControlWrapper.Control;
+
+            ScrollViewer mainScroll = contentControl as ScrollViewer;
+            if (mainScroll != null)
+            {
+                // Reset the scroll to the top (you have to do it here while the content is still present.  It doesn't
+                // work if you do it after removing the content, or after adding the new content (at least not immediately
+                // after).
+                //
+                mainScroll.ChangeView(0, 0, 0, true);
+            }
+
             contentControl.Content = null;
             _rootControlWrapper.ChildControls.Clear();
             ClearAppBars();
