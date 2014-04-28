@@ -15,6 +15,8 @@ namespace MaaasClientWinPhone.Controls
         Border _border;
         Grid _grid;
 
+        Orientation _orientation;
+
         public WinPhoneStackPanelWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
@@ -34,16 +36,20 @@ namespace MaaasClientWinPhone.Controls
 
             applyFrameworkElementDefaults(_border, false);
 
-            Orientation orientation = ToOrientation(controlSpec["orientation"], Orientation.Vertical);
-
             processThicknessProperty(controlSpec["padding"], () => _border.Padding, value => _border.Padding = (Thickness)value);
+
+            // This is a little weird.  We're going to attempt to resolve the orientation value now, because we must have a default orientation to use
+            // in the initial layout code below (as we add child controls).  Below all of this we will *also* bind to the orientation so that it can be
+            // updated dynamically.
+            //
+            _orientation = ToOrientation(controlSpec["orientation"], Orientation.Vertical);
 
             if (controlSpec["contents"] != null)
             {
                 int index = 0;
                 createControls((JArray)controlSpec["contents"], (childControlSpec, childControlWrapper) =>
                 {
-                    if (orientation == Orientation.Horizontal)
+                    if (_orientation == Orientation.Horizontal)
                     {
                         ColumnDefinition colDef = new ColumnDefinition();
 
@@ -84,6 +90,53 @@ namespace MaaasClientWinPhone.Controls
 
                     index++;
                 });
+
+                processElementProperty((string)controlSpec["orientation"], value => UpdateOrientation(ToOrientation(value, _orientation)));
+            }
+        }
+
+        public void UpdateOrientation(Orientation orientation)
+        {
+            if (orientation != _orientation)
+            {
+                if (orientation == Orientation.Horizontal)
+                {
+                    _grid.ColumnDefinitions.Clear();
+                    foreach (var rowDef in _grid.RowDefinitions)
+                    {
+                        ColumnDefinition colDef = new ColumnDefinition();
+                        colDef.Width = rowDef.Height;
+                        _grid.ColumnDefinitions.Add(colDef);
+                    }
+
+                    foreach (FrameworkElement child in _grid.Children)
+                    {
+                        Grid.SetColumn(child, Grid.GetRow(child));
+                        Grid.SetRow(child, 0);
+                    }
+
+                    _grid.RowDefinitions.Clear();
+                }
+                else
+                {
+                    _grid.RowDefinitions.Clear();
+                    foreach (var colDef in _grid.ColumnDefinitions)
+                    {
+                        RowDefinition rowDef = new RowDefinition();
+                        rowDef.Height = colDef.Width;
+                        _grid.RowDefinitions.Add(rowDef);
+                    }
+
+                    foreach (FrameworkElement child in _grid.Children)
+                    {
+                        Grid.SetRow(child, Grid.GetColumn(child));
+                        Grid.SetColumn(child, 0);
+                    }
+
+                    _grid.ColumnDefinitions.Clear();
+                }
+
+                _orientation = orientation;
             }
         }
     }

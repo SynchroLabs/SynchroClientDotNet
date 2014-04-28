@@ -5,22 +5,6 @@ Mobile Application As A Service (MAAAS) - Client
 
 Controls - 
 
-    Windows:
-
-        http://msdn.microsoft.com/en-us/library/windows/apps/hh465351.aspx
-
-    Comparison between Windows and Windows Phone:
-
-        http://msdn.microsoft.com/en-us/library/windowsphone/develop/jj735581(v=vs.105).aspx
-
-    Comparison between iOS and Android:
-
-        http://kintek.com.au/blog/portkit-ux-metaphor-equivalents-for-ios-and-android/
-
-
-    Implemented 
-    ======================================
-
     !!! TODO - 
 
     WrapPanel (pretty much there)
@@ -65,83 +49,6 @@ Controls -
         controls and see if we can combine this into a single concept/implementation.
 
 
-    Not Implemented Yet
-    ========================
-
-        !!! Survey controls on all platforms to make complete list (especially Android/iOS)
-
-	    Checkbox/radio buttons
-
-	    Date/time
-
-	    Flip view
-
-	    Flyout (not really a control)
-
-	    Grid / VariableSizeWrapGrid (child elements have row/col properties)
-
-		    { type: "grid", columns: [100, 100], rows: [50, 50], contents: [
-		        { type: "text", value: "Somevalue", row: 1, column: 1 },
-		    ] };
-
-	    GridView
-
-	    Hub
-
-	    Media
-
-	    Progress bar
-
-	    Progress ring
-
-	    Semantic zoom
-
-	    Windows contracts?  Sharing, settings, search...
-
-        Stepper (up/down)
-            iOS - UIStepper
-            No other platform has a control / standard (just use side-by-side buttons of appropriate style)
-
-
-Client
-
-	Communications exception handling / retry (for demo, at least)
-
-    Transaction synchronization, "waiting" indicator (if > .5 seconds maybe), retry if fails?
-
-    Set icon, title, supported orientation (maybe dynamic - only portrait on phone, only landscape on tab?)
-    Deploy on all devices for demo
-
-    Store/restore state as required (should just be client cookie/id and current page so can re-load as needed)
-        - Requires persistent client state mechanism on server
-
-    Look at perf (especially on iOS - maybe just related to console logging)
-	    - Much better when not debugging
-
-    Investigate initial image load issues:
-	    Android  - Java.Net.UnknownHostException - No address associated with this hostname (low level DNS calls also fail)
-		WinPhone (sim only?)
-
-    View/resource caching
-
-    WebSocket support on WinPhone
-
-Server
-
-    Test on iPad, Android tab (Nexus 7, Kindle Fire)
-
-    Implement PropertyCross
-
-Misc
-
-    Separate binding ability of ARGB elements would be a neat parlor trick (maybe later)
-
-    List stuff
-        Need to make sure list element lifecycle is properly managed (that bound children are removed)
-        Need to recycle views on platforms that support it (future?)
-        Android is too agressive about recycling (maybe) - in propery cross list images load as scrolled (even ones previously loaded)
-
-    Custom font names (platform-specific), weights (other than bold, per platform)?
 
 ================================================================================
 
@@ -177,62 +84,22 @@ Summary:
 	Every control supports margin, and Border/StackPanel (at least) obey them
     Border and StackPanel support padding 
 
-=======================
-
-Device features
-   Location
-   Photo picker / camera
-   Maps
-   Phone/SMS (?)
-   "Built-in" apps - FB/Twitter/etc
 
 =======================
+
+Text
+    What if width unspecified or star, but control is still constrained horizontally at some width by parent, how do we detect/handle that (we don't right now)?
+
+Client
+
+    View/resource caching
+
+Server
+
+    Test on iPad, Kindle Fire
+
+    Implement PropertyCross (more)
 
 Misc
--------
 
-Text - if width specified and height not specified, should wrap, grow vertically, as required
-   - What if width unspecified or star, but control is still constrained horizontally at some width by parent, how do we detect/handle that?
-   - If height is wrap, then on layout, size to height (relayout if height changes)?
-
-Image control 
-    height and width attributes dertermine display size (as normal for control)
-	Scaling mode (all support: none, fit, fill, stretch)
-	   Also would be nice for layout to synthesize: fit-height, fit-width (and combine with "wrap" semantic for auto-sizing on opposite dimension)
-	Scaling factor?
-	Alignment of image?
-	   H align for none, fit (and fit-height if supported)
-	   V align for none, fit (and fit-width if supported)
-
-	How does wrap sizing work with this?
-
-	Example: 
-	    Image scale fit-to-width, image height is unspecified ("wrap" height should be based on scaled height)
-
-=========================================
-
-Min/max height/width
-  Win/WinPhone - supported
-  Android - only min supported (not sure how hard max would be to add)
-  iOS - Neither supported, but new sizing code should make it fairly straightforward
-
-=========================================
-
-Scroll app root scroller to top on page transition (at least on Windows)
-
-Make demo apps not suck on iOS (default control margin/padding/spacing/alignment seems to be the main issue)
-
-Default margin (all)
-Control sizing when not specified (especially iOS/Android) - review
-
-==========================================
-New icon and splash screen (as appropriate) - All platforms
-Deploy to all platforms
-Use new icon image and complimentary border on Menu page
-Push updated code/samples to Maaas.io
-
-WinPhone - why the hell does the page scroll side-to-side?
-
-Make stackpanel orientation animatable (or change demo so it doesn't need to be for now)
-
-
+    Custom font names (platform-specific), weights (other than bold, per platform)?
