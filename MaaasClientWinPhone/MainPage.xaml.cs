@@ -36,8 +36,6 @@ namespace MaaasClientWinPhone
             this.BackKeyPress += MainPage_BackKeyPress;
             this.Loaded += MainPage_Loaded;
 
-            _stateManager.Path = "menu";
-
             _pageView.setPageTitle = title => this.pageTitle.Text = title;
 
             _stateManager.SetProcessingHandlers(json => _pageView.ProcessPageView(json), json => _pageView.ProcessMessageBox(json));
@@ -52,7 +50,7 @@ namespace MaaasClientWinPhone
 
         async void MainPage_Loaded(object sender, RoutedEventArgs e)
         {
-            await _stateManager.loadLayout();
+            await _stateManager.startApplication();
         }
 
         void MainPage_BackKeyPress(object sender, System.ComponentModel.CancelEventArgs e)

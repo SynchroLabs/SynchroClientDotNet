@@ -10,8 +10,12 @@ namespace MaaasCore
 {
     public class StateManager
     {
-        string _host;
         Transport _transport;
+        string _host;
+
+        JObject _appDefinition;
+
+        string _path;
         ViewModel _viewModel;
         Action<JObject> _onProcessPageView;
         Action<JObject> _onProcessMessageBox;
@@ -30,7 +34,6 @@ namespace MaaasCore
             _deviceMetrics = deviceMetrics;
         }
 
-        public String Path { get; set; }
         public ViewModel ViewModel { get { return _viewModel; } }
 
         public MaaasDeviceMetrics DeviceMetrics { get { return _deviceMetrics; } }
@@ -88,7 +91,7 @@ namespace MaaasCore
                 if (responseAsJSON["View"] != null)
                 {
                     JObject jsonPageView = (JObject)responseAsJSON["View"];
-                    this.Path = (string)jsonPageView["path"];
+                    this._path = (string)jsonPageView["path"];
                     _onProcessPageView(jsonPageView);
                 }
 
@@ -107,26 +110,37 @@ namespace MaaasCore
             }
         }
 
-        public async Task loadLayout()
+        public async Task startApplication()
         {
-            // !!! This is the closest thing we have to "initiate session" right now...
-            //
-            Util.debug("Load layout for path: " + this.Path);
+            Util.debug("Load Maaas application definition");
 
             JObject requestObject = new JObject(
-                new JProperty("Path", this.Path),
-                new JProperty("DeviceMetrics", this.PackageDeviceMetrics()) // Send over device metrics
+                new JProperty("Mode", "AppDefinition")
             );
+            await _transport.sendMessage(_sessionId, requestObject, async (JObject responseAsJSON) =>
+            {
+                this._appDefinition = responseAsJSON;
+                Util.debug("Got app definition for: " + this._appDefinition["name"] + " - " + this._appDefinition["description"]);
 
-            await _transport.sendMessage(_sessionId, requestObject, this.ProcessJsonResponse);
+                // Set the path to the main page, then load that page (we'll send over device metrics, since this is the first "Page" transaction)
+                //
+                this._path = (string)responseAsJSON["mainPage"];
+                JObject requestObject2 = new JObject(
+                    new JProperty("Mode", "Page"),
+                    new JProperty("Path", this._path),
+                    new JProperty("DeviceMetrics", this.PackageDeviceMetrics()) // Send over device metrics
+                );
+                await _transport.sendMessage(_sessionId, requestObject2, this.ProcessJsonResponse);
+            });
         }
 
         public async void processCommand(string command, JObject parameters = null)
         {
-            Util.debug("Process command: " + command + " for path: " + this.Path);
+            Util.debug("Process command: " + command + " for path: " + this._path);
 
             JObject requestObject = new JObject(
-                new JProperty("Path", this.Path),
+                new JProperty("Mode", "Page"),
+                new JProperty("Path", this._path),
                 new JProperty("Command", command)
             );
 

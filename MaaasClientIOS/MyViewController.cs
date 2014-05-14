@@ -37,10 +37,8 @@ namespace MaaasClientIOS
             _stateManager = new StateManager(_host, transport, deviceMetrics);
             _pageView = new iOSPageView(_stateManager, _stateManager.ViewModel, View);
 
-            _stateManager.Path = "menu";
-
             _stateManager.SetProcessingHandlers(json => _pageView.ProcessPageView(json), json => _pageView.ProcessMessageBox(json));
-            await _stateManager.loadLayout();
+            await _stateManager.startApplication();
         }
     }
 }

@@ -39,7 +39,7 @@ namespace MaaasClientWin
 
         async void BasicPage_Loaded(object sender, RoutedEventArgs e)
         {
-            await _stateManager.loadLayout();
+            await _stateManager.startApplication();
         }
 
         void backButton_Click(object sender, RoutedEventArgs e)
@@ -67,7 +67,6 @@ namespace MaaasClientWin
             //Transport transport = new TransportWs(maaasApp.Endpoint + "/api");
 
             _stateManager = new StateManager(maaasApp.Endpoint, transport, deviceMetrics);
-            _stateManager.Path = "menu";
             _pageView = new WinPageView(_stateManager, _stateManager.ViewModel, this, this.mainScroll);
 
             _pageView.setPageTitle = title => this.pageTitle.Text = title;

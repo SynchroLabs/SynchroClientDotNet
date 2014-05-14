@@ -7,22 +7,6 @@ Controls -
 
     !!! TODO - 
 
-    WrapPanel (pretty much there)
-
-        Win\WinPhone
-		   - Item alignment (always top/left now)
-        Android - FlowLayout 
-		   - Needs margin-based layout
-		   - Needs fixed size support
-		   - Item alignment (gravity)?
-        iOS -  UICollectionViewFlowLayout
-		   - Needs fixed size support
-		   - Items always aligned center (opposite orientation) and rows/cols justified (unless implement custom layout)
-
-        All 
-		   - Data bound "view" version would be nice...
-		   - Auto-scrolling in overflow dimension (iOS does this now)
-
     Table (aka Grid, like HTML table, rows/colums, typically not data bound)
 
         Win/WinPhone - Grid
@@ -32,8 +16,8 @@ Controls -
                 Requires v11 (4.0/ICS) or v7 support library (does not distribute extra space)
         iOS - Ouch!
 
-    GridView (flowing, scrolling grid) - Ideally support either data bound or explicit contents
-        Win/WinPhone/Android - GridView
+    GridView (data-bound, flowing, scrolling grid, optionally allows item selection)
+        Win/WinPhone/Android - GridView?  Base on WrapPanel?
         iOS - UICollectionViewFlowLayout
 
         Attributes:
@@ -45,8 +29,8 @@ Controls -
             selection
             onItemClick (command)
 
-    !!! A GridView is really just a WrapPanel where every item is the same size.  Review use cases and functionality of platform
-        controls and see if we can combine this into a single concept/implementation.
+    !!! A GridView is really just a data-bound WrapPanel where every item is the same size.  Review use cases and functionality of platform
+        controls and see if we can combine this into a single concept/implementation (or at least leverage code).
 
 
 
