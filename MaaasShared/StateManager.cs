@@ -45,13 +45,17 @@ namespace MaaasCore
         }
 
         // This is used by the page view to resolve resource URIs
+        //
+        // !!! This is pretty much obsolete, or should be, as we now have the separate concept of a resource mapper
+        //     and really, you should never, ever, be serving resources from the Node server.
+        //
         public Uri buildUri(string path)
         {
             if (path.StartsWith("http://") || path.StartsWith("https://"))
             {
                 return new Uri(path);
             }
-            return new Uri("http://" + _host + "/api/" + path);
+            return new Uri("http://" + _host + "/" + path);
         }
 
         JObject PackageDeviceMetrics()
@@ -112,26 +116,19 @@ namespace MaaasCore
 
         public async Task startApplication()
         {
-            Util.debug("Load Maaas application definition");
+            Util.debug("Loading Maaas application definition");
+            this._appDefinition = await _transport.getAppDefinition();
+            Util.debug("Got app definition for: " + this._appDefinition["name"] + " - " + this._appDefinition["description"]);
 
+            // Set the path to the main page, then load that page (we'll send over device metrics, since this is the first "Page" transaction)
+            //
+            this._path = (string)this._appDefinition["mainPage"];
             JObject requestObject = new JObject(
-                new JProperty("Mode", "AppDefinition")
+                new JProperty("Mode", "Page"),
+                new JProperty("Path", this._path),
+                new JProperty("DeviceMetrics", this.PackageDeviceMetrics()) // Send over device metrics
             );
-            await _transport.sendMessage(_sessionId, requestObject, async (JObject responseAsJSON) =>
-            {
-                this._appDefinition = responseAsJSON;
-                Util.debug("Got app definition for: " + this._appDefinition["name"] + " - " + this._appDefinition["description"]);
-
-                // Set the path to the main page, then load that page (we'll send over device metrics, since this is the first "Page" transaction)
-                //
-                this._path = (string)responseAsJSON["mainPage"];
-                JObject requestObject2 = new JObject(
-                    new JProperty("Mode", "Page"),
-                    new JProperty("Path", this._path),
-                    new JProperty("DeviceMetrics", this.PackageDeviceMetrics()) // Send over device metrics
-                );
-                await _transport.sendMessage(_sessionId, requestObject2, this.ProcessJsonResponse);
-            });
+            await _transport.sendMessage(_sessionId, requestObject, this.ProcessJsonResponse);
         }
 
         public async void processCommand(string command, JObject parameters = null)

@@ -12,5 +12,20 @@ namespace MaaasCore
         public static string SessionIdHeader = "Maaas-API-Session-Id";
 
         public abstract Task sendMessage(string sessionId, JObject requestObject, Action<JObject> responseHandler);
+
+        public async Task<JObject> getAppDefinition()
+        {
+            JObject appDefinition = null;
+
+            JObject requestObject = new JObject(
+                new JProperty("Mode", "AppDefinition")
+            );
+            await this.sendMessage(null, requestObject, (JObject responseAsJSON) =>
+            {
+                appDefinition = responseAsJSON;
+            });
+
+            return appDefinition;
+        }
     }
 }

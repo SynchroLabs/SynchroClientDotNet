@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MaaasCore;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -64,10 +65,22 @@ namespace MaaasClientWin
                 // When the navigation stack isn't restored navigate to the first page,
                 // configuring the new page by passing required information as a navigation
                 // parameter
-                // if (!rootFrame.Navigate(typeof(BasicPage), args.Arguments))
-                if (!rootFrame.Navigate(typeof(LauncherPage), args.Arguments))
+                MaaasAppManager appManager = new StatelessAppManager();
+                appManager.loadState();
+
+                if (appManager.AppSeed != null)
+                {
+                    if (!rootFrame.Navigate(typeof(MaaasPage), appManager.AppSeed))
                     {
-                    throw new Exception("Failed to create initial page");
+                        throw new Exception("Failed to create initial page");
+                    }
+                }
+                else
+                {
+                    if (!rootFrame.Navigate(typeof(LauncherPage), appManager))
+                    {
+                        throw new Exception("Failed to create initial page");
+                    }
                 }
             }
             // Ensure the current window is active

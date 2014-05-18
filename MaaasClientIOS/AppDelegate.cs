@@ -4,6 +4,7 @@ using System.Linq;
 
 using MonoTouch.Foundation;
 using MonoTouch.UIKit;
+using MaaasCore;
 
 namespace MaaasClientIOS
 {
@@ -11,19 +12,31 @@ namespace MaaasClientIOS
     public partial class AppDelegate : UIApplicationDelegate
     {
         UIWindow window;
-        MyViewController viewController;
+        UIViewController viewController;
 
         public override bool FinishedLaunching(UIApplication app, NSDictionary options)
         {
+            var rootNavigationController = new UINavigationController(); 
+
             window = new UIWindow(UIScreen.MainScreen.Bounds);
 
-            viewController = new MyViewController();
-            window.RootViewController = viewController;
+            MaaasAppManager appManager = new StatelessAppManager();
+            appManager.loadState();
 
+            if (appManager.AppSeed != null)
+            {
+                viewController = new MaaasPageViewController(appManager.AppSeed);
+            }
+            else
+            {
+                viewController = new LauncherViewController(appManager);
+            }
+
+            rootNavigationController.PushViewController(viewController, false);
+            window.RootViewController = rootNavigationController; // !!! viewController;
             window.MakeKeyAndVisible();
 
             return true;
         }
     }
 }
-

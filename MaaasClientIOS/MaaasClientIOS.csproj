@@ -79,6 +79,9 @@
     <CodesignKey>iPhone Distribution</CodesignKey>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="..\MaaasShared\AppManager.cs">
+      <Link>Linked\AppManager.cs</Link>
+    </Compile>
     <Compile Include="..\MaaasShared\Binding.cs">
       <Link>Linked\Binding.cs</Link>
     </Compile>
@@ -137,6 +140,7 @@
     <Compile Include="iOSDeviceMetrics.cs" />
     <Compile Include="iOSPageView.cs" />
     <Compile Include="iOSTransportWs.cs" />
+    <Compile Include="LauncherViewController.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="AppDelegate.cs" />
     <None Include="Info.plist" />
@@ -144,7 +148,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="MyViewController.cs" />
+    <Compile Include="MaaasPageViewController.cs" />
     <BundleResource Include="Resources\Default.png" />
     <BundleResource Include="Resources\Default@2x.png" />
     <BundleResource Include="Resources\Default-568h@2x.png" />

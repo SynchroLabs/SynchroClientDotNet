@@ -1,6 +1,7 @@
 ﻿using MaaasCore;
 using MaaasShared;
 using MaasClient.Core;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -24,21 +25,30 @@ namespace MaaasClientWin
     /// <summary>
     /// A basic page that provides characteristics common to most applications.
     /// </summary>
-    public sealed partial class BasicPage : MaaasClientWin.Common.LayoutAwarePage
+    public sealed partial class MaaasPage : MaaasClientWin.Common.LayoutAwarePage
     {
         StateManager _stateManager;
         WinPageView _pageView;
+        MaaasApp _maaasApp;
 
-        public BasicPage()
+        public MaaasPage()
         {
             this.InitializeComponent();
 
-            this.Loaded += BasicPage_Loaded; 
+            this.Loaded += MaaasPage_Loaded; 
             this.backButton.Click += backButton_Click;
         }
 
-        async void BasicPage_Loaded(object sender, RoutedEventArgs e)
+        async void MaaasPage_Loaded(object sender, RoutedEventArgs e)
         {
+            // !!! This is just to test that we can do a standalone transport operation to get the AppDefinition
+            //
+            /*
+            Transport tempTransport = new TransportHttp(_maaasApp.Endpoint);
+            JObject appDefinition = await tempTransport.getAppDefinition();
+            Util.debug("XXXX Got app definition for: " + appDefinition["name"] + " - " + appDefinition["description"]);
+            */
+
             await _stateManager.startApplication();
         }
 
@@ -58,15 +68,16 @@ namespace MaaasClientWin
         /// session.  This will be null the first time a page is visited.</param>
         protected override void LoadState(Object navigationParameter, Dictionary<String, Object> pageState)
         {
-            MaaasApp maaasApp = navigationParameter as MaaasApp;
-            Util.debug("Launching app at endpoint: " + maaasApp.Endpoint);
+            _maaasApp = navigationParameter as MaaasApp;
+
+            Util.debug("Launching app at endpoint: " + _maaasApp.Endpoint);
 
             WinDeviceMetrics deviceMetrics = new WinDeviceMetrics();
 
-            Transport transport = new TransportHttp(maaasApp.Endpoint + "/api");
-            //Transport transport = new TransportWs(maaasApp.Endpoint + "/api");
+            Transport transport = new TransportHttp(_maaasApp.Endpoint);
+            //Transport transport = new TransportWs(_maaasApp.Endpoint);
 
-            _stateManager = new StateManager(maaasApp.Endpoint, transport, deviceMetrics);
+            _stateManager = new StateManager(_maaasApp.Endpoint, transport, deviceMetrics);
             _pageView = new WinPageView(_stateManager, _stateManager.ViewModel, this, this.mainScroll);
 
             _pageView.setPageTitle = title => this.pageTitle.Text = title;

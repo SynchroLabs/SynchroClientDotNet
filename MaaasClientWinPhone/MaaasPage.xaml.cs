@@ -16,21 +16,21 @@ using Microsoft.Phone.Info;
 
 namespace MaaasClientWinPhone
 {
-    public partial class MainPage : PhoneApplicationPage
+    public partial class MaaasPage : PhoneApplicationPage
     {
-        static string _host = Util.getMaaasHost();
+        public static MaaasApp MaaasApp { get; set; }
 
         StateManager _stateManager;
         PageView _pageView;
 
         // Constructor
-        public MainPage()
+        public MaaasPage()
         {
             InitializeComponent();
             
             WinPhoneDeviceMetrics deviceMetrics = new WinPhoneDeviceMetrics();
 
-            _stateManager = new StateManager(_host, new TransportHttp(_host + "/api"), deviceMetrics);
+            _stateManager = new StateManager(MaaasApp.Endpoint, new TransportHttp(MaaasApp.Endpoint), deviceMetrics);
             _pageView = new WinPhonePageView(_stateManager, _stateManager.ViewModel, this, this.mainScroll);
 
             this.BackKeyPress += MainPage_BackKeyPress;

@@ -7,6 +7,7 @@ using System.Windows.Navigation;
 using Microsoft.Phone.Controls;
 using Microsoft.Phone.Shell;
 using MaaasClientWinPhone.Resources;
+using MaaasCore;
 
 namespace MaaasClientWinPhone
 {
@@ -61,6 +62,19 @@ namespace MaaasClientWinPhone
         // This code will not execute when the application is reactivated
         private void Application_Launching(object sender, LaunchingEventArgs e)
         {
+            MaaasAppManager appManager = new StatelessAppManager();
+            appManager.loadState();
+
+            if (appManager.AppSeed != null)
+            {
+                MaaasPage.MaaasApp = appManager.AppSeed;
+                App.RootFrame.Navigate(new Uri("/MaaasPage.xaml", UriKind.Relative));
+            }
+            else
+            {
+                Launcher.MaaasAppManager = appManager;
+                App.RootFrame.Navigate(new Uri("/Launcher.xaml", UriKind.Relative));
+            }
         }
 
         // Code to execute when the application is activated (brought to foreground)

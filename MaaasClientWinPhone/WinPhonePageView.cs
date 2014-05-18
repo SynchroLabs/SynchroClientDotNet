@@ -19,10 +19,10 @@ namespace MaaasClientWinPhone
 {
     public class WinPhonePageView : PageView
     {
-        MainPage _page;
+        MaaasPage _page;
         WinPhoneControlWrapper _rootControlWrapper;
 
-        public WinPhonePageView(StateManager stateManager, ViewModel viewModel, MainPage page, ContentControl contentControl) :
+        public WinPhonePageView(StateManager stateManager, ViewModel viewModel, MaaasPage page, ContentControl contentControl) :
             base(stateManager, viewModel)
         {
             _page = page;

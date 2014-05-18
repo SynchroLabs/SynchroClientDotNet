@@ -83,6 +83,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\MaaasShared\AppManager.cs">
+      <Link>Linked\AppManager.cs</Link>
+    </Compile>
     <Compile Include="..\MaaasShared\Binding.cs">
       <Link>Linked\Binding.cs</Link>
     </Compile>
@@ -141,7 +144,8 @@
     <Compile Include="Controls\AndroidToggleSwitchWrapper.cs" />
     <Compile Include="Controls\AndroidWebViewWrapper.cs" />
     <Compile Include="Controls\AndroidWrapPanelWrapper.cs" />
-    <Compile Include="MainActivity.cs" />
+    <Compile Include="LauncherActivity.cs" />
+    <Compile Include="MaaasPageActivity.cs" />
     <Compile Include="Resources\Resource.Designer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -149,12 +153,15 @@
     <None Include="packages.config" />
     <None Include="Resources\AboutResources.txt" />
     <None Include="Assets\AboutAssets.txt" />
+    <AndroidResource Include="Resources\Layout\launcher.axml">
+      <SubType>AndroidResource</SubType>
+    </AndroidResource>
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\Values\Strings.xml" />
   </ItemGroup>
   <ItemGroup>
-    <AndroidResource Include="Resources\Drawable\Icon.png" />
+    <AndroidResource Include="Resources\drawable\Icon.png" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Properties\AndroidManifest.xml" />
@@ -731,9 +738,7 @@
     <AndroidResource Include="Resources\drawable-xxhdpi\ic_action_warning.png" />
     <AndroidResource Include="Resources\drawable-xxhdpi\ic_action_web_site.png" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Resources\Layout\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <XamarinComponentReference Include="modernhttpclient">
       <Visible>False</Visible>

@@ -36,6 +36,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AppManager.cs" />
     <Compile Include="Binding.cs" />
     <Compile Include="BindingContext.cs" />
     <Compile Include="CommandInstance.cs" />

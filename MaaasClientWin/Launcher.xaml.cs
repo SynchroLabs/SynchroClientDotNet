@@ -31,18 +31,6 @@ namespace MaaasClientWin
         }
     }
 
-    public class MaaasApp
-    {
-        public string Endpoint { get; private set; }
-        public string AppName { get; private set; }
-
-        public MaaasApp(string endpoint, string appName)
-        {
-            this.Endpoint = endpoint;
-            this.AppName = appName;
-        }
-    }
-
     /// <summary>
     /// A page that displays an overview of a single group, including a preview of the items
     /// within the group.
@@ -69,7 +57,6 @@ namespace MaaasClientWin
             get { return this.navigationHelper; }
         }
 
-
         public LauncherPage()
         {
             this.InitializeComponent();
@@ -92,8 +79,12 @@ namespace MaaasClientWin
         {
             // TODO: Assign a bindable group to this.DefaultViewModel["Group"]
             MaaasAppGroup group = new MaaasAppGroup();
-            group.Items.Add(new MaaasApp("maaas.io", "test"));
-            group.Items.Add(new MaaasApp("localhost:1337", "test"));
+
+            MaaasAppManager appManager = (MaaasAppManager)e.NavigationParameter;
+            foreach (MaaasApp app in appManager.Apps)
+            {
+                group.Items.Add(app);
+            }
 
             this.DefaultViewModel["Group"] = group;
 
@@ -132,7 +123,7 @@ namespace MaaasClientWin
         {
             MaaasApp maaasApp = (MaaasApp)e.ClickedItem;
             Util.debug("Item click, endpoint: " + maaasApp.Endpoint);
-            this.Frame.Navigate(typeof(BasicPage), maaasApp);
+            this.Frame.Navigate(typeof(MaaasPage), maaasApp);
         }
     }
 }

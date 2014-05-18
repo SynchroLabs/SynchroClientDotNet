@@ -16,23 +16,26 @@ namespace MaaasShared
 
         private string _sessionId;
 
-        public TransportHttp(string host)
+        public TransportHttp(string host, HttpClient client = null)
         {
             _uri = new Uri("http://" + host);
 
-            _httpClient = new HttpClient();
+            if (client != null)
+            {
+                _httpClient = client;
+            }
+            else
+            {
+                _httpClient = new HttpClient();
+            }
+
+            // Not supported on WinPhone (persistent connection is automatic in HTTP 1.1, so not clear if
+            // this was even doing anything).  More info: http://en.wikipedia.org/wiki/HTTP_persistent_connection
+            //
+            // _httpClient.DefaultRequestHeaders.Connection.Add("Keep-Alive");
 
             // Not clear if this does anything (100-continue case doesn't always repro)
             _httpClient.DefaultRequestHeaders.ExpectContinue = false;
-
-            // !!! This never seems to work...
-            // _httpClient.DefaultRequestHeaders.Connection.Add("Keep-Alive");
-        }
-
-        public TransportHttp(HttpClient client, string host)
-        {
-            _uri = new Uri("http://" + host);
-            _httpClient = client;
         }
 
         public override async Task sendMessage(string sessionId, JObject requestObject, Action<JObject> responseHandler)
@@ -70,11 +73,6 @@ namespace MaaasShared
                 //
                 Util.debug("HTTP Transport exceptioon caught, details: " + e.Message);
             }
-        }
-
-        public static Transport getTransport(string host)
-        {
-            return new TransportHttp(host);
         }
     }
 }

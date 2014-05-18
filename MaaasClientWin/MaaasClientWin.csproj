@@ -108,6 +108,9 @@
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="..\MaaasShared\AppManager.cs">
+      <Link>Linked\AppManager.cs</Link>
+    </Compile>
     <Compile Include="..\MaaasShared\Binding.cs">
       <Link>Linked\Binding.cs</Link>
     </Compile>
@@ -158,8 +161,8 @@
     <Compile Include="Launcher.xaml.cs">
       <DependentUpon>Launcher.xaml</DependentUpon>
     </Compile>
-    <Compile Include="MainPage.xaml.cs">
-      <DependentUpon>MainPage.xaml</DependentUpon>
+    <Compile Include="MaaasPage.xaml.cs">
+      <DependentUpon>MaaasPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controls\WinButtonWrapper.cs" />
     <Compile Include="Controls\WinCanvasWrapper.cs" />
@@ -204,7 +207,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="MainPage.xaml">
+    <Page Include="MaaasPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

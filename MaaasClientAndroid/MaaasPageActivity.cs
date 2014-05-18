@@ -15,10 +15,10 @@ using Android.Graphics;
 
 namespace MaaasClientAndroid
 {
-    [Activity(Label = "MaaaS IO", MainLauncher = true, Icon = "@drawable/icon", Theme = "@android:style/Theme.Holo")]
-    public class MainActivity : Activity
+    [Activity(Label = "MaaaS IO", Icon = "@drawable/icon", Theme = "@android:style/Theme.Holo")]
+    public class MaaasPageActivity : Activity
     {
-        static string _host = Util.getMaaasHost();
+        public static MaaasApp MaaasApp { get; set; }
 
         StateManager _stateManager;
         AndroidPageView _pageView;
@@ -71,12 +71,12 @@ namespace MaaasClientAndroid
             // !!! Doesn't appear to support cookies out of the box
             //
             // HttpClient httpClient = new HttpClient(new OkHttpNetworkHandler());
-            // _stateManager = new StateManager(_host, new TransportHttp(httpClient, _host + "/api"));
+            // _stateManager = new StateManager(MaaasApp.Endpoint, new TransportHttp(MaaasApp.EndPoint, httpClient));
             //
-            Transport transport = new TransportHttp(_host + "/api");
-            //Transport transport = new AndroidTransportWs(this, _host + "/api");
+            Transport transport = new TransportHttp(MaaasApp.Endpoint);
+            //Transport transport = new AndroidTransportWs(this, MaaasApp.Endpoint);
 
-            _stateManager = new StateManager(_host, transport, deviceMetrics);
+            _stateManager = new StateManager(MaaasApp.Endpoint, transport, deviceMetrics);
             _pageView = new AndroidPageView(_stateManager, _stateManager.ViewModel, this, layout);
 
             _pageView.setPageTitle = title => this.ActionBar.Title = title;

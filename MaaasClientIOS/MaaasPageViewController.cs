@@ -8,15 +8,16 @@ using ModernHttpClient;
 
 namespace MaaasClientIOS
 {
-    public class MyViewController : UIViewController
+    public class MaaasPageViewController : UIViewController
     {
-        static string _host = Util.getMaaasHost();
+        MaaasApp _maaasApp;
 
         StateManager _stateManager;
         PageView _pageView;
 
-        public MyViewController()
+        public MaaasPageViewController(MaaasApp maaasApp)
         {
+            _maaasApp = maaasApp;
         }
 
         public async override void ViewDidLoad()
@@ -31,10 +32,10 @@ namespace MaaasClientIOS
 
             // Using AFNetworkHandler via ModernHttpClient component
             HttpClient httpClient = new HttpClient(new AFNetworkHandler());
-            Transport transport = new TransportHttp(httpClient, _host + "/api");
-            //Transport transport = new iOSTransportWs(this, _host + "/api");
+            Transport transport = new TransportHttp(_maaasApp.Endpoint, httpClient);
+            //Transport transport = new iOSTransportWs(this, _maaasApp.Endpoint);
 
-            _stateManager = new StateManager(_host, transport, deviceMetrics);
+            _stateManager = new StateManager(_maaasApp.Endpoint, transport, deviceMetrics);
             _pageView = new iOSPageView(_stateManager, _stateManager.ViewModel, View);
 
             _stateManager.SetProcessingHandlers(json => _pageView.ProcessPageView(json), json => _pageView.ProcessMessageBox(json));
