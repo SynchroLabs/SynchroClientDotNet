@@ -7,6 +7,11 @@ using System.Threading.Tasks;
 
 namespace MaaasCore
 {
+    // The AppDefinition is provided by the Maaas server (it is the contents of the maaas.json file in the Maaas app directory).
+    // This is a JSON object that is modeled more or less after the NPM package structure.  For now we store it in the 
+    // MaaasApp as the JSON object that it is and just provide getters for some well-known members.  Once the AppDefinition
+    // gets nailed down, we might do more processing of it here (or we might not).
+    //
     public class MaaasApp
     {
         public string Endpoint { get; set; }
@@ -33,6 +38,64 @@ namespace MaaasCore
         public MaaasApp AppSeed { get { return _appSeed; } }
         public List<MaaasApp> Apps { get { return _apps; } }
 
+        private static MaaasApp appFromJson(JObject json)
+        {
+            String endpoint = (string)json["endpoint"];
+            JObject appDefinition = (JObject)json["definition"].DeepClone();
+
+            return new MaaasApp(endpoint, appDefinition);
+        }
+
+        private static JObject appToJson(MaaasApp app)
+        {
+            return new JObject(
+                new JProperty("endpoint", app.Endpoint),
+                new JProperty("definition", app.AppDefinition.DeepClone())
+                );
+        }
+
+        public void serializeFromJson(JObject json)
+        {
+            JObject seed = json["seed"] as JObject;
+            if (seed != null)
+            {
+                _appSeed = appFromJson(seed);
+            }
+
+            JArray apps = json["apps"] as JArray;
+            if (apps != null)
+            {
+                foreach (JToken item in apps.Children())
+                {
+                    JObject app = item as JObject;
+                    if (app != null)
+                    {
+                        _apps.Add(appFromJson(app));
+                    }
+                }                
+            }
+        }
+
+        public JObject serializeToJson()
+        {
+            JObject obj = new JObject();
+
+            if (_appSeed != null)
+            {
+                obj.Add("seed", appToJson(_appSeed));
+            }
+
+            if (_apps.Count > 0)
+            {
+                obj.Add("apps", new JArray(
+                    from app in _apps
+                    select appToJson(app)
+                    ));
+            }
+
+            return obj;
+        }
+
         public abstract void loadState();
         public abstract void saveState();
     }
@@ -43,16 +106,51 @@ namespace MaaasCore
     {
         private static string localHost = "192.168.1.168";
 
+        // A real app state object will typically have either a hard-coded "seed" *or* a list of "apps" (managed
+        // by the MAAAS mobile client).
+        //
+        private static string testAppState = String.Join(Environment.NewLine, new string [] {
+            "{",
+            "  \"seed\":",
+            "  {",
+            "    \"endpoint\": \"" + localHost + ":1337/api\",",
+            "    \"definition\": { \"name\": \"maaas-samples\", \"description\": \"MAAAS API Samples\" }",
+            "  },",
+            "  \"apps\":",
+            "  [",
+            "    {",
+            "      \"endpoint\": \"maaas.io/api\",",
+            "      \"definition\": { \"name\": \"maaas-samples\", \"description\": \"MAAAS API Samples\" }",
+            "    },",
+            "    {",
+            "      \"endpoint\": \"" + localHost + ":1337/api\",",
+            "      \"definition\": { \"name\": \"maaas-samples\", \"description\": \"MAAAS API Samples (local)\" }",
+            "    }",
+            "  ]",
+            "}"
+        });
+
         public override void loadState()
         {
-            // _appSeed = new MaaasApp(localHost + ":1337/api", JObject.Parse("{ name: 'maaas-samples', description: 'MAAAS API Samples'}"));
+            JObject parsedState = JObject.Parse(testAppState);
+            serializeFromJson(parsedState);
 
-            Apps.Add(new MaaasApp("maaas.io/api", JObject.Parse("{ name: 'maaas-samples', description: 'MAAAS API Samples'}")));
-            Apps.Add(new MaaasApp(localHost + ":1337/api", JObject.Parse("{ name: 'maaas-samples', description: 'MAAAS API Samples (local)'}")));
+            // Serialization test (take this out and/or make into a real unit test)...
+            //
+            JObject generatedState = serializeToJson();
+            if (JToken.DeepEquals(parsedState, generatedState))
+            {
+                Util.debug("AppManager serialization test passed!");
+            }
+            else
+            {
+                Util.debug("AppManager serialization test FAILED!");
+            }
         }
 
         public override void saveState()
         {
+            // NOOP
         }
     }
 }
