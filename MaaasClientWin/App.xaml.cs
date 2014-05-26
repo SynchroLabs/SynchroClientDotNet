@@ -40,7 +40,7 @@ namespace MaaasClientWin
         /// search results, and so forth.
         /// </summary>
         /// <param name="args">Details about the launch request and process.</param>
-        protected override void OnLaunched(LaunchActivatedEventArgs args)
+        protected async override void OnLaunched(LaunchActivatedEventArgs args)
         {
             Frame rootFrame = Window.Current.Content as Frame;
 
@@ -65,8 +65,8 @@ namespace MaaasClientWin
                 // When the navigation stack isn't restored navigate to the first page,
                 // configuring the new page by passing required information as a navigation
                 // parameter
-                MaaasAppManager appManager = new StatelessAppManager();
-                appManager.loadState();
+                MaaasAppManager appManager = new WinAppManager();
+                await appManager.loadState();
 
                 if (appManager.AppSeed != null)
                 {

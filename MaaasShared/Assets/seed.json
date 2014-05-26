@@ -1,0 +1,20 @@
+﻿{
+  /*
+  "seed":
+  {
+    "endpoint": "192.168.1.168:1337/api",
+    "definition": { "name": "maaas-samples", "description": "MAAAS API Samples" }
+  },
+  */
+  "apps":
+  [
+    {
+      "endpoint": "maaas.io/api",
+      "definition": { "name": "maaas-samples", "description": "MAAAS API Samples" }
+    },
+    {
+      "endpoint": "192.168.1.168:1337/api",
+      "definition": { "name": "maaas-samples", "description": "MAAAS API Samples (locally)" }
+    }
+  ]
+}

@@ -68,7 +68,7 @@ namespace MaaasClientAndroid
             SetContentView(Resource.Layout.launcher);
             listView = FindViewById<ListView>(Resource.Id.appList);
 
-            MaaasAppManager appManager = new StatelessAppManager();
+            MaaasAppManager appManager = new AndroidAppManager(this);
             appManager.loadState();
 
             if (appManager.AppSeed != null)

@@ -22,14 +22,17 @@ namespace MaaasClientWinPhone
         {
             InitializeComponent();
 
-            foreach (MaaasApp app in MaaasAppManager.Apps)
+            if (MaaasAppManager != null)
             {
-                maaasApps.Add(app);
+                foreach (MaaasApp app in MaaasAppManager.Apps)
+                {
+                    maaasApps.Add(app);
+                }
+
+                this.appListControl.ItemsSource = maaasApps;
+
+                this.appListControl.SelectionChanged += appListControl_SelectionChanged;
             }
-
-            this.appListControl.ItemsSource = maaasApps;
-
-            this.appListControl.SelectionChanged += appListControl_SelectionChanged;
         }
 
         void appListControl_SelectionChanged(object sender, SelectionChangedEventArgs e)

@@ -23,12 +23,30 @@ namespace MaaasCore
         public MaaasApp(string endpoint, JObject appDefinition)
         {
             this.Endpoint = endpoint;
-            this.AppDefinition = appDefinition;
+            this.AppDefinition = appDefinition; // !!! Should we use appDefinition.DeepClone();
         }
     }
 
     // If AppSeed is present, client apps should launch that app directly and suppress any "launcher" interface. If not present,
-    // then client apps should provide launcher interface showing content of Apps (with ability to add/edit/remove and launch).
+    // then client apps should provide launcher interface showing content of Apps.
+    //
+    // Implementation:
+    //
+    // On startup:
+    //   Inspect bundled seed.json to see if it contains a "seed"
+    //     If yes: Start Maaas app at that seed.
+    //     If no: determine whether any local app manager state exists (stored locally on the device)
+    //       If no: initialize local app manager state from seed.json
+    //       Show launcher interface based on local app manager state
+    //
+    // Launcher interface shows a list of apps (from the "apps" key in the app manager state)
+    //   Provides ability to launch an app
+    //   Provides ability to add (find?) and remove app
+    //     Add/find app:
+    //       User provides endpoint
+    //       We look up app definition at endpoint and display to user
+    //       User confirms and we add to AppManager.Apps (using endpoint and appDefinition to create MaaasApp)
+    //       We serialize AppManager via saveState()
     //
     public abstract class MaaasAppManager
     {
@@ -72,7 +90,7 @@ namespace MaaasCore
                     {
                         _apps.Add(appFromJson(app));
                     }
-                }                
+                }
             }
         }
 
@@ -96,61 +114,57 @@ namespace MaaasCore
             return obj;
         }
 
-        public abstract void loadState();
-        public abstract void saveState();
-    }
-
-    // This class is for test purposes.  Each platform should override MaaasAppManager with platform-specific serialization.
-    //
-    public class StatelessAppManager : MaaasAppManager
-    {
-        private static string localHost = "192.168.1.168";
-
-        // A real app state object will typically have either a hard-coded "seed" *or* a list of "apps" (managed
-        // by the MAAAS mobile client).
-        //
-        private static string testAppState = String.Join(Environment.NewLine, new string [] {
-            "{",
-            "  \"seed\":",
-            "  {",
-            "    \"endpoint\": \"" + localHost + ":1337/api\",",
-            "    \"definition\": { \"name\": \"maaas-samples\", \"description\": \"MAAAS API Samples\" }",
-            "  },",
-            "  \"apps\":",
-            "  [",
-            "    {",
-            "      \"endpoint\": \"maaas.io/api\",",
-            "      \"definition\": { \"name\": \"maaas-samples\", \"description\": \"MAAAS API Samples\" }",
-            "    },",
-            "    {",
-            "      \"endpoint\": \"" + localHost + ":1337/api\",",
-            "      \"definition\": { \"name\": \"maaas-samples\", \"description\": \"MAAAS API Samples (local)\" }",
-            "    }",
-            "  ]",
-            "}"
-        });
-
-        public override void loadState()
+        public async Task<bool> loadState()
         {
-            JObject parsedState = JObject.Parse(testAppState);
-            serializeFromJson(parsedState);
+            string bundledState = await this.loadBundledState();
+            JObject parsedBundledState = JObject.Parse(bundledState);
 
-            // Serialization test (take this out and/or make into a real unit test)...
-            //
-            JObject generatedState = serializeToJson();
-            if (JToken.DeepEquals(parsedState, generatedState))
+            JObject seed = parsedBundledState["seed"] as JObject;
+            if (seed != null)
             {
-                Util.debug("AppManager serialization test passed!");
+                // If the bundled state contains a "seed", then we're just going to use that as the
+                // app state (we'll launch the app inidicated by the seed and suppress the launcher).
+                //
+                serializeFromJson(parsedBundledState);
             }
             else
             {
-                Util.debug("AppManager serialization test FAILED!");
+                // If the bundled state doesn't contain a seed, load the local state...
+                //
+                string localState = await this.loadLocalState();
+                if (localState == null)
+                {
+                    // If there is no local state, initialize the local state from the bundled state.
+                    //
+                    localState = bundledState;
+                    await this.saveLocalState(localState);
+                }
+                JObject parsedLocalState = JObject.Parse(localState);
+                serializeFromJson(parsedLocalState);
             }
+
+            return true;
         }
 
-        public override void saveState()
+        public async Task<bool> saveState()
         {
-            // NOOP
+            JObject json = this.serializeToJson();
+            return await this.saveLocalState(json.ToString());
         }
+
+        // Abstract serialization that may or may not be async per platform.
+        //
+        // The pattern used here is not totally obvious.  Each platform will implement the methods below.
+        // Those method implementation may or may not be asynchronous.  To accomodate this, the calls to
+        // these methods from the base class need to use await and the implementations must return a task.
+        // Derived class implementations that are async will just declare as async and return the basic
+        // return value (string or bool, as appropriate).  Derived class implementations that are not async
+        // will simpley execute synchronously and return a completed task (wrapped around the basic return
+        // value).  This is really the only workable way to deal with the issue of not knowing whether all
+        // derived class implentations either will or will not be async.
+        //
+        protected abstract Task<string> loadBundledState();
+        protected abstract Task<string> loadLocalState();
+        protected abstract Task<bool> saveLocalState(string state);
     }
 }

@@ -122,6 +122,7 @@
     <Compile Include="..\MaaasShared\ViewModel.cs">
       <Link>Linked\ViewModel.cs</Link>
     </Compile>
+    <Compile Include="AndroidAppManager.cs" />
     <Compile Include="AndroidDeviceMetrics.cs" />
     <Compile Include="AndroidPageView.cs" />
     <Compile Include="AndroidTransportWs.cs" />
@@ -150,6 +151,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <AndroidAsset Include="..\MaaasShared\Assets\seed.json">
+      <Link>Assets\seed.json</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </AndroidAsset>
     <None Include="packages.config" />
     <None Include="Resources\AboutResources.txt" />
     <None Include="Assets\AboutAssets.txt" />

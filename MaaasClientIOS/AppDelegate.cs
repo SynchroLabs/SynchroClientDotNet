@@ -5,6 +5,7 @@ using System.Linq;
 using MonoTouch.Foundation;
 using MonoTouch.UIKit;
 using MaaasCore;
+using System.Threading.Tasks;
 
 namespace MaaasClientIOS
 {
@@ -20,8 +21,13 @@ namespace MaaasClientIOS
 
             window = new UIWindow(UIScreen.MainScreen.Bounds);
 
-            MaaasAppManager appManager = new StatelessAppManager();
-            appManager.loadState();
+            MaaasAppManager appManager = new iOSAppManager();
+
+            // Since we can't mark this method as async, we have to manually wait on the (possibly) asynchronous 
+            // app manager state loader to finish before we use the app manager...
+            //
+            Task stateLoader = appManager.loadState();
+            stateLoader.Wait();
 
             if (appManager.AppSeed != null)
             {
