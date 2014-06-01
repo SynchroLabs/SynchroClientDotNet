@@ -8,8 +8,10 @@
         android:id="@+id/textView1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Select a MaaaS app to launch..."
-        android:textAppearance="?android:attr/textAppearanceLarge" />
+        android:text="Select a Maaas application..."
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:paddingLeft="10px"
+        android:textColor="@android:color/secondary_text_dark" />
     <ListView
         android:id="@+id/appList"
         android:layout_width="fill_parent"

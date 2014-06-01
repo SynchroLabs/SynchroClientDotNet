@@ -57,7 +57,7 @@ namespace MaaasClientAndroid
         }
     }
 
-    [Activity(Label = "MaaaS IO", MainLauncher = true, Icon = "@drawable/icon", Theme = "@android:style/Theme.Holo")]
+    [Activity(Label = "MaaaS", Icon = "@drawable/icon", Theme = "@android:style/Theme.Holo")]
     public class LauncherActivity : Activity
     {
         List<MaaasApp> tableItems = new List<MaaasApp>();
@@ -72,28 +72,15 @@ namespace MaaasClientAndroid
             MaaasAppManager appManager = new AndroidAppManager(this);
             await appManager.loadState();
 
-            if (appManager.AppSeed != null)
+            // Fill list view with choices...
+            //
+            foreach (MaaasApp app in appManager.Apps)
             {
-                // There was an AppSeed, so let's launch that now and not present the Launcher UX...
-                //
-                // !!! We need to prevent navigation "back" to the Launcher (don't we?)
-                //
-                var intent = new Intent(this, typeof(MaaasPageActivity));
-                intent.PutExtra("endpoint", appManager.AppSeed.Endpoint);
-                StartActivity(intent);
+                tableItems.Add(app);
             }
-            else
-            {
-                // Fill list view with choices...
-                //
-                foreach (MaaasApp app in appManager.Apps)
-                {
-                    tableItems.Add(app);
-                }
 
-                listView.Adapter = new MaaasAppAdapter(this, tableItems);
-                listView.ItemClick += OnListItemClick;
-            }
+            listView.Adapter = new MaaasAppAdapter(this, tableItems);
+            listView.ItemClick += OnListItemClick;
         }
 
         public override bool OnCreateOptionsMenu(IMenu menu)

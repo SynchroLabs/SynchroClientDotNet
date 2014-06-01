@@ -1231,6 +1231,12 @@ namespace MaaasClientAndroid
 			// aapt resource value: 0x7f0200e6
 			public const int Icon = 2130837734;
 			
+			// aapt resource value: 0x7f0200e7
+			public const int splash_logo = 2130837735;
+			
+			// aapt resource value: 0x7f0200e8
+			public const int splash_styled = 2130837736;
+			
 			static Drawable()
 			{
 				global::Android.Runtime.ResourceIdManager.UpdateIdValues();
@@ -1838,6 +1844,9 @@ namespace MaaasClientAndroid
 			
 			// aapt resource value: 0x7f0b007f
 			public const int Theme_Base_Light = 2131427455;
+			
+			// aapt resource value: 0x7f0b008b
+			public const int Theme_Splash = 2131427467;
 			
 			// aapt resource value: 0x7f0b0000
 			public const int Widget_AppCompat_ActionBar = 2131427328;

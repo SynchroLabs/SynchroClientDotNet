@@ -2,13 +2,17 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
     android:layout_width="fill_parent"
-    android:layout_height="fill_parent">
+    android:layout_height="fill_parent"
+    android:paddingLeft="10px"
+    android:paddingRight="10px"
+    android:paddingTop="5px">
     <TextView
-        android:text="EndPoint"
+        android:text="Endpoint"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/textView1" />
+        android:id="@+id/textView1"
+        android:paddingLeft="5px" />
     <LinearLayout
         android:orientation="vertical"
         android:minWidth="25px"
@@ -38,31 +42,42 @@
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/textEndpoint" />
+            android:id="@+id/textEndpoint"
+            android:paddingLeft="5px"
+            android:paddingBottom="10px"
+            android:textColor="@android:color/secondary_text_dark" />
         <TextView
             android:text="Name"
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/textView3" />
+            android:id="@+id/textView3"
+            android:paddingLeft="5px" />
         <TextView
             android:text="[name]"
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/textName" />
+            android:id="@+id/textName"
+            android:paddingLeft="5px"
+            android:paddingBottom="10px"
+            android:textColor="@android:color/secondary_text_dark" />
         <TextView
             android:text="Description"
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/textView5" />
+            android:id="@+id/textView5"
+            android:paddingLeft="5px" />
         <TextView
             android:text="[description]"
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/textDescription" />
+            android:id="@+id/textDescription"
+            android:paddingLeft="5px"
+            android:paddingBottom="15px"
+            android:textColor="@android:color/secondary_text_dark" />
         <LinearLayout
             android:orientation="horizontal"
             android:minWidth="25px"
