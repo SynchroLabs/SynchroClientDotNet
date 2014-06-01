@@ -14,31 +14,42 @@ namespace MaaasClientWinPhone
 {
     public partial class Launcher : PhoneApplicationPage
     {
-        public static MaaasAppManager MaaasAppManager { get; set; }
-
-        ObservableCollection<MaaasApp> maaasApps = new ObservableCollection<MaaasApp>();
-
         public Launcher()
         {
             InitializeComponent();
+        }
 
-            if (MaaasAppManager != null)
+        public static void NavigateTo(string endpoint = null)
+        {
+            App.RootFrame.Navigate(new Uri("/Launcher.xaml", UriKind.Relative));
+        }
+        async protected override void OnNavigatedTo(NavigationEventArgs e)
+        {
+            base.OnNavigatedTo(e);
+
+            MaaasAppManager appManager = new WinPhoneAppManager();
+            await appManager.loadState();
+
+            ObservableCollection<MaaasApp> maaasApps = new ObservableCollection<MaaasApp>();
+            foreach (MaaasApp app in appManager.Apps)
             {
-                foreach (MaaasApp app in MaaasAppManager.Apps)
-                {
-                    maaasApps.Add(app);
-                }
-
-                this.appListControl.ItemsSource = maaasApps;
-
-                this.appListControl.SelectionChanged += appListControl_SelectionChanged;
+                maaasApps.Add(app);
             }
+
+            this.appListControl.ItemsSource = maaasApps;
+
+            this.appListControl.SelectionChanged += appListControl_SelectionChanged;
         }
 
         void appListControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            MaaasPage.MaaasApp = this.appListControl.SelectedItem as MaaasApp;
-            App.RootFrame.Navigate(new Uri("/MaaasPage.xaml", UriKind.Relative));
+            MaaasApp app = this.appListControl.SelectedItem as MaaasApp;
+            AppDetailPage.NavigateTo(app.Endpoint);
+        }
+
+        private void OnAppAdd(object sender, EventArgs e)
+        {
+            AppDetailPage.NavigateTo();
         }
     }
 }

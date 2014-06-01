@@ -147,6 +147,9 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Include="AppDetailPage.xaml.cs">
+      <DependentUpon>AppDetailPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Common\NavigationHelper.cs" />
     <Compile Include="Common\ObservableDictionary.cs" />
     <Compile Include="Common\RelayCommand.cs" />
@@ -158,8 +161,8 @@
     <Compile Include="Controls\WinScrollWrapper.cs" />
     <Compile Include="Controls\WinWebViewWrapper.cs" />
     <Compile Include="Controls\WinWrapPanelWrapper.cs" />
-    <Compile Include="Launcher.xaml.cs">
-      <DependentUpon>Launcher.xaml</DependentUpon>
+    <Compile Include="LauncherPage.xaml.cs">
+      <DependentUpon>LauncherPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="MaaasPage.xaml.cs">
       <DependentUpon>MaaasPage.xaml</DependentUpon>
@@ -208,7 +211,11 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Page Include="Launcher.xaml">
+    <Page Include="AppDetailPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="LauncherPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

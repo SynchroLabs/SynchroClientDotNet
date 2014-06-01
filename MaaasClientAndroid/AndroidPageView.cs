@@ -74,7 +74,7 @@ namespace MaaasClientAndroid
                 {
                     if (_iconDisabled == null)
                     {
-                        // !!! This is probably not the best was to show the icon as disabled, but it works for now...
+                        // !!! This is probably not the best way to show the icon as disabled, but it works for now...
                         _iconDisabled = _context.Resources.GetDrawable(_iconResourceId);
                         _iconDisabled.Mutate().SetColorFilter(Color.Gray, PorterDuff.Mode.SrcIn);
                     }

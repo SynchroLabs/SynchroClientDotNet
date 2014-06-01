@@ -14,17 +14,17 @@ namespace MaaasClientIOS
         public delegate void AppSelectedHandler(MaaasApp app);
         public event AppSelectedHandler AppSelectedEvent;
 
-        List<MaaasApp> tableItems;
+        protected List<MaaasApp> Items;
 
         string cellIdentifier = "MaaasAppTableCell";
         public TableSource(List<MaaasApp> items)
         {
-            tableItems = items;
+            Items = items;
         }
 
         public override int RowsInSection(UITableView tableview, int section)
         {
-            return tableItems.Count;
+            return Items.Count;
         }
 
         public override UITableViewCell GetCell(UITableView tableView, MonoTouch.Foundation.NSIndexPath indexPath)
@@ -36,7 +36,7 @@ namespace MaaasClientIOS
                 cell = new UITableViewCell(UITableViewCellStyle.Subtitle, cellIdentifier);
             }
 
-            MaaasApp maaasApp = tableItems[indexPath.Row];
+            MaaasApp maaasApp = Items[indexPath.Row];
             cell.TextLabel.Text = maaasApp.Name + " - " + maaasApp.Description;
             cell.DetailTextLabel.Text = maaasApp.Endpoint;
             return cell;
@@ -47,7 +47,7 @@ namespace MaaasClientIOS
             tableView.DeselectRow(indexPath, true); // normal iOS behaviour is to remove the blue highlight
             if (AppSelectedEvent != null)
             {
-                AppSelectedEvent(tableItems[indexPath.Row]);
+                AppSelectedEvent(Items[indexPath.Row]);
             }
         }
     }
@@ -69,15 +69,18 @@ namespace MaaasClientIOS
 
         void Initialize()
         {
+            BackgroundColor = UIColor.FromRGB(0.85f, 0.86f, 0.89f);
+
             UILabel label = new UILabel(new RectangleF(10, 10, 300, 50));
-            label.Text = "Select an app...";
+            label.BackgroundColor = BackgroundColor;
+            label.Text = "Select a Maaas application...";
+            label.Font = UIFont.BoldSystemFontOfSize(16f);
             label.SizeToFit();
             this.Add(label);
 
-            table = new UITableView(new RectangleF(10, 70, 300, 300));
+            float top = label.Frame.Bottom + 10;
+            table = new UITableView(new RectangleF(0, top, 320, UIScreen.MainScreen.Bounds.Height - top));
             Add(table);
-
-            BackgroundColor = UIColor.Red;
         }
     }
 
@@ -86,6 +89,8 @@ namespace MaaasClientIOS
     {
         MaaasAppManager _maaasAppManager;
         List<MaaasApp> tableItems = new List<MaaasApp>();
+
+        LauncherView _view;
 
         public LauncherViewController(MaaasAppManager maaasAppManager)
         {
@@ -97,23 +102,39 @@ namespace MaaasClientIOS
         {
             base.ViewDidLoad();
 
-            LauncherView view = new LauncherView();
-            View = view;
-
-            foreach (MaaasApp app in _maaasAppManager.Apps)
-            {
-               tableItems.Add(app);
-            }
+            _view = new LauncherView();
+            View = _view;
 
             TableSource source = new TableSource(tableItems);
             source.AppSelectedEvent += source_AppSelectedEvent;
-            view.table.Source = source;
+            _view.table.Source = source;
+
+            // Here is the "Add" toolbar button...
+            UIBarButtonSystemItem item = (UIBarButtonSystemItem)typeof(UIBarButtonSystemItem).GetField("Add").GetValue(null);
+            UIBarButtonItem addButton = new UIBarButtonItem(item, (s, e) => 
+            {
+                Util.debug("Launcher Add button pushed");
+                AppDetailViewController detailView = new AppDetailViewController(_maaasAppManager, null);
+                this.NavigationController.PushViewController(detailView, false);
+            });
+            NavigationItem.RightBarButtonItem = addButton;
+        }
+
+        public override void ViewWillAppear(bool animated)
+        {
+            tableItems.Clear();
+            foreach (MaaasApp app in _maaasAppManager.Apps)
+            {
+                tableItems.Add(app);
+            }
+            _view.table.ReloadData();
+
+            base.ViewWillAppear(animated);
         }
 
         void source_AppSelectedEvent(MaaasApp app)
         {
-            MaaasPageViewController view = new MaaasPageViewController(app);
-            this.NavigationController.SetNavigationBarHidden(true, false);
+            AppDetailViewController view = new AppDetailViewController(_maaasAppManager, app);
             this.NavigationController.PushViewController(view, false);
         }
     }

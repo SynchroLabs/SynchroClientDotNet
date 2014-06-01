@@ -67,12 +67,10 @@ namespace MaaasClientWinPhone
 
             if (appManager.AppSeed != null)
             {
-                MaaasPage.MaaasApp = appManager.AppSeed;
-                App.RootFrame.Navigate(new Uri("/MaaasPage.xaml", UriKind.Relative));
+                MaaasPage.NavigateTo(appManager.AppSeed.Endpoint);
             }
             else
             {
-                Launcher.MaaasAppManager = appManager;
                 App.RootFrame.Navigate(new Uri("/Launcher.xaml", UriKind.Relative));
             }
         }

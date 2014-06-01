@@ -1,4 +1,5 @@
 ﻿using MaaasCore;
+using Microsoft.Phone.Controls;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -17,7 +18,11 @@ namespace MaaasClientWinPhone.Controls
             base(parent, bindingContext)
         {
             Util.debug("Creating password box element with value of: " + controlSpec["value"]);
-            PasswordBox passwordBox = new PasswordBox();
+
+            // Switched to PhonePasswordBox to get PlaceholderText functionality
+            // PasswordBox passwordBox = new PasswordBox();
+            PhonePasswordBox passwordBox = new PhonePasswordBox();
+
             this._control = passwordBox;
 
             applyFrameworkElementDefaults(passwordBox);
@@ -27,6 +32,9 @@ namespace MaaasClientWinPhone.Controls
             {
                 processElementProperty((string)controlSpec["value"], value => passwordBox.Password = ToString(value));
             }
+
+            processElementProperty((string)controlSpec["placeholder"], value => passwordBox.PlaceholderText = ToString(value));
+
             passwordBox.PasswordChanged += passwordBox_PasswordChanged;
         }
 

@@ -23,6 +23,11 @@
             </StackPanel>
         </DataTemplate>
     </phone:PhoneApplicationPage.Resources>
+    <phone:PhoneApplicationPage.ApplicationBar>
+        <shell:ApplicationBar>
+            <shell:ApplicationBarIconButton x:Name="AppBarBtnAdd" IconUri="/Assets/Icons/add.png" Text="Add..." IsEnabled="True" Click="OnAppAdd"/>
+        </shell:ApplicationBar>
+    </phone:PhoneApplicationPage.ApplicationBar>
 
     <!--LayoutRoot is the root grid where all page content is placed-->
     <Grid x:Name="LayoutRoot" Background="Transparent">
@@ -38,7 +43,7 @@
 
         <!--ContentPanel - place additional content here-->
         <Grid x:Name="ContentPanel" Grid.Row="1" Margin="12,0,12,0">
-            <phone:LongListSelector x:Name="appListControl" Margin="0" ItemTemplate="{StaticResource DataTemplate1}"/>
+            <phone:LongListSelector x:Name="appListControl" Margin="0" ItemTemplate="{StaticResource DataTemplate1}" SelectionChanged="appListControl_SelectionChanged"/>
         </Grid>
     </Grid>
 

@@ -81,6 +81,12 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>References\WebSocket4Net.MonoDroid\Bin\Debug\WebSocket4Net.dll</HintPath>
     </Reference>
+    <Reference Include="Xamarin.Android.Support.v4">
+      <HintPath>..\Components\xamandroidsupportv4-18-19.1.0\lib\android\Xamarin.Android.Support.v4.dll</HintPath>
+    </Reference>
+    <Reference Include="Xamarin.Android.Support.v7.AppCompat">
+      <HintPath>..\Components\xamandroidsupportv7appcompat-19.1.0\lib\android\Xamarin.Android.Support.v7.AppCompat.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\MaaasShared\AppManager.cs">
@@ -126,6 +132,7 @@
     <Compile Include="AndroidDeviceMetrics.cs" />
     <Compile Include="AndroidPageView.cs" />
     <Compile Include="AndroidTransportWs.cs" />
+    <Compile Include="AppDetailActivity.cs" />
     <Compile Include="Controls\AndroidActionWrapper.cs" />
     <Compile Include="Controls\AndroidBorderWrapper.cs" />
     <Compile Include="Controls\AndroidButtonWrapper.cs" />
@@ -159,6 +166,9 @@
     <None Include="Resources\AboutResources.txt" />
     <None Include="Assets\AboutAssets.txt" />
     <AndroidResource Include="Resources\Layout\launcher.axml">
+      <SubType>AndroidResource</SubType>
+    </AndroidResource>
+    <AndroidResource Include="Resources\Layout\appdetail.axml">
       <SubType>AndroidResource</SubType>
     </AndroidResource>
   </ItemGroup>
@@ -748,6 +758,14 @@
     <XamarinComponentReference Include="modernhttpclient">
       <Visible>False</Visible>
       <Version>1.1.0</Version>
+    </XamarinComponentReference>
+    <XamarinComponentReference Include="xamandroidsupportv4-18">
+      <Visible>False</Visible>
+      <Version>19.1.0</Version>
+    </XamarinComponentReference>
+    <XamarinComponentReference Include="xamandroidsupportv7appcompat">
+      <Visible>False</Visible>
+      <Version>19.1.0</Version>
     </XamarinComponentReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />

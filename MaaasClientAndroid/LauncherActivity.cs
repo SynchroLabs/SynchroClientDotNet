@@ -10,6 +10,7 @@ using Android.Runtime;
 using Android.Views;
 using Android.Widget;
 using MaaasCore;
+using Android.Graphics.Drawables;
 
 namespace MaaasClientAndroid
 {
@@ -62,23 +63,23 @@ namespace MaaasClientAndroid
         List<MaaasApp> tableItems = new List<MaaasApp>();
         ListView listView;
 
-        protected override void OnCreate(Bundle bundle)
+        protected async override void OnCreate(Bundle bundle)
         {
             base.OnCreate(bundle);
             SetContentView(Resource.Layout.launcher);
             listView = FindViewById<ListView>(Resource.Id.appList);
 
             MaaasAppManager appManager = new AndroidAppManager(this);
-            appManager.loadState();
+            await appManager.loadState();
 
             if (appManager.AppSeed != null)
             {
                 // There was an AppSeed, so let's launch that now and not present the Launcher UX...
                 //
-                // !!! We need to prevent navigation "back" to the Launcher
+                // !!! We need to prevent navigation "back" to the Launcher (don't we?)
                 //
-                MaaasPageActivity.MaaasApp = appManager.AppSeed;
                 var intent = new Intent(this, typeof(MaaasPageActivity));
+                intent.PutExtra("endpoint", appManager.AppSeed.Endpoint);
                 StartActivity(intent);
             }
             else
@@ -95,13 +96,49 @@ namespace MaaasClientAndroid
             }
         }
 
+        public override bool OnCreateOptionsMenu(IMenu menu)
+        {
+            IMenuItem menuItem = menu.Add(0, 0, 0, "Add");
+
+            int iconResourceId = (int)typeof(Resource.Drawable).GetField("ic_action_new").GetValue(null);
+            if (iconResourceId > 0)
+            {
+                Drawable icon = this.Resources.GetDrawable(iconResourceId);
+                menuItem.SetIcon(icon);
+            }
+
+            // Show it on the action bar...
+            menuItem.SetShowAsAction(ShowAsAction.Always);
+
+            return true;
+        }
+
+        public override bool OnOptionsItemSelected(IMenuItem item)
+        {
+            if (item.ItemId == 0)
+            {
+                var intent = new Intent(this, typeof(AppDetailActivity));
+
+                // If we don't put the null endpoint value, there is quite a Xamarin freakout *after* the OnCreate in the
+                // target activity completes, if the target activity tries to access Extras in any way (like to see if an
+                // endpoint was provided).
+                //
+                intent.PutExtra("endpoint", (string)null);
+
+                StartActivity(intent);
+            }
+
+            return true;
+        }
+
         protected void OnListItemClick(object sender, Android.Widget.AdapterView.ItemClickEventArgs e)
         {
             var listView = sender as ListView;
             MaaasApp maaasApp = tableItems[e.Position];
 
-            MaaasPageActivity.MaaasApp = maaasApp;
-            var intent = new Intent(this, typeof(MaaasPageActivity));
+            //var intent = new Intent(this, typeof(MaaasPageActivity));
+            var intent = new Intent(this, typeof(AppDetailActivity));
+            intent.PutExtra("endpoint", maaasApp.Endpoint);
             StartActivity(intent);
         }
     }

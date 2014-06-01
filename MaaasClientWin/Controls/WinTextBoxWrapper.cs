@@ -26,6 +26,9 @@ namespace MaaasClientWin.Controls
             {
                 processElementProperty((string)controlSpec["value"], value => textBox.Text = ToString(value));
             }
+
+            processElementProperty((string)controlSpec["placeholder"], value => textBox.PlaceholderText = ToString(value));
+
             textBox.TextChanged += textBox_TextChanged;
         }
 

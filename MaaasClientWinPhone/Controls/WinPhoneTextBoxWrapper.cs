@@ -1,4 +1,5 @@
 ﻿using MaaasCore;
+using Microsoft.Phone.Controls;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -15,7 +16,11 @@ namespace MaaasClientWinPhone.Controls
             base(parent, bindingContext)
         {
             Util.debug("Creating text box element with value of: " + controlSpec["value"]);
-            TextBox textBox = new TextBox();
+
+            // Switched to PhoneTextBox to get PlaceholderText functionality
+            // TextBox textBox = new TextBox();
+            PhoneTextBox textBox = new PhoneTextBox();
+
             this._control = textBox;
 
             applyFrameworkElementDefaults(textBox);
@@ -25,6 +30,9 @@ namespace MaaasClientWinPhone.Controls
             {
                 processElementProperty((string)controlSpec["value"], value => textBox.Text = ToString(value));
             }
+
+            processElementProperty((string)controlSpec["placeholder"], value => textBox.PlaceholderText = ToString(value));
+
             textBox.TextChanged += textBox_TextChanged;
         }
 

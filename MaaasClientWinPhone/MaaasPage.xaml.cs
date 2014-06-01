@@ -18,8 +18,6 @@ namespace MaaasClientWinPhone
 {
     public partial class MaaasPage : PhoneApplicationPage
     {
-        public static MaaasApp MaaasApp { get; set; }
-
         StateManager _stateManager;
         PageView _pageView;
 
@@ -28,9 +26,30 @@ namespace MaaasClientWinPhone
         {
             InitializeComponent();
             
+            // http://msdn.microsoft.com/en-us/library/windowsphone/develop/ff769552(v=vs.105).aspx
+            Thickness overhang = (Thickness)Application.Current.Resources["PhoneTouchTargetOverhang"];
+            Util.debug("Overhang: " + overhang);
+
+            // Sample code to localize the ApplicationBar
+            //BuildLocalizedApplicationBar();
+        }
+
+        // Static helper to allow callers to navigate "here" with appropriate parameters...
+        //
+        public static void NavigateTo(string endpoint)
+        {
+            App.RootFrame.Navigate(new Uri(string.Format("/MaaasPage.xaml?endpoint={0}", Uri.EscapeUriString(endpoint)), UriKind.Relative));
+        }
+
+        protected override void OnNavigatedTo(NavigationEventArgs e)
+        {
+            base.OnNavigatedTo(e);
+
+            string endpoint = NavigationContext.QueryString["endpoint"];   
+
             WinPhoneDeviceMetrics deviceMetrics = new WinPhoneDeviceMetrics();
 
-            _stateManager = new StateManager(MaaasApp.Endpoint, new TransportHttp(MaaasApp.Endpoint), deviceMetrics);
+            _stateManager = new StateManager(endpoint, new TransportHttp(endpoint), deviceMetrics);
             _pageView = new WinPhonePageView(_stateManager, _stateManager.ViewModel, this, this.mainScroll);
 
             this.BackKeyPress += MainPage_BackKeyPress;
@@ -39,13 +58,6 @@ namespace MaaasClientWinPhone
             _pageView.setPageTitle = title => this.pageTitle.Text = title;
 
             _stateManager.SetProcessingHandlers(json => _pageView.ProcessPageView(json), json => _pageView.ProcessMessageBox(json));
-
-            // http://msdn.microsoft.com/en-us/library/windowsphone/develop/ff769552(v=vs.105).aspx
-            Thickness overhang = (Thickness)Application.Current.Resources["PhoneTouchTargetOverhang"];
-            Util.debug("Overhang: " + overhang);
-
-            // Sample code to localize the ApplicationBar
-            //BuildLocalizedApplicationBar();
         }
 
         async void MainPage_Loaded(object sender, RoutedEventArgs e)

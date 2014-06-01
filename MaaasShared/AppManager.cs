@@ -56,6 +56,19 @@ namespace MaaasCore
         public MaaasApp AppSeed { get { return _appSeed; } }
         public List<MaaasApp> Apps { get { return _apps; } }
 
+        public MaaasApp GetApp(string endpoint)
+        {
+            foreach (MaaasApp app in _apps)
+            {
+                if (app.Endpoint == endpoint)
+                {
+                    return app;
+                }
+            }
+
+            return null;
+        }
+
         private static MaaasApp appFromJson(JObject json)
         {
             String endpoint = (string)json["endpoint"];

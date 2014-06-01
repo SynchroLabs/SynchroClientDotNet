@@ -26,6 +26,9 @@ namespace MaaasClientWin.Controls
             {
                 processElementProperty((string)controlSpec["value"], value => passwordBox.Password = ToString(value));
             }
+
+            processElementProperty((string)controlSpec["placeholder"], value => passwordBox.PlaceholderText = ToString(value));
+
             passwordBox.PasswordChanged += passwordBox_PasswordChanged;
         }
 

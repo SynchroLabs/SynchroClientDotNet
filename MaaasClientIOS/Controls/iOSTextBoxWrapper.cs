@@ -39,6 +39,8 @@ namespace MaaasClientIOS.Controls
                 textBox.SizeToFit();
             }
 
+            processElementProperty((string)controlSpec["placeholder"], value => textBox.Placeholder = ToString(value));
+
             textBox.EditingChanged += textBox_EditingChanged;
         }
 

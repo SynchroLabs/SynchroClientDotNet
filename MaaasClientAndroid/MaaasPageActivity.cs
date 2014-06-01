@@ -18,8 +18,6 @@ namespace MaaasClientAndroid
     [Activity(Label = "MaaaS IO", Icon = "@drawable/icon", Theme = "@android:style/Theme.Holo")]
     public class MaaasPageActivity : Activity
     {
-        public static MaaasApp MaaasApp { get; set; }
-
         StateManager _stateManager;
         AndroidPageView _pageView;
 
@@ -60,6 +58,8 @@ namespace MaaasClientAndroid
         {
             base.OnCreate(bundle);
 
+            string endpoint = this.Intent.Extras.GetString("endpoint");
+
             AndroidDeviceMetrics deviceMetrics = new AndroidDeviceMetrics(this.WindowManager.DefaultDisplay);
 
             // This ScrollView will consume all available screen space by default, which is what we want...
@@ -71,12 +71,12 @@ namespace MaaasClientAndroid
             // !!! Doesn't appear to support cookies out of the box
             //
             // HttpClient httpClient = new HttpClient(new OkHttpNetworkHandler());
-            // _stateManager = new StateManager(MaaasApp.Endpoint, new TransportHttp(MaaasApp.EndPoint, httpClient));
+            // _stateManager = new StateManager(endpoint, new TransportHttp(endPoint, httpClient));
             //
-            Transport transport = new TransportHttp(MaaasApp.Endpoint);
-            //Transport transport = new AndroidTransportWs(this, MaaasApp.Endpoint);
+            Transport transport = new TransportHttp(endpoint);
+            //Transport transport = new AndroidTransportWs(this, endpoint);
 
-            _stateManager = new StateManager(MaaasApp.Endpoint, transport, deviceMetrics);
+            _stateManager = new StateManager(endpoint, transport, deviceMetrics);
             _pageView = new AndroidPageView(_stateManager, _stateManager.ViewModel, this, layout);
 
             _pageView.setPageTitle = title => this.ActionBar.Title = title;

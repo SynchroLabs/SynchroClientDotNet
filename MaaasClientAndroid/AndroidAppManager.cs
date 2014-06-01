@@ -13,6 +13,7 @@ namespace MaaasClientAndroid
 {
     class AndroidAppManager : MaaasAppManager
     {
+        private readonly static string STATE_FILE = "maaas";
         private readonly static string STATE_KEY = "seed.json";
 
         protected Activity _activity;
@@ -34,14 +35,16 @@ namespace MaaasClientAndroid
 
         protected override Task<string> loadLocalState()
         {
-            ISharedPreferences preferences = _activity.GetPreferences(FileCreationMode.Private);
+            ISharedPreferences preferences = _activity.GetSharedPreferences(STATE_FILE, FileCreationMode.Private);
+            //ISharedPreferences preferences = _activity.GetPreferences(FileCreationMode.Private);
             string state = preferences.GetString(STATE_KEY, null);
             return Task.FromResult(state);
         }
 
         protected override Task<bool> saveLocalState(string state)
         {
-            ISharedPreferences preferences = _activity.GetPreferences(FileCreationMode.Private);
+            ISharedPreferences preferences = _activity.GetSharedPreferences(STATE_FILE, FileCreationMode.Private);
+            // ISharedPreferences preferences = _activity.GetPreferences(FileCreationMode.Private);
             ISharedPreferencesEditor editor = preferences.Edit();
             editor.PutString(STATE_KEY, state);
             editor.Commit();

@@ -42,13 +42,26 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <ConsolePause>false</ConsolePause>
-    <MtouchDebug>true</MtouchDebug>
+    <MtouchDebug>True</MtouchDebug>
     <CodesignKey>iPhone Developer</CodesignKey>
     <CodesignProvision>
     </CodesignProvision>
     <CodesignEntitlements />
     <CodesignResourceRules />
     <CodesignExtraArgs />
+    <MtouchSdkVersion>7.1</MtouchSdkVersion>
+    <MtouchLink>SdkOnly</MtouchLink>
+    <MtouchProfiling>False</MtouchProfiling>
+    <MtouchExtraArgs />
+    <MtouchFastDev>False</MtouchFastDev>
+    <MtouchEnableGenericValueTypeSharing>True</MtouchEnableGenericValueTypeSharing>
+    <MtouchArch>Default, ARMv7</MtouchArch>
+    <MtouchUseLlvm>False</MtouchUseLlvm>
+    <MtouchUseThumb>False</MtouchUseThumb>
+    <MtouchUseSGen>False</MtouchUseSGen>
+    <MtouchUseRefCounting>False</MtouchUseRefCounting>
+    <MtouchOptimizePNGs>True</MtouchOptimizePNGs>
+    <MtouchI18n />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|iPhone' ">
     <DebugType>none</DebugType>
@@ -118,6 +131,7 @@
     <Compile Include="..\MaaasShared\ViewModel.cs">
       <Link>Linked\ViewModel.cs</Link>
     </Compile>
+    <Compile Include="AppDetailViewController.cs" />
     <Compile Include="Controls\iOSBorderWrapper.cs" />
     <Compile Include="Controls\iOSButtonWrapper.cs" />
     <Compile Include="Controls\iOSCanvasWrapper.cs" />
@@ -150,13 +164,12 @@
     </BundleResource>
     <None Include="Info.plist" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <ITunesArtwork Include="iTunesArtwork" />
+    <ITunesArtwork Include="iTunesArtwork%402x" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="MaaasPageViewController.cs" />
-    <BundleResource Include="Resources\Default.png" />
-    <BundleResource Include="Resources\Default@2x.png" />
-    <BundleResource Include="Resources\Default-568h@2x.png" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="AFNetworking">
@@ -196,6 +209,20 @@
     </XamarinComponentReference>
   </ItemGroup>
   <ItemGroup>
+    <BundleResource Include="Resources\Default%402x.png" />
+    <BundleResource Include="Resources\Default-568h%402x.png" />
+    <BundleResource Include="Resources\Default.png" />
+    <BundleResource Include="Resources\Icon.png" />
+    <BundleResource Include="Resources\Icon%402x.png" />
+    <BundleResource Include="Resources\Icon-60%402x.png" />
+    <BundleResource Include="Resources\Icon-72.png" />
+    <BundleResource Include="Resources\Icon-72%402x.png" />
+    <BundleResource Include="Resources\Icon-76.png" />
+    <BundleResource Include="Resources\Icon-76%402x.png" />
+    <BundleResource Include="Resources\Default-Portrait.png" />
+    <BundleResource Include="Resources\Default-Landscape.png" />
+    <BundleResource Include="Resources\Default-Portrait%402x.png" />
+    <BundleResource Include="Resources\Default-Landscape%402x.png" />
     <Content Include="Resources\icons\black\airplane-mini%402x.png" />
     <Content Include="Resources\icons\black\airplane-mini.png" />
     <Content Include="Resources\icons\black\alarm-clock-mini%402x.png" />

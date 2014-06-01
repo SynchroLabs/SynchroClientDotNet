@@ -29,7 +29,6 @@ namespace MaaasClientWin
     {
         StateManager _stateManager;
         WinPageView _pageView;
-        MaaasApp _maaasApp;
 
         public MaaasPage()
         {
@@ -41,14 +40,6 @@ namespace MaaasClientWin
 
         async void MaaasPage_Loaded(object sender, RoutedEventArgs e)
         {
-            // !!! This is just to test that we can do a standalone transport operation to get the AppDefinition
-            //
-            /*
-            Transport tempTransport = new TransportHttp(_maaasApp.Endpoint);
-            JObject appDefinition = await tempTransport.getAppDefinition();
-            Util.debug("XXXX Got app definition for: " + appDefinition["name"] + " - " + appDefinition["description"]);
-            */
-
             await _stateManager.startApplication();
         }
 
@@ -68,16 +59,16 @@ namespace MaaasClientWin
         /// session.  This will be null the first time a page is visited.</param>
         protected override void LoadState(Object navigationParameter, Dictionary<String, Object> pageState)
         {
-            _maaasApp = navigationParameter as MaaasApp;
+            string endpoint = navigationParameter as string;
 
-            Util.debug("Launching app at endpoint: " + _maaasApp.Endpoint);
+            Util.debug("Launching app at endpoint: " + endpoint);
 
             WinDeviceMetrics deviceMetrics = new WinDeviceMetrics();
 
-            Transport transport = new TransportHttp(_maaasApp.Endpoint);
-            //Transport transport = new TransportWs(_maaasApp.Endpoint);
+            Transport transport = new TransportHttp(endpoint);
+            //Transport transport = new TransportWs(endpoint);
 
-            _stateManager = new StateManager(_maaasApp.Endpoint, transport, deviceMetrics);
+            _stateManager = new StateManager(endpoint, transport, deviceMetrics);
             _pageView = new WinPageView(_stateManager, _stateManager.ViewModel, this, this.mainScroll);
 
             _pageView.setPageTitle = title => this.pageTitle.Text = title;

@@ -38,6 +38,9 @@ namespace MaaasClientAndroid.Controls
             {
                 processElementProperty((string)controlSpec["value"], value => editText.Text = ToString(value));
             }
+
+            processElementProperty((string)controlSpec["placeholder"], value => editText.Hint = ToString(value));
+
             editText.TextChanged += editText_TextChanged;
         }
 
