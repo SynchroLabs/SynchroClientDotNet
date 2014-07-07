@@ -41,7 +41,7 @@ namespace MaaasClientWinPhone
             App.RootFrame.Navigate(new Uri(string.Format("/MaaasPage.xaml?endpoint={0}", Uri.EscapeUriString(endpoint)), UriKind.Relative));
         }
 
-        protected override void OnNavigatedTo(NavigationEventArgs e)
+        protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
 
@@ -49,19 +49,20 @@ namespace MaaasClientWinPhone
 
             WinPhoneDeviceMetrics deviceMetrics = new WinPhoneDeviceMetrics();
 
-            _stateManager = new StateManager(endpoint, new TransportHttp(endpoint), deviceMetrics);
+            WinPhoneAppManager appManager = new WinPhoneAppManager();
+            await appManager.loadState();
+
+            MaaasApp app = appManager.GetApp(endpoint);
+
+            _stateManager = new StateManager(appManager, app, new TransportHttp(endpoint), deviceMetrics);
             _pageView = new WinPhonePageView(_stateManager, _stateManager.ViewModel, this, this.mainScroll);
 
             this.BackKeyPress += MainPage_BackKeyPress;
-            this.Loaded += MainPage_Loaded;
 
             _pageView.setPageTitle = title => this.pageTitle.Text = title;
 
             _stateManager.SetProcessingHandlers(json => _pageView.ProcessPageView(json), json => _pageView.ProcessMessageBox(json));
-        }
 
-        async void MainPage_Loaded(object sender, RoutedEventArgs e)
-        {
             await _stateManager.startApplication();
         }
 

@@ -66,6 +66,11 @@ namespace MaaasClientAndroid
             //
             var layout = new ScrollView(this);
 
+            AndroidAppManager appManager = new AndroidAppManager(this);
+            await appManager.loadState();
+
+            MaaasApp app = appManager.GetApp(endpoint);
+
             // Using OkHttpNetworkHandler via ModernHttpClient component
             //
             // !!! Doesn't appear to support cookies out of the box
@@ -76,7 +81,7 @@ namespace MaaasClientAndroid
             Transport transport = new TransportHttp(endpoint);
             //Transport transport = new AndroidTransportWs(this, endpoint);
 
-            _stateManager = new StateManager(endpoint, transport, deviceMetrics);
+            _stateManager = new StateManager(appManager, app, transport, deviceMetrics);
             _pageView = new AndroidPageView(_stateManager, _stateManager.ViewModel, this, layout);
 
             _pageView.setPageTitle = title => this.ActionBar.Title = title;

@@ -33,14 +33,7 @@ namespace MaaasClientWin
         public MaaasPage()
         {
             this.InitializeComponent();
-
-            this.Loaded += MaaasPage_Loaded; 
             this.backButton.Click += backButton_Click;
-        }
-
-        async void MaaasPage_Loaded(object sender, RoutedEventArgs e)
-        {
-            await _stateManager.startApplication();
         }
 
         void backButton_Click(object sender, RoutedEventArgs e)
@@ -57,24 +50,31 @@ namespace MaaasClientWin
         /// </param>
         /// <param name="pageState">A dictionary of state preserved by this page during an earlier
         /// session.  This will be null the first time a page is visited.</param>
-        protected override void LoadState(Object navigationParameter, Dictionary<String, Object> pageState)
+        protected override async void LoadState(Object navigationParameter, Dictionary<String, Object> pageState)
         {
             string endpoint = navigationParameter as string;
 
             Util.debug("Launching app at endpoint: " + endpoint);
+
+            WinAppManager appManager = new WinAppManager();
+            await appManager.loadState();
+
+            MaaasApp app = appManager.GetApp(endpoint);
 
             WinDeviceMetrics deviceMetrics = new WinDeviceMetrics();
 
             Transport transport = new TransportHttp(endpoint);
             //Transport transport = new TransportWs(endpoint);
 
-            _stateManager = new StateManager(endpoint, transport, deviceMetrics);
+            _stateManager = new StateManager(appManager, app, transport, deviceMetrics);
             _pageView = new WinPageView(_stateManager, _stateManager.ViewModel, this, this.mainScroll);
 
             _pageView.setPageTitle = title => this.pageTitle.Text = title;
             _pageView.setBackEnabled = isEnabled => this.backButton.IsEnabled = isEnabled;
 
             _stateManager.SetProcessingHandlers(json => _pageView.ProcessPageView(json), json => _pageView.ProcessMessageBox(json));
+
+            await _stateManager.startApplication();
         }
 
         /// <summary>

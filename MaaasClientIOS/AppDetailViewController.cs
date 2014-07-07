@@ -323,7 +323,7 @@ namespace MaaasClientIOS
 
         void view_AppLaunchEvent()
         {
-            MaaasPageViewController view = new MaaasPageViewController(_app);
+            MaaasPageViewController view = new MaaasPageViewController(_appManager, _app);
             this.NavigationController.SetNavigationBarHidden(true, false);
             this.NavigationController.PushViewController(view, false);
         }

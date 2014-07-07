@@ -10,13 +10,15 @@ namespace MaaasClientIOS
 {
     public class MaaasPageViewController : UIViewController
     {
+        MaaasAppManager _appManager;
         MaaasApp _maaasApp;
 
         StateManager _stateManager;
         PageView _pageView;
 
-        public MaaasPageViewController(MaaasApp maaasApp)
+        public MaaasPageViewController(MaaasAppManager appManager, MaaasApp maaasApp)
         {
+            _appManager = appManager;
             _maaasApp = maaasApp;
         }
 
@@ -35,7 +37,7 @@ namespace MaaasClientIOS
             Transport transport = new TransportHttp(_maaasApp.Endpoint, httpClient);
             //Transport transport = new iOSTransportWs(this, _maaasApp.Endpoint);
 
-            _stateManager = new StateManager(_maaasApp.Endpoint, transport, deviceMetrics);
+            _stateManager = new StateManager(_appManager, _maaasApp, transport, deviceMetrics);
             _pageView = new iOSPageView(_stateManager, _stateManager.ViewModel, View);
 
             _stateManager.SetProcessingHandlers(json => _pageView.ProcessPageView(json), json => _pageView.ProcessMessageBox(json));

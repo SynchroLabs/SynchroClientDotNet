@@ -40,6 +40,8 @@ namespace MaaasShared
 
         public override async Task sendMessage(string sessionId, JObject requestObject, Action<JObject> responseHandler)
         {
+            var watch = System.Diagnostics.Stopwatch.StartNew();
+
             if (sessionId != null)
             {
                 if ((_sessionId != null) && (_sessionId != sessionId))
@@ -64,6 +66,10 @@ namespace MaaasShared
                 response.EnsureSuccessStatusCode();
 
                 var responseMessage = await response.Content.ReadAsStringAsync();
+
+                watch.Stop();
+                Util.debug("TIMER: Elapsed time for request was: " + watch.ElapsedMilliseconds + " ms");
+
                 JObject responseObject = JObject.Parse(responseMessage);
                 responseHandler(responseObject);
             }

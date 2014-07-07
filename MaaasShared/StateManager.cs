@@ -10,10 +10,9 @@ namespace MaaasCore
 {
     public class StateManager
     {
+        MaaasAppManager _appManager;
+        MaaasApp _app;
         Transport _transport;
-        string _host;
-
-        JObject _appDefinition;
 
         string _path;
         ViewModel _viewModel;
@@ -22,13 +21,12 @@ namespace MaaasCore
 
         MaaasDeviceMetrics _deviceMetrics;
 
-        string _sessionId;
-
-        public StateManager(string host, Transport transport, MaaasDeviceMetrics deviceMetrics)
+        public StateManager(MaaasAppManager appManager, MaaasApp app, Transport transport, MaaasDeviceMetrics deviceMetrics)
         {
             _viewModel = new ViewModel();
-            _host = host;
 
+            _appManager = appManager;
+            _app = app;
             _transport = transport;
 
             _deviceMetrics = deviceMetrics;
@@ -42,20 +40,6 @@ namespace MaaasCore
         {
             _onProcessPageView = OnProcessPageView;
             _onProcessMessageBox = OnProcessMessageBox;
-        }
-
-        // This is used by the page view to resolve resource URIs
-        //
-        // !!! This is pretty much obsolete, or should be, as we now have the separate concept of a resource mapper
-        //     and really, you should never, ever, be serving resources from the Node server.
-        //
-        public Uri buildUri(string path)
-        {
-            if (path.StartsWith("http://") || path.StartsWith("https://"))
-            {
-                return new Uri(path);
-            }
-            return new Uri("http://" + _host + "/" + path);
         }
 
         JObject PackageDeviceMetrics()
@@ -74,17 +58,29 @@ namespace MaaasCore
             );
         }
 
-        void ProcessJsonResponse(JObject responseAsJSON)
+        async void ProcessJsonResponse(JObject responseAsJSON)
         {
             Util.debug("Got response: " + responseAsJSON);
 
             if (responseAsJSON["NewSessionId"] != null)
             {
-                if (_sessionId != null)
+                string newSessionId = responseAsJSON["NewSessionId"].ToString();
+                if (_app.SessionId != null)
                 {
-                    // Existing client SessionId was replaced by server!
+                    // Existing client SessionId was replaced by server.  Do we care?  Should we do something (maybe clear any
+                    // other client session state, if there was any).
+                    //
+                    Util.debug("Client session ID of: " + _app.SessionId + " was replaced with new session ID: " + newSessionId);
                 }
-                _sessionId = responseAsJSON["NewSessionId"].ToString();
+                else
+                {
+                    Util.debug("Client was assigned initial session ID of: " + newSessionId);
+                }
+
+                // SessionId was created/updated by server.  Record it and save state.
+                //
+                _app.SessionId = newSessionId;
+                await _appManager.saveState();
             }
 
             if (responseAsJSON["ViewModel"] != null)
@@ -116,19 +112,29 @@ namespace MaaasCore
 
         public async Task startApplication()
         {
+            // Note the we already have an app definition in the MaaasApp that was passed in.  This method will get the 
+            // current app definition from the server, which may have changed.
+            //
+            // !!! Do we want to update our stored app defintion (in MaaasApp, via the AppManager)?  Maybe only if changed?
+            //
+            JObject appDefinition;
+
             Util.debug("Loading Maaas application definition");
-            this._appDefinition = await _transport.getAppDefinition();
-            Util.debug("Got app definition for: " + this._appDefinition["name"] + " - " + this._appDefinition["description"]);
+            appDefinition = await _transport.getAppDefinition();
+            Util.debug("Got app definition for: " + appDefinition["name"] + " - " + appDefinition["description"]);
 
             // Set the path to the main page, then load that page (we'll send over device metrics, since this is the first "Page" transaction)
             //
-            this._path = (string)this._appDefinition["mainPage"];
+            this._path = (string)appDefinition["mainPage"];
             JObject requestObject = new JObject(
                 new JProperty("Mode", "Page"),
                 new JProperty("Path", this._path),
                 new JProperty("DeviceMetrics", this.PackageDeviceMetrics()) // Send over device metrics
             );
-            await _transport.sendMessage(_sessionId, requestObject, this.ProcessJsonResponse);
+
+            Util.debug("Requesting main page with session ID: " + _app.SessionId);
+
+            await _transport.sendMessage(_app.SessionId, requestObject, this.ProcessJsonResponse);
         }
 
         public async void processCommand(string command, JObject parameters = null)
@@ -162,7 +168,7 @@ namespace MaaasCore
                 );
             }
 
-            await _transport.sendMessage(_sessionId, requestObject, this.ProcessJsonResponse);
+            await _transport.sendMessage(_app.SessionId, requestObject, this.ProcessJsonResponse);
         }
     }
 }

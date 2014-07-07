@@ -16,14 +16,16 @@ namespace MaaasCore
     {
         public string Endpoint { get; set; }
         public JObject AppDefinition { get; set; }
+        public string SessionId { get; set; }
 
         public string Name { get { return (string)AppDefinition["name"]; } }
         public string Description { get { return (string)AppDefinition["description"]; } }
 
-        public MaaasApp(string endpoint, JObject appDefinition)
+        public MaaasApp(string endpoint, JObject appDefinition, string sessionId = null)
         {
             this.Endpoint = endpoint;
             this.AppDefinition = appDefinition; // !!! Should we use appDefinition.DeepClone();
+            this.SessionId = sessionId;
         }
     }
 
@@ -58,30 +60,51 @@ namespace MaaasCore
 
         public MaaasApp GetApp(string endpoint)
         {
-            foreach (MaaasApp app in _apps)
+            if ((_appSeed != null) && (_appSeed.Endpoint == endpoint))
             {
-                if (app.Endpoint == endpoint)
+                return _appSeed;
+            }
+            else
+            {
+                foreach (MaaasApp app in _apps)
                 {
-                    return app;
+                    if (app.Endpoint == endpoint)
+                    {
+                        return app;
+                    }
                 }
             }
-
             return null;
+        }
+
+        public void UpdateApp(MaaasApp app)
+        {
+            if (_appSeed.Endpoint == app.Endpoint)
+            {
+                _appSeed = app;
+            }
+            else
+            {
+                _apps.RemoveAll(theApp => theApp.Endpoint == app.Endpoint);
+                _apps.Add(app);
+            }
         }
 
         private static MaaasApp appFromJson(JObject json)
         {
             String endpoint = (string)json["endpoint"];
             JObject appDefinition = (JObject)json["definition"].DeepClone();
+            String sessionId = (string)json["sessionId"];
 
-            return new MaaasApp(endpoint, appDefinition);
+            return new MaaasApp(endpoint, appDefinition, sessionId);
         }
 
         private static JObject appToJson(MaaasApp app)
         {
             return new JObject(
                 new JProperty("endpoint", app.Endpoint),
-                new JProperty("definition", app.AppDefinition.DeepClone())
+                new JProperty("definition", app.AppDefinition.DeepClone()),
+                new JProperty("sessionId", app.SessionId)
                 );
         }
 

@@ -29,7 +29,7 @@ namespace MaaasClientWin.Controls
             applyFrameworkElementDefaults(image);
             image.Height = 128; // Sizes will be overriden by the generic height/width property handlers, but
             image.Width = 128;  // we have to set these here (as defaults) in case the sizes aren't specified. 
-            processElementProperty((string)controlSpec["resource"], value => image.Source = new BitmapImage(this.StateManager.buildUri(ToString(value))));
+            processElementProperty((string)controlSpec["resource"], value => image.Source = new BitmapImage(new Uri(ToString(value))));
         }
     }
 }

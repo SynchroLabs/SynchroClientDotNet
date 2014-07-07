@@ -31,7 +31,7 @@ namespace MaaasClientIOS
 
             if (appManager.AppSeed != null)
             {
-                viewController = new MaaasPageViewController(appManager.AppSeed);
+                viewController = new MaaasPageViewController(appManager, appManager.AppSeed);
             }
             else
             {
