@@ -2,19 +2,15 @@
   /*
   "seed":
   {
-    "endpoint": "192.168.1.168:1337/api",
-    "definition": { "name": "maaas-samples", "description": "MAAAS API Samples" }
-  },
+    "endpoint": "api.synchro.io/api/samples",
+    "definition": { "name": "synchro-samples", "description": "Synchro API Samples" }
+  }
   */
   "apps":
   [
     {
-      "endpoint": "maaas.io/api",
-      "definition": { "name": "maaas-samples", "description": "MAAAS API Samples" }
-    },
-    {
-      "endpoint": "192.168.1.168:1337/api",
-      "definition": { "name": "maaas-samples", "description": "MAAAS API Samples (locally)" }
+      "endpoint": "api.synchro.io/api/samples",
+      "definition": { "name": "synchro-samples", "description": "Synchro API Samples" }
     }
   ]
 }

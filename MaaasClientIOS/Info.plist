@@ -22,11 +22,11 @@
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>MinimumOSVersion</key>
-	<string>6.0</string>
+	<string></string>
 	<key>CFBundleDisplayName</key>
-	<string>MaaaS IO</string>
+	<string>Synchro</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.tddgames.maaasclientios</string>
+	<string>io.synchro.client.ios</string>
 	<key>CFBundleVersion</key>
 	<string>0.1</string>
 	<key>NSMainNibFile</key>

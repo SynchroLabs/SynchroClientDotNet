@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Deployment xmlns="http://schemas.microsoft.com/windowsphone/2012/deployment" AppPlatformVersion="8.0">
   <DefaultLanguage xmlns="" code="en-US" />
-  <App xmlns="" ProductID="{6cebf531-cf26-4e0d-91de-2a76d394c40c}" Title="Maaas IO" RuntimeType="Silverlight" Version="1.0.0.0" Genre="apps.normal" Author="MaaasClientWinPhone author" Description="Maaas client application for Windows Phone" Publisher="MaaasClientWinPhone" PublisherID="{5b3b67fa-a864-4b15-af35-470c3d9dc5a1}">
+  <App xmlns="" ProductID="{6cebf531-cf26-4e0d-91de-2a76d394c40c}" Title="Synchro" RuntimeType="Silverlight" Version="1.0.0.0" Genre="apps.normal" Author="Synchro Labs, Inc." Description="Synchro client application for Windows Phone" Publisher="Synchro Labs, Inc." PublisherID="{5b3b67fa-a864-4b15-af35-470c3d9dc5a1}">
     <IconPath IsRelative="true" IsResource="false">cloud_system_128.png</IconPath>
     <Capabilities>
       <Capability Name="ID_CAP_NETWORKING" />
