@@ -39,6 +39,8 @@ namespace MaaasClientAndroid
             {
                 _deviceClass = MaaasDeviceClass.Phone;
             }
+
+            this.updateScalingFactor();
         }
     }
 }

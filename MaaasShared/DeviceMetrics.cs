@@ -35,6 +35,7 @@ namespace MaaasCore
 
         protected double _widthDeviceUnits = 0;
         protected double _heightDeviceUnits = 0;
+        protected double _deviceScalingFactor = 1;
 
         protected double _scalingFactor = 1;
 
@@ -73,8 +74,17 @@ namespace MaaasCore
         public double WidthDeviceUnits { get { return _widthDeviceUnits; } }
         public double HeightDeviceUnits { get { return _heightDeviceUnits; } }
 
-        // Scaling factor is the ratio of device units to physical pixels.  This can be used to determine an appropriately sized 
+        // Device scaling factor is the ratio of device units to physical pixels.  This can be used to determine an appropriately sized 
         // image resource, for example.
+        //
+        public double DeviceScalingFactor { get { return _deviceScalingFactor; } }
+
+        // Dimensions of device
+        //
+        public double WidthUnits { get { return _widthDeviceUnits / _scalingFactor; } }
+        public double HeightUnits { get { return _heightDeviceUnits / _scalingFactor; } }
+
+        // Scaling factor is the ratio of logic units to device units.
         //
         public double ScalingFactor { get { return _scalingFactor; } }
 
@@ -95,12 +105,14 @@ namespace MaaasCore
         // aspect ratio - meaning that the width in Maaas units will vary from 1024 (iPad/iPad Mini) to 1368 (Surface), with other
         // tablets falling somewhere in this range.  This means we will not need to do any scaling on iOS or Windows, and that the
         // android transforms will be fairly clean.
-        //     
-        public double MaaasUnitsToDeviceUnits(double maaasUnits)
+        //
+        // Note: Every device currently in existence has square pixels, so we don't need to track h/v scale independently.
+        //
+        protected void updateScalingFactor() // Call from derived constructor after device units set
         {
             if (this.DeviceType == MaaasDeviceType.Phone)
             {
-                return _widthDeviceUnits / 480 * maaasUnits;
+                _scalingFactor = _widthDeviceUnits / 480;
             }
             else
             {
@@ -109,13 +121,18 @@ namespace MaaasCore
                 //
                 if (Math.Abs(_heightDeviceUnits - 768) < 5)
                 {
-                    return maaasUnits;
+                    _scalingFactor = 1;
                 }
                 else
                 {
-                    return _heightDeviceUnits / 768 * maaasUnits;
+                    _scalingFactor = _heightDeviceUnits / 768;
                 }
             }
+        }
+
+        public double MaaasUnitsToDeviceUnits(double maaasUnits)
+        {
+            return maaasUnits * _scalingFactor;
         }
 
         // Font scaling - to convert font points (typographic points) to Maaas units, we need to normalize for all "phone" types

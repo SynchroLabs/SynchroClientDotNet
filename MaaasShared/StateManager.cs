@@ -50,11 +50,14 @@ namespace MaaasCore
                 new JProperty("deviceName", this.DeviceMetrics.DeviceName),
                 new JProperty("deviceType", this.DeviceMetrics.DeviceType.ToString()),
                 new JProperty("deviceClass", this.DeviceMetrics.DeviceClass.ToString()),
-                new JProperty("scalingFactor", this.DeviceMetrics.ScalingFactor),
                 new JProperty("widthInches", this.DeviceMetrics.WidthInches),
                 new JProperty("heightInches", this.DeviceMetrics.HeightInches),
-                new JProperty("widthUnits", this.DeviceMetrics.WidthDeviceUnits),
-                new JProperty("heightUnits", this.DeviceMetrics.HeightDeviceUnits)
+                new JProperty("widthDeviceUnits", this.DeviceMetrics.WidthDeviceUnits),
+                new JProperty("heightDeviceUnits", this.DeviceMetrics.HeightDeviceUnits),
+                new JProperty("deviceScalingFactor", this.DeviceMetrics.DeviceScalingFactor),
+                new JProperty("widthUnits", this.DeviceMetrics.WidthUnits),
+                new JProperty("heightUnits", this.DeviceMetrics.HeightUnits),
+                new JProperty("scalingFactor", this.DeviceMetrics.ScalingFactor)
             );
         }
 

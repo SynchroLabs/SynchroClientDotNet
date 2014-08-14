@@ -78,7 +78,7 @@ namespace MaaasClientWinPhone
             _widthDeviceUnits = Application.Current.Host.Content.ActualWidth;
             _heightDeviceUnits = Application.Current.Host.Content.ActualHeight;
 
-            _scalingFactor = Application.Current.Host.Content.ScaleFactor / 100;
+            _deviceScalingFactor = Application.Current.Host.Content.ScaleFactor / 100;
 
             // We check extended screen info, and if present, use that (as it will give us accurate information)
             //
@@ -91,7 +91,7 @@ namespace MaaasClientWinPhone
                 // larger, typically 4.3" to 4.8", so we'll assume 4.5" for those.
                 //
                 double screenDiagonalInches = 4.25f;
-                if (_scalingFactor > 1.0f)
+                if (_deviceScalingFactor > 1.0f)
                 {
                     screenDiagonalInches = 4.5f;
                 }
@@ -101,6 +101,8 @@ namespace MaaasClientWinPhone
                 _widthInches = screenDiagonalInches / screenDiagonalDeviceUnits * _widthDeviceUnits;
                 _heightInches = screenDiagonalInches / screenDiagonalDeviceUnits * _heightDeviceUnits;
             }
+
+            this.updateScalingFactor();
         }
     }
 }

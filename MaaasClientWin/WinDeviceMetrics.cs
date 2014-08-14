@@ -46,39 +46,41 @@ namespace MaaasClientWin
             _widthDeviceUnits = Windows.UI.Xaml.Window.Current.Bounds.Width;
             _heightDeviceUnits = Windows.UI.Xaml.Window.Current.Bounds.Height;
 
-            _scalingFactor = 1.0d;
+            _deviceScalingFactor = 1.0d;
             switch (displayInfo.ResolutionScale)
             {
                 case ResolutionScale.Scale100Percent:
                     break;
 
                 case ResolutionScale.Scale120Percent:
-                    _scalingFactor = 1.2d;
+                    _deviceScalingFactor = 1.2d;
                     break;
 
                 case ResolutionScale.Scale140Percent:
-                    _scalingFactor = 1.4d;
+                    _deviceScalingFactor = 1.4d;
                     break;
 
                 case ResolutionScale.Scale150Percent:
-                    _scalingFactor = 1.5d;
+                    _deviceScalingFactor = 1.5d;
                     break;
 
                 case ResolutionScale.Scale160Percent:
-                    _scalingFactor = 1.6d;
+                    _deviceScalingFactor = 1.6d;
                     break;
 
                 case ResolutionScale.Scale180Percent:
-                    _scalingFactor = 1.8d;
+                    _deviceScalingFactor = 1.8d;
                     break;
 
                 case ResolutionScale.Scale225Percent:
-                    _scalingFactor = 2.25d;
+                    _deviceScalingFactor = 2.25d;
                     break;
             }
 
-            _widthInches = _widthDeviceUnits * _scalingFactor / displayInfo.RawDpiX;
-            _heightInches = _heightDeviceUnits * _scalingFactor / displayInfo.RawDpiY;
+            _widthInches = _widthDeviceUnits * _deviceScalingFactor / displayInfo.RawDpiX;
+            _heightInches = _heightDeviceUnits * _deviceScalingFactor / displayInfo.RawDpiY;
+
+            this.updateScalingFactor();
         }
     }
 }

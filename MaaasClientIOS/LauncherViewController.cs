@@ -73,7 +73,7 @@ namespace MaaasClientIOS
 
             UILabel label = new UILabel(new RectangleF(10, 10, 300, 50));
             label.BackgroundColor = BackgroundColor;
-            label.Text = "Select a Maaas application...";
+            label.Text = "Select a Synchro application...";
             label.Font = UIFont.BoldSystemFontOfSize(16f);
             label.SizeToFit();
             this.Add(label);
@@ -94,7 +94,7 @@ namespace MaaasClientIOS
 
         public LauncherViewController(MaaasAppManager maaasAppManager)
         {
-            this.Title = "MaaaS";
+            this.Title = "Synchro";
             _maaasAppManager = maaasAppManager;
         }
 

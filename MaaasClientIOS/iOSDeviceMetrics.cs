@@ -74,7 +74,9 @@ namespace MaaasClientIOS
             _widthDeviceUnits = UIScreen.MainScreen.Bounds.Width;
             _heightDeviceUnits = UIScreen.MainScreen.Bounds.Height;
 
-            _scalingFactor = UIScreen.MainScreen.Scale;
+            _deviceScalingFactor = UIScreen.MainScreen.Scale;
+
+            this.updateScalingFactor();
         }
     }
 }
