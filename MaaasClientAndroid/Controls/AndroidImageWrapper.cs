@@ -42,8 +42,15 @@ namespace MaaasClientAndroid.Controls
             var ctx = SynchronizationContext.Current;
             processElementProperty((string)controlSpec["resource"], value =>
             {
-                Uri uri = new Uri(ToString(value));
-                ThreadPool.QueueUserWorkItem(o => this.loadImage(ctx, uri));
+                if (value == null)
+                {
+                    image.SetImageDrawable(null);
+                }
+                else
+                {
+                    Uri uri = new Uri(ToString(value));
+                    ThreadPool.QueueUserWorkItem(o => this.loadImage(ctx, uri));
+                }
             });
         }
 

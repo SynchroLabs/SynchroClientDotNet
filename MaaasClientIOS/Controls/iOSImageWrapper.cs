@@ -36,7 +36,17 @@ namespace MaaasClientIOS.Controls
 
             processElementDimensions(controlSpec, 128, 128);
             applyFrameworkElementDefaults(image);
-            processElementProperty((string)controlSpec["resource"], value => image.SetImageUrl(createNSUrl(new Uri(ToString(value)))));
+            processElementProperty((string)controlSpec["resource"], value =>
+            {
+                if (value == null)
+                {
+                    image.Image = null;
+                }
+                else
+                {
+                    image.SetImageUrl(createNSUrl(new Uri(ToString(value))));
+                }
+            });
         }
     }
 }

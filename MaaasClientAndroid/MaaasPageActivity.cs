@@ -15,7 +15,7 @@ using Android.Graphics;
 
 namespace MaaasClientAndroid
 {
-    [Activity(Label = "MaaaS IO", Icon = "@drawable/icon", Theme = "@android:style/Theme.Holo")]
+    [Activity(Label = "Synchro", Icon = "@drawable/icon", Theme = "@android:style/Theme.Holo")]
     public class MaaasPageActivity : Activity
     {
         StateManager _stateManager;
