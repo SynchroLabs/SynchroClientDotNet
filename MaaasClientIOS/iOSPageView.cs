@@ -86,11 +86,15 @@ namespace MaaasClientIOS
 
     public class iOSPageView : PageView
     {
-        iOSControlWrapper _rootControlWrapper;
-        PageContentScrollView _contentScrollView;
         string _pageTitle = "";
 
+        iOSControlWrapper _rootControlWrapper;
+        PageContentScrollView _contentScrollView;
+
+        UINavigationBar _navBar;
         UIBarButtonItem _navBarButton;
+
+        UIToolbar _toolBar;
         List<UIBarButtonItem> _toolBarButtons = new List<UIBarButtonItem>();
 
         public iOSPageView(StateManager stateManager, ViewModel viewModel, UIView panel) :
@@ -177,9 +181,35 @@ namespace MaaasClientIOS
             return iOSControlWrapper.CreateControl(_rootControlWrapper, _viewModel.RootBindingContext, controlSpec);
         }
 
+        public void UpdateLayout()
+        {
+            // Equivalent in concept to LayoutSubviews (but renamed to avoid confusion, since PageView isn't a UIView)
+            //
+            UIView panel = _rootControlWrapper.Control;
+            RectangleF contentRect = new RectangleF(0f, 0f, panel.Frame.Width, panel.Frame.Height);
+
+            if (_navBar != null)
+            {
+                _navBar.SizeToFit();
+                contentRect = new RectangleF(contentRect.Left, contentRect.Top + _navBar.Bounds.Height, contentRect.Width, contentRect.Height - _navBar.Bounds.Height);
+            }
+
+            if (_toolBar != null)
+            {
+                _toolBar.SizeToFit();
+                _toolBar.Frame = new RectangleF(contentRect.Left, contentRect.Top + contentRect.Height - _toolBar.Frame.Height, contentRect.Width, _toolBar.Frame.Height);
+                contentRect = new RectangleF(contentRect.Left, contentRect.Top, contentRect.Width, contentRect.Height - _toolBar.Bounds.Height);
+            }
+
+            _contentScrollView.Frame = contentRect;
+        }
+
         public override void ClearContent()
         {
+            _navBar = null;
             _navBarButton = null;
+
+            _toolBar = null;
             _toolBarButtons.Clear();
 
             UIView panel = _rootControlWrapper.Control;
@@ -209,16 +239,16 @@ namespace MaaasClientIOS
 
             // Create the nav bar, add a back control as appropriate...
             //
-            UINavigationBar navBar = new UINavigationBar();
-            navBar.SizeToFit();
+            _navBar = new UINavigationBar();
+            _navBar.SizeToFit();
 
             if (this.onBackCommand != null)
             {
                 // Add a "Back" context and a delegate to handle the back command...
                 //
                 UINavigationItem navItemBack = new UINavigationItem("Back");
-                navBar.PushNavigationItem(navItemBack, false);
-                navBar.Delegate = new MaaasNavigationBarDelegate(this);
+                _navBar.PushNavigationItem(navItemBack, false);
+                _navBar.Delegate = new MaaasNavigationBarDelegate(this);
             }
 
             UINavigationItem navItem = new UINavigationItem(_pageTitle);
@@ -228,22 +258,22 @@ namespace MaaasClientIOS
                 navItem.SetRightBarButtonItem(_navBarButton, false);
             }
 
-            navBar.PushNavigationItem(navItem, false);
-            panel.AddSubview(navBar);
+            _navBar.PushNavigationItem(navItem, false);
+            panel.AddSubview(_navBar);
 
             // Adjust content rect based on navbar.
             //
-            contentRect = new RectangleF(contentRect.Left, contentRect.Top + navBar.Bounds.Height, contentRect.Width, contentRect.Height - navBar.Bounds.Height);
+            contentRect = new RectangleF(contentRect.Left, contentRect.Top + _navBar.Bounds.Height, contentRect.Width, contentRect.Height - _navBar.Bounds.Height);
 
-            UIToolbar toolBar = null;
+            _toolBar = null;
             if (_toolBarButtons.Count > 0)
             {
                 // Create toolbar, position it at the bottom of the screen, adjust content rect to represent remaining space
                 //
-                toolBar = new UIToolbar() { BarStyle = UIBarStyle.Default };
-                toolBar.SizeToFit();
-                toolBar.Frame = new RectangleF(contentRect.Left, contentRect.Top + contentRect.Height - toolBar.Frame.Height, contentRect.Width, toolBar.Frame.Height);
-                contentRect = new RectangleF(contentRect.Left, contentRect.Top, contentRect.Width, contentRect.Height - toolBar.Bounds.Height);
+                _toolBar = new UIToolbar() { BarStyle = UIBarStyle.Default };
+                _toolBar.SizeToFit();
+                _toolBar.Frame = new RectangleF(contentRect.Left, contentRect.Top + contentRect.Height - _toolBar.Frame.Height, contentRect.Width, _toolBar.Frame.Height);
+                contentRect = new RectangleF(contentRect.Left, contentRect.Top, contentRect.Width, contentRect.Height - _toolBar.Bounds.Height);
 
                 // Create a new colection of toolbar buttons with flexible space surrounding and between them, then add to toolbar
                 //
@@ -255,9 +285,9 @@ namespace MaaasClientIOS
                     formattedItems.Add(buttonItem);
                     formattedItems.Add(flexibleSpace);
                 }
-                toolBar.Items = formattedItems.ToArray();
+                _toolBar.Items = formattedItems.ToArray();
 
-                panel.AddSubview(toolBar);
+                panel.AddSubview(_toolBar);
             }
 
             // Create the main content area (scroll view) and add the page content to it...

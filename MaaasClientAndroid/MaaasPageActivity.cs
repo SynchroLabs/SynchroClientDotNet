@@ -12,10 +12,11 @@ using System.Net.Http;
 using ModernHttpClient;
 using Android.Util;
 using Android.Graphics;
+using Android.Content.PM;
 
 namespace MaaasClientAndroid
 {
-    [Activity(Label = "Synchro", Icon = "@drawable/icon", Theme = "@android:style/Theme.Holo")]
+    [Activity(Label = "Synchro", Icon = "@drawable/icon", Theme = "@android:style/Theme.Holo", ConfigurationChanges=Android.Content.PM.ConfigChanges.Orientation | Android.Content.PM.ConfigChanges.ScreenSize)]
     public class MaaasPageActivity : Activity
     {
         StateManager _stateManager;
@@ -53,10 +54,72 @@ namespace MaaasClientAndroid
                 return base.OnOptionsItemSelected(item);
             }
         }
-        
+
+        // http://stackoverflow.com/questions/21731977/get-the-current-screen-orientation-in-monodroid
+        //
+        private ScreenOrientation GetScreenOrientation()
+        {
+            ScreenOrientation orientation;
+            SurfaceOrientation rotation = WindowManager.DefaultDisplay.Rotation;
+
+            DisplayMetrics dm = new DisplayMetrics();
+            WindowManager.DefaultDisplay.GetMetrics(dm);
+
+            if ((rotation == SurfaceOrientation.Rotation0 || rotation == SurfaceOrientation.Rotation180) && dm.HeightPixels > dm.WidthPixels
+                || (rotation == SurfaceOrientation.Rotation90 || rotation == SurfaceOrientation.Rotation270) && dm.WidthPixels > dm.HeightPixels)
+            {
+                // The device's natural orientation is portrait
+                switch (rotation)
+                {
+                    case SurfaceOrientation.Rotation0:
+                        orientation = ScreenOrientation.Portrait;
+                        break;
+                    case SurfaceOrientation.Rotation90:
+                        orientation = ScreenOrientation.Landscape;
+                        break;
+                    case SurfaceOrientation.Rotation180:
+                        orientation = ScreenOrientation.ReversePortrait;
+                        break;
+                    case SurfaceOrientation.Rotation270:
+                        orientation = ScreenOrientation.ReverseLandscape;
+                        break;
+                    default:
+                        orientation = ScreenOrientation.Portrait;
+                        break;
+                }
+            }
+            else
+            {
+                // The device's natural orientation is landscape or if the device is square
+                switch (rotation)
+                {
+                    case SurfaceOrientation.Rotation0:
+                        orientation = ScreenOrientation.Landscape;
+                        break;
+                    case SurfaceOrientation.Rotation90:
+                        orientation = ScreenOrientation.Portrait;
+                        break;
+                    case SurfaceOrientation.Rotation180:
+                        orientation = ScreenOrientation.ReverseLandscape;
+                        break;
+                    case SurfaceOrientation.Rotation270:
+                        orientation = ScreenOrientation.ReversePortrait;
+                        break;
+                    default:
+                        orientation = ScreenOrientation.Landscape;
+                        break;
+                }
+            }
+
+            return orientation;
+        }
+
         async protected override void OnCreate(Bundle bundle)
         {
             base.OnCreate(bundle);
+
+            // !!!
+            ScreenOrientation orientation = GetScreenOrientation();
 
             string endpoint = this.Intent.Extras.GetString("endpoint");
 
@@ -90,6 +153,22 @@ namespace MaaasClientAndroid
 
             _stateManager.SetProcessingHandlers(json => _pageView.ProcessPageView(json), json => _pageView.ProcessMessageBox(json));
             await _stateManager.startApplication();
+        }
+
+        public override void OnConfigurationChanged(Android.Content.Res.Configuration newConfig)
+        {
+            base.OnConfigurationChanged(newConfig);
+
+            if (newConfig.Orientation == Android.Content.Res.Orientation.Portrait)
+            {
+                // Changed to portrait
+                Util.debug("Screen oriented to Portrait");
+            }
+            else if (newConfig.Orientation == Android.Content.Res.Orientation.Landscape)
+            {
+                // Changed to landscape
+                Util.debug("Screen oriented to Landscape");
+            }
         }
 
         public override void OnBackPressed()

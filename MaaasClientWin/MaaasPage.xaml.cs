@@ -34,6 +34,37 @@ namespace MaaasClientWin
         {
             this.InitializeComponent();
             this.backButton.Click += backButton_Click;
+            DisplayProperties.OrientationChanged += DisplayProperties_OrientationChanged;
+        }
+
+        private DisplayOrientations normalizeOrientation(DisplayOrientations orientation)
+        {
+            if (orientation == DisplayOrientations.LandscapeFlipped)
+            {
+                return DisplayOrientations.Landscape;
+            }
+            else if (orientation == DisplayOrientations.PortraitFlipped)
+            {
+                return DisplayOrientations.Portrait;
+            }
+
+            return orientation;
+        }
+
+        void DisplayProperties_OrientationChanged(object sender)
+        {
+           //The orientation of the device is now...
+            var orientation = normalizeOrientation(DisplayProperties.CurrentOrientation);
+            if (orientation == DisplayOrientations.Landscape)
+            {
+                // Landscape
+                Util.debug("Screen oriented to Landscape");
+            }
+            else
+            {
+                // Portait
+                Util.debug("Screen oriented to Portrait");
+            }
         }
 
         void backButton_Click(object sender, RoutedEventArgs e)

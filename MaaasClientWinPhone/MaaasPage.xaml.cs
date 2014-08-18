@@ -32,6 +32,20 @@ namespace MaaasClientWinPhone
 
             // Sample code to localize the ApplicationBar
             //BuildLocalizedApplicationBar();
+
+            OrientationChanged += MaaasPage_OrientationChanged;
+        }
+
+        void MaaasPage_OrientationChanged(object sender, OrientationChangedEventArgs e)
+        {
+            if ((e.Orientation & PageOrientation.Portrait) == (PageOrientation.Portrait))
+            {
+                Util.debug("Screen oriented to Portrait");
+            }
+            else
+            {
+                Util.debug("Screen oriented to Landscape");
+            }
         }
 
         // Static helper to allow callers to navigate "here" with appropriate parameters...

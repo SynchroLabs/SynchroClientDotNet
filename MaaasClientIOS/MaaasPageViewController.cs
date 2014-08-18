@@ -26,6 +26,8 @@ namespace MaaasClientIOS
         {
             base.ViewDidLoad();
 
+            // Current orientation: this.InterfaceOrientation
+
             View.Frame = UIScreen.MainScreen.Bounds;
             View.BackgroundColor = UIColor.White;
             View.AutoresizingMask = UIViewAutoresizing.FlexibleWidth | UIViewAutoresizing.FlexibleHeight;
@@ -43,5 +45,62 @@ namespace MaaasClientIOS
             _stateManager.SetProcessingHandlers(json => _pageView.ProcessPageView(json), json => _pageView.ProcessMessageBox(json));
             await _stateManager.startApplication();
         }
+
+        private UIInterfaceOrientation normalizeOrientation(UIInterfaceOrientation orientation)
+        {
+            if (orientation == UIInterfaceOrientation.LandscapeRight)
+            {
+                return UIInterfaceOrientation.LandscapeLeft;
+            }
+            else if (orientation == UIInterfaceOrientation.PortraitUpsideDown)
+            {
+                return UIInterfaceOrientation.Portrait;
+            }
+
+            return orientation;
+        }
+
+        // When the device rotates, the OS calls this method to determine if it should try and rotate the
+        // application and then call WillAnimateRotation
+        //
+        public override bool ShouldAutorotateToInterfaceOrientation(UIInterfaceOrientation toInterfaceOrientation)
+        {
+            // We're passed to orientation that it will rotate to. We could just return true, but this
+            // switch illustrates how you can test for the different cases.
+            //
+            switch (toInterfaceOrientation)
+            {
+                case UIInterfaceOrientation.LandscapeLeft:
+                case UIInterfaceOrientation.LandscapeRight:
+                case UIInterfaceOrientation.Portrait:
+                case UIInterfaceOrientation.PortraitUpsideDown:
+                default:
+                    return true;
+            }
+        }
+
+        // Is called when the OS is going to rotate the application. It handles rotating the status bar
+        // if it's present, as well as it's controls like the navigation controller and tab bar, but you 
+        // must handle the rotation of your view and associated subviews. This call is wrapped in an 
+        // animation block in the underlying implementation, so it will automatically animate your control
+        // repositioning.
+        //
+        public override void WillAnimateRotation(UIInterfaceOrientation toInterfaceOrientation, double duration)
+        {
+            base.WillAnimateRotation(toInterfaceOrientation, duration);
+
+            // !!! Do our own rotation handling here
+            if (normalizeOrientation(toInterfaceOrientation) == UIInterfaceOrientation.Portrait)
+            {
+                Util.debug("Screen oriented to Portrait");
+            }
+            else 
+            {
+                Util.debug("Screen oriented to Landscape");
+            }
+
+            ((iOSPageView)_pageView).UpdateLayout();
+        }
+
     }
 }

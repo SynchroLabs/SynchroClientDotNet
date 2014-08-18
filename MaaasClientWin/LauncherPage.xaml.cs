@@ -28,7 +28,7 @@ namespace MaaasClientWin
 
         public MaaasAppGroup()
         {
-            this.Title = "Maaas.io Launcher";
+            this.Title = "Synchro Launcher";
         }
     }
 
