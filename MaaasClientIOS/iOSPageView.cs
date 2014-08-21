@@ -21,10 +21,22 @@ namespace MaaasClientIOS
             _pageView = pageView;
         }
 
+        // Per several recommendations, especially this one: http://blog.falafel.com/ios-7-bars-with-xamarinios/
+        //
+        // !!! This is supposed to fix the Navbar positioning on iOS7, but doesn't do anything for us...
+        //
+        public override UIBarPosition GetPositionForBar(IUIBarPositioning barPositioning)
+        {
+            return UIBarPosition.TopAttached;
+        }
+
         public override bool ShouldPopItem(UINavigationBar navigationBar, UINavigationItem item)
         {
             Util.debug("Should pop item got called!");
-            _pageView.OnBackCommand();
+            if (_pageView != null)
+            {
+                _pageView.OnBackCommand();
+            }
             return false;
         }
     }
@@ -181,17 +193,47 @@ namespace MaaasClientIOS
             return iOSControlWrapper.CreateControl(_rootControlWrapper, _viewModel.RootBindingContext, controlSpec);
         }
 
+        // !!! The ContentTop and SizeNavBar methods below are a pretty ugly hack to address the issues with
+        //     navigation bar sizing/positioning in iOS7.  iOS7 is supposed to magically handle all of this, and if
+        //     not, then NavigationBarDelegate.GetPositionForBar() fix is supposed to do the job, but it does not
+        //     in our case.  I assume this is because we create our navbar on the fly, after the ViewController is
+        //     created.  I tried a number of ways to get this to work across iOS 6 and 7 without checking the version
+        //     number and using a hardcoded status bar height, but was not able to make it work.
+        //
+        public static float ContentTop
+        {
+            get 
+            {
+                if (iOSUtil.IsiOS7)
+                {
+                    return 20f; // Height of status bar in iOS7
+                }
+
+                return 0f;
+            }
+        }
+
+        public static void SizeNavBar(UINavigationBar navBar)
+        {
+            navBar.SizeToFit();
+            if (iOSUtil.IsiOS7)
+            {
+                navBar.Frame = new RectangleF(navBar.Frame.X, ContentTop, navBar.Frame.Width, navBar.Frame.Height);
+            }
+        }
+
         public void UpdateLayout()
         {
             // Equivalent in concept to LayoutSubviews (but renamed to avoid confusion, since PageView isn't a UIView)
             //
             UIView panel = _rootControlWrapper.Control;
-            RectangleF contentRect = new RectangleF(0f, 0f, panel.Frame.Width, panel.Frame.Height);
+
+            RectangleF contentRect = new RectangleF(0f, ContentTop, panel.Frame.Width, panel.Frame.Height - ContentTop);
 
             if (_navBar != null)
             {
-                _navBar.SizeToFit();
-                contentRect = new RectangleF(contentRect.Left, contentRect.Top + _navBar.Bounds.Height, contentRect.Width, contentRect.Height - _navBar.Bounds.Height);
+                SizeNavBar(_navBar);
+                contentRect = new RectangleF(contentRect.X, contentRect.Y + _navBar.Frame.Height, contentRect.Width, contentRect.Height - _navBar.Frame.Height);
             }
 
             if (_toolBar != null)
@@ -235,12 +277,13 @@ namespace MaaasClientIOS
         {
             UIView panel = _rootControlWrapper.Control;
 
-            RectangleF contentRect = new RectangleF(0f, 0f, panel.Frame.Width, panel.Frame.Height);
+            RectangleF contentRect = new RectangleF(0f, ContentTop, panel.Frame.Width, panel.Frame.Height - ContentTop);
 
             // Create the nav bar, add a back control as appropriate...
             //
             _navBar = new UINavigationBar();
-            _navBar.SizeToFit();
+            _navBar.Delegate = new MaaasNavigationBarDelegate(this);
+            SizeNavBar(_navBar);
 
             if (this.onBackCommand != null)
             {
@@ -248,7 +291,6 @@ namespace MaaasClientIOS
                 //
                 UINavigationItem navItemBack = new UINavigationItem("Back");
                 _navBar.PushNavigationItem(navItemBack, false);
-                _navBar.Delegate = new MaaasNavigationBarDelegate(this);
             }
 
             UINavigationItem navItem = new UINavigationItem(_pageTitle);

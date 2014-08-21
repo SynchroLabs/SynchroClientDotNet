@@ -265,6 +265,11 @@ namespace MaaasClientIOS
 
         public override void ViewDidLoad()
         {
+            if (iOSUtil.IsiOS7)
+            {
+                this.EdgesForExtendedLayout = UIRectEdge.None;
+            }
+
             _view = new AppDetailView(_app);
             View = _view;
 

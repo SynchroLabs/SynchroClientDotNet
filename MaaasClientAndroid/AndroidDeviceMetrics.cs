@@ -34,10 +34,12 @@ namespace MaaasClientAndroid
             if (screenDiagonalInches > 6.5f)
             {
                 _deviceClass = MaaasDeviceClass.Tablet;
+                _naturalOrientation = MaaasOrientation.Landscape;
             }
             else
             {
                 _deviceClass = MaaasDeviceClass.Phone;
+                _naturalOrientation = MaaasOrientation.Portrait;
             }
 
             this.updateScalingFactor();

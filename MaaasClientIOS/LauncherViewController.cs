@@ -102,6 +102,11 @@ namespace MaaasClientIOS
         {
             base.ViewDidLoad();
 
+            if (iOSUtil.IsiOS7)
+            {
+                this.EdgesForExtendedLayout = UIRectEdge.None;
+            }
+
             _view = new LauncherView();
             View = _view;
 

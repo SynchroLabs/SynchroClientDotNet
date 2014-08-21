@@ -19,6 +19,7 @@ namespace MaaasClientWin
             _deviceName = "Windows Device";
 
             _deviceClass = MaaasDeviceClass.Tablet;
+            _naturalOrientation = MaaasOrientation.Landscape;
 
             var displayInfo = Windows.Graphics.Display.DisplayInformation.GetForCurrentView();
 

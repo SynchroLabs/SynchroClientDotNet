@@ -55,6 +55,7 @@ namespace MaaasClientIOS
                     _heightInches = 2.944f;
                 }
                 _deviceName = "iPhone/iPod";
+                _naturalOrientation = MaaasOrientation.Portrait;
             }
             else if (iPadMini())
             {
@@ -62,6 +63,7 @@ namespace MaaasClientIOS
                 _widthInches = 4.712f;
                 _heightInches = 6.282f;
                 _deviceName = "iPad Mini";
+                _naturalOrientation = MaaasOrientation.Landscape;
             }
             else
             {
@@ -69,10 +71,20 @@ namespace MaaasClientIOS
                 _widthInches = 5.818f;
                 _heightInches = 7.758f;
                 _deviceName = "iPad";
+                _naturalOrientation = MaaasOrientation.Landscape;
             }
 
-            _widthDeviceUnits = UIScreen.MainScreen.Bounds.Width;
-            _heightDeviceUnits = UIScreen.MainScreen.Bounds.Height;
+            if (_naturalOrientation == MaaasOrientation.Portrait)
+            {
+                // MainScreen.Bounds assumes portrait layout
+                _widthDeviceUnits = UIScreen.MainScreen.Bounds.Width;
+                _heightDeviceUnits = UIScreen.MainScreen.Bounds.Height;
+            }
+            else
+            {
+                _heightDeviceUnits = UIScreen.MainScreen.Bounds.Width;
+                _widthDeviceUnits = UIScreen.MainScreen.Bounds.Height;
+            }
 
             _deviceScalingFactor = UIScreen.MainScreen.Scale;
 

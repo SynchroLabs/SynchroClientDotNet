@@ -155,6 +155,7 @@
     <Compile Include="iOSDeviceMetrics.cs" />
     <Compile Include="iOSPageView.cs" />
     <Compile Include="iOSTransportWs.cs" />
+    <Compile Include="iOSUtil.cs" />
     <Compile Include="LauncherViewController.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="AppDelegate.cs" />

@@ -74,6 +74,7 @@ namespace MaaasClientWinPhone
             _deviceName = "Windows Phone Device"; // !!! Actual device manufaturer/model would be nice
 
             _deviceClass = MaaasDeviceClass.Phone;
+            _naturalOrientation = MaaasOrientation.Portrait;
 
             _widthDeviceUnits = Application.Current.Host.Content.ActualWidth;
             _heightDeviceUnits = Application.Current.Host.Content.ActualHeight;

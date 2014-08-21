@@ -20,9 +20,17 @@ namespace MaaasCore
         Tablet = MaaasDeviceClass.Tablet
     }
 
+    public enum MaaasOrientation
+    {
+        Portrait = 0,
+        Landscape = 1
+    }
+
     public class MaaasDeviceMetrics
     {
         protected MaaasDeviceClass _deviceClass = MaaasDeviceClass.Phone;
+
+        protected MaaasOrientation _naturalOrientation = MaaasOrientation.Portrait;
 
         protected string _os = "Unknown"; // Short name for filtering, ie: Windows, WinPhone, iOS, Android
         protected string _osName = "Unknown";
@@ -59,6 +67,8 @@ namespace MaaasCore
                 return ((_deviceClass == MaaasDeviceClass.Phone) || (_deviceClass == MaaasDeviceClass.Phablet)) ? MaaasDeviceType.Phone : MaaasDeviceType.Tablet;
             }
         }
+
+        public MaaasOrientation NaturalOrientation { get { return _naturalOrientation; } }
 
         // Physical dimensions of device
         //
