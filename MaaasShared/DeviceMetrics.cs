@@ -26,7 +26,7 @@ namespace MaaasCore
         Landscape = 1
     }
 
-    public class MaaasDeviceMetrics
+    public abstract class MaaasDeviceMetrics
     {
         protected MaaasDeviceClass _deviceClass = MaaasDeviceClass.Phone;
 
@@ -69,6 +69,8 @@ namespace MaaasCore
         }
 
         public MaaasOrientation NaturalOrientation { get { return _naturalOrientation; } }
+
+        public abstract MaaasOrientation CurrentOrientation { get; }
 
         // Physical dimensions of device
         //

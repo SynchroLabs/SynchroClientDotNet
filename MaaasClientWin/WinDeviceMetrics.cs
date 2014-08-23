@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.Graphics.Display;
+using Windows.UI.ViewManagement;
 
 namespace MaaasClientWin
 {
@@ -41,12 +42,6 @@ namespace MaaasClientWin
             //       1080 / 207 = 5.217"
             //
 
-            // !!! Note that this is the "current" window size, and not necessarily the screen size (in non-full screen
-            //     views), and that these values can change as the view/mode changes...
-            //
-            _widthDeviceUnits = Windows.UI.Xaml.Window.Current.Bounds.Width;
-            _heightDeviceUnits = Windows.UI.Xaml.Window.Current.Bounds.Height;
-
             _deviceScalingFactor = 1.0d;
             switch (displayInfo.ResolutionScale)
             {
@@ -78,10 +73,38 @@ namespace MaaasClientWin
                     break;
             }
 
-            _widthInches = _widthDeviceUnits * _deviceScalingFactor / displayInfo.RawDpiX;
-            _heightInches = _heightDeviceUnits * _deviceScalingFactor / displayInfo.RawDpiY;
+            // !!! Note that this is the "current" window size, and not necessarily the screen size (in non-full screen
+            //     views), and that these values can change as the view/mode changes...
+            //
+            if (CurrentOrientation == NaturalOrientation)
+            {
+                _widthDeviceUnits = Windows.UI.Xaml.Window.Current.Bounds.Width;
+                _heightDeviceUnits = Windows.UI.Xaml.Window.Current.Bounds.Height;
+                _widthInches = _widthDeviceUnits * _deviceScalingFactor / displayInfo.RawDpiX;
+                _heightInches = _heightDeviceUnits * _deviceScalingFactor / displayInfo.RawDpiY;
+            }
+            else
+            {
+                _widthDeviceUnits = Windows.UI.Xaml.Window.Current.Bounds.Height;
+                _heightDeviceUnits = Windows.UI.Xaml.Window.Current.Bounds.Width;
+                _widthInches = _widthDeviceUnits * _deviceScalingFactor / displayInfo.RawDpiY;
+                _heightInches = _heightDeviceUnits * _deviceScalingFactor / displayInfo.RawDpiX;
+            }
 
             this.updateScalingFactor();
+        }
+
+        public override MaaasOrientation CurrentOrientation
+        {
+            get
+            {
+                ApplicationViewOrientation winOrientation = ApplicationView.GetForCurrentView().Orientation;
+                if (winOrientation == ApplicationViewOrientation.Portrait)
+                {
+                    return MaaasOrientation.Portrait;
+                }
+                return MaaasOrientation.Landscape;
+            }
         }
     }
 }

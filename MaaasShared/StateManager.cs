@@ -50,6 +50,7 @@ namespace MaaasCore
                 new JProperty("deviceName", this.DeviceMetrics.DeviceName),
                 new JProperty("deviceType", this.DeviceMetrics.DeviceType.ToString()),
                 new JProperty("deviceClass", this.DeviceMetrics.DeviceClass.ToString()),
+                new JProperty("naturalOrientation", this.DeviceMetrics.NaturalOrientation.ToString()),
                 new JProperty("widthInches", this.DeviceMetrics.WidthInches),
                 new JProperty("heightInches", this.DeviceMetrics.HeightInches),
                 new JProperty("widthDeviceUnits", this.DeviceMetrics.WidthDeviceUnits),
@@ -59,6 +60,30 @@ namespace MaaasCore
                 new JProperty("heightUnits", this.DeviceMetrics.HeightUnits),
                 new JProperty("scalingFactor", this.DeviceMetrics.ScalingFactor)
             );
+        }
+
+        JObject PackageViewMetrics(MaaasOrientation orientation)
+        {
+            if (orientation == this.DeviceMetrics.NaturalOrientation)
+            {
+                return new JObject(
+                    new JProperty("orientation", orientation.ToString()),
+                    new JProperty("widthInches", this.DeviceMetrics.WidthInches),
+                    new JProperty("heightInches", this.DeviceMetrics.HeightInches),
+                    new JProperty("widthDeviceUnits", this.DeviceMetrics.WidthDeviceUnits),
+                    new JProperty("heightDeviceUnits", this.DeviceMetrics.HeightDeviceUnits)
+                );
+            }
+            else
+            {
+                return new JObject(
+                    new JProperty("orientation", orientation.ToString()),
+                    new JProperty("widthInches", this.DeviceMetrics.HeightInches),
+                    new JProperty("heightInches", this.DeviceMetrics.WidthInches),
+                    new JProperty("widthDeviceUnits", this.DeviceMetrics.HeightDeviceUnits),
+                    new JProperty("heightDeviceUnits", this.DeviceMetrics.WidthDeviceUnits)
+                );
+            }
         }
 
         async void ProcessJsonResponse(JObject responseAsJSON)
@@ -115,7 +140,7 @@ namespace MaaasCore
 
         public async Task startApplication()
         {
-            // Note the we already have an app definition in the MaaasApp that was passed in.  This method will get the 
+            // Note that we already have an app definition in the MaaasApp that was passed in.  This method will get the 
             // current app definition from the server, which may have changed.
             //
             // !!! Do we want to update our stored app defintion (in MaaasApp, via the AppManager)?  Maybe only if changed?
@@ -132,7 +157,8 @@ namespace MaaasCore
             JObject requestObject = new JObject(
                 new JProperty("Mode", "Page"),
                 new JProperty("Path", this._path),
-                new JProperty("DeviceMetrics", this.PackageDeviceMetrics()) // Send over device metrics
+                new JProperty("DeviceMetrics", this.PackageDeviceMetrics()), // Send over device metrics (these won't ever change, per session)
+                new JProperty("ViewMetrics", this.PackageViewMetrics(_deviceMetrics.CurrentOrientation)) // Send over view metrics
             );
 
             Util.debug("Requesting main page with session ID: " + _app.SessionId);
@@ -145,7 +171,7 @@ namespace MaaasCore
             Util.debug("Process command: " + command + " for path: " + this._path);
 
             JObject requestObject = new JObject(
-                new JProperty("Mode", "Page"),
+                new JProperty("Mode", "Command"),
                 new JProperty("Path", this._path),
                 new JProperty("Command", command)
             );
@@ -170,6 +196,18 @@ namespace MaaasCore
                     )
                 );
             }
+
+            await _transport.sendMessage(_app.SessionId, requestObject, this.ProcessJsonResponse);
+        }
+
+        public async void processViewUpdate(MaaasOrientation orientation)
+        {
+            // Send the updated view metrics 
+            JObject requestObject = new JObject(
+                new JProperty("Mode", "ViewUpdate"),
+                new JProperty("Path", this._path),
+                new JProperty("ViewMetrics", this.PackageViewMetrics(orientation))
+            );
 
             await _transport.sendMessage(_app.SessionId, requestObject, this.ProcessJsonResponse);
         }

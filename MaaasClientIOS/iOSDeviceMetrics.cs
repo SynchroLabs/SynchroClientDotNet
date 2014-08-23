@@ -11,6 +11,8 @@ namespace MaaasClientIOS
 {
     public class iOSDeviceMetrics : MaaasDeviceMetrics
     {
+        private UIViewController _controller;
+
         static bool iPadMini()
         {
             // http://theiphonewiki.com/wiki/Models
@@ -27,8 +29,9 @@ namespace MaaasClientIOS
             return iPadMiniNames.Contains(System.Environment.MachineName);
         }
 
-        public iOSDeviceMetrics() : base()
+        public iOSDeviceMetrics(UIViewController controller) : base()
         {
+            _controller = controller;
             _os = "iOS";
             _osName = "iOS";
 
@@ -44,7 +47,10 @@ namespace MaaasClientIOS
 
             if (UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Phone)
             {
+                _deviceName = "iPhone/iPod";
                 _deviceClass = MaaasDeviceClass.Phone;
+                _naturalOrientation = MaaasOrientation.Portrait;
+
                 _widthInches = 1.963f;
                 if (UIScreen.MainScreen.Bounds.Height == 568)
                 {
@@ -54,24 +60,24 @@ namespace MaaasClientIOS
                 {
                     _heightInches = 2.944f;
                 }
-                _deviceName = "iPhone/iPod";
-                _naturalOrientation = MaaasOrientation.Portrait;
             }
             else if (iPadMini())
             {
-                _deviceClass = MaaasDeviceClass.MiniTablet;
-                _widthInches = 4.712f;
-                _heightInches = 6.282f;
                 _deviceName = "iPad Mini";
+                _deviceClass = MaaasDeviceClass.MiniTablet;
                 _naturalOrientation = MaaasOrientation.Landscape;
+
+                _widthInches = 6.282f;
+                _heightInches = 4.712f;
             }
             else
             {
-                _deviceClass = MaaasDeviceClass.Tablet;
-                _widthInches = 5.818f;
-                _heightInches = 7.758f;
                 _deviceName = "iPad";
+                _deviceClass = MaaasDeviceClass.Tablet;
                 _naturalOrientation = MaaasOrientation.Landscape;
+
+                _widthInches = 7.758f;
+                _heightInches = 5.818f;
             }
 
             if (_naturalOrientation == MaaasOrientation.Portrait)
@@ -89,6 +95,22 @@ namespace MaaasClientIOS
             _deviceScalingFactor = UIScreen.MainScreen.Scale;
 
             this.updateScalingFactor();
+        }
+
+        public override MaaasOrientation CurrentOrientation
+        {
+            get
+            {
+                if ((_controller.InterfaceOrientation == UIInterfaceOrientation.LandscapeLeft) ||
+                    (_controller.InterfaceOrientation == UIInterfaceOrientation.LandscapeRight))
+                {
+                    return MaaasOrientation.Landscape;
+                }
+                else
+                {
+                    return MaaasOrientation.Portrait;
+                }
+            }
         }
     }
 }

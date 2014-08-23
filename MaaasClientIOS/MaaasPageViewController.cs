@@ -32,7 +32,7 @@ namespace MaaasClientIOS
             View.BackgroundColor = UIColor.White;
             View.AutoresizingMask = UIViewAutoresizing.FlexibleWidth | UIViewAutoresizing.FlexibleHeight;
 
-            MaaasDeviceMetrics deviceMetrics = new iOSDeviceMetrics();
+            MaaasDeviceMetrics deviceMetrics = new iOSDeviceMetrics(this);
 
             // Using AFNetworkHandler via ModernHttpClient component
             HttpClient httpClient = new HttpClient(new AFNetworkHandler());
@@ -87,16 +87,19 @@ namespace MaaasClientIOS
         //
         public override void WillAnimateRotation(UIInterfaceOrientation toInterfaceOrientation, double duration)
         {
+            // this.InterfaceOrientation == UIInterfaceOrientation.
             base.WillAnimateRotation(toInterfaceOrientation, duration);
 
             // !!! Do our own rotation handling here
             if (normalizeOrientation(toInterfaceOrientation) == UIInterfaceOrientation.Portrait)
             {
                 Util.debug("Screen oriented to Portrait");
+                _stateManager.processViewUpdate(MaaasOrientation.Portrait);
             }
             else 
             {
                 Util.debug("Screen oriented to Landscape");
+                _stateManager.processViewUpdate(MaaasOrientation.Landscape);
             }
 
             ((iOSPageView)_pageView).UpdateLayout();

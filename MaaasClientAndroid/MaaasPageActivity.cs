@@ -57,7 +57,7 @@ namespace MaaasClientAndroid
 
         // http://stackoverflow.com/questions/21731977/get-the-current-screen-orientation-in-monodroid
         //
-        private ScreenOrientation GetScreenOrientation()
+        public ScreenOrientation GetScreenOrientation()
         {
             ScreenOrientation orientation;
             SurfaceOrientation rotation = WindowManager.DefaultDisplay.Rotation;
@@ -118,12 +118,9 @@ namespace MaaasClientAndroid
         {
             base.OnCreate(bundle);
 
-            // !!!
-            ScreenOrientation orientation = GetScreenOrientation();
-
             string endpoint = this.Intent.Extras.GetString("endpoint");
 
-            AndroidDeviceMetrics deviceMetrics = new AndroidDeviceMetrics(this.WindowManager.DefaultDisplay);
+            AndroidDeviceMetrics deviceMetrics = new AndroidDeviceMetrics(this);
 
             // This ScrollView will consume all available screen space by default, which is what we want...
             //
@@ -163,11 +160,13 @@ namespace MaaasClientAndroid
             {
                 // Changed to portrait
                 Util.debug("Screen oriented to Portrait");
+                _stateManager.processViewUpdate(MaaasOrientation.Portrait);
             }
             else if (newConfig.Orientation == Android.Content.Res.Orientation.Landscape)
             {
                 // Changed to landscape
                 Util.debug("Screen oriented to Landscape");
+                _stateManager.processViewUpdate(MaaasOrientation.Landscape);
             }
         }
 

@@ -34,7 +34,8 @@ namespace MaaasClientWin
         {
             this.InitializeComponent();
             this.backButton.Click += backButton_Click;
-            DisplayProperties.OrientationChanged += DisplayProperties_OrientationChanged;
+            DisplayInformation.GetForCurrentView().OrientationChanged += MaaasPage_OrientationChanged;
+            // DisplayProperties.OrientationChanged += DisplayProperties_OrientationChanged;
         }
 
         private DisplayOrientations normalizeOrientation(DisplayOrientations orientation)
@@ -51,21 +52,44 @@ namespace MaaasClientWin
             return orientation;
         }
 
-        void DisplayProperties_OrientationChanged(object sender)
+        void MaaasPage_OrientationChanged(DisplayInformation sender, object args)
         {
-           //The orientation of the device is now...
-            var orientation = normalizeOrientation(DisplayProperties.CurrentOrientation);
+            //The orientation of the device is now...
+            var orientation = normalizeOrientation(DisplayInformation.GetForCurrentView().CurrentOrientation);
+            orientation = normalizeOrientation(sender.CurrentOrientation);
             if (orientation == DisplayOrientations.Landscape)
             {
                 // Landscape
                 Util.debug("Screen oriented to Landscape");
+                _stateManager.processViewUpdate(MaaasOrientation.Landscape);
             }
             else
             {
                 // Portait
                 Util.debug("Screen oriented to Portrait");
+                _stateManager.processViewUpdate(MaaasOrientation.Portrait);
             }
         }
+
+        /*
+        void DisplayProperties_OrientationChanged(object sender)
+        {
+            //The orientation of the device is now...
+            var orientation = DisplayInformation.GetForCurrentView().CurrentOrientation;
+            if (orientation == DisplayOrientations.Landscape)
+            {
+                // Landscape
+                Util.debug("Screen oriented to Landscape");
+                _stateManager.processViewUpdate(MaaasOrientation.Landscape);
+            }
+            else
+            {
+                // Portait
+                Util.debug("Screen oriented to Portrait");
+                _stateManager.processViewUpdate(MaaasOrientation.Portrait);
+            }
+        }
+         */
 
         void backButton_Click(object sender, RoutedEventArgs e)
         {

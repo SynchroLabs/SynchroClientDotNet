@@ -67,8 +67,12 @@ namespace MaaasClientWinPhone
             return true;
         }
 
-        public WinPhoneDeviceMetrics() : base()
+        private MaaasPage _page;
+
+        public WinPhoneDeviceMetrics(MaaasPage page) : base()
         {
+            _page = page;
+
             _os = "WinPhone";
             _osName = "Windows Phone";
             _deviceName = "Windows Phone Device"; // !!! Actual device manufaturer/model would be nice
@@ -104,6 +108,14 @@ namespace MaaasClientWinPhone
             }
 
             this.updateScalingFactor();
+        }
+
+        public override MaaasOrientation CurrentOrientation
+        {
+            get
+            {
+                return _page.CurrentOrientation;
+            }
         }
     }
 }

@@ -57,7 +57,7 @@ namespace MaaasClientAndroid
         }
     }
 
-    [Activity(Label = "MaaaS", Icon = "@drawable/icon", Theme = "@android:style/Theme.Holo")]
+    [Activity(Label = "Synchro", Icon = "@drawable/icon", Theme = "@android:style/Theme.Holo")]
     public class LauncherActivity : Activity
     {
         List<MaaasApp> tableItems = new List<MaaasApp>();

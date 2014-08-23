@@ -32,8 +32,23 @@ namespace MaaasClientWinPhone
 
             // Sample code to localize the ApplicationBar
             //BuildLocalizedApplicationBar();
-
+            
             OrientationChanged += MaaasPage_OrientationChanged;
+        }
+
+        public MaaasOrientation CurrentOrientation
+        {
+            get
+            {
+                if ((Orientation == Microsoft.Phone.Controls.PageOrientation.Landscape) ||
+                    (Orientation == Microsoft.Phone.Controls.PageOrientation.LandscapeLeft) ||
+                    (Orientation == Microsoft.Phone.Controls.PageOrientation.LandscapeRight))
+                {
+                    return MaaasOrientation.Landscape;
+                }
+
+                return MaaasOrientation.Portrait;
+            }
         }
 
         void MaaasPage_OrientationChanged(object sender, OrientationChangedEventArgs e)
@@ -41,10 +56,12 @@ namespace MaaasClientWinPhone
             if ((e.Orientation & PageOrientation.Portrait) == (PageOrientation.Portrait))
             {
                 Util.debug("Screen oriented to Portrait");
+                _stateManager.processViewUpdate(MaaasOrientation.Portrait);
             }
             else
             {
                 Util.debug("Screen oriented to Landscape");
+                _stateManager.processViewUpdate(MaaasOrientation.Landscape);
             }
         }
 
@@ -61,7 +78,7 @@ namespace MaaasClientWinPhone
 
             string endpoint = NavigationContext.QueryString["endpoint"];   
 
-            WinPhoneDeviceMetrics deviceMetrics = new WinPhoneDeviceMetrics();
+            WinPhoneDeviceMetrics deviceMetrics = new WinPhoneDeviceMetrics(this);
 
             WinPhoneAppManager appManager = new WinPhoneAppManager();
             await appManager.loadState();
