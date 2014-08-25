@@ -220,7 +220,7 @@ namespace MaaasCore
             _updatingView = false;
         }
 
-        public void UpdateViewModelData(JToken viewModelDeltas)
+        public void UpdateViewModelData(JToken viewModelDeltas, Boolean updateView = true)
         {
             List<BindingUpdate> bindingUpdates = new List<BindingUpdate>();
 
@@ -349,7 +349,10 @@ namespace MaaasCore
                 Util.debug("View model after processing updates: " + this._rootObject);
             }
 
-            UpdateViewFromViewModel(bindingUpdates);
+            if (updateView)
+            {
+                UpdateViewFromViewModel(bindingUpdates);
+            }
         }
 
         // This is called when a value change is triggered from the UX, specifically when the control calls

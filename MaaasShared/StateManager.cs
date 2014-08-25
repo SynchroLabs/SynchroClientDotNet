@@ -70,8 +70,8 @@ namespace MaaasCore
                     new JProperty("orientation", orientation.ToString()),
                     new JProperty("widthInches", this.DeviceMetrics.WidthInches),
                     new JProperty("heightInches", this.DeviceMetrics.HeightInches),
-                    new JProperty("widthDeviceUnits", this.DeviceMetrics.WidthDeviceUnits),
-                    new JProperty("heightDeviceUnits", this.DeviceMetrics.HeightDeviceUnits)
+                    new JProperty("widthUnits", this.DeviceMetrics.WidthUnits),
+                    new JProperty("heightUnits", this.DeviceMetrics.HeightUnits)
                 );
             }
             else
@@ -80,8 +80,8 @@ namespace MaaasCore
                     new JProperty("orientation", orientation.ToString()),
                     new JProperty("widthInches", this.DeviceMetrics.HeightInches),
                     new JProperty("heightInches", this.DeviceMetrics.WidthInches),
-                    new JProperty("widthDeviceUnits", this.DeviceMetrics.HeightDeviceUnits),
-                    new JProperty("heightDeviceUnits", this.DeviceMetrics.WidthDeviceUnits)
+                    new JProperty("widthUnits", this.DeviceMetrics.HeightUnits),
+                    new JProperty("heightUnits", this.DeviceMetrics.WidthUnits)
                 );
             }
         }
@@ -111,7 +111,7 @@ namespace MaaasCore
                 await _appManager.saveState();
             }
 
-            if (responseAsJSON["ViewModel"] != null)
+            if (responseAsJSON["ViewModel"] != null) // This means we have a new page/screen
             {
                 JObject jsonViewModel = responseAsJSON["ViewModel"] as JObject;
                 this._viewModel.InitializeViewModelData((JObject)jsonViewModel);
@@ -125,10 +125,30 @@ namespace MaaasCore
 
                 this._viewModel.UpdateViewFromViewModel();
             }
-            else if (responseAsJSON["ViewModelDeltas"] != null)
+            else // Updating existing page/screen
             {
-                JToken jsonViewModelDeltas = (JToken)responseAsJSON["ViewModelDeltas"];
-                this._viewModel.UpdateViewModelData(jsonViewModelDeltas);
+                Boolean viewUpdatePresent = (responseAsJSON["View"] != null);
+
+                if (responseAsJSON["ViewModelDeltas"] != null)
+                {
+                    JToken jsonViewModelDeltas = (JToken)responseAsJSON["ViewModelDeltas"];
+
+                    // If we don't have a new View, we'll update the current view as part of applying
+                    // the deltas.  If we do have a new View, we'll skip that, since we have to
+                    // render the new View and do a full update anyway (below).
+                    //
+                    this._viewModel.UpdateViewModelData(jsonViewModelDeltas, !viewUpdatePresent);
+                }
+
+                if (viewUpdatePresent)
+                {
+                    // Render the new page and bind/update it
+                    //
+                    JObject jsonPageView = (JObject)responseAsJSON["View"];
+                    this._path = (string)jsonPageView["path"];
+                    _onProcessPageView(jsonPageView);
+                    this._viewModel.UpdateViewFromViewModel();
+                }
             }
 
             if (responseAsJSON["MessageBox"] != null)
