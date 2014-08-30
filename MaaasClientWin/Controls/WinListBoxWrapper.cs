@@ -175,6 +175,7 @@ namespace MaaasClientWin.Controls
 
         void listbox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            
             Util.debug("Listbox selection changed");
             ListBox listbox = (ListBox)sender;
 
@@ -192,6 +193,7 @@ namespace MaaasClientWin.Controls
             {
                 if (_selectionModeNone)
                 {
+                    listbox.SelectedItem = null;
                     CommandInstance command = GetCommand(CommandName.OnItemClick);
                     if (command != null)
                     {

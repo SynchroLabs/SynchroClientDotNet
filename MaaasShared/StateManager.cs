@@ -186,6 +186,45 @@ namespace MaaasCore
             await _transport.sendMessage(_app.SessionId, requestObject, this.ProcessJsonResponse);
         }
 
+        private bool addDeltasToRequestObject(JObject requestObject)
+        {
+            var vmDeltas = new Dictionary<string, JToken>();
+            this._viewModel.CollectChangedValues((key, value) => vmDeltas[key] = value);
+
+            if (vmDeltas.Count > 0)
+            {
+                requestObject.Add("ViewModelDeltas",
+                    new JArray(
+                        from delta in vmDeltas
+                        select new JObject(
+                            new JProperty("path", delta.Key),
+                            new JProperty("value", delta.Value)
+                        )
+                    )
+                );
+
+                return true;
+            }
+
+            return false;
+        }
+
+        public async void processUpdate()
+        {
+            Util.debug("Process update for path: " + this._path);
+
+            JObject requestObject = new JObject(
+                new JProperty("Mode", "Update"),
+                new JProperty("Path", this._path)
+            );
+
+            if (addDeltasToRequestObject(requestObject))
+            {
+                // Only going to send the updates if there were any changes...
+                await _transport.sendMessage(_app.SessionId, requestObject, this.ProcessJsonResponse);
+            }
+        }
+
         public async void processCommand(string command, JObject parameters = null)
         {
             Util.debug("Process command: " + command + " for path: " + this._path);
@@ -201,21 +240,7 @@ namespace MaaasCore
                 requestObject["Parameters"] = parameters;
             }
 
-            var vmDeltas = new Dictionary<string, JToken>();
-            this._viewModel.CollectChangedValues((key, value) => vmDeltas[key] = value);
-
-            if (vmDeltas.Count > 0)
-            {
-                requestObject.Add("ViewModelDeltas", 
-                    new JArray(
-                        from delta in vmDeltas
-                        select new JObject(
-                            new JProperty("path", delta.Key),
-                            new JProperty("value", delta.Value)
-                        )
-                    )
-                );
-            }
+            addDeltasToRequestObject(requestObject);
 
             await _transport.sendMessage(_app.SessionId, requestObject, this.ProcessJsonResponse);
         }

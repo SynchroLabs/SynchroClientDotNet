@@ -17,6 +17,8 @@ namespace MaaasClientAndroid.Controls
 {
     class AndroidTextBoxWrapper : AndroidControlWrapper
     {
+        bool _updateOnChange = false;
+
         public AndroidTextBoxWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
@@ -39,6 +41,11 @@ namespace MaaasClientAndroid.Controls
                 processElementProperty((string)controlSpec["value"], value => editText.Text = ToString(value));
             }
 
+            if ((string)bindingSpec["sync"] == "change")
+            {
+                _updateOnChange = true;
+            }
+
             processElementProperty((string)controlSpec["placeholder"], value => editText.Hint = ToString(value));
 
             editText.TextChanged += editText_TextChanged;
@@ -59,6 +66,10 @@ namespace MaaasClientAndroid.Controls
             if (editText.IsFocused)
             {
                 updateValueBindingForAttribute("value");
+                if (_updateOnChange)
+                {
+                    this.StateManager.processUpdate();
+                }
             }
         }
     }

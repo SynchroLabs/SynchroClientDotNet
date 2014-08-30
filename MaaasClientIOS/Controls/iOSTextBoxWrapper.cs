@@ -13,6 +13,8 @@ namespace MaaasClientIOS.Controls
 {
     class iOSTextBoxWrapper : iOSControlWrapper
     {
+        bool _updateOnChange = false;
+
         public iOSTextBoxWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
@@ -39,6 +41,11 @@ namespace MaaasClientIOS.Controls
                 textBox.SizeToFit();
             }
 
+            if ((string)bindingSpec["sync"] == "change")
+            {
+                _updateOnChange = true;
+            }
+
             processElementProperty((string)controlSpec["placeholder"], value => textBox.Placeholder = ToString(value));
 
             textBox.EditingChanged += textBox_EditingChanged;
@@ -59,6 +66,10 @@ namespace MaaasClientIOS.Controls
             if (textBox.IsFirstResponder)
             {
                 updateValueBindingForAttribute("value");
+                if (_updateOnChange)
+                {
+                    this.StateManager.processUpdate();
+                }
             }
         }
     }

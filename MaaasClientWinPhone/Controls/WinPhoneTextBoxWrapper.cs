@@ -12,6 +12,8 @@ namespace MaaasClientWinPhone.Controls
 {
     class WinPhoneTextBoxWrapper : WinPhoneControlWrapper
     {
+        bool _updateOnChange = false;
+
         public WinPhoneTextBoxWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
@@ -29,6 +31,11 @@ namespace MaaasClientWinPhone.Controls
             if (!processElementBoundValue("value", (string)bindingSpec["value"], () => { return textBox.Text; }, value => textBox.Text = ToString(value)))
             {
                 processElementProperty((string)controlSpec["value"], value => textBox.Text = ToString(value));
+            }
+
+            if ((string)bindingSpec["sync"] == "change")
+            {
+                _updateOnChange = true;
             }
 
             processElementProperty((string)controlSpec["placeholder"], value => textBox.PlaceholderText = ToString(value));
@@ -51,6 +58,10 @@ namespace MaaasClientWinPhone.Controls
             // !!! if (textBox.FocusState != FocusState.Unfocused)
             {
                 updateValueBindingForAttribute("value");
+                if (_updateOnChange)
+                {
+                    this.StateManager.processUpdate();
+                }
             }
         }
     }
