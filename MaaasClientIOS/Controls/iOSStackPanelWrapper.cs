@@ -162,6 +162,12 @@ namespace MaaasClientIOS.Controls
             //
             foreach (UIView childView in this.Subviews)
             {
+                if (childView.Hidden)
+                {
+                    // Skip hidden children for layout purposes
+                    continue;
+                }
+
                 iOSControlWrapper childControlWrapper = _controlWrapper.getChildControlWrapper(childView);
                 UIEdgeInsets margin = childControlWrapper.Margin;
 

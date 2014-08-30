@@ -872,7 +872,14 @@ namespace MaaasClientIOS.Controls
             processElementProperty((string)controlSpec["opacity"], value => this.Control.Layer.Opacity = (float)ToDouble(value));
 
             processElementProperty((string)controlSpec["background"], value => this.Control.BackgroundColor = ToColor(value));
-            processElementProperty((string)controlSpec["visibility"], value => this.Control.Hidden = !ToBoolean(value));
+            processElementProperty((string)controlSpec["visibility"], value => 
+            {
+                this.Control.Hidden = !ToBoolean(value);
+                if (this.Control.Superview != null)
+                {
+                    this.Control.Superview.SetNeedsLayout();
+                }
+            });
 
             if (this.Control is UIControl)
             {
