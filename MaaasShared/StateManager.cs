@@ -118,8 +118,8 @@ namespace MaaasCore
 
                 if (responseAsJSON["View"] != null)
                 {
+                    this._path = (string)responseAsJSON["Path"];
                     JObject jsonPageView = (JObject)responseAsJSON["View"];
-                    this._path = (string)jsonPageView["path"];
                     _onProcessPageView(jsonPageView);
                 }
 
@@ -144,8 +144,8 @@ namespace MaaasCore
                 {
                     // Render the new page and bind/update it
                     //
+                    this._path = (string)responseAsJSON["Path"];
                     JObject jsonPageView = (JObject)responseAsJSON["View"];
-                    this._path = (string)jsonPageView["path"];
                     _onProcessPageView(jsonPageView);
                     this._viewModel.UpdateViewFromViewModel();
                 }
