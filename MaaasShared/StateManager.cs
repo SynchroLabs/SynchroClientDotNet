@@ -151,6 +151,16 @@ namespace MaaasCore
                 }
             }
 
+            if ((string)responseAsJSON["Update"] == "Partial")
+            {
+                Util.debug("Got partial update, sending continue...");
+                JObject requestObject = new JObject(
+                    new JProperty("Mode", "Continue"),
+                    new JProperty("Path", this._path)
+                );
+                await _transport.sendMessage(_app.SessionId, requestObject, this.ProcessJsonResponse);
+            }
+
             if (responseAsJSON["MessageBox"] != null)
             {
                 JObject jsonMessageBox = (JObject)responseAsJSON["MessageBox"];
