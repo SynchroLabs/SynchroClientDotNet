@@ -8,6 +8,64 @@ using System.Threading.Tasks;
 
 namespace MaaasCore
 {
+    public static class TokenConverter
+    {
+        public static String ToString(JToken token)
+        {
+            string result = "";
+
+            if (token != null)
+            {
+                switch (token.Type)
+                {
+                    case JTokenType.Array:
+                        JArray array = token as JArray;
+                        result = array.Count.ToString();
+                        break;
+                    default:
+                        result = token.ToString();
+                        break;
+                }
+            }
+
+            return result;
+        }
+
+        public static Boolean ToBoolean(JToken token)
+        {
+            Boolean result = false;
+
+            if (token != null)
+            {
+                switch (token.Type)
+                {
+                    case JTokenType.Boolean:
+                        result = (Boolean)token;
+                        break;
+                    case JTokenType.String:
+                        String str = (String)token;
+                        result = str.Length > 0;
+                        break;
+                    case JTokenType.Float:
+                        result = (float)token != 0;
+                        break;
+                    case JTokenType.Integer:
+                        result = (int)token != 0;
+                        break;
+                    case JTokenType.Array:
+                        JArray array = token as JArray;
+                        result = array.Count > 0;
+                        break;
+                    case JTokenType.Object:
+                        result = true;
+                        break;
+                }
+            }
+
+            return result;
+        }
+    }
+
     public static class BindingHelper
     {
         // Binding is specified in the "binding" attribute of an element.  For example, binding: { value: "foo" } will bind the "value"
@@ -134,9 +192,29 @@ namespace MaaasCore
         BindingContext _bindingContext;
         JToken _resolvedValue;
 
-        public BoundAndPossiblyResolvedToken(BindingContext bindingContext)
+        // OK - The way negation is handled here is pretty crude.  The idea is that in the future we will support
+        // complex value converters, perhaps even functions which themselves have more than one token as parameters.
+        // So a more generalized concept of a value converter (delegate) passed in here from the parser and used
+        // to produce the resolved value would be better.
+        //
+        bool _negated;
+
+        public BoundAndPossiblyResolvedToken(BindingContext bindingContext, bool oneTime, bool negated)
         {
             _bindingContext = bindingContext;
+            _negated = negated;
+
+            if (oneTime)
+            {
+                // Since we're potentially storing this over time and don't want any underlying view model changes
+                // to impact this value, we need to clone it.
+                //
+                _resolvedValue = _bindingContext.GetValue().DeepClone();
+                if (_negated)
+                {
+                    _resolvedValue = !TokenConverter.ToBoolean(_resolvedValue);
+                }
+            }
         }
 
         public BindingContext BindingContext { get { return _bindingContext; } }
@@ -153,23 +231,23 @@ namespace MaaasCore
                 }
                 else
                 {
-                    return _bindingContext.GetValue();
+                    JToken resolvedValue = _bindingContext.GetValue();
+                    if (_negated)
+                    {
+                        resolvedValue = !TokenConverter.ToBoolean(resolvedValue);
+                    }
+                    return resolvedValue;
                 }
             }
-        }
-
-        public JToken Resolve()
-        {
-            // Since we're potentially storing this over time and don't want any underlying view model changes
-            // to impact this value, we need to clone it.
-            //
-            _resolvedValue = _bindingContext.GetValue().DeepClone();
-            return _resolvedValue;
         }
     }
 
     // Property values consist of a string containing one or more "tokens", where such tokens are surrounded by curly brackets.
-    // If the token starts with ^, then it is a "one-time" binding, otherwise it is a "one-way" (continuously updated) binding.
+    // If the token is preceded with ^, then it is a "one-time" binding, otherwise it is a "one-way" (continuously updated)
+    // binding.  Tokens can be negated (meaning their value will be converted to a boolean, and that value inverted) when 
+    // preceded with !.  If both one-time binding and negation are specified for a token, the one-time binding indicator must
+    // appear first.
+    // 
     // Tokens that will resolve to numeric values may be followed by a colon and subsequent format specifier, using the .NET
     // Framework 4.5 format specifiers for numeric values.
     //
@@ -234,13 +312,17 @@ namespace MaaasCore
                     oneTimeBinding = true;
                 }
 
-                BoundAndPossiblyResolvedToken boundToken = new BoundAndPossiblyResolvedToken(bindingContext.Select(token));
-                _boundTokens.Add(boundToken);
-
-                if (oneTimeBinding)
+                // Parse out and record negation indicator
+                //
+                bool negated = false;
+                if (token.StartsWith("!"))
                 {
-                    boundToken.Resolve();
+                    token = token.Substring(1);
+                    negated = true;
                 }
+
+                BoundAndPossiblyResolvedToken boundToken = new BoundAndPossiblyResolvedToken(bindingContext.Select(token), oneTimeBinding, negated);
+                _boundTokens.Add(boundToken);
 
                 if (format != null)
                 {

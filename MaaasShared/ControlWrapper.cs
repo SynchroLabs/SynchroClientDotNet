@@ -154,20 +154,7 @@ namespace MaaasCore
             {
                 if (value is JToken)
                 {
-                    var token = value as JToken;
-                    if (token != null)
-                    {
-                        switch (token.Type)
-                        {
-                            case JTokenType.Array:
-                                JArray array = token as JArray;
-                                result = array.Count.ToString();
-                                break;
-                            default:
-                                result = token.ToString();
-                                break;
-                        }
-                    }
+                    result = TokenConverter.ToString((JToken)value);
                 }
                 else
                 {
@@ -184,33 +171,7 @@ namespace MaaasCore
 
             if (value is JToken)
             {
-                var token = value as JToken;
-                if (token != null)
-                {
-                    switch (token.Type)
-                    {
-                        case JTokenType.Boolean:
-                            result = (Boolean)token;
-                            break;
-                        case JTokenType.String:
-                            String str = (String)token;
-                            result = str.Length > 0;
-                            break;
-                        case JTokenType.Float:
-                            result = (float)token != 0;
-                            break;
-                        case JTokenType.Integer:
-                            result = (int)token != 0;
-                            break;
-                        case JTokenType.Array:
-                            JArray array = token as JArray;
-                            result = array.Count > 0;
-                            break;
-                        case JTokenType.Object:
-                            result = true;
-                            break;
-                    }
-                }
+                result = TokenConverter.ToBoolean((JToken)value);
             }
             else
             {
