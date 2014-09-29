@@ -14,7 +14,16 @@ namespace MaaasCore
         MaaasApp _app;
         Transport _transport;
 
+        ulong _transactionNumber = 1;
+        ulong getNewTransactionId() 
+        { 
+            return _transactionNumber++; 
+        }
+
         string _path;
+        uint   _instanceId;
+        uint   _instanceVersion;
+
         ViewModel _viewModel;
         Action<JObject> _onProcessPageView;
         Action<JObject> _onProcessMessageBox;
@@ -111,8 +120,17 @@ namespace MaaasCore
                 await _appManager.saveState();
             }
 
+            if (responseAsJSON["Error"] != null)
+            {
+                Util.debug("Response contained error: " + responseAsJSON["Error"]);
+                return;
+            }
+
             if (responseAsJSON["ViewModel"] != null) // This means we have a new page/screen
             {
+                this._instanceId = (uint)responseAsJSON["InstanceId"];
+                this._instanceVersion = (uint)responseAsJSON["InstanceVersion"];
+
                 JObject jsonViewModel = responseAsJSON["ViewModel"] as JObject;
                 this._viewModel.InitializeViewModelData((JObject)jsonViewModel);
 
@@ -127,37 +145,60 @@ namespace MaaasCore
             }
             else // Updating existing page/screen
             {
-                Boolean viewUpdatePresent = (responseAsJSON["View"] != null);
-
-                if (responseAsJSON["ViewModelDeltas"] != null)
+                if (this._instanceId == (uint)responseAsJSON["InstanceId"])
                 {
-                    JToken jsonViewModelDeltas = (JToken)responseAsJSON["ViewModelDeltas"];
-
-                    // If we don't have a new View, we'll update the current view as part of applying
-                    // the deltas.  If we do have a new View, we'll skip that, since we have to
-                    // render the new View and do a full update anyway (below).
+                    // You can get a new view on a view model update if the view is dynamic and was updated
+                    // based on the previous command/update.
                     //
-                    this._viewModel.UpdateViewModelData(jsonViewModelDeltas, !viewUpdatePresent);
+                    Boolean viewUpdatePresent = (responseAsJSON["View"] != null);
+
+                    if (responseAsJSON["ViewModelDeltas"] != null)
+                    {
+                        if ((this._instanceVersion + 1) == (uint)responseAsJSON["InstanceVersion"])
+                        {
+                            this._instanceVersion++;
+
+                            JToken jsonViewModelDeltas = (JToken)responseAsJSON["ViewModelDeltas"];
+
+                            // If we don't have a new View, we'll update the current view as part of applying
+                            // the deltas.  If we do have a new View, we'll skip that, since we have to
+                            // render the new View and do a full update anyway (below).
+                            //
+                            this._viewModel.UpdateViewModelData(jsonViewModelDeltas, !viewUpdatePresent);
+                        }
+                        else
+                        {
+                            // !!! Instance version was not one more than current version on view model update
+                        }
+                    }
+
+                    if (this._instanceVersion == (uint)responseAsJSON["InstanceVersion"])
+                    {
+                        if (viewUpdatePresent)
+                        {
+                            // Render the new page and bind/update it
+                            //
+                            this._path = (string)responseAsJSON["Path"];
+                            JObject jsonPageView = (JObject)responseAsJSON["View"];
+                            _onProcessPageView(jsonPageView);
+                            this._viewModel.UpdateViewFromViewModel();
+                        }
+                    }
+                    else
+                    {
+                        // !!! Instance version was not correct on view update
+                    }
                 }
-
-                if (viewUpdatePresent)
+                else
                 {
-                    // Render the new page and bind/update it
-                    //
-                    this._path = (string)responseAsJSON["Path"];
-                    JObject jsonPageView = (JObject)responseAsJSON["View"];
-                    _onProcessPageView(jsonPageView);
-                    this._viewModel.UpdateViewFromViewModel();
+                    // !!! Incorrect instance id
                 }
             }
 
-            if ((string)responseAsJSON["Update"] == "Partial")
+            if (responseAsJSON["NextRequest"] != null)
             {
-                Util.debug("Got partial update, sending continue...");
-                JObject requestObject = new JObject(
-                    new JProperty("Mode", "Continue"),
-                    new JProperty("Path", this._path)
-                );
+                Util.debug("Got NextRequest, composing and sending it now...");
+                JObject requestObject = (JObject)responseAsJSON["NextRequest"].DeepClone();
                 await _transport.sendMessage(_app.SessionId, requestObject, this.ProcessJsonResponse);
             }
 
@@ -187,6 +228,7 @@ namespace MaaasCore
             JObject requestObject = new JObject(
                 new JProperty("Mode", "Page"),
                 new JProperty("Path", this._path),
+                new JProperty("TransactionId", getNewTransactionId()),
                 new JProperty("DeviceMetrics", this.PackageDeviceMetrics()), // Send over device metrics (these won't ever change, per session)
                 new JProperty("ViewMetrics", this.PackageViewMetrics(_deviceMetrics.CurrentOrientation)) // Send over view metrics
             );
@@ -225,7 +267,10 @@ namespace MaaasCore
 
             JObject requestObject = new JObject(
                 new JProperty("Mode", "Update"),
-                new JProperty("Path", this._path)
+                new JProperty("Path", this._path),
+                new JProperty("TransactionId", getNewTransactionId()),
+                new JProperty("InstanceId", this._instanceId),
+                new JProperty("InstanceVersion", this._instanceVersion)
             );
 
             if (addDeltasToRequestObject(requestObject))
@@ -242,6 +287,9 @@ namespace MaaasCore
             JObject requestObject = new JObject(
                 new JProperty("Mode", "Command"),
                 new JProperty("Path", this._path),
+                new JProperty("TransactionId", getNewTransactionId()),
+                new JProperty("InstanceId", this._instanceId),
+                new JProperty("InstanceVersion", this._instanceVersion),
                 new JProperty("Command", command)
             );
 
@@ -261,6 +309,9 @@ namespace MaaasCore
             JObject requestObject = new JObject(
                 new JProperty("Mode", "ViewUpdate"),
                 new JProperty("Path", this._path),
+                new JProperty("TransactionId", getNewTransactionId()),
+                new JProperty("InstanceId", this._instanceId),
+                new JProperty("InstanceVersion", this._instanceVersion),
                 new JProperty("ViewMetrics", this.PackageViewMetrics(orientation))
             );
 

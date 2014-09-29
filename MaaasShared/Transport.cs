@@ -18,7 +18,8 @@ namespace MaaasCore
             JObject appDefinition = null;
 
             JObject requestObject = new JObject(
-                new JProperty("Mode", "AppDefinition")
+                new JProperty("Mode", "AppDefinition"),
+                new JProperty("TransactionId", 0)
             );
             await this.sendMessage(null, requestObject, (JObject responseAsJSON) =>
             {
