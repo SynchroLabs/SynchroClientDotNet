@@ -12,6 +12,7 @@ namespace MaaasCore
     {
         MaaasAppManager _appManager;
         MaaasApp _app;
+        JObject _appDefinition;
         Transport _transport;
 
         ulong _transactionNumber = 1;
@@ -122,7 +123,41 @@ namespace MaaasCore
 
             if (responseAsJSON["Error"] != null)
             {
-                Util.debug("Response contained error: " + responseAsJSON["Error"]);
+                JObject jsonError = responseAsJSON["Error"] as JObject;
+                Util.debug("Response contained error: " + jsonError.GetValue("message"));
+                if ((string)jsonError.GetValue("name") == "SyncError")
+                {
+                    if (responseAsJSON["InstanceId"] == null)
+                    {
+                        // This is a sync error indicating that the server has no instance (do to a corrupt or
+                        // re-initialized session).  All we can really do here is re-initialize the app (clear
+                        // our local state and do a Page request for the app entry point).  Might want to let
+                        // the user know this is happening (seems like they're going to notice).
+                        //
+                        Util.debug("ERROR - corrupt server state - need app restart");
+                        await this.sendAppStartPageRequest();
+                    }
+                    else if (this._instanceId == (uint)responseAsJSON["InstanceId"])
+                    {
+                        // The instance that we're on now matches the server instance, so we can safely ignore
+                        // the sync error (the request that caused it was sent against a previous instance).
+                    }
+                    else
+                    {
+                        // We got a sync error, and the current instance on the server is different that our
+                        // instance.  It's possible that the response with the new (correct) instance is still
+                        // coming, but unlikey (it would mean it had async/wait user code after page navigation,
+                        // which it should not, or that it somehow got sent out of order with respect to this
+                        // error response, perhaps over a separate connection that was somehow delayed, but 
+                        // will eventually complete).
+                        //
+                        // The best option in this situation is to request a Resync with the server...
+                        //
+                        Util.debug("ERROR - client state out of sync - need resync");
+                        await this.sendResyncRequest();
+                    }
+                }
+
                 return;
             }
 
@@ -134,6 +169,9 @@ namespace MaaasCore
                 JObject jsonViewModel = responseAsJSON["ViewModel"] as JObject;
                 this._viewModel.InitializeViewModelData((JObject)jsonViewModel);
 
+                // In certain situations, like a resync where the instance matched but the version
+                // was out of date, you might get only the ViewModel (and not the View).
+                //
                 if (responseAsJSON["View"] != null)
                 {
                     this._path = (string)responseAsJSON["Path"];
@@ -145,8 +183,11 @@ namespace MaaasCore
             }
             else // Updating existing page/screen
             {
-                if (this._instanceId == (uint)responseAsJSON["InstanceId"])
+                uint responseInstanceId = (uint)responseAsJSON["InstanceId"];
+                if (responseInstanceId == this._instanceId)
                 {
+                    uint responseInstanceVersion = (uint)responseAsJSON["InstanceVersion"];
+
                     // You can get a new view on a view model update if the view is dynamic and was updated
                     // based on the previous command/update.
                     //
@@ -154,7 +195,7 @@ namespace MaaasCore
 
                     if (responseAsJSON["ViewModelDeltas"] != null)
                     {
-                        if ((this._instanceVersion + 1) == (uint)responseAsJSON["InstanceVersion"])
+                        if ((this._instanceVersion + 1) == responseInstanceVersion)
                         {
                             this._instanceVersion++;
 
@@ -168,13 +209,16 @@ namespace MaaasCore
                         }
                         else
                         {
-                            // !!! Instance version was not one more than current version on view model update
+                            // Instance version was not one more than current version on view model update
+                            //
+                            Util.debug("ERROR - instance version mismatch, updates not applied - need resync");
+                            await this.sendResyncRequest();
                         }
                     }
 
-                    if (this._instanceVersion == (uint)responseAsJSON["InstanceVersion"])
+                    if (viewUpdatePresent)
                     {
-                        if (viewUpdatePresent)
+                        if (this._instanceVersion == responseInstanceVersion)
                         {
                             // Render the new page and bind/update it
                             //
@@ -183,15 +227,25 @@ namespace MaaasCore
                             _onProcessPageView(jsonPageView);
                             this._viewModel.UpdateViewFromViewModel();
                         }
+                        else
+                        {
+                            // Instance version was not correct on view update
+                            //
+                            Util.debug("ERROR - instance version mismatch on view update - need resync");
+                            await this.sendResyncRequest();
+                        }
                     }
-                    else
-                    {
-                        // !!! Instance version was not correct on view update
-                    }
+                }
+                else if (responseInstanceId < this._instanceId)
+                {
+                    // Response was for a previous instance, so we can safely ignore it (we've moved on).
                 }
                 else
                 {
-                    // !!! Incorrect instance id
+                    // Incorrect instance id
+                    //
+                    Util.debug("ERROR - instance id mismatch, updates not applied - need resync");
+                    await this.sendResyncRequest();
                 }
             }
 
@@ -216,15 +270,19 @@ namespace MaaasCore
             //
             // !!! Do we want to update our stored app defintion (in MaaasApp, via the AppManager)?  Maybe only if changed?
             //
-            JObject appDefinition;
-
             Util.debug("Loading Maaas application definition");
-            appDefinition = await _transport.getAppDefinition();
-            Util.debug("Got app definition for: " + appDefinition["name"] + " - " + appDefinition["description"]);
+            _appDefinition = await _transport.getAppDefinition();
+            Util.debug("Got app definition for: " + _appDefinition["name"] + " - " + _appDefinition["description"]);
 
-            // Set the path to the main page, then load that page (we'll send over device metrics, since this is the first "Page" transaction)
-            //
-            this._path = (string)appDefinition["mainPage"];
+            await this.sendAppStartPageRequest();
+        }
+
+        private async Task sendAppStartPageRequest()
+        {
+            this._path = (string)_appDefinition["mainPage"];
+
+            Util.debug("Request app start page at path: " + this._path + " for session: " + _app.SessionId);
+
             JObject requestObject = new JObject(
                 new JProperty("Mode", "Page"),
                 new JProperty("Path", this._path),
@@ -233,7 +291,20 @@ namespace MaaasCore
                 new JProperty("ViewMetrics", this.PackageViewMetrics(_deviceMetrics.CurrentOrientation)) // Send over view metrics
             );
 
-            Util.debug("Requesting main page with session ID: " + _app.SessionId);
+            await _transport.sendMessage(_app.SessionId, requestObject, this.ProcessJsonResponse);
+        }
+
+        private async Task sendResyncRequest()
+        {
+            Util.debug("Sending resync for path: " + this._path);
+
+            JObject requestObject = new JObject(
+                new JProperty("Mode", "Resync"),
+                new JProperty("Path", this._path),
+                new JProperty("TransactionId", getNewTransactionId()),
+                new JProperty("InstanceId", this._instanceId),
+                new JProperty("InstanceVersion", this._instanceVersion)
+            );
 
             await _transport.sendMessage(_app.SessionId, requestObject, this.ProcessJsonResponse);
         }
