@@ -112,17 +112,7 @@ namespace MaaasClientWin
         // MessageBox stuff...
         //
 
-        private void MessageDialogCommandHandler(IUICommand command)
-        {
-            Util.debug("MessageBox Command invoked: " + command.Label);
-            if (command.Id != null)
-            {
-                Util.debug("MessageBox command: " + (string)command.Id);
-                _stateManager.processCommand((string)command.Id);
-            }
-        }
-
-        public override async void ProcessMessageBox(JObject messageBox)
+        public override async void ProcessMessageBox(JObject messageBox, CommandHandler onCommand)
         {
             string message = PropertyValue.ExpandAsString((string)messageBox["message"], _viewModel.RootBindingContext);
 
@@ -133,6 +123,16 @@ namespace MaaasClientWin
                 messageDialog.Title = PropertyValue.ExpandAsString((string)messageBox["title"], _viewModel.RootBindingContext);
             }
 
+            UICommandInvokedHandler handler = new UICommandInvokedHandler(delegate(IUICommand command)
+            {
+                Util.debug("MessageBox Command invoked: " + command.Label);
+                if (command.Id != null)
+                {
+                    Util.debug("MessageBox command: " + (string)command.Id);
+                    onCommand((string)command.Id);
+                }
+            });
+
             if (messageBox["options"] != null)
             {
                 JArray options = (JArray)messageBox["options"];
@@ -140,18 +140,22 @@ namespace MaaasClientWin
                 {
                     if ((string)option["command"] != null)
                     {
-                        messageDialog.Commands.Add(new UICommand(
-                            PropertyValue.ExpandAsString((string)option["label"], _viewModel.RootBindingContext),
-                            new UICommandInvokedHandler(this.MessageDialogCommandHandler),
-                            PropertyValue.ExpandAsString((string)option["command"], _viewModel.RootBindingContext))
-                            );
+                        messageDialog.Commands.Add(
+                            new UICommand(
+                                PropertyValue.ExpandAsString((string)option["label"], _viewModel.RootBindingContext),
+                                handler,
+                                PropertyValue.ExpandAsString((string)option["command"], _viewModel.RootBindingContext)
+                            )
+                        );
                     }
                     else
                     {
-                        messageDialog.Commands.Add(new UICommand(
-                            PropertyValue.ExpandAsString((string)option["label"], _viewModel.RootBindingContext),
-                            new UICommandInvokedHandler(this.MessageDialogCommandHandler))
-                            );
+                        messageDialog.Commands.Add(
+                            new UICommand(
+                                PropertyValue.ExpandAsString((string)option["label"], _viewModel.RootBindingContext),
+                                handler
+                            )
+                        );
                     }
                 }
             }

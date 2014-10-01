@@ -22,27 +22,38 @@ namespace MaaasShared
     public class TransportWebSocket4Net : Transport
     {
         protected WebSocket _ws;
-        protected string _uri;
-
-        // This assumes no overlapped requests (the handler is set on the request, then used on the response)
-        protected Action<JObject> _responseHandler;
 
         protected TaskCompletionSource<bool> _connecting = new TaskCompletionSource<bool>();
 
-        public TransportWebSocket4Net(string host)
+        public TransportWebSocket4Net(string host) : base(host, "ws")
         {
-            _uri = "ws://" + host;
         }
 
-        public virtual void postResponseToUI(JObject responseObject)
+        public virtual void postResponseToUI(ResponseHandler responseHandler, JObject responseObject)
         {
             // Override this per platform as required to ensure that the response handler is able to update the UX...
             //
-            _responseHandler(responseObject);
+            responseHandler(responseObject);
         }
 
-        public override async Task sendMessage(string sessionId, JObject requestObject, Action<JObject> responseHandler)
+        public virtual void postFailureToUI(RequestFailureHandler failureHandler, JObject request, Exception ex)
         {
+            // Override this per platform as required to ensure that the response handler is able to update the UX...
+            //
+            failureHandler(request, ex);
+        }
+
+        public override async Task sendMessage(string sessionId, JObject requestObject, ResponseHandler responseHandler, RequestFailureHandler requestFailureHandler)
+        {
+            if (responseHandler == null)
+            {
+                responseHandler = _responseHandler;
+            }
+            if (requestFailureHandler == null)
+            {
+                requestFailureHandler = _requestFailureHandler;
+            }
+
             try
             {
                 // Make a local copy to avoid races with Closed events.
@@ -55,19 +66,48 @@ namespace MaaasShared
                     {
                         var customHeaderItems = new List<KeyValuePair<string, string>>();
                         customHeaderItems.Add(new KeyValuePair<string, string>(Transport.SessionIdHeader, sessionId));
-                        webSocket = new WebSocket(_uri, "", null, customHeaderItems, "", "", WebSocketVersion.Rfc6455);
+                        webSocket = new WebSocket(_uri.ToString(), "", null, customHeaderItems, "", "", WebSocketVersion.Rfc6455);
                     }
                     else
                     {
-                        webSocket = new WebSocket(_uri);
+                        webSocket = new WebSocket(_uri.ToString());
                     }
 
                     webSocket.NoDelay = true;
 
-                    webSocket.Opened += new EventHandler(websocket_Opened);
-                    webSocket.Error += new EventHandler<SuperSocket.ClientEngine.ErrorEventArgs>(websocket_Error);
-                    webSocket.Closed += new EventHandler(websocket_Closed);
-                    webSocket.MessageReceived += new EventHandler<MessageReceivedEventArgs>(websocket_MessageReceived);
+                    webSocket.Opened += new EventHandler((sender, e) => 
+                    {
+                        Util.debug("WebSocket opened");
+                        _connecting.SetResult(true);
+                    });
+
+                    webSocket.Error += new EventHandler<SuperSocket.ClientEngine.ErrorEventArgs>((sender, e) =>
+                    {
+                        if (_connecting != null)
+                        {
+                            _connecting.SetResult(false);
+                        }
+                        Console.WriteLine(e.Exception.GetType() + ":" + e.Exception.Message + System.Environment.NewLine + e.Exception.StackTrace);
+
+                        if (e.Exception.InnerException != null)
+                        {
+                            Console.WriteLine(e.Exception.InnerException.GetType());
+                        }
+                        postFailureToUI(requestFailureHandler, requestObject, e.Exception);
+                    });
+
+                    webSocket.Closed += new EventHandler((sender, e) =>
+                    {
+                        Util.debug("WebSocket closed");
+                    });
+
+                    webSocket.MessageReceived += new EventHandler<MessageReceivedEventArgs>((sender, e) =>
+                    {
+                        Util.debug("Received message from server: " + e.Message);
+                        JObject responseObject = JObject.Parse(e.Message);
+
+                        this.postResponseToUI(responseHandler, responseObject);
+                    });
 
                     _connecting = new TaskCompletionSource<bool>();
                     Util.debug("Connecting to WebSocket server on: " + _uri);
@@ -83,7 +123,6 @@ namespace MaaasShared
 
                 if (_ws != null)
                 {
-                    _responseHandler = responseHandler;
                     _ws.Send(requestObject.ToString());
                 }
             }
@@ -92,39 +131,6 @@ namespace MaaasShared
                 // Add your specific error-handling code here.
                 Console.WriteLine(ex.GetType() + ":" + ex.Message + System.Environment.NewLine + ex.StackTrace);
             }
-        }
-
-        protected void websocket_Opened(object sender, EventArgs e)
-        {
-            Util.debug("WebSocket opened");
-            _connecting.SetResult(true);
-        }
-
-        protected void websocket_MessageReceived(object sender, MessageReceivedEventArgs e)
-        {
-            Util.debug("Received message from server: " + e.Message);
-            JObject responseObject = JObject.Parse(e.Message);
-
-            this.postResponseToUI(responseObject);
-        }
-
-        protected void websocket_Error(object sender, SuperSocket.ClientEngine.ErrorEventArgs e)
-        {
-            if (_connecting != null)
-            {
-                _connecting.SetResult(false);
-            }
-            Console.WriteLine(e.Exception.GetType() + ":" + e.Exception.Message + System.Environment.NewLine + e.Exception.StackTrace);
-
-            if (e.Exception.InnerException != null)
-            {
-                Console.WriteLine(e.Exception.InnerException.GetType());
-            }
-        }
-
-        protected void websocket_Closed(object sender, EventArgs e)
-        {
-            Util.debug("WebSocket closed");
         }
     }
 }

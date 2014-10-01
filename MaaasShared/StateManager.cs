@@ -8,6 +8,14 @@ using System.Threading.Tasks;
 
 namespace MaaasCore
 {
+    public delegate void CommandHandler(string command);
+
+    public delegate void ProcessPageView(JObject pageView);
+    public delegate void ProcessMessageBox(JObject messageBox, CommandHandler commandHandler);
+
+    public delegate void ResponseHandler(JObject response);
+    public delegate void RequestFailureHandler(JObject request, Exception exception);
+
     public class StateManager
     {
         MaaasAppManager _appManager;
@@ -26,8 +34,8 @@ namespace MaaasCore
         uint   _instanceVersion;
 
         ViewModel _viewModel;
-        Action<JObject> _onProcessPageView;
-        Action<JObject> _onProcessMessageBox;
+        ProcessPageView _onProcessPageView;
+        ProcessMessageBox _onProcessMessageBox;
 
         MaaasDeviceMetrics _deviceMetrics;
 
@@ -38,6 +46,7 @@ namespace MaaasCore
             _appManager = appManager;
             _app = app;
             _transport = transport;
+            _transport.setDefaultHandlers(this.ProcessResponse, this.ProcessRequestFailure);
 
             _deviceMetrics = deviceMetrics;
         }
@@ -46,7 +55,7 @@ namespace MaaasCore
 
         public MaaasDeviceMetrics DeviceMetrics { get { return _deviceMetrics; } }
 
-        public void SetProcessingHandlers(Action<JObject> OnProcessPageView, Action<JObject> OnProcessMessageBox)
+        public void SetProcessingHandlers(ProcessPageView OnProcessPageView, ProcessMessageBox OnProcessMessageBox)
         {
             _onProcessPageView = OnProcessPageView;
             _onProcessMessageBox = OnProcessMessageBox;
@@ -96,7 +105,40 @@ namespace MaaasCore
             }
         }
 
-        async void ProcessJsonResponse(JObject responseAsJSON)
+        void messageBox(string title, string message, string buttonLabel, string buttonCommand, CommandHandler onCommand)
+        {
+            var messageBox =
+                new JObject(
+                    new JProperty("title", title),
+                    new JProperty("message", message),
+                    new JProperty("options",
+                        new JArray(
+                            new JObject(
+                                new JProperty("label", buttonLabel),
+                                new JProperty("command", buttonCommand)
+                            )
+                        )
+                    )
+                );
+
+            _onProcessMessageBox(messageBox, (command) =>
+            {
+                onCommand(command);
+            });
+        }
+
+        void ProcessRequestFailure(JObject request, Exception ex)
+        {            
+            Util.debug("Got request failure for request: " + request);
+
+            messageBox("Connection Error", "Error connecting to application server", "Retry", "retry", (command) =>
+            {
+                Util.debug("Retrying request after user confirmation (" + command + ")...");
+                _transport.sendMessage(_app.SessionId, request);
+            });
+        }
+
+        async void ProcessResponse(JObject responseAsJSON)
         {
             Util.debug("Got response: " + responseAsJSON);
 
@@ -131,11 +173,15 @@ namespace MaaasCore
                     {
                         // This is a sync error indicating that the server has no instance (do to a corrupt or
                         // re-initialized session).  All we can really do here is re-initialize the app (clear
-                        // our local state and do a Page request for the app entry point).  Might want to let
-                        // the user know this is happening (seems like they're going to notice).
+                        // our local state and do a Page request for the app entry point).  
                         //
                         Util.debug("ERROR - corrupt server state - need app restart");
-                        await this.sendAppStartPageRequest();
+                        messageBox("Synchronization Error", "Server state was lost, restarting application", "Restart", "restart", async (command) =>
+                        {
+                            Util.debug("Corrupt server state, restarting application...");
+                            await this.sendAppStartPageRequest();
+                        });
+
                     }
                     else if (this._instanceId == (uint)responseAsJSON["InstanceId"])
                     {
@@ -157,11 +203,34 @@ namespace MaaasCore
                         await this.sendResyncRequest();
                     }
                 }
+                else
+                {
+                    // Some other kind of error (ClientError or UserCodeError).
+                    //
+                    // !!! Maybe we should allow them to choose an option to get mored details?  Configurable on the server?
+                    //
+                    messageBox("Application Error", "The application experienced an error.  Please contact your administrator.", "Close", "close", (command) =>
+                    {
+                    });
+                }
 
                 return;
             }
 
-            if (responseAsJSON["ViewModel"] != null) // This means we have a new page/screen
+            if (responseAsJSON["App"] != null) // This means we have a new app
+            {
+                // Note that we already have an app definition from the MaaasApp that was passed in.  The App in this
+                // response was triggered by a request at app startup for the current version of the app metadata 
+                // fresh from the endpoint (which may have updates relative to whatever we stored when we first found
+                // the app at this endpoint and recorded its metadata).
+                //
+                // !!! Do we want to update our stored app defintion (in MaaasApp, via the AppManager)?  Maybe only if changed?
+                //
+                _appDefinition = responseAsJSON["App"] as JObject;
+                Util.debug("Got app definition for: " + _appDefinition["name"] + " - " + _appDefinition["description"]);
+                await this.sendAppStartPageRequest();
+            }
+            else if (responseAsJSON["ViewModel"] != null) // This means we have a new page/screen
             {
                 this._instanceId = (uint)responseAsJSON["InstanceId"];
                 this._instanceVersion = (uint)responseAsJSON["InstanceVersion"];
@@ -253,28 +322,27 @@ namespace MaaasCore
             {
                 Util.debug("Got NextRequest, composing and sending it now...");
                 JObject requestObject = (JObject)responseAsJSON["NextRequest"].DeepClone();
-                await _transport.sendMessage(_app.SessionId, requestObject, this.ProcessJsonResponse);
+                await _transport.sendMessage(_app.SessionId, requestObject);
             }
 
             if (responseAsJSON["MessageBox"] != null)
             {
                 JObject jsonMessageBox = (JObject)responseAsJSON["MessageBox"];
-                _onProcessMessageBox(jsonMessageBox);
+                _onProcessMessageBox(jsonMessageBox, async (command) =>
+                {
+                    await this.processCommand(command);
+                });
             }
         }
 
         public async Task startApplication()
         {
-            // Note that we already have an app definition in the MaaasApp that was passed in.  This method will get the 
-            // current app definition from the server, which may have changed.
-            //
-            // !!! Do we want to update our stored app defintion (in MaaasApp, via the AppManager)?  Maybe only if changed?
-            //
-            Util.debug("Loading Maaas application definition");
-            _appDefinition = await _transport.getAppDefinition();
-            Util.debug("Got app definition for: " + _appDefinition["name"] + " - " + _appDefinition["description"]);
-
-            await this.sendAppStartPageRequest();
+            Util.debug("Loading Maaas application definition for app at: " + _app.Endpoint);
+            JObject requestObject = new JObject(
+                new JProperty("Mode", "AppDefinition"),
+                new JProperty("TransactionId", 0)
+            );
+            await _transport.sendMessage(null, requestObject);
         }
 
         private async Task sendAppStartPageRequest()
@@ -291,7 +359,7 @@ namespace MaaasCore
                 new JProperty("ViewMetrics", this.PackageViewMetrics(_deviceMetrics.CurrentOrientation)) // Send over view metrics
             );
 
-            await _transport.sendMessage(_app.SessionId, requestObject, this.ProcessJsonResponse);
+            await _transport.sendMessage(_app.SessionId, requestObject);
         }
 
         private async Task sendResyncRequest()
@@ -306,7 +374,7 @@ namespace MaaasCore
                 new JProperty("InstanceVersion", this._instanceVersion)
             );
 
-            await _transport.sendMessage(_app.SessionId, requestObject, this.ProcessJsonResponse);
+            await _transport.sendMessage(_app.SessionId, requestObject);
         }
 
         private bool addDeltasToRequestObject(JObject requestObject)
@@ -332,7 +400,7 @@ namespace MaaasCore
             return false;
         }
 
-        public async void processUpdate()
+        public async Task processUpdate()
         {
             Util.debug("Process update for path: " + this._path);
 
@@ -347,11 +415,11 @@ namespace MaaasCore
             if (addDeltasToRequestObject(requestObject))
             {
                 // Only going to send the updates if there were any changes...
-                await _transport.sendMessage(_app.SessionId, requestObject, this.ProcessJsonResponse);
+                await _transport.sendMessage(_app.SessionId, requestObject);
             }
         }
 
-        public async void processCommand(string command, JObject parameters = null)
+        public async Task processCommand(string command, JObject parameters = null)
         {
             Util.debug("Process command: " + command + " for path: " + this._path);
 
@@ -371,10 +439,10 @@ namespace MaaasCore
 
             addDeltasToRequestObject(requestObject);
 
-            await _transport.sendMessage(_app.SessionId, requestObject, this.ProcessJsonResponse);
+            await _transport.sendMessage(_app.SessionId, requestObject);
         }
 
-        public async void processViewUpdate(MaaasOrientation orientation)
+        public async Task processViewUpdate(MaaasOrientation orientation)
         {
             // Send the updated view metrics 
             JObject requestObject = new JObject(
@@ -386,7 +454,7 @@ namespace MaaasCore
                 new JProperty("ViewMetrics", this.PackageViewMetrics(orientation))
             );
 
-            await _transport.sendMessage(_app.SessionId, requestObject, this.ProcessJsonResponse);
+            await _transport.sendMessage(_app.SessionId, requestObject);
         }
     }
 }

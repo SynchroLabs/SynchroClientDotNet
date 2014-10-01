@@ -12,14 +12,11 @@ namespace MaaasShared
     class TransportHttp : Transport
     {
         private HttpClient _httpClient;
-        private Uri _uri;
 
         private string _sessionId;
 
-        public TransportHttp(string host, HttpClient client = null)
+        public TransportHttp(string host, HttpClient client = null) : base(host)
         {
-            _uri = new Uri("http://" + host);
-
             if (client != null)
             {
                 _httpClient = client;
@@ -38,9 +35,18 @@ namespace MaaasShared
             _httpClient.DefaultRequestHeaders.ExpectContinue = false;
         }
 
-        public override async Task sendMessage(string sessionId, JObject requestObject, Action<JObject> responseHandler)
+        public override async Task sendMessage(string sessionId, JObject requestObject, ResponseHandler responseHandler, RequestFailureHandler requestFailureHandler)
         {
             var watch = System.Diagnostics.Stopwatch.StartNew();
+
+            if (responseHandler == null)
+            {
+                responseHandler = _responseHandler;
+            }
+            if (requestFailureHandler == null)
+            {
+                requestFailureHandler = _requestFailureHandler;
+            }
 
             if (sessionId != null)
             {
@@ -75,9 +81,8 @@ namespace MaaasShared
             }
             catch (Exception e)
             {
-                // !!! Do something more productive than just eating this...
-                //
                 Util.debug("HTTP Transport exceptioon caught, details: " + e.Message);
+                requestFailureHandler(requestObject, e);
             }
         }
     }

@@ -138,7 +138,7 @@ namespace MaaasClientWinPhone
         // MessageBox stuff...
         //
 
-        public override void ProcessMessageBox(JObject messageBox)
+        public override void ProcessMessageBox(JObject messageBox, CommandHandler onCommand)
         {
             string message = PropertyValue.ExpandAsString((string)messageBox["message"], _viewModel.RootBindingContext);
 
@@ -194,7 +194,7 @@ namespace MaaasClientWinPhone
                 if (command != null)
                 {
                     Util.debug("MessageBox command: " + command);
-                    _stateManager.processCommand(command);
+                    onCommand(command);
                 }
             }
         }

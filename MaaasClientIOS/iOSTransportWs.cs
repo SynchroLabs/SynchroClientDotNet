@@ -7,6 +7,7 @@ using MonoTouch.Foundation;
 using MonoTouch.UIKit;
 using MaaasShared;
 using Newtonsoft.Json.Linq;
+using MaaasCore;
 
 namespace MaaasClientIOS
 {
@@ -19,11 +20,19 @@ namespace MaaasClientIOS
             _controller = controller;
         }
 
-        public override void postResponseToUI(JObject responseObject)
+        public virtual void postResponseToUI(ResponseHandler responseHandler, JObject responseObject)
         {
             _controller.InvokeOnMainThread(() =>
             {
-                base.postResponseToUI(responseObject);
+                base.postResponseToUI(responseHandler, responseObject);
+            });
+        }
+
+        public virtual void postFailureToUI(RequestFailureHandler failureHandler, JObject request, Exception ex)
+        {
+            _controller.InvokeOnMainThread(() =>
+            {
+                base.postFailureToUI(failureHandler, request, ex);
             });
         }
     }

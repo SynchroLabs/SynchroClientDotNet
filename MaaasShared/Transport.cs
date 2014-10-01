@@ -11,7 +11,27 @@ namespace MaaasCore
     {
         public static string SessionIdHeader = "synchro-api-session-id";
 
-        public abstract Task sendMessage(string sessionId, JObject requestObject, Action<JObject> responseHandler);
+        protected Uri _uri;
+        protected ResponseHandler _responseHandler;
+        protected RequestFailureHandler _requestFailureHandler;
+
+        public Transport(string host, string protocol = "http")
+        {
+            _uri = new Uri(protocol + "://" + host);
+        }
+
+        public void setDefaultHandlers(ResponseHandler responseHandler, RequestFailureHandler requestFailureHandler)
+        {
+            _responseHandler = responseHandler;
+            _requestFailureHandler = requestFailureHandler;
+        }
+
+        public abstract Task sendMessage(
+            string sessionId, 
+            JObject requestObject, 
+            ResponseHandler responseHandler = null, 
+            RequestFailureHandler requestFailureHandler = null
+            );
 
         public async Task<JObject> getAppDefinition()
         {
@@ -21,10 +41,18 @@ namespace MaaasCore
                 new JProperty("Mode", "AppDefinition"),
                 new JProperty("TransactionId", 0)
             );
-            await this.sendMessage(null, requestObject, (JObject responseAsJSON) =>
-            {
-                appDefinition = responseAsJSON;
-            });
+            await this.sendMessage(
+                null, 
+                requestObject, 
+                (JObject responseAsJSON) =>
+                {
+                    appDefinition = responseAsJSON["App"] as JObject;
+                },
+                (JObject request, Exception ex) =>
+                {
+                    // !!! Fail
+                }
+            );
 
             return appDefinition;
         }

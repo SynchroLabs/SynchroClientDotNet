@@ -348,7 +348,7 @@ namespace MaaasClientIOS
         // MessageBox stuff...
         //
 
-        public override void ProcessMessageBox(JObject messageBox)
+        public override void ProcessMessageBox(JObject messageBox, CommandHandler onCommand)
         {
             string message = PropertyValue.ExpandAsString((string)messageBox["message"], _viewModel.RootBindingContext);
             Util.debug("Message box with message: " + message);
@@ -390,7 +390,7 @@ namespace MaaasClientIOS
                 {
                     string command = buttonCommands[b.ButtonIndex];
                     Util.debug("MessageBox command: " + command);
-                    _stateManager.processCommand(command);
+                    onCommand(command);
                 }
             };
 

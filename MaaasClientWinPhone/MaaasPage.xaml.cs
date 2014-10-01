@@ -92,7 +92,7 @@ namespace MaaasClientWinPhone
 
             _pageView.setPageTitle = title => this.pageTitle.Text = title;
 
-            _stateManager.SetProcessingHandlers(json => _pageView.ProcessPageView(json), json => _pageView.ProcessMessageBox(json));
+            _stateManager.SetProcessingHandlers(_pageView.ProcessPageView,_pageView.ProcessMessageBox);
 
             await _stateManager.startApplication();
         }

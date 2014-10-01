@@ -268,7 +268,7 @@ namespace MaaasClientAndroid
         // MessageBox stuff...
         //
 
-        public override void ProcessMessageBox(JObject messageBox)
+        public override void ProcessMessageBox(JObject messageBox, CommandHandler onCommand)
         {
             AlertDialog.Builder builder = new AlertDialog.Builder(_activity);
             AlertDialog dialog = builder.Create();
@@ -299,7 +299,7 @@ namespace MaaasClientAndroid
                         if (command != null)
                         {
                             Util.debug("MessageBox command: " + command);
-                            _stateManager.processCommand(command);
+                            onCommand(command);
                         }
                     });
                 }
@@ -321,7 +321,7 @@ namespace MaaasClientAndroid
                         if (command != null)
                         {
                             Util.debug("MessageBox command: " + command);
-                            _stateManager.processCommand(command);
+                            onCommand(command);
                         }
                     });
                 }
@@ -343,7 +343,7 @@ namespace MaaasClientAndroid
                         if (command != null)
                         {
                             Util.debug("MessageBox command: " + command);
-                            _stateManager.processCommand(command);
+                            onCommand(command);
                         }
                     });
                 }

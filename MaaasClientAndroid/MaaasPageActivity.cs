@@ -148,7 +148,7 @@ namespace MaaasClientAndroid
 
             SetContentView(layout);
 
-            _stateManager.SetProcessingHandlers(json => _pageView.ProcessPageView(json), json => _pageView.ProcessMessageBox(json));
+            _stateManager.SetProcessingHandlers(_pageView.ProcessPageView,_pageView.ProcessMessageBox);
             await _stateManager.startApplication();
         }
 

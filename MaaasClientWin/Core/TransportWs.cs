@@ -21,18 +21,21 @@ namespace MaasClient.Core
         private MessageWebSocket _ws;
         private DataWriter _messageWriter;
 
-        // This assumes no overlapped requests (the handler is set on the request, then used on the response)
-        private Action<JObject> _responseHandler;
-
-        private Uri _uri;
-
-        public TransportWs(string host)
+        public TransportWs(string host) : base(host)
         {
-            _uri = new Uri("ws://" + host);
         }
 
-        public override async Task sendMessage(string sessionId, JObject requestObject, Action<JObject> responseHandler)
+        public override async Task sendMessage(string sessionId, JObject requestObject, ResponseHandler responseHandler, RequestFailureHandler requestFailureHandler)
         {
+            if (responseHandler == null)
+            {
+                responseHandler = _responseHandler;
+            }
+            if (requestFailureHandler == null)
+            {
+                requestFailureHandler = _requestFailureHandler;
+            }
+
             try
             {
                 // Make a local copy to avoid races with Closed events.
@@ -67,7 +70,7 @@ namespace MaasClient.Core
                                 await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
                                 {
                                     // This will run on the UI thread
-                                    _responseHandler(responseObject);
+                                    responseHandler(responseObject);
                                 });
                             }
                         }
@@ -92,8 +95,6 @@ namespace MaasClient.Core
                     _messageWriter = new DataWriter(webSocket.OutputStream);
                 }
 
-                _responseHandler = responseHandler;
-
                 // Buffer any data we want to send.
                 _messageWriter.WriteString(requestObject.ToString());
 
@@ -103,9 +104,11 @@ namespace MaasClient.Core
             }
             catch (Exception ex) // For debugging
             {
+                // !!! Is this WebErrorStatus useful?
                 WebErrorStatus status = WebSocketError.GetStatus(ex.GetBaseException().HResult);
-                // Add your specific error-handling code here.
+
                 Util.debug("Exception in WebSocket request: " + ex.ToString());
+                requestFailureHandler(requestObject, ex.GetBaseException());
             }
         }
 

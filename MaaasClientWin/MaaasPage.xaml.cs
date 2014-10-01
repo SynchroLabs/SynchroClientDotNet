@@ -127,7 +127,7 @@ namespace MaaasClientWin
             _pageView.setPageTitle = title => this.pageTitle.Text = title;
             _pageView.setBackEnabled = isEnabled => this.backButton.IsEnabled = isEnabled;
 
-            _stateManager.SetProcessingHandlers(json => _pageView.ProcessPageView(json), json => _pageView.ProcessMessageBox(json));
+            _stateManager.SetProcessingHandlers(_pageView.ProcessPageView, _pageView.ProcessMessageBox);
 
             await _stateManager.startApplication();
         }

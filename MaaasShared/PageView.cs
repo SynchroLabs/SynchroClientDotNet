@@ -27,7 +27,7 @@ namespace MaaasCore
         public abstract void ClearContent();
         public abstract void SetContent(ControlWrapper content);
 
-        public abstract void ProcessMessageBox(JObject messageBox);
+        public abstract void ProcessMessageBox(JObject messageBox, CommandHandler onCommand);
 
         public bool HasBackCommand { get { return onBackCommand != null; } }
 
