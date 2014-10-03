@@ -12,7 +12,7 @@ using Android.Widget;
 using MaaasCore;
 using Newtonsoft.Json.Linq;
 
-namespace MaaasClientAndroid.Controls
+namespace SynchroClientAndroid.Controls
 {
     public class BindingContextListItem
     {

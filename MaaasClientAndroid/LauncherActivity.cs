@@ -12,7 +12,7 @@ using Android.Widget;
 using MaaasCore;
 using Android.Graphics.Drawables;
 
-namespace MaaasClientAndroid
+namespace SynchroClientAndroid
 {
     public class MaaasAppAdapter : BaseAdapter<MaaasApp> 
     {

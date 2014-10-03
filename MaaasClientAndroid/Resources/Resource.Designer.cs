@@ -9,9 +9,9 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-[assembly: global::Android.Runtime.ResourceDesignerAttribute("MaaasClientAndroid.Resource", IsApplication=true)]
+[assembly: global::Android.Runtime.ResourceDesignerAttribute("SynchroClientAndroid.Resource", IsApplication=true)]
 
-namespace MaaasClientAndroid
+namespace SynchroClientAndroid
 {
 	
 	
@@ -26,7 +26,7 @@ namespace MaaasClientAndroid
 		
 		public static void UpdateIdValues()
 		{
-			global::ModernHttpClient.Resource.String.library_name = global::MaaasClientAndroid.Resource.String.library_name;
+			global::ModernHttpClient.Resource.String.library_name = global::SynchroClientAndroid.Resource.String.library_name;
 		}
 		
 		public partial class Animation

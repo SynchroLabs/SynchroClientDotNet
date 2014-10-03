@@ -51,6 +51,11 @@ namespace MaaasCore
             _deviceMetrics = deviceMetrics;
         }
 
+        public bool IsOnMainPath()
+        {
+            return ((_path != null) && (_appDefinition != null) && _path.Equals((string)_appDefinition["mainPage"], StringComparison.Ordinal));
+        }
+
         public ViewModel ViewModel { get { return _viewModel; } }
 
         public MaaasDeviceMetrics DeviceMetrics { get { return _deviceMetrics; } }
@@ -207,7 +212,7 @@ namespace MaaasCore
                 {
                     // Some other kind of error (ClientError or UserCodeError).
                     //
-                    // !!! Maybe we should allow them to choose an option to get mored details?  Configurable on the server?
+                    // !!! Maybe we should allow them to choose an option to get more details?  Configurable on the server?
                     //
                     messageBox("Application Error", "The application experienced an error.  Please contact your administrator.", "Close", "close", (command) =>
                     {
@@ -337,7 +342,7 @@ namespace MaaasCore
 
         public async Task startApplication()
         {
-            Util.debug("Loading Maaas application definition for app at: " + _app.Endpoint);
+            Util.debug("Loading Synchro application definition for app at: " + _app.Endpoint);
             JObject requestObject = new JObject(
                 new JProperty("Mode", "AppDefinition"),
                 new JProperty("TransactionId", 0)

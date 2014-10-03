@@ -109,8 +109,8 @@ namespace MaaasClientIOS
         UIToolbar _toolBar;
         List<UIBarButtonItem> _toolBarButtons = new List<UIBarButtonItem>();
 
-        public iOSPageView(StateManager stateManager, ViewModel viewModel, UIView panel) :
-            base(stateManager, viewModel)
+        public iOSPageView(StateManager stateManager, ViewModel viewModel, UIView panel, Action doBackToMenu = null) :
+            base(stateManager, viewModel, doBackToMenu)
         {
             _rootControlWrapper = new iOSControlWrapper(this, _stateManager, _viewModel, _viewModel.RootBindingContext, panel);
 
@@ -285,7 +285,7 @@ namespace MaaasClientIOS
             _navBar.Delegate = new MaaasNavigationBarDelegate(this);
             SizeNavBar(_navBar);
 
-            if (this.onBackCommand != null)
+            if (this.HasBackCommand)
             {
                 // Add a "Back" context and a delegate to handle the back command...
                 //

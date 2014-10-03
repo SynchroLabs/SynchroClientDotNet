@@ -13,8 +13,9 @@ using ModernHttpClient;
 using Android.Util;
 using Android.Graphics;
 using Android.Content.PM;
+using Android.Support.V4.App;
 
-namespace MaaasClientAndroid
+namespace SynchroClientAndroid
 {
     [Activity(Label = "Synchro", Icon = "@drawable/icon", Theme = "@android:style/Theme.Holo", ConfigurationChanges=Android.Content.PM.ConfigChanges.Orientation | Android.Content.PM.ConfigChanges.ScreenSize)]
     public class MaaasPageActivity : Activity
@@ -141,8 +142,22 @@ namespace MaaasClientAndroid
             Transport transport = new TransportHttp(endpoint);
             //Transport transport = new AndroidTransportWs(this, endpoint);
 
+            Action backToMenu = null;
+            if (appManager.AppSeed == null)
+            {
+                // If we are't nailed to a predefined app, then we'll allow the app to navigate back to
+                // this page from its top level page.
+                //
+                backToMenu = new Action(delegate()
+                {
+                    var intent = new Intent(this, typeof(AppDetailActivity));
+                    intent.PutExtra("endpoint", app.Endpoint);
+                    NavUtils.NavigateUpTo(this, intent);
+                });
+            }
+
             _stateManager = new StateManager(appManager, app, transport, deviceMetrics);
-            _pageView = new AndroidPageView(_stateManager, _stateManager.ViewModel, this, layout);
+            _pageView = new AndroidPageView(_stateManager, _stateManager.ViewModel, this, layout, backToMenu);
 
             _pageView.setPageTitle = title => this.ActionBar.Title = title;
 

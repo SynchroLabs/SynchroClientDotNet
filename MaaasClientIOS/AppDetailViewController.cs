@@ -141,7 +141,7 @@ namespace MaaasClientIOS
             x = capName.Frame.Bottom + spacing - 5;
 
             valName = new UILabel();
-            valName.Text = "maaas-samples"; // Sample text
+            valName.Text = "synchro-samples"; // Sample text
             valName.Font = valFont;
             valName.TextColor = valColor;
             valName.SizeToFit();
@@ -161,7 +161,7 @@ namespace MaaasClientIOS
             x = capDesc.Frame.Bottom + spacing - 5;
 
             valDesc = new UILabel();
-            valDesc.Text = "MAAAS API Samples (local)"; // Sample text
+            valDesc.Text = "Synchro API Samples (local)"; // Sample text
             valDesc.Font = valFont;
             valDesc.TextColor = valColor;
             valDesc.SizeToFit();
@@ -219,8 +219,8 @@ namespace MaaasClientIOS
         {
             UIAlertView alertView = new UIAlertView();
 
-            alertView.Title = "Maaas Application Delete";
-            alertView.Message = "Are you sure you want to remove this Maaas application from your list";
+            alertView.Title = "Synchro Application Delete";
+            alertView.Message = "Are you sure you want to remove this Synchro application from your list";
 
             int idYes = alertView.AddButton("Yes");
             int idNo = alertView.AddButton("No");
@@ -263,6 +263,14 @@ namespace MaaasClientIOS
             // Release any cached data, images, etc that aren't in use.
         }
 
+        public override void ViewWillAppear(bool animated)
+        {
+            // We hide this when navigating to app, so we need to show it here in case we're navigating
+            // back from the app.
+            //
+            this.NavigationController.SetNavigationBarHidden(false, false);
+        }
+
         public override void ViewDidLoad()
         {
             if (iOSUtil.IsiOS7)
@@ -292,8 +300,8 @@ namespace MaaasClientIOS
             if (managedApp != null)
             {
                 UIAlertView alertView = new UIAlertView();
-                alertView.Title = "Maaas Application Search";
-                alertView.Message = "You already have a Maaas application with the supplied endpoint in your list";
+                alertView.Title = "Synchro Application Search";
+                alertView.Message = "You already have a Synchro application with the supplied endpoint in your list";
                 alertView.AddButton("OK");
                 alertView.Show();
                 return;
@@ -305,8 +313,8 @@ namespace MaaasClientIOS
             if (appDefinition == null)
             {
                 UIAlertView alertView = new UIAlertView();
-                alertView.Title = "Maaas Application Search";
-                alertView.Message = "No Maaas application found at the supplied endpoint";
+                alertView.Title = "Synchro Application Search";
+                alertView.Message = "No Synchro application found at the supplied endpoint";
                 alertView.AddButton("OK");
                 alertView.Show();
                 return;

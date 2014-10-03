@@ -14,7 +14,7 @@ using Newtonsoft.Json.Linq;
 using Android.Util;
 using Android.Graphics;
 
-namespace MaaasClientAndroid.Controls
+namespace SynchroClientAndroid.Controls
 {
     // Here is an implementation of Android FlowLayout:
     //

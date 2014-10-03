@@ -9,11 +9,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MaaasClientAndroid
+namespace SynchroClientAndroid
 {
     class AndroidAppManager : MaaasAppManager
     {
-        private readonly static string STATE_FILE = "maaas";
+        private readonly static string STATE_FILE = "synchro";
         private readonly static string STATE_KEY = "seed.json";
 
         protected Activity _activity;

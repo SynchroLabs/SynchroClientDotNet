@@ -14,7 +14,7 @@ using MaaasCore;
 using MaaasShared;
 using Newtonsoft.Json.Linq;
 
-namespace MaaasClientAndroid
+namespace SynchroClientAndroid
 {
     [Activity(Label = "Application", Icon = "@drawable/icon", Theme = "@android:style/Theme.Holo")]
     public class AppDetailActivity : Activity
@@ -109,8 +109,8 @@ namespace MaaasClientAndroid
             {
                 AlertDialog.Builder builder;
                 builder = new AlertDialog.Builder(this);
-                builder.SetTitle("Maaas Application Search");
-                builder.SetMessage("You already have a Maaas application with the supplied endpoint in your list");
+                builder.SetTitle("Synchro Application Search");
+                builder.SetMessage("You already have a Synchro application with the supplied endpoint in your list");
                 builder.SetPositiveButton("OK", delegate {});
                 builder.SetCancelable(true);
                 builder.Show();
@@ -124,8 +124,8 @@ namespace MaaasClientAndroid
             {
                 AlertDialog.Builder builder;
                 builder = new AlertDialog.Builder(this);
-                builder.SetTitle("Maaas Application Search");
-                builder.SetMessage("No Maaas application found at the supplied endpoint");
+                builder.SetTitle("Synchro Application Search");
+                builder.SetMessage("No Synchro application found at the supplied endpoint");
                 builder.SetPositiveButton("OK", delegate { });
                 builder.SetCancelable(true);
                 builder.Show();
@@ -161,8 +161,8 @@ namespace MaaasClientAndroid
         {
             AlertDialog.Builder builder;
             builder = new AlertDialog.Builder(this);
-            builder.SetTitle("Maaas Application Delete");
-            builder.SetMessage("Are you sure you want to remove this Maaas application from your list");
+            builder.SetTitle("Synchro Application Delete");
+            builder.SetMessage("Are you sure you want to remove this Synchro application from your list");
             builder.SetPositiveButton("Yes", async delegate {
                 MaaasApp app = appManager.GetApp(this.app.Endpoint);
                 appManager.Apps.Remove(app);

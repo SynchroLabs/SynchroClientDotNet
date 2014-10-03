@@ -13,7 +13,7 @@ using MaaasCore;
 using Newtonsoft.Json.Linq;
 using Android.Graphics;
 
-namespace MaaasClientAndroid.Controls
+namespace SynchroClientAndroid.Controls
 {
     // http://docs.xamarin.com/guides/android/user_interface/working_with_listviews_and_adapters/part_3_-_customizing_a_listview%27s_appearance/
     //

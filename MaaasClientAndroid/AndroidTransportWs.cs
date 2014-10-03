@@ -16,7 +16,7 @@ using Newtonsoft.Json.Linq;
 using MaaasShared;
 using MaaasCore;
 
-namespace MaaasClientAndroid
+namespace SynchroClientAndroid
 {
     public class AndroidTransportWs : TransportWebSocket4Net
     {

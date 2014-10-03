@@ -20,7 +20,7 @@ using ModernHttpClient;
 using Java.Net;
 using Java.IO;
 
-namespace MaaasClientAndroid.Controls
+namespace SynchroClientAndroid.Controls
 {
     class AndroidImageWrapper : AndroidControlWrapper
     {

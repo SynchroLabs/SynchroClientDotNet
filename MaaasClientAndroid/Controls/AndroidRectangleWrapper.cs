@@ -16,7 +16,7 @@ using Android.Graphics.Drawables.Shapes;
 using Android.Graphics;
 using Java.Lang;
 
-namespace MaaasClientAndroid.Controls
+namespace SynchroClientAndroid.Controls
 {
     public class MaaasRectDrawable : GradientDrawable
     {

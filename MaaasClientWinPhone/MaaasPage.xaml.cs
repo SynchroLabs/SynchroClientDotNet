@@ -85,8 +85,20 @@ namespace MaaasClientWinPhone
 
             MaaasApp app = appManager.GetApp(endpoint);
 
+            Action backToMenu = null;
+            if (appManager.AppSeed == null)
+            {
+                backToMenu = new Action(delegate()
+                {
+                    // If we are't nailed to a predefined app, then we'll allow the app to navigate back to
+                    // this page from its top level page.
+                    //
+                    AppDetailPage.NavigateTo(app.Endpoint);
+                });
+            }
+
             _stateManager = new StateManager(appManager, app, new TransportHttp(endpoint), deviceMetrics);
-            _pageView = new WinPhonePageView(_stateManager, _stateManager.ViewModel, this, this.mainScroll);
+            _pageView = new WinPhonePageView(_stateManager, _stateManager.ViewModel, this, this.mainScroll, backToMenu);
 
             this.BackKeyPress += MainPage_BackKeyPress;
 
@@ -99,8 +111,8 @@ namespace MaaasClientWinPhone
 
         void MainPage_BackKeyPress(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            _pageView.OnBackCommand();
             e.Cancel = true;
+            _pageView.OnBackCommand();
         }
 
         // Sample code for building a localized ApplicationBar

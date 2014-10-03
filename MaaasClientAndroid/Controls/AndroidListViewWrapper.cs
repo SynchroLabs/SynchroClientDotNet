@@ -13,7 +13,7 @@ using MaaasCore;
 using Newtonsoft.Json.Linq;
 using Android.Graphics;
 
-namespace MaaasClientAndroid.Controls
+namespace SynchroClientAndroid.Controls
 {
     class ListItemView : RelativeLayout, ICheckable
     {

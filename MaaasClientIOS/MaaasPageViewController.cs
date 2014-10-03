@@ -39,8 +39,23 @@ namespace MaaasClientIOS
             Transport transport = new TransportHttp(_maaasApp.Endpoint, httpClient);
             //Transport transport = new iOSTransportWs(this, _maaasApp.Endpoint);
 
+            Action backToMenu = null;
+            if (_appManager.AppSeed == null)
+            {
+                // If we are't nailed to a predefined app, then we'll allow the app to navigate back to
+                // this page from its top level page.
+                //
+                backToMenu = new Action(delegate()
+                {
+                    // If we are't nailed to a predefined app, then we'll allow the app to navigate back to
+                    // this page from its top level page.
+                    //
+                    this.NavigationController.PopViewControllerAnimated(true);
+                });
+            }
+
             _stateManager = new StateManager(_appManager, _maaasApp, transport, deviceMetrics);
-            _pageView = new iOSPageView(_stateManager, _stateManager.ViewModel, View);
+            _pageView = new iOSPageView(_stateManager, _stateManager.ViewModel, View, backToMenu);
 
             _stateManager.SetProcessingHandlers(_pageView.ProcessPageView, _pageView.ProcessMessageBox);
             await _stateManager.startApplication();
@@ -104,6 +119,5 @@ namespace MaaasClientIOS
 
             ((iOSPageView)_pageView).UpdateLayout();
         }
-
     }
 }

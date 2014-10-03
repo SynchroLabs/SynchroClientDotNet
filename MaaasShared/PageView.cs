@@ -14,13 +14,15 @@ namespace MaaasCore
 
         protected StateManager _stateManager;
         protected ViewModel _viewModel;
+        protected Action _doBackToMenu;
 
         protected string onBackCommand = null;
 
-        public PageView(StateManager stateManager, ViewModel viewModel)
+        public PageView(StateManager stateManager, ViewModel viewModel, Action doBackToMenu)
         {
             _stateManager = stateManager;
             _viewModel = viewModel;
+            _doBackToMenu = doBackToMenu;
         }
 
         public abstract ControlWrapper CreateRootContainerControl(JObject controlSpec);
@@ -29,14 +31,39 @@ namespace MaaasCore
 
         public abstract void ProcessMessageBox(JObject messageBox, CommandHandler onCommand);
 
-        public bool HasBackCommand { get { return onBackCommand != null; } }
+        public bool HasBackCommand 
+        { 
+            get 
+            {
+                if (this.onBackCommand != null)
+                {
+                    // Page-specified back command...
+                    //
+                    return true;
+                }
+                else if ((_doBackToMenu != null) && _stateManager.IsOnMainPath())
+                {
+                    // No page-specified back command, launched from menu, and is main (top-level) page...
+                    //
+                    return true;
+                }
+
+                return false; 
+            } 
+        }
 
         public bool OnBackCommand()
         {
             if (onBackCommand != null)
             {
-                Util.debug("Back button click with command: " + onBackCommand);
+                Util.debug("Back navigation with command: " + onBackCommand);
                 _stateManager.processCommand(onBackCommand);
+                return true;
+            }
+            else if ((_doBackToMenu != null) && _stateManager.IsOnMainPath())
+            {
+                Util.debug("Back navigation - returning to menu");
+                _doBackToMenu();
                 return true;
             }
             else
@@ -53,7 +80,7 @@ namespace MaaasCore
             this.onBackCommand = (string)pageView["onBack"];
             if (this.setBackEnabled != null)
             {
-                this.setBackEnabled(this.onBackCommand != null);
+                this.setBackEnabled(this.HasBackCommand);
             }
 
             string pageTitle = (string)pageView["title"];

@@ -11,9 +11,9 @@ using Android.Views;
 using Android.Widget;
 using MaaasCore;
 
-namespace MaaasClientAndroid
+namespace SynchroClientAndroid
 {
-    [Activity(Label = "MaaaS", MainLauncher = true, Icon = "@drawable/icon", Theme = "@style/Theme.Splash", NoHistory = true)]
+    [Activity(Label = "Synchro", MainLauncher = true, Icon = "@drawable/icon", Theme = "@style/Theme.Splash", NoHistory = true)]
     public class SplashActivity : Activity
     {
         async protected override void OnCreate(Bundle bundle)

@@ -10,13 +10,13 @@ using Android.Runtime;
 using Android.Views;
 using Android.Widget;
 using MaaasCore;
-using MaaasClientAndroid.Controls;
+using SynchroClientAndroid.Controls;
 using Newtonsoft.Json.Linq;
 using Android.Util;
 using Android.Graphics;
 using Android.Graphics.Drawables;
 
-namespace MaaasClientAndroid
+namespace SynchroClientAndroid
 {
     public class AndroidActionBarItem
     {
@@ -139,8 +139,8 @@ namespace MaaasClientAndroid
 
         List<AndroidActionBarItem> _actionBarItems = new List<AndroidActionBarItem>();
 
-        public AndroidPageView(StateManager stateManager, ViewModel viewModel, Activity activity, ViewGroup panel) :
-            base(stateManager, viewModel)
+        public AndroidPageView(StateManager stateManager, ViewModel viewModel, Activity activity, ViewGroup panel, Action doBackToMenu = null) :
+            base(stateManager, viewModel, doBackToMenu)
         {
             _activity = activity;
             _rootControlWrapper = new AndroidControlWrapper(this, _stateManager, _viewModel, _viewModel.RootBindingContext, panel);

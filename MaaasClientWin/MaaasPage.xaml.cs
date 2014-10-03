@@ -121,8 +121,20 @@ namespace MaaasClientWin
             Transport transport = new TransportHttp(endpoint);
             //Transport transport = new TransportWs(endpoint);
 
+            Action backToMenu = null;
+            if (appManager.AppSeed == null)
+            {
+                // If we are't nailed to a predefined app, then we'll allow the app to navigate back to
+                // this page from its top level page.
+                //
+                backToMenu = new Action(delegate()
+                {
+                    this.Frame.GoBack();
+                });
+            }
+
             _stateManager = new StateManager(appManager, app, transport, deviceMetrics);
-            _pageView = new WinPageView(_stateManager, _stateManager.ViewModel, this, this.mainScroll);
+            _pageView = new WinPageView(_stateManager, _stateManager.ViewModel, this, this.mainScroll, backToMenu);
 
             _pageView.setPageTitle = title => this.pageTitle.Text = title;
             _pageView.setBackEnabled = isEnabled => this.backButton.IsEnabled = isEnabled;

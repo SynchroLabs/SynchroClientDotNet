@@ -13,7 +13,7 @@ using MaaasCore;
 using Newtonsoft.Json.Linq;
 using Android.Text;
 
-namespace MaaasClientAndroid.Controls
+namespace SynchroClientAndroid.Controls
 {
     class AndroidTextBoxWrapper : AndroidControlWrapper
     {

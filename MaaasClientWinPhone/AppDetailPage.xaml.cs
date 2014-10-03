@@ -126,7 +126,7 @@ namespace MaaasClientWinPhone
             var managedApp = appManager.GetApp(endpoint);
             if (managedApp != null)
             {
-                MessageBox.Show("You already have a Maaas application with the supplied endpoint in your list", "Maaas Application Search", MessageBoxButton.OK);
+                MessageBox.Show("You already have a Synchro application with the supplied endpoint in your list", "Synchro Application Search", MessageBoxButton.OK);
                 return;
             }
 
@@ -135,7 +135,7 @@ namespace MaaasClientWinPhone
             JObject appDefinition = await transport.getAppDefinition();
             if (appDefinition == null)
             {
-                MessageBox.Show("No Maaas application found at the supplied endpoint", "Maaas Application Search", MessageBoxButton.OK);
+                MessageBox.Show("No Synchro application found at the supplied endpoint", "Synchro Application Search", MessageBoxButton.OK);
             }
             else
             {
@@ -162,7 +162,7 @@ namespace MaaasClientWinPhone
 
         async void BtnDelete_Click(object sender, RoutedEventArgs e)
         {
-            MessageBoxResult result = MessageBox.Show("Are you sure you want to remove this Maaas application from your list", "Maaas Application Delete", MessageBoxButton.OKCancel);
+            MessageBoxResult result = MessageBox.Show("Are you sure you want to remove this Synchro application from your list", "Synchro Application Delete", MessageBoxButton.OKCancel);
             if (result == MessageBoxResult.OK)
             {
                 MaaasApp app = appManager.GetApp(this.AppPageViewModel.MaaasApp.Endpoint);

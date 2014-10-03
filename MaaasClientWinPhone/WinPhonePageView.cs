@@ -22,8 +22,8 @@ namespace MaaasClientWinPhone
         MaaasPage _page;
         WinPhoneControlWrapper _rootControlWrapper;
 
-        public WinPhonePageView(StateManager stateManager, ViewModel viewModel, MaaasPage page, ContentControl contentControl) :
-            base(stateManager, viewModel)
+        public WinPhonePageView(StateManager stateManager, ViewModel viewModel, MaaasPage page, ContentControl contentControl, Action doBackToMenu = null) :
+            base(stateManager, viewModel, doBackToMenu)
         {
             _page = page;
             _rootControlWrapper = new WinPhoneControlWrapper(this, _stateManager, _viewModel, _viewModel.RootBindingContext, contentControl);

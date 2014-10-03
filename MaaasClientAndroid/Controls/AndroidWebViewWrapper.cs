@@ -13,7 +13,7 @@ using MaaasCore;
 using Newtonsoft.Json.Linq;
 using Android.Webkit;
 
-namespace MaaasClientAndroid.Controls
+namespace SynchroClientAndroid.Controls
 {
     // http://developer.android.com/reference/android/webkit/WebView.html
     //
