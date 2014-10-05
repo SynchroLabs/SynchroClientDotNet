@@ -89,6 +89,12 @@ namespace MaaasClientIOS.Controls
 
             foreach (UIView childView in this.Subviews)
             {
+                if (childView.Hidden)
+                {
+                    // Skip hidden children for layout purposes
+                    continue;
+                }
+
                 iOSControlWrapper childControlWrapper = _controlWrapper.getChildControlWrapper(childView);
 
                 // For FillParent ("star sized") elements, we don't want to count the current value in that dimension in
