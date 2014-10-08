@@ -32,6 +32,7 @@ namespace MaaasCore
         string _path;
         uint   _instanceId;
         uint   _instanceVersion;
+        bool   _isBackSupported;
 
         ViewModel _viewModel;
         ProcessPageView _onProcessPageView;
@@ -49,6 +50,11 @@ namespace MaaasCore
             _transport.setDefaultHandlers(this.ProcessResponse, this.ProcessRequestFailure);
 
             _deviceMetrics = deviceMetrics;
+        }
+
+        public bool IsBackSupported()
+        {
+            return _isBackSupported;
         }
 
         public bool IsOnMainPath()
@@ -249,6 +255,8 @@ namespace MaaasCore
                 if (responseAsJSON["View"] != null)
                 {
                     this._path = (string)responseAsJSON["Path"];
+                    this._isBackSupported = (bool)responseAsJSON["Back"];
+
                     JObject jsonPageView = (JObject)responseAsJSON["View"];
                     _onProcessPageView(jsonPageView);
                 }
@@ -443,6 +451,21 @@ namespace MaaasCore
             }
 
             addDeltasToRequestObject(requestObject);
+
+            await _transport.sendMessage(_app.SessionId, requestObject);
+        }
+
+        public async Task sendBackRequest()
+        {
+            Util.debug("Sending back for path: " + this._path);
+
+            JObject requestObject = new JObject(
+                new JProperty("Mode", "Back"),
+                new JProperty("Path", this._path),
+                new JProperty("TransactionId", getNewTransactionId()),
+                new JProperty("InstanceId", this._instanceId),
+                new JProperty("InstanceVersion", this._instanceVersion)
+            );
 
             await _transport.sendMessage(_app.SessionId, requestObject);
         }

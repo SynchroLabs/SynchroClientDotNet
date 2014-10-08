@@ -35,7 +35,7 @@ namespace MaaasCore
         { 
             get 
             {
-                if (this.onBackCommand != null)
+                if (this._stateManager.IsBackSupported())
                 {
                     // Page-specified back command...
                     //
@@ -54,10 +54,10 @@ namespace MaaasCore
 
         public bool OnBackCommand()
         {
-            if (onBackCommand != null)
+            if (_stateManager.IsBackSupported())
             {
-                Util.debug("Back navigation with command: " + onBackCommand);
-                _stateManager.processCommand(onBackCommand);
+                Util.debug("Back navigation");
+                _stateManager.sendBackRequest();
                 return true;
             }
             else if ((_doBackToMenu != null) && _stateManager.IsOnMainPath())
@@ -77,7 +77,6 @@ namespace MaaasCore
         {
             ClearContent();
 
-            this.onBackCommand = (string)pageView["onBack"];
             if (this.setBackEnabled != null)
             {
                 this.setBackEnabled(this.HasBackCommand);
