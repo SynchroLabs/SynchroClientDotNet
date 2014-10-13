@@ -93,7 +93,7 @@ namespace MaaasClientWinPhone
                     // If we are't nailed to a predefined app, then we'll allow the app to navigate back to
                     // this page from its top level page.
                     //
-                    AppDetailPage.NavigateTo(app.Endpoint);
+                    NavigationService.GoBack();
                 });
             }
 
