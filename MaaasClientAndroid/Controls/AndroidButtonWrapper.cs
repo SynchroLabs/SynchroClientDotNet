@@ -16,12 +16,14 @@ namespace SynchroClientAndroid.Controls
 {
     class AndroidButtonWrapper : AndroidControlWrapper
     {
+        static Logger logger = Logger.GetLogger("AndroidButtonWrapper");
+
         static string[] Commands = new string[] { CommandName.OnClick };
 
         public AndroidButtonWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
-            Util.debug("Creating button element with caption of: " + controlSpec["caption"]);
+            logger.Debug("Creating button element with caption of: {0}", controlSpec["caption"]);
             Button button = new Button(((AndroidControlWrapper)parent).Control.Context);
             this._control = button;
 
@@ -43,7 +45,7 @@ namespace SynchroClientAndroid.Controls
             CommandInstance command = GetCommand(CommandName.OnClick);
             if (command != null)
             {
-                Util.debug("Button click with command: " + command);
+                logger.Debug("Button click with command: {0}", command);
                 this.StateManager.processCommand(command.Command, command.GetResolvedParameters(BindingContext));
             }
         }

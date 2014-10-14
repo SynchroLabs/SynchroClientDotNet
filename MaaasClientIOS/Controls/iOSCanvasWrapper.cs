@@ -13,10 +13,12 @@ namespace MaaasClientIOS.Controls
 {
     class iOSCanvasWrapper : iOSControlWrapper
     {
+        static Logger logger = Logger.GetLogger("iOSCanvasWrapper");
+
         public iOSCanvasWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
-            Util.debug("Creating canvas element");
+            logger.Debug("Creating canvas element");
 
             UIView canvas = new UIView();
             this._control = canvas;

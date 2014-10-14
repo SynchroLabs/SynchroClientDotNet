@@ -9,6 +9,8 @@ namespace MaaasCore
 {
     public abstract class PageView
     {
+        static Logger logger = Logger.GetLogger("PageView");
+
         public Action<string> setPageTitle { get; set; }
         public Action<bool> setBackEnabled { get; set; } // Optional - set if you care about back enablement
 
@@ -56,19 +58,19 @@ namespace MaaasCore
         {
             if (_stateManager.IsBackSupported())
             {
-                Util.debug("Back navigation");
+                logger.Debug("Back navigation");
                 _stateManager.sendBackRequest();
                 return true;
             }
             else if ((_doBackToMenu != null) && _stateManager.IsOnMainPath())
             {
-                Util.debug("Back navigation - returning to menu");
+                logger.Debug("Back navigation - returning to menu");
                 _doBackToMenu();
                 return true;
             }
             else
             {
-                Util.debug("OnBackCommand called with no back command, ignoring");
+                logger.Warn("OnBackCommand called with no back command, ignoring");
                 return false; // Not handled
             }
         }

@@ -21,6 +21,8 @@ namespace MaaasShared
     //
     public class TransportWebSocket4Net : Transport
     {
+        static Logger logger = Logger.GetLogger("TransportWebSocket4Net");
+
         protected WebSocket _ws;
 
         protected TaskCompletionSource<bool> _connecting = new TaskCompletionSource<bool>();
@@ -77,7 +79,7 @@ namespace MaaasShared
 
                     webSocket.Opened += new EventHandler((sender, e) => 
                     {
-                        Util.debug("WebSocket opened");
+                        logger.Debug("WebSocket opened");
                         _connecting.SetResult(true);
                     });
 
@@ -87,36 +89,36 @@ namespace MaaasShared
                         {
                             _connecting.SetResult(false);
                         }
-                        Console.WriteLine(e.Exception.GetType() + ":" + e.Exception.Message + System.Environment.NewLine + e.Exception.StackTrace);
+                        logger.Error("WebSocket error: {0}", e);
 
                         if (e.Exception.InnerException != null)
                         {
-                            Console.WriteLine(e.Exception.InnerException.GetType());
+                            logger.Error("WebSocket - inner exception: {0}", e.Exception.InnerException);
                         }
                         postFailureToUI(requestFailureHandler, requestObject, e.Exception);
                     });
 
                     webSocket.Closed += new EventHandler((sender, e) =>
                     {
-                        Util.debug("WebSocket closed");
+                        logger.Debug("WebSocket closed");
                     });
 
                     webSocket.MessageReceived += new EventHandler<MessageReceivedEventArgs>((sender, e) =>
                     {
-                        Util.debug("Received message from server: " + e.Message);
+                        logger.Debug("Received message from server: {0}", e.Message);
                         JObject responseObject = JObject.Parse(e.Message);
 
                         this.postResponseToUI(responseHandler, responseObject);
                     });
 
                     _connecting = new TaskCompletionSource<bool>();
-                    Util.debug("Connecting to WebSocket server on: " + _uri);
+                    logger.Debug("Connecting to WebSocket server on: {0}", _uri);
                     webSocket.Open();
                     bool connected = await _connecting.Task;
                     _connecting = null;
                     if (connected)
                     {
-                        Util.debug("Connected to WebSocket server on: " + _uri);
+                        logger.Debug("Connected to WebSocket server on: {0}", _uri);
                         _ws = webSocket; // Only store it after successfully connecting.
                     }
                 }
@@ -129,7 +131,7 @@ namespace MaaasShared
             catch (Exception ex) // For debugging
             {
                 // Add your specific error-handling code here.
-                Console.WriteLine(ex.GetType() + ":" + ex.Message + System.Environment.NewLine + ex.StackTrace);
+                logger.Error("WebSocket error: {0}", ex);
             }
         }
     }

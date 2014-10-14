@@ -496,6 +496,8 @@ namespace MaaasClientIOS.Controls
 
     public class iOSControlWrapper : ControlWrapper
     {
+        static Logger logger = Logger.GetLogger("iOSControlWrapper");
+
         protected UIView _control;
         public UIView Control { get { return _control; } }
 
@@ -857,8 +859,9 @@ namespace MaaasClientIOS.Controls
 
         protected void processCommonFrameworkElementProperies(JObject controlSpec)
         {
+            logger.Debug("Processing framework element properties");
+
             // !!! This could be a little more thourough ;)
-            Util.debug("Processing framework element properties");
 
             //processElementProperty((string)controlSpec["name"], value => this.Control.Name = ToString(value));
             //processElementProperty((string)controlSpec["minheight"], value => this.Control.MinHeight = ToDeviceUnits(value));
@@ -1005,7 +1008,7 @@ namespace MaaasClientIOS.Controls
                 iOSControlWrapper controlWrapper = CreateControl(this, controlContext, controlSpec);
                 if (controlWrapper == null)
                 {
-                    Util.debug("WARNING: Unable to create control of type: " + controlSpec["control"]);
+                    logger.Warn("WARNING: Unable to create control of type: {0}", controlSpec["control"]);
                 }
                 else if (OnCreateControl != null)
                 {

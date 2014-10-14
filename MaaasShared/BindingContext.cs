@@ -12,6 +12,8 @@ namespace MaaasCore
     //
     public class BindingContext
     {
+        static Logger logger = Logger.GetLogger("BindingContext");
+
         ViewModel _viewModel;
 
         string _bindingPath;
@@ -49,7 +51,7 @@ namespace MaaasCore
             _bindingPath = _bindingTokensRE.Replace(bindingPath, delegate(Match m)
             {
                 string pathElement = m.Groups[1].ToString();
-                Util.debug("Found binding path element: " + pathElement);
+                logger.Debug("Found binding path element: {0}", pathElement);
                 if (pathElement == "root")
                 {
                     parentPath = "";

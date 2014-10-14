@@ -21,10 +21,12 @@ namespace SynchroClientAndroid.Controls
     //
     class AndroidGridViewWrapper : AndroidControlWrapper
     {
+        static Logger logger = Logger.GetLogger("AndroidGridViewWrapper");
+
         public AndroidGridViewWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
-            Util.debug("Creating grid view button");
+            logger.Debug("Creating grid view button");
             GridView gridView = new GridView(((AndroidControlWrapper)parent).Control.Context);
             this._control = gridView;
 

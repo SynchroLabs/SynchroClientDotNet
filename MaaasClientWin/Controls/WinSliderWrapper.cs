@@ -11,10 +11,11 @@ namespace MaaasClientWin.Controls
 {
     class WinSliderWrapper : WinControlWrapper
     {
+        static Logger logger = Logger.GetLogger("WinSliderWrapper");
+
         public WinSliderWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
-            Util.debug("Creating slider element");
             Slider slider = new Slider();
             this._control = slider;
 

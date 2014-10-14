@@ -82,6 +82,8 @@ namespace MaaasClientIOS.Controls
 
     class iOSPickerWrapper : iOSControlWrapper
     {
+        static Logger logger = Logger.GetLogger("iOSPickerWrapper");
+
         // On phones, we have a picker "input view" at the bottom of the screen when "editing", similar to the way the keyboard 
         // pops up there for a regular text field.  This is modelled after:
         //
@@ -104,7 +106,7 @@ namespace MaaasClientIOS.Controls
         public iOSPickerWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
-            Util.debug("Creating picker element");
+            logger.Debug("Creating picker element");
 
             _textBox = new PickerTextField();
             _textBox.BorderStyle = UITextBorderStyle.RoundedRect;
@@ -167,13 +169,13 @@ namespace MaaasClientIOS.Controls
 
         public JToken getPickerContents(UIPickerView picker)
         {
-            Util.debug("Getting picker contents - NOOP");
+            logger.Debug("Getting picker contents - NOOP");
             throw new NotImplementedException();
         }
 
         public void setPickerContents(UIPickerView picker, BindingContext bindingContext, string itemContent)
         {
-            Util.debug("Setting picker contents");
+            logger.Debug("Setting picker contents");
 
             _selectionChangingProgramatically = true;
 
@@ -229,7 +231,7 @@ namespace MaaasClientIOS.Controls
 
         void picker_ItemSelected(UIPickerView picker, int row)
         {
-            Util.debug("Picker selection changed");
+            logger.Debug("Picker selection changed");
 
             ValueBinding selectionBinding = GetValueBinding("selection");
             if (selectionBinding != null)
@@ -247,7 +249,7 @@ namespace MaaasClientIOS.Controls
                 CommandInstance command = GetCommand(CommandName.OnSelectionChange);
                 if (command != null)
                 {
-                    Util.debug("Picker item click with command: " + command);
+                    logger.Debug("Picker item click with command: {0}", command);
 
                     // The item click command handler resolves its tokens relative to the item clicked (not the list view).
                     //

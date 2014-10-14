@@ -87,6 +87,8 @@ namespace MaaasClientIOS
     [Register("LauncherViewController")]
     public class LauncherViewController : UIViewController
     {
+        static Logger logger = Logger.GetLogger("LaunchViewController");
+
         MaaasAppManager _maaasAppManager;
         List<MaaasApp> tableItems = new List<MaaasApp>();
 
@@ -118,7 +120,7 @@ namespace MaaasClientIOS
             UIBarButtonSystemItem item = (UIBarButtonSystemItem)typeof(UIBarButtonSystemItem).GetField("Add").GetValue(null);
             UIBarButtonItem addButton = new UIBarButtonItem(item, (s, e) => 
             {
-                Util.debug("Launcher Add button pushed");
+                logger.Debug("Launcher Add button pushed");
                 AppDetailViewController detailView = new AppDetailViewController(_maaasAppManager, null);
                 this.NavigationController.PushViewController(detailView, false);
             });

@@ -16,10 +16,12 @@ namespace SynchroClientAndroid.Controls
 {
     class AndroidCanvasWrapper : AndroidControlWrapper
     {
+        static Logger logger = Logger.GetLogger("AndroidCanvasWrapper");
+
         public AndroidCanvasWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
-            Util.debug("Creating canvas element");
+            logger.Debug("Creating canvas element");
 
             AbsoluteLayout absLayout = new AbsoluteLayout(((AndroidControlWrapper)parent).Control.Context);
             this._control = absLayout;

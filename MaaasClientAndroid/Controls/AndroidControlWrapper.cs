@@ -253,6 +253,8 @@ namespace SynchroClientAndroid.Controls
 
     public class AndroidControlWrapper : ControlWrapper
     {
+        static Logger logger = Logger.GetLogger("AndroidControlWrapper");
+
         protected View _control;
         public View Control { get { return _control; } }
 
@@ -572,7 +574,7 @@ namespace SynchroClientAndroid.Controls
             string heightString = ToString(value);
             if (heightString.IndexOf("*") >= 0)
             {
-                Util.debug("Got star height string: " + value);
+                logger.Debug("Got star height string: {0}", value);
                 this.Height = ViewGroup.LayoutParams.MatchParent;
             }
             else
@@ -586,7 +588,7 @@ namespace SynchroClientAndroid.Controls
             string widthString = ToString(value);
             if (widthString.IndexOf("*") >= 0)
             {
-                Util.debug("Got star width string: " + value);
+                logger.Debug("Got star width string: {0}", value);
                 this.Width = ViewGroup.LayoutParams.MatchParent;
             }
             else
@@ -597,8 +599,9 @@ namespace SynchroClientAndroid.Controls
 
         protected void processCommonFrameworkElementProperies(JObject controlSpec)
         {
+            logger.Debug("Processing framework element properties");
+
             // !!! This could be a little more thourough ;)
-            Util.debug("Processing framework element properties");
 
             //processElementProperty((string)controlSpec["name"], value => this.Control.Name = ToString(value));
 
@@ -746,7 +749,7 @@ namespace SynchroClientAndroid.Controls
                 AndroidControlWrapper controlWrapper = CreateControl(this, controlContext, controlSpec);
                 if (controlWrapper == null)
                 {
-                    Util.debug("WARNING: Unable to create control of type: " + controlSpec["control"]);
+                    logger.Warn("WARNING: Unable to create control of type: {0}", controlSpec["control"]);
                 }
                 else if (OnCreateControl != null)
                 {

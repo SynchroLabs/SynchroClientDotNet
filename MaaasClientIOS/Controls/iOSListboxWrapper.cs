@@ -40,6 +40,8 @@ namespace MaaasClientIOS.Controls
     //
     public class CheckableTableSourceItem
     {
+        static Logger logger = Logger.GetLogger("CheckableTableSourceItem");
+
         protected bool _checked = false;
         protected NSIndexPath _indexPath;
         protected TableSourceItem _tableSourceItem;
@@ -77,7 +79,7 @@ namespace MaaasClientIOS.Controls
 
         public UITableViewCell GetCell(UITableView tableView)
         {
-            Util.debug("Getting cell for: " + _indexPath);
+            logger.Debug("Getting cell for: {0}", _indexPath);
             UITableViewCell cell = tableView.DequeueReusableCell(_tableSourceItem.CellIdentifier);
             if (cell == null)
             {
@@ -102,6 +104,8 @@ namespace MaaasClientIOS.Controls
 
     public class CheckableTableSource : UITableViewSource
     {
+        static Logger logger = Logger.GetLogger("CheckableTableSource"); 
+        
         protected List<CheckableTableSourceItem> _tableItems = new List<CheckableTableSourceItem>();
 
         protected OnSelectionChanged _onSelectionChanged;
@@ -143,7 +147,7 @@ namespace MaaasClientIOS.Controls
 
         public override UITableViewCell GetCell(UITableView tableView, MonoTouch.Foundation.NSIndexPath indexPath)
         {
-            Util.debug("Getting cell for path: " + indexPath);
+            logger.Debug("Getting cell for path: {0}", indexPath);
             CheckableTableSourceItem item = _tableItems[indexPath.Row];
             UITableViewCell cell = item.GetCell(tableView);
             if ((_selectionMode == ListSelectionMode.None) && (_onItemClicked != null))
@@ -165,14 +169,14 @@ namespace MaaasClientIOS.Controls
 
         public override float GetHeightForRow(UITableView tableView, NSIndexPath indexPath)
         {
-            Util.debug("Getting row height for: " + indexPath);
+            logger.Debug("Getting row height for: {0}", indexPath);
             CheckableTableSourceItem item = _tableItems[indexPath.Row];
             return item.GetHeightForRow(tableView);
         }
 
         public override void RowSelected(UITableView tableView, MonoTouch.Foundation.NSIndexPath indexPath)
         {
-            Util.debug("Row selected: " + indexPath);
+            logger.Debug("Row selected: {0}", indexPath);
 
             tableView.DeselectRow(indexPath, true); // normal iOS behaviour is to remove the blue highlight
 
@@ -213,7 +217,7 @@ namespace MaaasClientIOS.Controls
 
         public override void RowDeselected(UITableView tableView, MonoTouch.Foundation.NSIndexPath indexPath)
         {
-            Util.debug("Row deselected: " + indexPath);
+            logger.Debug("Row deselected: {0}", indexPath);
         }
 
         /*
@@ -287,6 +291,8 @@ namespace MaaasClientIOS.Controls
 
     class iOSListBoxWrapper : iOSControlWrapper
     {
+        static Logger logger = Logger.GetLogger("iOSListBoxWrapper");
+
         bool _selectionChangingProgramatically = false;
         JToken _localSelection;
 
@@ -295,7 +301,7 @@ namespace MaaasClientIOS.Controls
         public iOSListBoxWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
-            Util.debug("Creating list box element");
+            logger.Debug("Creating list box element");
 
             var table = new UITableView();
             this._control = table;
@@ -338,13 +344,13 @@ namespace MaaasClientIOS.Controls
 
         public JToken getListboxContents(UITableView tableView)
         {
-            Util.debug("Get listbox contents - NOOP");
+            logger.Debug("Get listbox contents - NOOP");
             throw new NotImplementedException();
         }
 
         public void setListboxContents(UITableView tableView, BindingContext bindingContext, string itemContent)
         {
-            Util.debug("Setting listbox contents");
+            logger.Debug("Setting listbox contents");
 
             _selectionChangingProgramatically = true;
 
@@ -484,7 +490,7 @@ namespace MaaasClientIOS.Controls
 
         void listbox_ItemClicked(TableSourceItem item)
         {
-            Util.debug("Listbox item clicked");
+            logger.Debug("Listbox item clicked");
 
             UITableView tableView = (UITableView)this.Control;
             BindingContextAsCheckableStringTableSource tableSource = (BindingContextAsCheckableStringTableSource)tableView.Source;
@@ -497,7 +503,7 @@ namespace MaaasClientIOS.Controls
                     CommandInstance command = GetCommand(CommandName.OnItemClick);
                     if (command != null)
                     {
-                        Util.debug("ListBox item click with command: " + command);
+                        logger.Debug("ListBox item click with command: {0}", command);
 
                         // The item click command handler resolves its tokens relative to the item clicked (not the list view).
                         //
@@ -509,7 +515,7 @@ namespace MaaasClientIOS.Controls
 
         void listbox_SelectionChanged(TableSourceItem item)
         {
-            Util.debug("Listbox selection changed");
+            logger.Debug("Listbox selection changed");
 
             UITableView tableView = (UITableView)this.Control;
             BindingContextAsCheckableStringTableSource tableSource = (BindingContextAsCheckableStringTableSource)tableView.Source;
@@ -529,7 +535,7 @@ namespace MaaasClientIOS.Controls
                 CommandInstance command = GetCommand(CommandName.OnSelectionChange);
                 if (command != null)
                 {
-                    Util.debug("ListView selection change with command: " + command);
+                    logger.Debug("ListView selection change with command: {0}", command);
 
                     if (tableSource.SelectionMode == ListSelectionMode.Single)
                     {

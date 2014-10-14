@@ -66,6 +66,8 @@ namespace SynchroClientAndroid.Controls
 
     class ListViewAdapter : BaseAdapter
     {
+        static Logger logger = Logger.GetLogger("ListViewAdapter");
+
         Context _context;
 
         AndroidControlWrapper _parentControl;
@@ -123,7 +125,7 @@ namespace SynchroClientAndroid.Controls
 
         void Control_ViewDetachedFromWindow(object sender, View.ViewDetachedFromWindowEventArgs e)
         {
-            Util.debug("View detached from window");
+            logger.Debug("View detached from window");
         }
 
         public override int Count 
@@ -153,6 +155,8 @@ namespace SynchroClientAndroid.Controls
 
     class AndroidListViewWrapper : AndroidControlWrapper
     {
+        static Logger logger = Logger.GetLogger("AndroidListViewWrapper");
+
         bool _selectionChangingProgramatically = false;
         JToken _localSelection;
 
@@ -161,7 +165,7 @@ namespace SynchroClientAndroid.Controls
         public AndroidListViewWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
-            Util.debug("Creating listview element");
+            logger.Debug("Creating listview element");
 
             ListView listView = new ListView(((AndroidControlWrapper)parent).Control.Context);
             this._control = listView;
@@ -251,13 +255,13 @@ namespace SynchroClientAndroid.Controls
 
         public JToken getListViewContents(ListView listbox)
         {
-            Util.debug("Get listview contents - NOOP");
+            logger.Debug("Get listview contents - NOOP");
             throw new NotImplementedException();
         }
 
         public void setListViewContents(ListView listView, BindingContext bindingContext)
         {
-            Util.debug("Setting listview contents");
+            logger.Debug("Setting listview contents");
 
             _selectionChangingProgramatically = true;
 
@@ -405,7 +409,7 @@ namespace SynchroClientAndroid.Controls
                     CommandInstance command = GetCommand(CommandName.OnItemClick);
                     if (command != null)
                     {
-                        Util.debug("ListView item clicked with command: " + command);
+                        logger.Debug("ListView item clicked with command: {0}", command);
 
                         ListItemView listItemView = e.View as ListItemView;
                         if (listItemView != null)
@@ -426,7 +430,7 @@ namespace SynchroClientAndroid.Controls
                     CommandInstance command = GetCommand(CommandName.OnSelectionChange);
                     if (command != null)
                     {
-                        Util.debug("ListView selection changed with command: " + command);
+                        logger.Debug("ListView selection changed with command: {0}", command);
 
                         if (listView.ChoiceMode == ChoiceMode.Single)
                         {

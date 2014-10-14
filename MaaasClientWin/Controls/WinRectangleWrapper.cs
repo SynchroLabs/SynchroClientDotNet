@@ -12,10 +12,12 @@ namespace MaaasClientWin.Controls
 {
     class WinRectangleWrapper : WinControlWrapper
     {
+        static Logger logger = Logger.GetLogger("WinRectangleWrapper");
+
         public WinRectangleWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
-            Util.debug("Creating rectangle element");
+            logger.Debug("Creating rectangle element");
             Rectangle rect = new Rectangle();
             this._control = rect;
 

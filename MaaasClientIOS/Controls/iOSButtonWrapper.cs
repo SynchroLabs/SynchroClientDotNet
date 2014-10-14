@@ -13,12 +13,14 @@ namespace MaaasClientIOS.Controls
 {
     class iOSButtonWrapper : iOSControlWrapper
     {
+        static Logger logger = Logger.GetLogger("iOSButtonWrapper");
+
         static string[] Commands = new string[] { CommandName.OnClick };
 
         public iOSButtonWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
-            Util.debug("Creating button element with caption of: " + controlSpec["caption"]);
+            logger.Debug("Creating button element with caption of: {0}", controlSpec["caption"]);
 
             UIButton button = UIButton.FromType(UIButtonType.RoundedRect);
             this._control = button;
@@ -46,7 +48,7 @@ namespace MaaasClientIOS.Controls
             CommandInstance command = GetCommand(CommandName.OnClick);
             if (command != null)
             {
-                Util.debug("Button click with command: " + command);
+                logger.Debug("Button click with command: {0}", command);
                 this.StateManager.processCommand(command.Command, command.GetResolvedParameters(BindingContext));
             }
         }

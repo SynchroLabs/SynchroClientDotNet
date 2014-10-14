@@ -78,6 +78,8 @@ namespace MaaasClientWinPhone.Controls
 
     public class WinPhoneControlWrapper : ControlWrapper
     {
+        static Logger logger = Logger.GetLogger("WinPhoneControlWrapper");
+
         protected FrameworkElement _control;
         public FrameworkElement Control { get { return _control; } }
 
@@ -276,7 +278,7 @@ namespace MaaasClientWinPhone.Controls
             string heightString = ToString(value);
             if (heightString.IndexOf("*") >= 0)
             {
-                Util.debug("Got height string: " + value);
+                logger.Debug("Got height string: {0}", value);
                 control.VerticalAlignment = VerticalAlignment.Stretch;
             }
             else
@@ -290,7 +292,7 @@ namespace MaaasClientWinPhone.Controls
             string widthString = ToString(value);
             if (widthString.IndexOf("*") >= 0)
             {
-                Util.debug("Got star width string: " + value);
+                logger.Debug("Got star width string: {0}", value);
                 control.HorizontalAlignment = HorizontalAlignment.Stretch;
             }
             else
@@ -301,7 +303,8 @@ namespace MaaasClientWinPhone.Controls
 
         protected void processCommonFrameworkElementProperies(JObject controlSpec)
         {
-            Util.debug("Processing framework element properties");
+            logger.Debug("Processing framework element properties");
+
             processElementProperty((string)controlSpec["name"], value => this.Control.Name = ToString(value));
             processElementProperty((string)controlSpec["horizontalAlignment"], value => this.Control.HorizontalAlignment = ToHorizontalAlignment(value));
             processElementProperty((string)controlSpec["verticalAlignment"], value => this.Control.VerticalAlignment = ToVerticalAlignment(value));
@@ -426,7 +429,7 @@ namespace MaaasClientWinPhone.Controls
                 WinPhoneControlWrapper controlWrapper = CreateControl(this, controlContext, controlSpec);
                 if (controlWrapper == null)
                 {
-                    Util.debug("WARNING: Unable to create control of type: " + controlSpec["control"]);
+                    logger.Warn("WARNING: Unable to create control of type: {0}", controlSpec["control"]);
                 }
                 else if (OnCreateControl != null)
                 {

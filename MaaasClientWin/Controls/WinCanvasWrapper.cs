@@ -11,10 +11,11 @@ namespace MaaasClientWin.Controls
 {
     class WinCanvasWrapper : WinControlWrapper
     {
+        static Logger logger = Logger.GetLogger("WinCanvasWrapper");
+
         public WinCanvasWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
-            Util.debug("Creating canvas element");
             Canvas canvas = new Canvas();
             this._control = canvas;
 

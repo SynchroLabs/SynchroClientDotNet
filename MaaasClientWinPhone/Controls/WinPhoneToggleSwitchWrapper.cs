@@ -12,12 +12,14 @@ namespace MaaasClientWinPhone.Controls
 {
     class WinPhoneToggleSwitchWrapper : WinPhoneControlWrapper
     {
+        static Logger logger = Logger.GetLogger("WinPhoneToggleSwitchWrapper");
+
         static string[] Commands = new string[] { CommandName.OnToggle };
 
         public WinPhoneToggleSwitchWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
-            Util.debug("Creating toggle element with caption of: " + controlSpec["caption"]);
+            logger.Debug("Creating toggle element with caption of: {0}", controlSpec["caption"]);
             ToggleSwitch toggleSwitch = new ToggleSwitch();
             this._control = toggleSwitch;
 
@@ -59,7 +61,7 @@ namespace MaaasClientWinPhone.Controls
             CommandInstance command = GetCommand(CommandName.OnToggle);
             if (command != null)
             {
-                Util.debug("ToggleSwitch toggled with command: " + command);
+                logger.Debug("ToggleSwitch toggled with command: {0}", command);
                 this.StateManager.processCommand(command.Command, command.GetResolvedParameters(BindingContext));
             }
         }

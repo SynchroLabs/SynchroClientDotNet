@@ -15,10 +15,12 @@ namespace MaaasClientWinPhone.Controls
     //
     class WinPhoneWebViewWrapper : WinPhoneControlWrapper
     {
+        static Logger logger = Logger.GetLogger("WinPhoneWebViewWrapper");
+
         public WinPhoneWebViewWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
-            Util.debug("Creating web view element");
+            logger.Debug("Creating web view element");
             WebBrowser webView = new WebBrowser();
             this._control = webView;
 

@@ -12,10 +12,12 @@ namespace MaaasClientWinPhone.Controls
 {
     class WinPhoneTextBlockWrapper : WinPhoneControlWrapper
     {
+        static Logger logger = Logger.GetLogger("WinPhoneTextBlockWrapper");
+
         public WinPhoneTextBlockWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
-            Util.debug("Creating text element with value of: " + controlSpec["value"]);
+            logger.Debug("Creating text element with value of: {0}", controlSpec["value"]);
             TextBlock textBlock = new TextBlock();
             textBlock.TextWrapping = TextWrapping.Wrap;
 

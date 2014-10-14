@@ -15,10 +15,12 @@ namespace MaaasClientWinPhone.Controls
     //
     class WinPhoneGridViewWrapper : WinPhoneControlWrapper
     {
+        static Logger logger = Logger.GetLogger("WinPhoneGridViewWrapper");
+
         public WinPhoneGridViewWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
-            Util.debug("Creating grid view element");
+            logger.Debug("Creating grid view element");
             LongListSelector gridView = new LongListSelector();
             this._control = gridView;
 

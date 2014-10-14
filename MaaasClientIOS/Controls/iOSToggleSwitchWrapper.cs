@@ -12,12 +12,14 @@ namespace MaaasClientIOS.Controls
 {
     class iOSToggleSwitchWrapper : iOSControlWrapper
     {
+        static Logger logger = Logger.GetLogger("iOSToggleSwitchWrapper");
+
         static string[] Commands = new string[] { CommandName.OnToggle };
 
         public iOSToggleSwitchWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
-            Util.debug("Creating toggle switch element");
+            logger.Debug("Creating toggle switch element");
 
             UISwitch toggleSwitch = new UISwitch();
             this._control = toggleSwitch;
@@ -48,7 +50,7 @@ namespace MaaasClientIOS.Controls
             CommandInstance command = GetCommand(CommandName.OnToggle);
             if (command != null)
             {
-                Util.debug("ToggleSwitch toggled with command: " + command);
+                logger.Debug("ToggleSwitch toggled with command: {0}", command);
                 this.StateManager.processCommand(command.Command, command.GetResolvedParameters(BindingContext));
             }
         }

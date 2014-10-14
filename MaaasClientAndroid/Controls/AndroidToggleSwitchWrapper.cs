@@ -16,12 +16,14 @@ namespace SynchroClientAndroid.Controls
 {
     class AndroidToggleSwitchWrapper : AndroidControlWrapper
     {
+        static Logger logger = Logger.GetLogger("AndroidToggleSwitchWrapper");
+
         static string[] Commands = new string[] { CommandName.OnToggle };
 
         public AndroidToggleSwitchWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
-            Util.debug("Creating toggle switch");
+            logger.Debug("Creating toggle switch");
 
             Switch toggleSwitch = new Switch(((AndroidControlWrapper)parent).Control.Context);
             this._control = toggleSwitch;
@@ -53,7 +55,7 @@ namespace SynchroClientAndroid.Controls
             CommandInstance command = GetCommand(CommandName.OnToggle);
             if (command != null)
             {
-                Util.debug("ToggleSwitch toggled with command: " + command);
+                logger.Debug("ToggleSwitch toggled with command: {0}", command);
                 this.StateManager.processCommand(command.Command, command.GetResolvedParameters(BindingContext));
             }
         }

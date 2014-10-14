@@ -16,10 +16,12 @@ namespace SynchroClientAndroid.Controls
 {
     class AndroidScrollWrapper : AndroidControlWrapper
     {
+        static Logger logger = Logger.GetLogger("AndroidScrollWrapper");
+
         public AndroidScrollWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
-            Util.debug("Creating scroll element");
+            logger.Debug("Creating scroll element");
 
             FrameLayout scroller = null;
 

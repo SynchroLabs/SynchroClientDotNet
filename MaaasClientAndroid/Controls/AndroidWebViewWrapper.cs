@@ -19,10 +19,12 @@ namespace SynchroClientAndroid.Controls
     //
     class AndroidWebViewWrapper : AndroidControlWrapper
     {
+        static Logger logger = Logger.GetLogger("AndroidWebViewWrapper");
+
         public AndroidWebViewWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
-            Util.debug("Creating web view button");
+            logger.Debug("Creating web view button");
             WebView webView = new WebView(((AndroidControlWrapper)parent).Control.Context);
             this._control = webView;
 

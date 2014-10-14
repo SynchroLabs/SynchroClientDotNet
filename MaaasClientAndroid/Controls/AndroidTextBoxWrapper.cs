@@ -17,12 +17,14 @@ namespace SynchroClientAndroid.Controls
 {
     class AndroidTextBoxWrapper : AndroidControlWrapper
     {
+        static Logger logger = Logger.GetLogger("AndroidTextBoxWrapper");
+
         bool _updateOnChange = false;
 
         public AndroidTextBoxWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
-            Util.debug("Creating text box element with value of: " + controlSpec["value"]);
+            logger.Debug("Creating text box element with value of: " + controlSpec["value"]);
 
             EditText editText = new EditText(((AndroidControlWrapper)parent).Control.Context);
             this._control = editText;

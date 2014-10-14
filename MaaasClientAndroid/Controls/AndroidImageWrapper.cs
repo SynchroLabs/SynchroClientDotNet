@@ -24,10 +24,12 @@ namespace SynchroClientAndroid.Controls
 {
     class AndroidImageWrapper : AndroidControlWrapper
     {
+        static Logger logger = Logger.GetLogger("AndroidImageWrapper");
+
         public AndroidImageWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
-            Util.debug("Creating image element");
+            logger.Debug("Creating image element");
             ImageView image = new ImageView(((AndroidControlWrapper)parent).Control.Context);
             this._control = image;
 
@@ -62,21 +64,21 @@ namespace SynchroClientAndroid.Controls
             try
             {
                 Java.Net.InetAddress address = Java.Net.Inet4Address.GetByName(host);
-                Util.debug("Inet4Address.GetByName success for: " + host);
+                logger.Debug("Inet4Address.GetByName success for: {0}", host);
             }
             catch (Exception e)
             {
-                Util.debug("Inet4Address.GetByName failed for: " + host);
+                logger.Debug("Inet4Address.GetByName failed for: {0}", host);
             }
 
             try
             {
                 Java.Net.InetAddress[] addresses = Java.Net.InetAddress.GetAllByName(host);
-                Util.debug("InetAddress.GetAllByName success for: " + host);
+                logger.Debug("InetAddress.GetAllByName success for: {0}", host);
             }
             catch (Exception e)
             {
-                Util.debug("InetAddress.GetAllByName failed for: " + host);
+                logger.Debug("InetAddress.GetAllByName failed for: {0}", host);
             }
         }
 
@@ -95,7 +97,7 @@ namespace SynchroClientAndroid.Controls
             // http://fbcdn-profile-a.akamaihd.net/hprofile-ak-ash3/c23.23.285.285/s160x160/943786_10201215910308278_1343091684_n.jpg
             // hostLookup("fbcdn-profile-a.akamaihd.net");
 
-            Util.debug("Getting read the try to load image from: " + uri);
+            logger.Debug("Getting read the try to load image from: {0}", uri);
 
             /*
 	        try 
@@ -117,7 +119,7 @@ namespace SynchroClientAndroid.Controls
             {
                 try
                 {
-                    Util.debug("Getting read the try to load image from: " + uri);
+                    logger.Debug("Getting read the try to load image from: {0}", uri);
 
                     var msg = await client.GetAsync(uri);
                     if (msg.IsSuccessStatusCode)
@@ -132,7 +134,7 @@ namespace SynchroClientAndroid.Controls
                 }
                 catch (Exception e)
                 {
-                    Util.debug("WebExceptioon caught, details: " +  e.Message);
+                    logger.Warn("WebExceptioon caught, details: {0}", e.Message);
                 }
             }
         }

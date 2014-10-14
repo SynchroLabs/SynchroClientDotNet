@@ -108,10 +108,12 @@ namespace MaaasClientIOS.Controls
 
     class iOSTextBlockWrapper : iOSControlWrapper
     {
+        static Logger logger = Logger.GetLogger("iOSTextBlockWrapper");
+
         public iOSTextBlockWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
-            Util.debug("Creating text block element with text of: " + controlSpec["value"]);
+            logger.Debug("Creating text block element with text of: {0}", controlSpec["value"]);
 
             ResizableLabel textBlock = new ResizableLabel(this.FrameProperties);
             textBlock.Lines = 0;

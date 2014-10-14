@@ -12,12 +12,13 @@ namespace MaaasClientWin.Controls
 {
     class WinBorderWrapper : WinControlWrapper
     {
+        static Logger logger = Logger.GetLogger("WinBorderWrapper");
+
         protected Border _border;
 
         public WinBorderWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
-            Util.debug("Creating border element");
             _border = new Border();
             this._control = _border;
 

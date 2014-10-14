@@ -13,10 +13,12 @@ namespace MaaasClientWin.Controls
 {
     class WinImageWrapper : WinControlWrapper
     {
+        static Logger logger = Logger.GetLogger("WinImageWrapper");
+
         public WinImageWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
-            Util.debug("Creating image element");
+            logger.Debug("Creating image element");
             Image image = new Image();
             this._control = image;
 

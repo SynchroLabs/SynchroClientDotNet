@@ -12,6 +12,8 @@ namespace MaaasClientWinPhone
 {
     class WinPhoneDeviceMetrics : MaaasDeviceMetrics
     {
+        static Logger logger = Logger.GetLogger("WinPhoneDeviceMetrics");
+
         // Windows Phone prior to GDR3 had no way to access the physical size of the screen.  All screens were scaled from a
         // virtual 480 x 800/853 resolution.
         //
@@ -34,7 +36,7 @@ namespace MaaasClientWinPhone
 
             if (!DeviceExtendedProperties.TryGetValue("PhysicalScreenResolution", out temp))
             {
-                Util.debug("Extended screen info not available");
+                logger.Debug("Extended screen info not available");
                 return false;
             }
 
@@ -43,7 +45,7 @@ namespace MaaasClientWinPhone
             // Can query for RawDpiY as well, but it will be the same value
             if (!DeviceExtendedProperties.TryGetValue("RawDpiX", out temp) || (double)temp == 0d)
             {
-                Util.debug("Extended screen info not available");
+                logger.Debug("Extended screen info not available");
                 return false;
             }
 
@@ -61,8 +63,8 @@ namespace MaaasClientWinPhone
             //
             double rawScalingFactor = screenResolution.Width / this._widthDeviceUnits;
 
-            Util.debug(String.Format("Extended screen info resolution {0} x {1}; {2:0.0#} raw scale; {3:0.0}\" x {4:0.0}\"",
-                screenResolution.Width, screenResolution.Height, rawScalingFactor, this._widthInches, this._heightInches));
+            logger.Debug("Extended screen info resolution {0} x {1}; {2:0.0#} raw scale; {3:0.0}\" x {4:0.0}\"",
+                screenResolution.Width, screenResolution.Height, rawScalingFactor, this._widthInches, this._heightInches);
 
             return true;
         }

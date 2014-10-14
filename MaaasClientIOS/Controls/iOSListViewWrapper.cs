@@ -120,6 +120,8 @@ namespace MaaasClientIOS.Controls
 
     class iOSListViewWrapper : iOSControlWrapper
     {
+        static Logger logger = Logger.GetLogger("iOSListViewWrapper");
+
         bool _selectionChangingProgramatically = false;
         JToken _localSelection;
 
@@ -128,7 +130,7 @@ namespace MaaasClientIOS.Controls
         public iOSListViewWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
-            Util.debug("Creating list view element");
+            logger.Debug("Creating list view element");
 
             var table = new UITableView();
             this._control = table;
@@ -174,13 +176,13 @@ namespace MaaasClientIOS.Controls
 
         public JToken getListViewContents(UITableView tableView)
         {
-            Util.debug("Get listview contents - NOOP");
+            logger.Debug("Get listview contents - NOOP");
             throw new NotImplementedException();
         }
 
         public void setListViewContents(UITableView tableView, BindingContext bindingContext)
         {
-            Util.debug("Setting listview contents");
+            logger.Debug("Setting listview contents");
 
             _selectionChangingProgramatically = true;
 
@@ -318,7 +320,7 @@ namespace MaaasClientIOS.Controls
 
         void listview_ItemClicked(TableSourceItem itemClicked)
         {
-            Util.debug("Listview item clicked: " + itemClicked);
+            logger.Debug("Listview item clicked: {0}", itemClicked);
 
             UITableView tableView = (UITableView)this.Control;
             CheckableBindingContextTableSource tableSource = (CheckableBindingContextTableSource)tableView.Source;
@@ -328,7 +330,7 @@ namespace MaaasClientIOS.Controls
                 CommandInstance command = GetCommand(CommandName.OnItemClick);
                 if (command != null)
                 {
-                    Util.debug("ListView item click with command: " + command);
+                    logger.Debug("ListView item click with command: {0}", command);
 
                     BindingContextTableSourceItem item = itemClicked as BindingContextTableSourceItem;
                     if (item != null)
@@ -343,7 +345,7 @@ namespace MaaasClientIOS.Controls
 
         void listview_SelectionChanged(TableSourceItem itemClicked)
         {
-            Util.debug("Listview selection changed");
+            logger.Debug("Listview selection changed");
 
             UITableView tableView = (UITableView)this.Control;
             CheckableBindingContextTableSource tableSource = (CheckableBindingContextTableSource)tableView.Source;
@@ -363,7 +365,7 @@ namespace MaaasClientIOS.Controls
                 CommandInstance command = GetCommand(CommandName.OnSelectionChange);
                 if (command != null)
                 {
-                    Util.debug("ListView selection change with command: " + command);
+                    logger.Debug("ListView selection change with command: {0}", command);
 
                     if (tableSource.SelectionMode == ListSelectionMode.Single)
                     {

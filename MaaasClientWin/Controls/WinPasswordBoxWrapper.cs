@@ -12,10 +12,12 @@ namespace MaaasClientWin.Controls
 {
     class WinPasswordBoxWrapper : WinControlWrapper
     {
+        static Logger logger = Logger.GetLogger("WinPasswordBoxWrapper");
+
         public WinPasswordBoxWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
-            Util.debug("Creating password box element with value of: " + controlSpec["value"]);
+            logger.Debug("Creating password box element with value of: {0}", controlSpec["value"]);
             PasswordBox passwordBox = new PasswordBox();
             this._control = passwordBox;
 

@@ -27,6 +27,8 @@ namespace MaaasClientWinPhone.Controls
 
     public class ListViewItem : Grid
     {
+        static Logger logger = Logger.GetLogger("ListViewItem");
+
         protected FrameworkElement _control;
         protected CheckBox _check;
 
@@ -124,6 +126,8 @@ namespace MaaasClientWinPhone.Controls
 
     public class ListViewItems : ObservableCollection<ListViewItem>
     {
+        static Logger logger = Logger.GetLogger("ListViewItems");
+
         protected ListViewSelectionMode _selectionMode;
         protected SelectedListViewItems _selected = new SelectedListViewItems();
 
@@ -159,7 +163,7 @@ namespace MaaasClientWinPhone.Controls
             {
                 foreach (ListViewItem item in e.NewItems)
                 {
-                    Util.debug("Selected ListViewItem added: " + item);
+                    logger.Debug("Selected ListViewItem added: {0}", item);
                     item.Selected = true;
                 }
             }
@@ -167,7 +171,7 @@ namespace MaaasClientWinPhone.Controls
             {
                 foreach (ListViewItem item in e.OldItems)
                 {
-                    Util.debug("Selected ListViewItem removed: " + item);
+                    logger.Debug("Selected ListViewItem removed: {0}", item);
                     item.Selected = false;
                 }
             }
@@ -176,6 +180,8 @@ namespace MaaasClientWinPhone.Controls
 
     class WinPhoneListViewWrapper : WinPhoneControlWrapper
     {
+        static Logger logger = Logger.GetLogger("WinPhoneListViewWrapper");
+
         ListViewSelectionMode _selectionMode = ListViewSelectionMode.None;
         bool _targetingRequired = false;
 
@@ -187,7 +193,7 @@ namespace MaaasClientWinPhone.Controls
         public WinPhoneListViewWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
-            Util.debug("Creating listview element");
+            logger.Debug("Creating listview element");
             LongListSelector listView = new LongListSelector();
             this._control = listView;
 
@@ -243,13 +249,13 @@ namespace MaaasClientWinPhone.Controls
 
         public JToken getListViewContents(LongListSelector listbox)
         {
-            Util.debug("Get listview contents - NOOP");
+            logger.Debug("Get listview contents - NOOP");
             throw new NotImplementedException();
         }
 
         public void setListViewContents(LongListSelector listview, JObject itemTemplate, BindingContext bindingContext)
         {
-            Util.debug("Setting listview contents");
+            logger.Debug("Setting listview contents");
 
             _selectionChangingProgramatically = true;
 
@@ -381,7 +387,7 @@ namespace MaaasClientWinPhone.Controls
             LongListSelector listview = sender as LongListSelector;
             if ((listview != null) && (listview.SelectedItem != null))
             {
-                Util.debug("ListView item clicked");
+                logger.Debug("ListView item clicked");
                 ControlWrapperListViewItem item = e.AddedItems[0] as ControlWrapperListViewItem;
                 if (item != null)
                 {
@@ -426,7 +432,7 @@ namespace MaaasClientWinPhone.Controls
                         CommandInstance command = GetCommand(CommandName.OnItemClick);
                         if (command != null)
                         {
-                            Util.debug("ListView item clicked with command: " + command);
+                            logger.Debug("ListView item clicked with command: {0}", command);
 
                             if (item != null)
                             {
@@ -445,7 +451,7 @@ namespace MaaasClientWinPhone.Controls
                         CommandInstance command = GetCommand(CommandName.OnSelectionChange);
                         if (command != null)
                         {
-                            Util.debug("ListView selection changed with command: " + command);
+                            logger.Debug("ListView selection changed with command: {0}", command);
 
                             if (_selectionMode == ListViewSelectionMode.Single)
                             {
@@ -486,7 +492,7 @@ namespace MaaasClientWinPhone.Controls
             if (e.ItemKind == LongListSelectorItemKind.Item)
             {
                 ControlWrapperListViewItem listViewItem = (ControlWrapperListViewItem)e.Container.Content;
-                Util.debug("ListView ItemRealized: " + listViewItem.ControlWrapper);
+                logger.Debug("ListView ItemRealized: {0}", listViewItem.ControlWrapper);
             }
         }
 
@@ -495,7 +501,7 @@ namespace MaaasClientWinPhone.Controls
             if (e.ItemKind == LongListSelectorItemKind.Item)
             {
                 ControlWrapperListViewItem listViewItem = (ControlWrapperListViewItem)e.Container.Content;
-                Util.debug("ListView ItemUnrealized: " + listViewItem.ControlWrapper);
+                logger.Debug("ListView ItemUnrealized: {0}", listViewItem.ControlWrapper);
             }
         }
     }

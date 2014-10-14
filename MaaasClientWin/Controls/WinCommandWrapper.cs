@@ -15,12 +15,14 @@ namespace MaaasClientWin.Controls
 
     class WinCommandWrapper : WinControlWrapper
     {
+        static Logger logger = Logger.GetLogger("WinCommandWrapper");
+
         static string[] Commands = new string[] { CommandName.OnClick };
 
         public WinCommandWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
-            Util.debug("Creating command element with label of: " + controlSpec["text"]);
+            logger.Debug("Creating command element with label of: {0}", controlSpec["text"]);
 
             AppBarButton button = new AppBarButton();
             this._control = button;
@@ -35,7 +37,7 @@ namespace MaaasClientWin.Controls
                 }
                 else
                 {
-                    Util.debug("Warning - command bar button icon not found for: " + ToString(value));
+                    logger.Warn("Warning - command bar button icon not found for: {0}", ToString(value));
                 }
             });
 
@@ -85,7 +87,7 @@ namespace MaaasClientWin.Controls
             CommandInstance command = GetCommand(CommandName.OnClick);
             if (command != null)
             {
-                Util.debug("Button click with command: " + command);
+                logger.Debug("Button click with command: {0}", command);
                 this.StateManager.processCommand(command.Command, command.GetResolvedParameters(BindingContext));
             }
         }

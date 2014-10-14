@@ -11,6 +11,8 @@ namespace MaaasClientWin.Controls
 {
     class WinListBoxWrapper : WinControlWrapper
     {
+        static Logger logger = Logger.GetLogger("WinListBoxWrapper");
+
         bool _selectionChangingProgramatically = false;
         JToken _localSelection;
 
@@ -21,7 +23,6 @@ namespace MaaasClientWin.Controls
         public WinListBoxWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
-            Util.debug("Creating listbox element");
             ListBox listbox = new ListBox();
             this._control = listbox;
 
@@ -73,7 +74,7 @@ namespace MaaasClientWin.Controls
 
         public JToken getListboxContents(ListBox listbox)
         {
-            Util.debug("Getting listbox contents");
+            logger.Debug("Getting listbox contents");
             return new JArray(
                 from BindingContextListItem item in listbox.Items
                 select item.GetValue()
@@ -82,7 +83,7 @@ namespace MaaasClientWin.Controls
 
         public void setListboxContents(ListBox listbox, BindingContext bindingContext, string itemContent)
         {
-            Util.debug("Setting listbox contents");
+            logger.Debug("Setting listbox contents");
 
             _selectionChangingProgramatically = true;
 
@@ -176,7 +177,7 @@ namespace MaaasClientWin.Controls
         void listbox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             
-            Util.debug("Listbox selection changed");
+            logger.Debug("Listbox selection changed");
             ListBox listbox = (ListBox)sender;
 
             ValueBinding selectionBinding = GetValueBinding("selection");
@@ -210,11 +211,11 @@ namespace MaaasClientWin.Controls
                 }
                 else
                 {
-                    Util.debug("Selection changed by user!");
+                    logger.Debug("Selection changed by user!");
                     CommandInstance command = GetCommand(CommandName.OnSelectionChange);
                     if (command != null)
                     {
-                        Util.debug("ListView item click with command: " + command);
+                        logger.Debug("ListView item click with command: {0}", command);
 
                         if (listbox.SelectionMode == SelectionMode.Single)
                         {

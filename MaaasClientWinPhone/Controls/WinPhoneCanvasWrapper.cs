@@ -11,10 +11,12 @@ namespace MaaasClientWinPhone.Controls
 {
     class WinPhoneCanvasWrapper : WinPhoneControlWrapper
     {
+        static Logger logger = Logger.GetLogger("WinPhoneCanvasWrapper");
+
         public WinPhoneCanvasWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
-            Util.debug("Creating canvas element");
+            logger.Debug("Creating canvas element");
             Canvas canvas = new Canvas();
             this._control = canvas;
 

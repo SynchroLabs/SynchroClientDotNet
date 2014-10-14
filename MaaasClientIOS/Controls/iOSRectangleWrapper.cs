@@ -43,10 +43,12 @@ namespace MaaasClientIOS.Controls
 
     class iOSRectangleWrapper : iOSControlWrapper
     {
+        static Logger logger = Logger.GetLogger("iOSRectangleWrapper");
+
         public iOSRectangleWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
-            Util.debug("Creating rectangle element");
+            logger.Debug("Creating rectangle element");
 
             RectangleView rect = new RectangleView();
             this._control = rect;

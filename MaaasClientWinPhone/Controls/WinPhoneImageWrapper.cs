@@ -13,10 +13,12 @@ namespace MaaasClientWinPhone.Controls
 {
     class WinPhoneImageWrapper : WinPhoneControlWrapper
     {
+        static Logger logger = Logger.GetLogger("WinPhoneImageWrapper");
+
         public WinPhoneImageWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
-            Util.debug("Creating image element");
+            logger.Debug("Creating image element");
             Image image = new Image();
             this._control = image;
 

@@ -57,6 +57,8 @@ namespace MaaasClientWinPhone.Controls
 
     class WinPhonePickerWrapper : WinPhoneControlWrapper
     {
+        static Logger logger = Logger.GetLogger("WinPhonePickerWrapper");
+
         bool _selectionChangingProgramatically = false;
         JToken _localSelection;
 
@@ -65,7 +67,7 @@ namespace MaaasClientWinPhone.Controls
         public WinPhonePickerWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
-            Util.debug("Creating picker element");
+            logger.Debug("Creating picker element");
             ListPicker picker = new ListPicker();
             this._control = picker;
 
@@ -101,7 +103,7 @@ namespace MaaasClientWinPhone.Controls
 
         public JToken getPickerContents(ListPicker picker)
         {
-            Util.debug("Getting picker contents");
+            logger.Debug("Getting picker contents");
             return new JArray(
                 from BindingContextListItem item in picker.Items
                 select item.GetValue()
@@ -110,7 +112,7 @@ namespace MaaasClientWinPhone.Controls
 
         public void setPickerContents(ListPicker picker, BindingContext bindingContext, string itemContent)
         {
-            Util.debug("Setting picker contents");
+            logger.Debug("Setting picker contents");
 
             List<BindingContext> itemContexts = bindingContext.SelectEach("$data");
 
@@ -180,7 +182,7 @@ namespace MaaasClientWinPhone.Controls
 
         void picker_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            Util.debug("Picker selection changed");
+            logger.Debug("Picker selection changed");
             ListPicker picker = (ListPicker)sender;
 
             ValueBinding selectionBinding = GetValueBinding("selection");
@@ -198,7 +200,7 @@ namespace MaaasClientWinPhone.Controls
                 CommandInstance command = GetCommand(CommandName.OnSelectionChange);
                 if (command != null)
                 {
-                    Util.debug("Picker item click with command: " + command);
+                    logger.Debug("Picker item click with command: {0}", command);
 
                     // The item click command handler resolves its tokens relative to the item clicked (not the list view).
                     //

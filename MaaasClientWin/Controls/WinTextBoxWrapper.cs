@@ -12,12 +12,14 @@ namespace MaaasClientWin.Controls
 {
     class WinTextBoxWrapper : WinControlWrapper
     {
+        static Logger logger = Logger.GetLogger("WinTextBoxWrapper");
+
         bool _updateOnChange = false;
 
         public WinTextBoxWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
-            Util.debug("Creating text box element with value of: " + controlSpec["value"]);
+            logger.Debug("Creating text box element with value of: {0}", controlSpec["value"]);
             TextBox textBox = new TextBox();
             this._control = textBox;
 

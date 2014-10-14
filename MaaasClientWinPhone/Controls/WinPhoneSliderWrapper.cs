@@ -11,10 +11,12 @@ namespace MaaasClientWinPhone.Controls
 {
     class WinPhoneSliderWrapper : WinPhoneControlWrapper
     {
+        static Logger logger = Logger.GetLogger("WinPhoneSliderWrapper");
+
         public WinPhoneSliderWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
-            Util.debug("Creating slider element");
+            logger.Debug("Creating slider element");
             Slider slider = new Slider();
             this._control = slider;
 

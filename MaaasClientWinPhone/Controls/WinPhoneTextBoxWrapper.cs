@@ -12,12 +12,14 @@ namespace MaaasClientWinPhone.Controls
 {
     class WinPhoneTextBoxWrapper : WinPhoneControlWrapper
     {
+        static Logger logger = Logger.GetLogger("WinPhoneTextBoxWrapper");
+
         bool _updateOnChange = false;
 
         public WinPhoneTextBoxWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
-            Util.debug("Creating text box element with value of: " + controlSpec["value"]);
+            logger.Debug("Creating text box element with value of: {0}", controlSpec["value"]);
 
             // Switched to PhoneTextBox to get PlaceholderText functionality
             // TextBox textBox = new TextBox();

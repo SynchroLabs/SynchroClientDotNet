@@ -32,6 +32,8 @@ namespace MaaasCore
 
     public class ControlWrapper
     {
+        static Logger logger = Logger.GetLogger("ControlWrapper");
+
         StateManager _stateManager;
         ViewModel _viewModel;
         BindingContext _bindingContext;
@@ -427,12 +429,12 @@ namespace MaaasCore
                     }
                     else
                     {
-                        Util.debug("Incorrect length for hex color specification - must be 6 (RRGGBB) or 8 (AARRGGBB) hex digits, was " + colorValue.Length + " digits");
+                        logger.Debug("Incorrect length for hex color specification - must be 6 (RRGGBB) or 8 (AARRGGBB) hex digits, was {0} digits", colorValue.Length);
                     }
                 }
                 catch (Exception e)
                 {
-                    Util.debug("Exception parsing hex value in color specification, details: " +  e.Message);
+                    logger.Debug("Exception parsing hex value in color specification, details: {0}", e.Message);
                 }
             }
             else
@@ -444,7 +446,7 @@ namespace MaaasCore
                 }
                 else
                 {
-                    Util.debug("Color name '" + colorValue + "' was not found, please choose a color name from the Microsoft SilverLight color set");
+                    logger.Debug("Color name '{0}' was not found, please choose a color name from the Microsoft SilverLight color set", colorValue);
                 }
             }
 
@@ -625,13 +627,13 @@ namespace MaaasCore
 
                 if ((element["binding"] != null) && (element["binding"].Type == JTokenType.Object))
                 {
-                    Util.debug("Found binding object");
+                    logger.Debug("Found binding object");
                     JObject bindingSpec = (JObject)element["binding"];
                     if (bindingSpec["foreach"] != null)
                     {
                         // First we create a BindingContext for the "foreach" path (a context to the elements to be iterated)
                         string bindingPath = (string)bindingSpec["foreach"];
-                        Util.debug("Found 'foreach' binding with path: " + bindingPath);
+                        logger.Debug("Found 'foreach' binding with path: {0}", bindingPath);
                         BindingContext forEachBindingContext = bindingContext.Select(bindingPath);
 
                         // Then we determine the bindingPath to use on each element
@@ -649,7 +651,7 @@ namespace MaaasCore
                         List<BindingContext> bindingContexts = forEachBindingContext.SelectEach(withPath);
                         foreach (var elementBindingContext in bindingContexts)
                         {
-                            Util.debug("foreach - creating control with binding context: " + elementBindingContext.BindingPath);
+                            logger.Debug("foreach - creating control with binding context: {0}", elementBindingContext.BindingPath);
                             onCreateControl(elementBindingContext, element);
                         }
                         controlCreated = true;
@@ -657,7 +659,7 @@ namespace MaaasCore
                     else if (bindingSpec["with"] != null)
                     {
                         string withBindingPath = (string)bindingSpec["with"];
-                        Util.debug("Found 'with' binding with path: " + withBindingPath);
+                        logger.Debug("Found 'with' binding with path: {0}", withBindingPath);
                         controlBindingContext = bindingContext.Select(withBindingPath);
                     }
                 }

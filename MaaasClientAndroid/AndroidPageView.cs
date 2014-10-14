@@ -134,6 +134,8 @@ namespace SynchroClientAndroid
 
     public class AndroidPageView  : PageView
     {
+        static Logger logger = Logger.GetLogger("AndroidPageView");
+
         Activity _activity;
         AndroidControlWrapper _rootControlWrapper;
 
@@ -160,7 +162,7 @@ namespace SynchroClientAndroid
 
         public bool OnCreateOptionsMenu(IMenu menu)
         {
-            Util.debug("Option menu created");
+            logger.Debug("Option menu created");
             if (_actionBarItems.Count > 0)
             {
                 int pos = 0;
@@ -182,7 +184,7 @@ namespace SynchroClientAndroid
             if ((item.ItemId >= 0) && (item.ItemId < _actionBarItems.Count))
             {
                 AndroidActionBarItem actionBarItem = _actionBarItems[item.ItemId];
-                Util.debug("Action bar item selected - id: " + item.ItemId + ", title: " + actionBarItem.Title);
+                logger.Debug("Action bar item selected - id: {0}, title: {1}", item.ItemId, actionBarItem.Title);
                 if (actionBarItem.OnItemSelected != null)
                 {
                     actionBarItem.OnItemSelected();
@@ -195,7 +197,7 @@ namespace SynchroClientAndroid
 
         public bool OnCommandBarUp(IMenuItem item)
         {
-            Util.debug("Command bar Up button pushed");
+            logger.Debug("Command bar Up button pushed");
             this.OnBackCommand();
             return true;
         }
@@ -295,10 +297,10 @@ namespace SynchroClientAndroid
 
                     dialog.SetButton(label, (s, ev) =>
                     {
-                        Util.debug("MessageBox Command invoked: " + label);
+                        logger.Debug("MessageBox Command invoked: {0}", label);
                         if (command != null)
                         {
-                            Util.debug("MessageBox command: " + command);
+                            logger.Debug("MessageBox command: {0}", command);
                             onCommand(command);
                         }
                     });
@@ -317,10 +319,10 @@ namespace SynchroClientAndroid
 
                     dialog.SetButton2(label, (s, ev) =>
                     {
-                        Util.debug("MessageBox Command invoked: " + label);
+                        logger.Debug("MessageBox Command invoked: {0}", label);
                         if (command != null)
                         {
-                            Util.debug("MessageBox command: " + command);
+                            logger.Debug("MessageBox command: {0}", command);
                             onCommand(command);
                         }
                     });
@@ -339,10 +341,10 @@ namespace SynchroClientAndroid
 
                     dialog.SetButton3(label, (s, ev) =>
                     {
-                        Util.debug("MessageBox Command invoked: " + label);
+                        logger.Debug("MessageBox Command invoked: {0}", label);
                         if (command != null)
                         {
-                            Util.debug("MessageBox command: " + command);
+                            logger.Debug("MessageBox command: {0}", command);
                             onCommand(command);
                         }
                     });
@@ -354,7 +356,7 @@ namespace SynchroClientAndroid
                 //
                 dialog.SetButton("Close", (s, ev) =>
                 {
-                    Util.debug("MessageBox default close button clicked");
+                    logger.Debug("MessageBox default close button clicked");
                 });
             }
 

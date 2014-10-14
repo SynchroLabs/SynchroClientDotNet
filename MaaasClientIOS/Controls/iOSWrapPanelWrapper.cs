@@ -143,10 +143,12 @@ namespace MaaasClientIOS.Controls
 
     class iOSWrapPanelWrapper : iOSControlWrapper
     {
+        static Logger logger = Logger.GetLogger("iOSWrapPanelWrapper");
+
         public iOSWrapPanelWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
-            Util.debug("Creating wrap panel element");
+            logger.Debug("Creating wrap panel element");
 
             UICollectionViewFlowLayout layout = new UICollectionViewFlowLayout();
             UICollectionView view = new UICollectionView(new RectangleF(), layout);

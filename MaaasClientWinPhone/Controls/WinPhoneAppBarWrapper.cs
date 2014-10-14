@@ -16,12 +16,14 @@ namespace MaaasClientWinPhone.Controls
 
     class WinPhoneAppBarWrapper : WinPhoneControlWrapper
     {
+        static Logger logger = Logger.GetLogger("WinPhoneAppBarWrapper");
+
         static string[] Commands = new string[] { CommandName.OnClick };
 
         public WinPhoneAppBarWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
-            Util.debug("Creating app bar item with text of: " + controlSpec["text"]);
+            logger.Debug("Creating app bar item with text of: {0}", controlSpec["text"]);
 
             // http://msdn.microsoft.com/en-us/library/windowsphone/develop/ff431786(v=vs.105).aspx
             //
@@ -64,7 +66,7 @@ namespace MaaasClientWinPhone.Controls
             CommandInstance command = GetCommand(CommandName.OnClick);
             if (command != null)
             {
-                Util.debug("AppBar menu item click with command: " + command);
+                logger.Debug("AppBar menu item click with command: {0}", command);
                 this.StateManager.processCommand(command.Command, command.GetResolvedParameters(BindingContext));
             }
         }

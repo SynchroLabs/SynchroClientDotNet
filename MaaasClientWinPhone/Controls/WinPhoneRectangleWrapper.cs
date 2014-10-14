@@ -11,10 +11,12 @@ namespace MaaasClientWinPhone.Controls
 {
     class WinPhoneRectangleWrapper : WinPhoneControlWrapper
     {
+        static Logger logger = Logger.GetLogger("WinPhoneRectrangleWrapper");
+
         public WinPhoneRectangleWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
-            Util.debug("Creating rectangle element");
+            logger.Debug("Creating rectangle element");
             Rectangle rect = new Rectangle();
             this._control = rect;
 

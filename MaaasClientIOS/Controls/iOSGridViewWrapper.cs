@@ -15,10 +15,12 @@ namespace MaaasClientIOS.Controls
     //
     class iOSGridViewWrapper : iOSControlWrapper
     {
+        static Logger logger = Logger.GetLogger("iOSGridViewWrapper");
+
         public iOSGridViewWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
-            Util.debug("Creating grid view element");
+            logger.Debug("Creating grid view element");
 
             UICollectionViewFlowLayout gridViewLaout = new UICollectionViewFlowLayout();
             UICollectionView gridView = new UICollectionView(new RectangleF(), gridViewLaout);

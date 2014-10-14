@@ -12,6 +12,8 @@ namespace MaaasClientWin.Controls
 {
     class WinListViewWrapper : WinControlWrapper
     {
+        static Logger logger = Logger.GetLogger("WinListViewWrapper");
+
         bool _selectionChangingProgramatically = false;
         JToken _localSelection;
 
@@ -20,7 +22,7 @@ namespace MaaasClientWin.Controls
         public WinListViewWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
-            Util.debug("Creating listview element");
+            logger.Debug("Creating listview element");
             ListView listView = new ListView();
             this._control = listView;
 
@@ -76,13 +78,13 @@ namespace MaaasClientWin.Controls
 
         public JToken getListViewContents(ListView listbox)
         {
-            Util.debug("Get listview contents - NOOP");
+            logger.Debug("Get listview contents - NOOP");
             throw new NotImplementedException();
         }
 
         public void setListViewContents(ListView listview, JObject itemTemplate, BindingContext bindingContext)
         {
-            Util.debug("Setting listview contents");
+            logger.Debug("Setting listview contents");
 
             List<BindingContext> itemContexts = bindingContext.SelectEach("$data");
 
@@ -204,7 +206,7 @@ namespace MaaasClientWin.Controls
 
         void listView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            Util.debug("Listbox selection changed");
+            logger.Debug("Listbox selection changed");
             ListView listview = (ListView)sender;
 
             ValueBinding selectionBinding = GetValueBinding("selection");
@@ -219,11 +221,11 @@ namespace MaaasClientWin.Controls
 
             if (!_selectionChangingProgramatically)
             {
-                Util.debug("Listview selection changed by user!");
+                logger.Debug("Listview selection changed by user!");
                 CommandInstance command = GetCommand(CommandName.OnSelectionChange);
                 if (command != null)
                 {
-                    Util.debug("ListView selection changed with command: " + command);
+                    logger.Debug("ListView selection changed with command: {0}", command);
 
                     if (listview.SelectionMode == ListViewSelectionMode.Single)
                     {
@@ -258,7 +260,7 @@ namespace MaaasClientWin.Controls
             CommandInstance command = GetCommand(CommandName.OnItemClick);
             if (command != null)
             {
-                Util.debug("ListView item click with command: " + command);
+                logger.Debug("ListView item click with command: {0}", command);
 
                 // The item click command handler resolves its tokens relative to the item clicked (not the list view).
                 //

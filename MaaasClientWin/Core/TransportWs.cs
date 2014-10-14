@@ -18,6 +18,8 @@ namespace MaasClient.Core
 {
     class TransportWs : Transport
     {
+        static Logger logger = Logger.GetLogger("TransportWs");
+
         private MessageWebSocket _ws;
         private DataWriter _messageWriter;
 
@@ -60,7 +62,7 @@ namespace MaasClient.Core
                             {
                                 reader.UnicodeEncoding = Windows.Storage.Streams.UnicodeEncoding.Utf8;
                                 string responseMessage = reader.ReadString(reader.UnconsumedBufferLength);
-                                Util.debug("Received message from server: " + responseMessage);
+                                logger.Debug("Received message from server: {0}", responseMessage);
                                 JObject responseObject = JObject.Parse(responseMessage);
 
                                 // OK, this is a little creepy.  The particular response handler we pass in from
@@ -78,19 +80,19 @@ namespace MaasClient.Core
                         {
                             WebErrorStatus status = WebSocketError.GetStatus(ex.GetBaseException().HResult);
                             // Add your specific error-handling code here.
-                            Util.debug("Exception in WebSocket response: " + ex.ToString());
+                            logger.Error("Exception in WebSocket response: {0}", ex.ToString());
                         }
                     };
 
                     webSocket.Closed += Closed;
 
-                    Util.debug("Connecting to WebSocket server on: " + _uri);
+                    logger.Debug("Connecting to WebSocket server on: {0}", _uri);
                     if (sessionId != null)
                     {
                         webSocket.SetRequestHeader(Transport.SessionIdHeader, sessionId);
                     }
                     await webSocket.ConnectAsync(_uri);
-                    Util.debug("Connected to WebSocket server on: " + _uri);
+                    logger.Debug("Connected to WebSocket server on: {0}", _uri);
                     _ws = webSocket; // Only store it after successfully connecting.
                     _messageWriter = new DataWriter(webSocket.OutputStream);
                 }
@@ -107,7 +109,7 @@ namespace MaasClient.Core
                 // !!! Is this WebErrorStatus useful?
                 WebErrorStatus status = WebSocketError.GetStatus(ex.GetBaseException().HResult);
 
-                Util.debug("Exception in WebSocket request: " + ex.ToString());
+                logger.Error("Exception in WebSocket request: {0}", ex.ToString());
                 requestFailureHandler(requestObject, ex.GetBaseException());
             }
         }

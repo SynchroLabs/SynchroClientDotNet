@@ -20,6 +20,8 @@ namespace SynchroClientAndroid
     [Activity(Label = "Synchro", Icon = "@drawable/icon", Theme = "@android:style/Theme.Holo", ConfigurationChanges=Android.Content.PM.ConfigChanges.Orientation | Android.Content.PM.ConfigChanges.ScreenSize)]
     public class MaaasPageActivity : Activity
     {
+        static Logger logger = Logger.GetLogger("MaaasPageActivity");
+
         StateManager _stateManager;
         AndroidPageView _pageView;
 
@@ -174,13 +176,13 @@ namespace SynchroClientAndroid
             if (newConfig.Orientation == Android.Content.Res.Orientation.Portrait)
             {
                 // Changed to portrait
-                Util.debug("Screen oriented to Portrait");
+                logger.Debug("Screen oriented to Portrait");
                 _stateManager.processViewUpdate(MaaasOrientation.Portrait);
             }
             else if (newConfig.Orientation == Android.Content.Res.Orientation.Landscape)
             {
                 // Changed to landscape
-                Util.debug("Screen oriented to Landscape");
+                logger.Debug("Screen oriented to Landscape");
                 _stateManager.processViewUpdate(MaaasOrientation.Landscape);
             }
         }

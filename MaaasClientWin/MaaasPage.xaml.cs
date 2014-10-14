@@ -27,6 +27,8 @@ namespace MaaasClientWin
     /// </summary>
     public sealed partial class MaaasPage : MaaasClientWin.Common.LayoutAwarePage
     {
+        static Logger logger = Logger.GetLogger("MaaasPage");
+
         StateManager _stateManager;
         WinPageView _pageView;
 
@@ -60,13 +62,13 @@ namespace MaaasClientWin
             if (orientation == DisplayOrientations.Landscape)
             {
                 // Landscape
-                Util.debug("Screen oriented to Landscape");
+                logger.Debug("Screen oriented to Landscape");
                 _stateManager.processViewUpdate(MaaasOrientation.Landscape);
             }
             else
             {
                 // Portait
-                Util.debug("Screen oriented to Portrait");
+                logger.Debug("Screen oriented to Portrait");
                 _stateManager.processViewUpdate(MaaasOrientation.Portrait);
             }
         }
@@ -109,7 +111,7 @@ namespace MaaasClientWin
         {
             string endpoint = navigationParameter as string;
 
-            Util.debug("Launching app at endpoint: " + endpoint);
+            logger.Info("Launching app at endpoint: {0}", endpoint);
 
             WinAppManager appManager = new WinAppManager();
             await appManager.loadState();

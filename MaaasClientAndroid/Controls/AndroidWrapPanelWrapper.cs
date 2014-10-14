@@ -273,10 +273,12 @@ namespace SynchroClientAndroid.Controls
 
     class AndroidWrapPanelWrapper : AndroidControlWrapper
     {
+        static Logger logger = Logger.GetLogger("AndroidWrapPanelWrapper");
+
         public AndroidWrapPanelWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
-            Util.debug("Creating wrap panel element");
+            logger.Debug("Creating wrap panel element");
 
             FlowLayout layout = new FlowLayout(((AndroidControlWrapper)parent).Control.Context);
             this._control = layout;

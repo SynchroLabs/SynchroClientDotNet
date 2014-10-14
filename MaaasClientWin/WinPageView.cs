@@ -15,6 +15,8 @@ namespace MaaasClientWin
 {
     class WinPageView : PageView
     {
+        static Logger logger = Logger.GetLogger("WinPageView");
+
         Page _page;
         WinControlWrapper _rootControlWrapper;
 
@@ -125,10 +127,10 @@ namespace MaaasClientWin
 
             UICommandInvokedHandler handler = new UICommandInvokedHandler(delegate(IUICommand command)
             {
-                Util.debug("MessageBox Command invoked: " + command.Label);
+                logger.Debug("MessageBox Command invoked: {0}", command.Label);
                 if (command.Id != null)
                 {
-                    Util.debug("MessageBox command: " + (string)command.Id);
+                    logger.Debug("MessageBox command: {0}", (string)command.Id);
                     onCommand((string)command.Id);
                 }
             });

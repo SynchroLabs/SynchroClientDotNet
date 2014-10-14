@@ -16,10 +16,12 @@ namespace SynchroClientAndroid.Controls
 {
     class AndroidTextBlockWrapper : AndroidControlWrapper
     {
+        static Logger logger = Logger.GetLogger("AndroidTextBlockWrapper");
+
         public AndroidTextBlockWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
-            Util.debug("Creating text view element with text of: " + controlSpec["value"]);
+            logger.Debug("Creating text view element with text of: " + controlSpec["value"]);
 
             TextView textView = new TextView(((AndroidControlWrapper)parent).Control.Context);
             this._control = textView;

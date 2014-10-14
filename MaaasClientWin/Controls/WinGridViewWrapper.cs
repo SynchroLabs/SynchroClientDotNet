@@ -12,10 +12,11 @@ namespace MaaasClientWin.Controls
 {
     class WinGridViewWrapper : WinControlWrapper
     {
+        static Logger logger = Logger.GetLogger("WinGridViewWrapper");
+
         public WinGridViewWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
-            Util.debug("Creating grid view element");
             GridView gridView = new GridView();
             this._control = gridView;
 

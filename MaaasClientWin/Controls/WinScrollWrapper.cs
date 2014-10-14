@@ -11,6 +11,8 @@ namespace MaaasClientWin.Controls
 {
     class WinScrollWrapper : WinControlWrapper
     {
+        static Logger logger = Logger.GetLogger("WinScrollWrapper");
+
         protected ScrollViewer _scroller;
 
         public WinScrollWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
@@ -18,7 +20,7 @@ namespace MaaasClientWin.Controls
         {
             // ScrollViewer - http://msdn.microsoft.com/en-us/library/windows/apps/windows.ui.xaml.controls.scrollviewer.aspx
             //
-            Util.debug("Creating scroll element");
+            logger.Debug("Creating scroll element");
             _scroller = new ScrollViewer();
             this._control = _scroller;
 

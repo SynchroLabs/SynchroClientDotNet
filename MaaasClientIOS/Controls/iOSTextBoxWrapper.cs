@@ -13,12 +13,14 @@ namespace MaaasClientIOS.Controls
 {
     class iOSTextBoxWrapper : iOSControlWrapper
     {
+        static Logger logger = Logger.GetLogger("iOSTextBoxWrapper");
+
         bool _updateOnChange = false;
 
         public iOSTextBoxWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
-            Util.debug("Creating text box element with value of: " + controlSpec["value"]);
+            logger.Debug("Creating text box element with value of: " + controlSpec["value"]);
 
             UITextField textBox = new UITextField();
             this._control = textBox;

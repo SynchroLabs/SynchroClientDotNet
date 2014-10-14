@@ -15,10 +15,12 @@ namespace MaaasClientIOS.Controls
     //
     class iOSWebViewWrapper : iOSControlWrapper
     {
+        static Logger logger = Logger.GetLogger("iOSWebViewWrapper");
+
         public iOSWebViewWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
-            Util.debug("Creating web view element");
+            logger.Debug("Creating web view element");
 
             UIWebView webView = new UIWebView();
             this._control = webView;

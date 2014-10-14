@@ -136,6 +136,8 @@ namespace SynchroClientAndroid.Controls
     //
     class AndroidPickerWrapper : AndroidControlWrapper
     {
+        static Logger logger = Logger.GetLogger("AndroidPickerWrapper");
+
         bool _selectionChangingProgramatically = false;
         JToken _localSelection;
 
@@ -146,7 +148,7 @@ namespace SynchroClientAndroid.Controls
         public AndroidPickerWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
-            Util.debug("Creating picker element");
+            logger.Debug("Creating picker element");
             Spinner picker = new Spinner(((AndroidControlWrapper)parent).Control.Context);
             this._control = picker;
 
@@ -185,13 +187,13 @@ namespace SynchroClientAndroid.Controls
 
         public JToken getPickerContents(Spinner picker)
         {
-            Util.debug("Getting picker contents - NOOP");
+            logger.Debug("Getting picker contents - NOOP");
             throw new NotImplementedException();
         }
 
         public void setPickerContents(Spinner picker, BindingContext bindingContext, string itemContent)
         {
-            Util.debug("Setting picker contents");
+            logger.Debug("Setting picker contents");
 
             _selectionChangingProgramatically = true;
 
@@ -247,7 +249,7 @@ namespace SynchroClientAndroid.Controls
 
         void picker_ItemSelected(object sender, AdapterView.ItemSelectedEventArgs e)
         {
-            Util.debug("Picker selection changed");
+            logger.Debug("Picker selection changed");
             Spinner picker = (Spinner)sender;
 
             ValueBinding selectionBinding = GetValueBinding("selection");
@@ -269,7 +271,7 @@ namespace SynchroClientAndroid.Controls
                 CommandInstance command = GetCommand(CommandName.OnSelectionChange);
                 if (command != null)
                 {
-                    Util.debug("Picker item click with command: " + command);
+                    logger.Debug("Picker item click with command: {0}", command);
 
                     // The item click command handler resolves its tokens relative to the item clicked (not the list view).
                     //

@@ -392,13 +392,15 @@ namespace MaaasClientWinPhone.Controls
 
     class WinPhoneWrapPanelWrapper : WinPhoneControlWrapper
     {
+        static Logger logger = Logger.GetLogger("WinPhoneWrapPanelWrapper");
+
         Border _border;
         WrapPanel _panel;
 
         public WinPhoneWrapPanelWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
-            Util.debug("Creating wrappanel element");
+            logger.Debug("Creating wrappanel element");
 
             // In order to get padding support, we put a Border around the StackPanel...
             //

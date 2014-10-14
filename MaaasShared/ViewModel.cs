@@ -12,6 +12,8 @@ namespace MaaasCore
     //
     public sealed class ViewModel
     {
+        static Logger logger = Logger.GetLogger("ViewModel");
+
         BindingContext _rootBindingContext;
         JObject _rootObject;
         Boolean _updatingView = false;
@@ -170,7 +172,7 @@ namespace MaaasCore
 
                     if (isBindingDirty)
                     {
-                        Util.debug("Rebind value binding with path: " + valueBinding.BindingContext.BindingPath);
+                        logger.Debug("Rebind value binding with path: {0}", valueBinding.BindingContext.BindingPath);
                         valueBinding.BindingContext.Rebind();
                     }
 
@@ -206,7 +208,7 @@ namespace MaaasCore
 
                     if (isBindingDirty)
                     {
-                        Util.debug("Rebind property binding with path: " + propBinding.BindingPath);
+                        logger.Debug("Rebind property binding with path: {0}", propBinding.BindingPath);
                         propBinding.Rebind();
                     }
                 }
@@ -224,7 +226,7 @@ namespace MaaasCore
         {
             List<BindingUpdate> bindingUpdates = new List<BindingUpdate>();
 
-            Util.debug("Processing view model updates: " + viewModelDeltas);
+            logger.Debug("Processing view model updates: {0}", viewModelDeltas);
             if ((viewModelDeltas.Type == JTokenType.Array))
             {
                 // Removals are genrally reported as removals from the end of the list with increasing indexes.  If
@@ -240,7 +242,7 @@ namespace MaaasCore
                     string path = (string)viewModelDelta["path"];
                     string changeType = (string)viewModelDelta["change"];
 
-                    Util.debug("View model item change (" + changeType + ") for path: " + path);
+                    logger.Debug("View model item change ({0}) for path: {1}", changeType, path);
                     if (changeType == "object")
                     {
                         // For "object" changes, this just means that an existing object had a property added/updated/removed or
@@ -254,19 +256,19 @@ namespace MaaasCore
                         JToken vmItemValue = _rootObject.SelectToken(path);
                         if (vmItemValue != null)
                         {
-                            Util.debug("Updating view model item for path: " + path + " to value: " + viewModelDelta["value"]);
+                            logger.Debug("Updating view model item for path: {0} to value: {1}", path, viewModelDelta["value"]);
 
                             bool rebindRequired = UpdateTokenValue(ref vmItemValue, viewModelDelta["value"]);
                             bindingUpdates.Add(new BindingUpdate(path, rebindRequired));
                         }
                         else
                         {
-                            Util.debug("VIEW MODEL SYNC WARNING: Unable to find existing value when processing update, something went wrong, path: " + path);
+                            logger.Error("VIEW MODEL SYNC WARNING: Unable to find existing value when processing update, something went wrong, path: {0}", path);
                         }
                     }
                     else if (changeType == "add")
                     {
-                        Util.debug("Adding bound item for path: " + path + " with value: " + viewModelDelta["value"]);
+                        logger.Debug("Adding bound item for path: {0} with value: {1}", path, viewModelDelta["value"]);
                         bindingUpdates.Add(new BindingUpdate(path, true));
 
                         // First, double check to make sure the path doesn't actually exist
@@ -284,7 +286,7 @@ namespace MaaasCore
                                 }
                                 else
                                 {
-                                    Util.debug("VIEW MODEL SYNC WARNING: Attempt to add array member, but parent didn't exist or was not an array, parent path: " + parentPath);
+                                    logger.Error("VIEW MODEL SYNC WARNING: Attempt to add array member, but parent didn't exist or was not an array, parent path: {0}", parentPath);
                                 }
                             }
                             else if (path.Contains("."))
@@ -299,7 +301,7 @@ namespace MaaasCore
                                 }
                                 else
                                 {
-                                    Util.debug("VIEW MODEL SYNC WARNING: Attempt to add object property, but parent didn't exist or was not an object, parent path: " + parentPath);
+                                    logger.Error("VIEW MODEL SYNC WARNING: Attempt to add object property, but parent didn't exist or was not an object, parent path: {0}", parentPath);
                                 }
                             }
                             else
@@ -310,24 +312,24 @@ namespace MaaasCore
                         }
                         else
                         {
-                            Util.debug("VIEW MODEL SYNC WARNING: Found existing value when processing add, something went wrong, path: " + path);
+                            logger.Error("VIEW MODEL SYNC WARNING: Found existing value when processing add, something went wrong, path: {0}", path);
                         }
                     }
                     else if (changeType == "remove")
                     {
-                        Util.debug("Removing bound item for path: " + path);
+                        logger.Debug("Removing bound item for path: {0}", path);
                         bindingUpdates.Add(new BindingUpdate(path, true));
 
                         JToken vmItemValue = _rootObject.SelectToken(path);
                         if (vmItemValue != null)
                         {
-                            Util.debug("Removing bound item for path: " + vmItemValue.Path);
+                            logger.Debug("Removing bound item for path: {0}", vmItemValue.Path);
                             // Just track this removal for now - we'll remove it at the end
                             removals.Add(vmItemValue);
                         }
                         else
                         {
-                            Util.debug("VIEW MODEL SYNC WARNING: Attempt to remove object property or array element, but it wasn't found, path: " + path);
+                            logger.Error("VIEW MODEL SYNC WARNING: Attempt to remove object property or array element, but it wasn't found, path: {0}", path);
                         }
                     }
                 }
@@ -346,7 +348,7 @@ namespace MaaasCore
                     }
                 }
 
-                Util.debug("View model after processing updates: " + this._rootObject);
+                logger.Debug("View model after processing updates: {0}", this._rootObject);
             }
 
             if (updateView)
@@ -394,7 +396,7 @@ namespace MaaasCore
             {
                 if (valueBinding.BindingContext == bindingContext)
                 {
-                    // Util.debug("Marking dirty - binding with path: " + bindingContext.BindingPath);
+                    // logger.Debug("Marking dirty - binding with path: {0}", bindingContext.BindingPath);
                     valueBinding.IsDirty = true;
                 }
             }
@@ -414,7 +416,7 @@ namespace MaaasCore
                 {
                     string path = valueBinding.BindingContext.BindingPath;
                     JToken value = valueBinding.BindingContext.GetValue();
-                    Util.debug("Changed view model item - path: " + path + " - value: " + value);
+                    logger.Debug("Changed view model item - path: {0} - value: {1}", path, value);
                     setValue(path, value);
                     valueBinding.IsDirty = false;
                 }

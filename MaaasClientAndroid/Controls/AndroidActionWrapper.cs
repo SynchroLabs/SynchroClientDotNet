@@ -16,12 +16,14 @@ namespace SynchroClientAndroid.Controls
 {
     class AndroidActionWrapper : AndroidControlWrapper
     {
+        static Logger logger = Logger.GetLogger("AndroidActionWrapper");
+
         static string[] Commands = new string[] { CommandName.OnClick };
 
         public AndroidActionWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
-            Util.debug("Creating action bar item with title of: " + controlSpec["text"]);
+            logger.Debug("Creating action bar item with title of: {0}", controlSpec["text"]);
 
             this._isVisualElement = false;
 

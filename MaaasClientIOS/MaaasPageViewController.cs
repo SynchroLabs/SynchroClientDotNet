@@ -10,6 +10,8 @@ namespace MaaasClientIOS
 {
     public class MaaasPageViewController : UIViewController
     {
+        static Logger logger = Logger.GetLogger("MaaasPageViewController");
+
         MaaasAppManager _appManager;
         MaaasApp _maaasApp;
 
@@ -108,12 +110,12 @@ namespace MaaasClientIOS
             // !!! Do our own rotation handling here
             if (normalizeOrientation(toInterfaceOrientation) == UIInterfaceOrientation.Portrait)
             {
-                Util.debug("Screen oriented to Portrait");
+                logger.Debug("Screen oriented to Portrait");
                 _stateManager.processViewUpdate(MaaasOrientation.Portrait);
             }
             else 
             {
-                Util.debug("Screen oriented to Landscape");
+                logger.Debug("Screen oriented to Landscape");
                 _stateManager.processViewUpdate(MaaasOrientation.Landscape);
             }
 

@@ -18,6 +18,8 @@ namespace MaaasCore
 
     public class StateManager
     {
+        static Logger logger = Logger.GetLogger("StateManager");
+
         MaaasAppManager _appManager;
         MaaasApp _app;
         JObject _appDefinition;
@@ -140,18 +142,18 @@ namespace MaaasCore
 
         void ProcessRequestFailure(JObject request, Exception ex)
         {            
-            Util.debug("Got request failure for request: " + request);
+            logger.Warn("Got request failure for request: {0}", request);
 
             messageBox("Connection Error", "Error connecting to application server", "Retry", "retry", (command) =>
             {
-                Util.debug("Retrying request after user confirmation (" + command + ")...");
+                logger.Debug("Retrying request after user confirmation ({0})...", command);
                 _transport.sendMessage(_app.SessionId, request);
             });
         }
 
         async void ProcessResponse(JObject responseAsJSON)
         {
-            Util.debug("Got response: " + responseAsJSON);
+            logger.Debug("Got response: {0}", responseAsJSON);
 
             if (responseAsJSON["NewSessionId"] != null)
             {
@@ -161,11 +163,11 @@ namespace MaaasCore
                     // Existing client SessionId was replaced by server.  Do we care?  Should we do something (maybe clear any
                     // other client session state, if there was any).
                     //
-                    Util.debug("Client session ID of: " + _app.SessionId + " was replaced with new session ID: " + newSessionId);
+                    logger.Debug("Client session ID of: {0} was replaced with new session ID: {1}", _app.SessionId, newSessionId);
                 }
                 else
                 {
-                    Util.debug("Client was assigned initial session ID of: " + newSessionId);
+                    logger.Debug("Client was assigned initial session ID of: {0}", newSessionId);
                 }
 
                 // SessionId was created/updated by server.  Record it and save state.
@@ -177,7 +179,7 @@ namespace MaaasCore
             if (responseAsJSON["Error"] != null)
             {
                 JObject jsonError = responseAsJSON["Error"] as JObject;
-                Util.debug("Response contained error: " + jsonError.GetValue("message"));
+                logger.Warn("Response contained error: {0}", jsonError.GetValue("message"));
                 if ((string)jsonError.GetValue("name") == "SyncError")
                 {
                     if (responseAsJSON["InstanceId"] == null)
@@ -186,10 +188,10 @@ namespace MaaasCore
                         // re-initialized session).  All we can really do here is re-initialize the app (clear
                         // our local state and do a Page request for the app entry point).  
                         //
-                        Util.debug("ERROR - corrupt server state - need app restart");
+                        logger.Error("ERROR - corrupt server state - need app restart");
                         messageBox("Synchronization Error", "Server state was lost, restarting application", "Restart", "restart", async (command) =>
                         {
-                            Util.debug("Corrupt server state, restarting application...");
+                            logger.Warn("Corrupt server state, restarting application...");
                             await this.sendAppStartPageRequest();
                         });
 
@@ -210,7 +212,7 @@ namespace MaaasCore
                         //
                         // The best option in this situation is to request a Resync with the server...
                         //
-                        Util.debug("ERROR - client state out of sync - need resync");
+                        logger.Warn("ERROR - client state out of sync - need resync");
                         await this.sendResyncRequest();
                     }
                 }
@@ -238,8 +240,8 @@ namespace MaaasCore
                 // !!! Do we want to update our stored app defintion (in MaaasApp, via the AppManager)?  Maybe only if changed?
                 //
                 _appDefinition = responseAsJSON["App"] as JObject;
-                Util.debug("Got app definition for: " + _appDefinition["name"] + " - " + _appDefinition["description"]);
-                await this.sendAppStartPageRequest();
+                logger.Info("Got app definition for: {0} - {1}", _appDefinition["name"], _appDefinition["description"]);
+                await this.sendAppStartPageRequest(); 
             }
             else if (responseAsJSON["ViewModel"] != null) // This means we have a new page/screen
             {
@@ -293,7 +295,7 @@ namespace MaaasCore
                         {
                             // Instance version was not one more than current version on view model update
                             //
-                            Util.debug("ERROR - instance version mismatch, updates not applied - need resync");
+                            logger.Warn("ERROR - instance version mismatch, updates not applied - need resync");
                             await this.sendResyncRequest();
                         }
                     }
@@ -313,7 +315,7 @@ namespace MaaasCore
                         {
                             // Instance version was not correct on view update
                             //
-                            Util.debug("ERROR - instance version mismatch on view update - need resync");
+                            logger.Warn("ERROR - instance version mismatch on view update - need resync");
                             await this.sendResyncRequest();
                         }
                     }
@@ -326,14 +328,14 @@ namespace MaaasCore
                 {
                     // Incorrect instance id
                     //
-                    Util.debug("ERROR - instance id mismatch, updates not applied - need resync");
+                    logger.Warn("ERROR - instance id mismatch, updates not applied - need resync");
                     await this.sendResyncRequest();
                 }
             }
 
             if (responseAsJSON["NextRequest"] != null)
             {
-                Util.debug("Got NextRequest, composing and sending it now...");
+                logger.Debug("Got NextRequest, composing and sending it now...");
                 JObject requestObject = (JObject)responseAsJSON["NextRequest"].DeepClone();
                 await _transport.sendMessage(_app.SessionId, requestObject);
             }
@@ -350,7 +352,7 @@ namespace MaaasCore
 
         public async Task startApplication()
         {
-            Util.debug("Loading Synchro application definition for app at: " + _app.Endpoint);
+            logger.Info("Loading Synchro application definition for app at: {0}", _app.Endpoint);
             JObject requestObject = new JObject(
                 new JProperty("Mode", "AppDefinition"),
                 new JProperty("TransactionId", 0)
@@ -362,7 +364,7 @@ namespace MaaasCore
         {
             this._path = (string)_appDefinition["mainPage"];
 
-            Util.debug("Request app start page at path: " + this._path + " for session: " + _app.SessionId);
+            logger.Info("Request app start page at path: {0} for session: {1}", this._path, _app.SessionId);
 
             JObject requestObject = new JObject(
                 new JProperty("Mode", "Page"),
@@ -377,7 +379,7 @@ namespace MaaasCore
 
         private async Task sendResyncRequest()
         {
-            Util.debug("Sending resync for path: " + this._path);
+            logger.Info("Sending resync for path: {0}", this._path);
 
             JObject requestObject = new JObject(
                 new JProperty("Mode", "Resync"),
@@ -415,7 +417,7 @@ namespace MaaasCore
 
         public async Task processUpdate()
         {
-            Util.debug("Process update for path: " + this._path);
+            logger.Debug("Process update for path: {0}", this._path);
 
             JObject requestObject = new JObject(
                 new JProperty("Mode", "Update"),
@@ -434,7 +436,7 @@ namespace MaaasCore
 
         public async Task processCommand(string command, JObject parameters = null)
         {
-            Util.debug("Process command: " + command + " for path: " + this._path);
+            logger.Debug("Process command: {0} for path: {1}", command, this._path);
 
             JObject requestObject = new JObject(
                 new JProperty("Mode", "Command"),
@@ -457,7 +459,7 @@ namespace MaaasCore
 
         public async Task sendBackRequest()
         {
-            Util.debug("Sending back for path: " + this._path);
+            logger.Debug("Sending back for path: {0}", this._path);
 
             JObject requestObject = new JObject(
                 new JProperty("Mode", "Back"),

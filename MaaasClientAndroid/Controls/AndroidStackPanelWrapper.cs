@@ -16,10 +16,12 @@ namespace SynchroClientAndroid.Controls
 {
     class AndroidStackPanelWrapper : AndroidControlWrapper
     {
+        static Logger logger = Logger.GetLogger("AndroidStackPanelWrapper");
+
         public AndroidStackPanelWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
-            Util.debug("Creating stack panel element");
+            logger.Debug("Creating stack panel element");
 
             LinearLayout layout = new LinearLayout(((AndroidControlWrapper)parent).Control.Context);
             this._control = layout;

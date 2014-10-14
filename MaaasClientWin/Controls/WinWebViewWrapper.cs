@@ -14,10 +14,12 @@ namespace MaaasClientWin.Controls
     //
     class WinWebViewWrapper : WinControlWrapper
     {
+        static Logger logger = Logger.GetLogger("WinWebViewWrapper");
+
         public WinWebViewWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
-            Util.debug("Creating web view element");
+            logger.Debug("Creating web view element");
             WebView webView = new WebView();
             this._control = webView;
 

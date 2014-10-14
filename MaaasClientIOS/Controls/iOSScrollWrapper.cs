@@ -13,6 +13,8 @@ namespace MaaasClientIOS.Controls
 {
     class AutoSizingScrollView : UIScrollView
     {
+        static Logger logger = Logger.GetLogger("AutoSizingScrollView");
+
         protected iOSControlWrapper _controlWrapper;
         protected Orientation _orientation;
 
@@ -27,7 +29,7 @@ namespace MaaasClientIOS.Controls
             // this.Superview
             if (!Dragging && !Decelerating)
             {
-                Util.debug("Laying out sub view");
+                logger.Debug("Laying out sub view");
 
                 SizeF size = new SizeF(this.ContentSize);
                 foreach (UIView view in this.Subviews)
@@ -79,10 +81,12 @@ namespace MaaasClientIOS.Controls
 
     class iOSScrollWrapper : iOSControlWrapper
     {
+        static Logger logger = Logger.GetLogger("iOSScrollWrapper");
+
         public iOSScrollWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
-            Util.debug("Creating scroll element");
+            logger.Debug("Creating scroll element");
 
             Orientation orientation = ToOrientation((string)controlSpec["orientation"], Orientation.Vertical);
 

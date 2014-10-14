@@ -307,10 +307,12 @@ namespace MaaasClientIOS.Controls
 
     class iOSStackPanelWrapper : iOSControlWrapper
     {
+        static Logger logger = Logger.GetLogger("iOSStackPanelWrapper");
+
         public iOSStackPanelWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
-            Util.debug("Creating stack panel element");
+            logger.Debug("Creating stack panel element");
 
             StackPanelView stackPanel = new StackPanelView(this);
             this._control = stackPanel;

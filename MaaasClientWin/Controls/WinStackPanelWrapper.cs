@@ -17,6 +17,8 @@ namespace MaaasClientWin.Controls
 
     class WinStackPanelWrapper : WinControlWrapper
     {
+        static Logger logger = Logger.GetLogger("WinStackPanelWrapper");
+
         Border _border;
         Grid _grid;
         Orientation _orientation;
@@ -24,7 +26,7 @@ namespace MaaasClientWin.Controls
         public WinStackPanelWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
-            Util.debug("Creating stackpanel element");
+            logger.Debug("Creating stackpanel element");
 
             // In order to get padding support, we put a Border around the StackPanel...
             //

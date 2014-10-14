@@ -50,6 +50,8 @@ namespace MaaasClientWinPhone.Controls
 
     class WinPhoneListBoxWrapper : WinPhoneControlWrapper
     {
+        static Logger logger = Logger.GetLogger("WinPhoneListBoxWrapper");
+
         ListViewSelectionMode _selectionMode = ListViewSelectionMode.None;
         bool _targetingRequired = false;
 
@@ -61,7 +63,7 @@ namespace MaaasClientWinPhone.Controls
         public WinPhoneListBoxWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
-            Util.debug("Creating listbox element");
+            logger.Debug("Creating listbox element");
 
             LongListSelector listView = new LongListSelector();
             this._control = listView;
@@ -126,7 +128,7 @@ namespace MaaasClientWinPhone.Controls
 
         public void setListViewContents(LongListSelector listview, JObject itemTemplate, BindingContext bindingContext, string itemContent)
         {
-            Util.debug("Setting listview contents");
+            logger.Debug("Setting listview contents");
 
             _selectionChangingProgramatically = true;
 
@@ -230,7 +232,7 @@ namespace MaaasClientWinPhone.Controls
             LongListSelector listview = sender as LongListSelector;
             if ((listview != null) && (listview.SelectedItem != null))
             {
-                Util.debug("ListBox item clicked");
+                logger.Debug("ListBox item clicked");
                 TextListViewItem item = e.AddedItems[0] as TextListViewItem;
                 if (item != null)
                 {
@@ -275,7 +277,7 @@ namespace MaaasClientWinPhone.Controls
                         CommandInstance command = GetCommand(CommandName.OnItemClick);
                         if (command != null)
                         {
-                            Util.debug("ListView item clicked with command: " + command);
+                            logger.Debug("ListView item clicked with command: {0}", command);
 
                             if (item != null)
                             {
@@ -290,7 +292,7 @@ namespace MaaasClientWinPhone.Controls
                         CommandInstance command = GetCommand(CommandName.OnSelectionChange);
                         if (command != null)
                         {
-                            Util.debug("ListView selection changed with command: " + command);
+                            logger.Debug("ListView selection changed with command: {0}", command);
 
                             if (_selectionMode == ListViewSelectionMode.Single)
                             {

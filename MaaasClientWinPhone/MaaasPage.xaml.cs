@@ -18,6 +18,8 @@ namespace MaaasClientWinPhone
 {
     public partial class MaaasPage : PhoneApplicationPage
     {
+        static Logger logger = Logger.GetLogger("MaaasPage");
+
         StateManager _stateManager;
         PageView _pageView;
 
@@ -28,7 +30,7 @@ namespace MaaasClientWinPhone
             
             // http://msdn.microsoft.com/en-us/library/windowsphone/develop/ff769552(v=vs.105).aspx
             Thickness overhang = (Thickness)Application.Current.Resources["PhoneTouchTargetOverhang"];
-            Util.debug("Overhang: " + overhang);
+            logger.Debug("Overhang: {0}", overhang);
 
             // Sample code to localize the ApplicationBar
             //BuildLocalizedApplicationBar();
@@ -55,12 +57,12 @@ namespace MaaasClientWinPhone
         {
             if ((e.Orientation & PageOrientation.Portrait) == (PageOrientation.Portrait))
             {
-                Util.debug("Screen oriented to Portrait");
+                logger.Debug("Screen oriented to Portrait");
                 _stateManager.processViewUpdate(MaaasOrientation.Portrait);
             }
             else
             {
-                Util.debug("Screen oriented to Landscape");
+                logger.Debug("Screen oriented to Landscape");
                 _stateManager.processViewUpdate(MaaasOrientation.Landscape);
             }
         }

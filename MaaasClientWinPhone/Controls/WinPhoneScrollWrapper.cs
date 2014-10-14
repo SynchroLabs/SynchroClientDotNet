@@ -11,12 +11,14 @@ namespace MaaasClientWinPhone.Controls
 {
     class WinPhoneScrollWrapper : WinPhoneControlWrapper
     {
+        static Logger logger = Logger.GetLogger("WinPhoneScrollWrapper");
+
         protected ScrollViewer _scroller;
 
         public WinPhoneScrollWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
-            Util.debug("Creating scroll element");
+            logger.Debug("Creating scroll element");
             _scroller = new ScrollViewer();
             this._control = _scroller;
 

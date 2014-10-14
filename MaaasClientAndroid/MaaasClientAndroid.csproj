@@ -107,6 +107,9 @@
     <Compile Include="..\MaaasShared\DeviceMetrics.cs">
       <Link>Linked\DeviceMetrics.cs</Link>
     </Compile>
+    <Compile Include="..\MaaasShared\Logger.cs">
+      <Link>Linked\Logger.cs</Link>
+    </Compile>
     <Compile Include="..\MaaasShared\PageView.cs">
       <Link>Linked\PageView.cs</Link>
     </Compile>

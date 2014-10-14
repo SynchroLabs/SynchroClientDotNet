@@ -13,10 +13,12 @@ namespace MaaasClientWin.Controls
 {
     class WinTextBlockWrapper : WinControlWrapper
     {
+        static Logger logger = Logger.GetLogger("WinTextBlockWrapper");
+
         public WinTextBlockWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
-            Util.debug("Creating text element with value of: " + controlSpec["value"]);
+            logger.Debug("Creating text element with value of: {0}", controlSpec["value"]);
             TextBlock textBlock = new TextBlock();
             textBlock.TextWrapping = TextWrapping.Wrap;
 

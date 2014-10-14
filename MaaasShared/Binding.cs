@@ -68,6 +68,8 @@ namespace MaaasCore
 
     public static class BindingHelper
     {
+        static Logger logger = Logger.GetLogger("BindingHelper");
+
         // Binding is specified in the "binding" attribute of an element.  For example, binding: { value: "foo" } will bind the "value"
         // property of the control to the "foo" value in the current binding context.  For controls that can call commands, the command
         // handlers are bound similarly, for example, binding: { onClick: "someCommand" } will bind the onClick action of the control to
@@ -168,7 +170,7 @@ namespace MaaasCore
                     }
                 }
 
-                Util.debug("Found binding object: " + bindingObject);
+                logger.Debug("Found binding object: {0}", bindingObject);
             }
             else
             {
@@ -261,6 +263,8 @@ namespace MaaasCore
     //
     public class PropertyValue
     {
+        static Logger logger = Logger.GetLogger("PropertyValue");
+
         private static Regex _braceContentsRE = new Regex(@"{([^}]*)}");
 
         private string _formatString;
@@ -290,7 +294,7 @@ namespace MaaasCore
             int tokenIndex = 0;
             _formatString = _braceContentsRE.Replace(tokenString, delegate(Match m)
             {
-                Util.debug("Found boundtoken: " + m.Groups[1]);
+                logger.Debug("Found boundtoken: {0}", m.Groups[1]);
 
                 // Parse out any format specifier...
                 //

@@ -393,13 +393,15 @@ namespace MaaasClientWin.Controls
 
     class WinWrapPanelWrapper : WinControlWrapper
     {
+        static Logger logger = Logger.GetLogger("WinWrapPanelWrapper");
+
         Border _border;
         WrapPanel _panel;
 
         public WinWrapPanelWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
-            Util.debug("Creating wrappanel element");
+            logger.Debug("Creating wrappanel element");
 
             // In order to get padding support, we put a Border around the WrapPanel...
             //

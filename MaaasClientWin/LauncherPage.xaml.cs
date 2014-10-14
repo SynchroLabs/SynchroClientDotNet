@@ -38,6 +38,8 @@ namespace MaaasClientWin
     /// </summary>
     public sealed partial class LauncherPage : Page
     {
+        static Logger logger = Logger.GetLogger("LauncherPage");
+
         private NavigationHelper navigationHelper;
         private ObservableDictionary defaultViewModel = new ObservableDictionary();
 
@@ -131,7 +133,7 @@ namespace MaaasClientWin
         private void itemGridView_ItemClick(object sender, ItemClickEventArgs e)
         {
             MaaasApp maaasApp = (MaaasApp)e.ClickedItem;
-            Util.debug("Item click, endpoint: " + maaasApp.Endpoint);
+            logger.Debug("Item click, endpoint: {0}", maaasApp.Endpoint);
             this.Frame.Navigate(typeof(AppDetailPage), maaasApp.Endpoint);
         }
     }

@@ -12,12 +12,14 @@ namespace MaaasClientWinPhone.Controls
 {
     class WinPhoneBorderWrapper : WinPhoneControlWrapper
     {
+        static Logger logger = Logger.GetLogger("WinPhoneBorderWrapper");
+
         Border _border;
 
         public WinPhoneBorderWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
-            Util.debug("Creating border element");
+            logger.Debug("Creating border element");
             _border = new Border();
             this._control = _border;
 

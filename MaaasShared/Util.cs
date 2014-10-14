@@ -9,9 +9,5 @@ namespace MaaasCore
 {
     public static class Util
     {
-        public static void debug(string str)
-        {
-            System.Diagnostics.Debug.WriteLine(str);
-        }
     }
 }

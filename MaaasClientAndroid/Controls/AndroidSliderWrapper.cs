@@ -16,6 +16,8 @@ namespace SynchroClientAndroid.Controls
 {
     class AndroidSliderWrapper : AndroidControlWrapper
     {
+        static Logger logger = Logger.GetLogger("AndroidSliderWrapper");
+
         // Since SeekBar only has a max range, we'll simulate the min/max
         //
         int _min = 0;
@@ -24,7 +26,7 @@ namespace SynchroClientAndroid.Controls
         public AndroidSliderWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
-            Util.debug("Creating slider element");
+            logger.Debug("Creating slider element");
             SeekBar seekBar = new SeekBar(((AndroidControlWrapper)parent).Control.Context);
             this._control = seekBar;
 

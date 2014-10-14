@@ -15,6 +15,8 @@ namespace MaaasClientIOS.Controls
 {
     class iOSImageWrapper : iOSControlWrapper
     {
+        static Logger logger = Logger.GetLogger("iOSImageWrapper");
+
         private static NSUrl createNSUrl(Uri uri)
         {
             return new NSUrl(uri.GetComponents(UriComponents.HttpRequestUrl, UriFormat.UriEscaped));
@@ -23,7 +25,7 @@ namespace MaaasClientIOS.Controls
         public iOSImageWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
-            Util.debug("Creating image element");
+            logger.Debug("Creating image element");
 
             UIImageView image = new UIImageView();            
             this._control = image;

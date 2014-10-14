@@ -11,6 +11,8 @@ namespace MaaasShared
 {
     class TransportHttp : Transport
     {
+        static Logger logger = Logger.GetLogger("TransportHttp");
+
         private HttpClient _httpClient;
 
         private string _sessionId;
@@ -74,14 +76,14 @@ namespace MaaasShared
                 var responseMessage = await response.Content.ReadAsStringAsync();
 
                 watch.Stop();
-                Util.debug("TIMER: Elapsed time for request was: " + watch.ElapsedMilliseconds + " ms");
+                logger.Debug("TIMER: Elapsed time for request was: {0} ms", watch.ElapsedMilliseconds);
 
                 JObject responseObject = JObject.Parse(responseMessage);
                 responseHandler(responseObject);
             }
             catch (Exception e)
             {
-                Util.debug("HTTP Transport exceptioon caught, details: " + e.Message);
+                logger.Error("HTTP Transport exceptioon caught, details: {0}", e.Message);
                 requestFailureHandler(requestObject, e);
             }
         }

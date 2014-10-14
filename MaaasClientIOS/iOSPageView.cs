@@ -14,6 +14,8 @@ namespace MaaasClientIOS
 {
     class MaaasNavigationBarDelegate : UINavigationBarDelegate
     {
+        static Logger logger = Logger.GetLogger("MaaasNavigationBarDelegate");
+
         iOSPageView _pageView;
 
         public MaaasNavigationBarDelegate(iOSPageView pageView)
@@ -32,7 +34,7 @@ namespace MaaasClientIOS
 
         public override bool ShouldPopItem(UINavigationBar navigationBar, UINavigationItem item)
         {
-            Util.debug("Should pop item got called!");
+            logger.Debug("Should pop item got called!");
             if (_pageView != null)
             {
                 _pageView.OnBackCommand();
@@ -98,6 +100,8 @@ namespace MaaasClientIOS
 
     public class iOSPageView : PageView
     {
+        static Logger logger = Logger.GetLogger("iOSPageView"); 
+        
         string _pageTitle = "";
 
         iOSControlWrapper _rootControlWrapper;
@@ -136,7 +140,7 @@ namespace MaaasClientIOS
             // May want animate this at some point - see: https://gist.github.com/redent/7263276
             //
             var keyboardFrame = UIKeyboard.FrameEndFromNotification(notification);
-            Util.debug("Keyboard shown - frame: " + keyboardFrame);
+            logger.Debug("Keyboard shown - frame: {0}", keyboardFrame);
 
             var contentInsets = new UIEdgeInsets(0.0f, 0.0f, keyboardFrame.Height, 0.0f);
             _contentScrollView.ContentInset = contentInsets;
@@ -147,7 +151,7 @@ namespace MaaasClientIOS
 
         public void onKeyboardHidden(NSNotification notification)
         {
-            Util.debug("Keyboard hidden");
+            logger.Debug("Keyboard hidden");
             _contentScrollView.ContentInset = UIEdgeInsets.Zero;
             _contentScrollView.ScrollIndicatorInsets = UIEdgeInsets.Zero;
         }
@@ -351,7 +355,7 @@ namespace MaaasClientIOS
         public override void ProcessMessageBox(JObject messageBox, CommandHandler onCommand)
         {
             string message = PropertyValue.ExpandAsString((string)messageBox["message"], _viewModel.RootBindingContext);
-            Util.debug("Message box with message: " + message);
+            logger.Debug("Message box with message: {0}", message);
 
             UIAlertView alertView = new UIAlertView();
 
@@ -385,11 +389,11 @@ namespace MaaasClientIOS
 
             alertView.Clicked += (s, b) =>
             {
-                Util.debug("Button " + b.ButtonIndex.ToString() + " clicked");
+                logger.Debug("Button {0} clicked", b.ButtonIndex.ToString());
                 if (buttonCommands[b.ButtonIndex] != null)
                 {
                     string command = buttonCommands[b.ButtonIndex];
-                    Util.debug("MessageBox command: " + command);
+                    logger.Debug("MessageBox command: {0}", command);
                     onCommand(command);
                 }
             };

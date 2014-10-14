@@ -12,12 +12,14 @@ namespace MaaasClientIOS.Controls
 {
     class iOSToolBarWrapper : iOSControlWrapper
     {
+        static Logger logger = Logger.GetLogger("iOSToolBarWrapper");
+
         static string[] Commands = new string[] { CommandName.OnClick };
 
         public iOSToolBarWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
-            Util.debug("Creating tool bar button element");
+            logger.Debug("Creating tool bar button element");
 
             UIBarButtonItem buttonItem = null;
 
@@ -73,7 +75,7 @@ namespace MaaasClientIOS.Controls
             CommandInstance command = GetCommand(CommandName.OnClick);
             if (command != null)
             {
-                Util.debug("Button click with command: " + command);
+                logger.Debug("Button click with command: {0}", command);
                 this.StateManager.processCommand(command.Command, command.GetResolvedParameters(BindingContext));
             }
         }

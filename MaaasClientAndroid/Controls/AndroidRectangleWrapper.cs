@@ -66,6 +66,8 @@ namespace SynchroClientAndroid.Controls
 
     public class DrawableView : View, Drawable.ICallback
     {
+        static Logger logger = Logger.GetLogger("DrawableView");
+
         GradientDrawable _drawable;
 
         public DrawableView(Context context, GradientDrawable drawable)
@@ -83,7 +85,7 @@ namespace SynchroClientAndroid.Controls
 
         protected override void OnSizeChanged(int w, int h, int oldw, int oldh)
         {
-            Util.debug("OnSizeChanged - w: " + w + ", h: " + h);
+            logger.Debug("OnSizeChanged - w: {0} , h: {1}", w, h);
             base.OnSizeChanged(w, h, oldw, oldh);
             _drawable.SetBounds(0, 0, w, h);
         }
@@ -97,12 +99,14 @@ namespace SynchroClientAndroid.Controls
 
     class AndroidRectangleWrapper : AndroidControlWrapper
     {
+        static Logger logger = Logger.GetLogger("AndroidRectangleWrapper");
+
         MaaasRectDrawable _rect = new MaaasRectDrawable();
 
         public AndroidRectangleWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
-            Util.debug("Creating rectangle");
+            logger.Debug("Creating rectangle");
 
             DrawableView drawableView = new DrawableView(((AndroidControlWrapper)parent).Control.Context, _rect);
             this._control = drawableView;

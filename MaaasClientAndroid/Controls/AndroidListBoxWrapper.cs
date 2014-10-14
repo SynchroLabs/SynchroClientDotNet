@@ -105,6 +105,8 @@ namespace SynchroClientAndroid.Controls
 
     class AndroidListBoxWrapper : AndroidControlWrapper
     {
+        static Logger logger = Logger.GetLogger("AndroidListBoxWrapper");
+
         bool _selectionChangingProgramatically = false;
         JToken _localSelection;
 
@@ -113,7 +115,7 @@ namespace SynchroClientAndroid.Controls
         public AndroidListBoxWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
-            Util.debug("Creating listbox element");
+            logger.Debug("Creating listbox element");
 
             ListView listView = new ListView(((AndroidControlWrapper)parent).Control.Context);
             this._control = listView;
@@ -194,7 +196,7 @@ namespace SynchroClientAndroid.Controls
 
         public JToken getListboxContents(ListView listView)
         {
-            Util.debug("Getting listbox contents");
+            logger.Debug("Getting listbox contents");
 
             List<string> items = new List<string>();
             for (int n = 0; n < listView.Count; n++)
@@ -211,7 +213,7 @@ namespace SynchroClientAndroid.Controls
 
         public void setListboxContents(ListView listView, BindingContext bindingContext, string itemContent)
         {
-            Util.debug("Setting listbox contents");
+            logger.Debug("Setting listbox contents");
 
             _selectionChangingProgramatically = true;
 
@@ -333,7 +335,7 @@ namespace SynchroClientAndroid.Controls
                     CommandInstance command = GetCommand(CommandName.OnItemClick);
                     if (command != null)
                     {
-                        Util.debug("ListView item clicked with command: " + command);
+                        logger.Debug("ListView item clicked with command: {0}", command);
 
                         // The item click command handler resolves its tokens relative to the item clicked.
                         //
@@ -349,7 +351,7 @@ namespace SynchroClientAndroid.Controls
                     CommandInstance command = GetCommand(CommandName.OnSelectionChange);
                     if (command != null)
                     {
-                        Util.debug("ListView selection changed with command: " + command);
+                        logger.Debug("ListView selection changed with command: {0}", command);
 
                         if (listView.ChoiceMode == ChoiceMode.Single)
                         {

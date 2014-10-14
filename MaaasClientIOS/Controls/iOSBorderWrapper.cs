@@ -252,10 +252,12 @@ namespace MaaasClientIOS.Controls
 
     class iOSBorderWrapper : iOSControlWrapper
     {
+        static Logger logger = Logger.GetLogger("iOSBorderWrapper");
+
         public iOSBorderWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
-            Util.debug("Creating border element");
+            logger.Debug("Creating border element");
 
             BorderView border = new BorderView(this);  
             this._control = border;

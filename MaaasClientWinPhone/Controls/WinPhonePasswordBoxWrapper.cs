@@ -14,10 +14,12 @@ namespace MaaasClientWinPhone.Controls
 {
     class WinPhonePasswordBoxWrapper : WinPhoneControlWrapper
     {
+        static Logger logger = Logger.GetLogger("WinPhonePasswordBoxWrapper");
+
         public WinPhonePasswordBoxWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
-            Util.debug("Creating password box element with value of: " + controlSpec["value"]);
+            logger.Debug("Creating password box element with value of: " + controlSpec["value"]);
 
             // Switched to PhonePasswordBox to get PlaceholderText functionality
             // PasswordBox passwordBox = new PasswordBox();

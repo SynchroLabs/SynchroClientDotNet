@@ -83,6 +83,8 @@ namespace SynchroClientAndroid.Controls
 
     class AndroidBorderWrapper : AndroidControlWrapper
     {
+        static Logger logger = Logger.GetLogger("AndroidBorderWrapper");
+
         LinearLayout _layout;
         int _padding = 0;
         int _thickness = 0;
@@ -102,7 +104,7 @@ namespace SynchroClientAndroid.Controls
         public AndroidBorderWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
-            Util.debug("Creating border element");
+            logger.Debug("Creating border element");
 
             _layout = new LinearLayout(((AndroidControlWrapper)parent).Control.Context);
             this._control = _layout;

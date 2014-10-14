@@ -19,6 +19,8 @@ namespace MaaasClientWinPhone
 {
     public class WinPhonePageView : PageView
     {
+        static Logger logger = Logger.GetLogger("WinPhonePageView");
+
         MaaasPage _page;
         WinPhoneControlWrapper _rootControlWrapper;
 
@@ -190,10 +192,10 @@ namespace MaaasClientWinPhone
             if (choice.HasValue)
             {
                 string command = buttonCommands[(int)choice];
-                Util.debug("User chose button #" + choice);
+                logger.Debug("User chose button #{0}", choice);
                 if (command != null)
                 {
-                    Util.debug("MessageBox command: " + command);
+                    logger.Debug("MessageBox command: {0}", command);
                     onCommand(command);
                 }
             }

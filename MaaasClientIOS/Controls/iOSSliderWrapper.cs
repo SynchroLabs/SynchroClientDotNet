@@ -12,10 +12,12 @@ namespace MaaasClientIOS.Controls
 {
     class iOSSliderWrapper : iOSControlWrapper
     {
+        static Logger logger = Logger.GetLogger("iOSSliderWrapper");
+
         public iOSSliderWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
-            Util.debug("Creating slider element");
+            logger.Debug("Creating slider element");
 
             UISlider slider = new UISlider();
             this._control = slider;
