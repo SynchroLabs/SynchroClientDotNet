@@ -6,6 +6,17 @@ using System.Threading.Tasks;
 
 namespace MaaasCore
 {
+    // There are appropriate static public interfaces provided below to do logging configuration (default, and per class).
+    //
+    // To set the default log level given a "defaultLevel" from a configuration, you would do:
+    //
+    //     Logger.DefaultLogLevel = LogLevel.FromString(defaultLevel);
+    //
+    // To set a specific level for a class using a "className" and "classLevel" from a configuration, you would do:
+    //
+    //     Logger.GetLogger(className).Level = LogLevel.FromString(classLevel);
+    //
+
     public class LogLevel
     {
         private readonly int ordinal;
@@ -39,6 +50,26 @@ namespace MaaasCore
         public static readonly LogLevel Error = new LogLevel("Error", 4);
         public static readonly LogLevel Fatal = new LogLevel("Fatal", 5);
         public static readonly LogLevel Off   = new LogLevel("Off", 6);
+
+        private static readonly LogLevel[] _levels = new LogLevel[] { Trace, Debug, Info, Warn, Error, Fatal, Off };
+
+        public static LogLevel FromString(string levelName)
+        {
+            if (levelName == null)
+            {
+                throw new ArgumentNullException("levelName");
+            }
+
+            foreach (LogLevel level in _levels)
+            {
+                if (levelName.Equals(level.Name, StringComparison.OrdinalIgnoreCase))
+                {
+                    return level;
+                }
+            }
+
+            throw new ArgumentException("Unknown log level: " + levelName);
+        }
     }
      
     public class Logger

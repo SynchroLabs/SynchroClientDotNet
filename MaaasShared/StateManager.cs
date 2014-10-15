@@ -249,6 +249,7 @@ namespace MaaasCore
                 this._instanceVersion = (uint)responseAsJSON["InstanceVersion"];
 
                 JObject jsonViewModel = responseAsJSON["ViewModel"] as JObject;
+
                 this._viewModel.InitializeViewModelData((JObject)jsonViewModel);
 
                 // In certain situations, like a resync where the instance matched but the version
@@ -262,6 +263,8 @@ namespace MaaasCore
                     JObject jsonPageView = (JObject)responseAsJSON["View"];
                     _onProcessPageView(jsonPageView);
                 }
+
+                logger.Info("Got ViewModel for path: '{0}' with instanceId: {1} and instanceVersion: {2}", this._path, this._instanceId, this._instanceVersion);
 
                 this._viewModel.UpdateViewFromViewModel();
             }
@@ -279,6 +282,8 @@ namespace MaaasCore
 
                     if (responseAsJSON["ViewModelDeltas"] != null)
                     {
+                        logger.Info("Got ViewModelDeltas for path: '{0}' with instanceId: {1} and instanceVersion: {2}", this._path, responseInstanceId, responseInstanceVersion);
+
                         if ((this._instanceVersion + 1) == responseInstanceVersion)
                         {
                             this._instanceVersion++;
@@ -342,9 +347,11 @@ namespace MaaasCore
 
             if (responseAsJSON["MessageBox"] != null)
             {
+                logger.Info("Launching message box...");
                 JObject jsonMessageBox = (JObject)responseAsJSON["MessageBox"];
                 _onProcessMessageBox(jsonMessageBox, async (command) =>
                 {
+                    logger.Info("Message box completed with command: '{0}'", command);
                     await this.processCommand(command);
                 });
             }
@@ -364,7 +371,7 @@ namespace MaaasCore
         {
             this._path = (string)_appDefinition["mainPage"];
 
-            logger.Info("Request app start page at path: {0} for session: {1}", this._path, _app.SessionId);
+            logger.Info("Request app start page at path: '{0}'", this._path);
 
             JObject requestObject = new JObject(
                 new JProperty("Mode", "Page"),
@@ -379,7 +386,7 @@ namespace MaaasCore
 
         private async Task sendResyncRequest()
         {
-            logger.Info("Sending resync for path: {0}", this._path);
+            logger.Info("Sending resync for path: '{0}'", this._path);
 
             JObject requestObject = new JObject(
                 new JProperty("Mode", "Resync"),
@@ -417,7 +424,7 @@ namespace MaaasCore
 
         public async Task processUpdate()
         {
-            logger.Debug("Process update for path: {0}", this._path);
+            logger.Debug("Process update for path: '{0}'", this._path);
 
             JObject requestObject = new JObject(
                 new JProperty("Mode", "Update"),
@@ -436,7 +443,7 @@ namespace MaaasCore
 
         public async Task processCommand(string command, JObject parameters = null)
         {
-            logger.Debug("Process command: {0} for path: {1}", command, this._path);
+            logger.Info("Sending command: '{0}' for path: '{1}'", command, this._path);
 
             JObject requestObject = new JObject(
                 new JProperty("Mode", "Command"),
@@ -459,7 +466,7 @@ namespace MaaasCore
 
         public async Task sendBackRequest()
         {
-            logger.Debug("Sending back for path: {0}", this._path);
+            logger.Info("Sending 'back' for path: '{0}'", this._path);
 
             JObject requestObject = new JObject(
                 new JProperty("Mode", "Back"),
