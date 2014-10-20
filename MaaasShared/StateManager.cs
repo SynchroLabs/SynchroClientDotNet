@@ -153,7 +153,7 @@ namespace MaaasCore
 
         async void ProcessResponse(JObject responseAsJSON)
         {
-            logger.Debug("Got response: {0}", responseAsJSON);
+            logger.Info("Got response: {0}", responseAsJSON); // !!! Debug
 
             if (responseAsJSON["NewSessionId"] != null)
             {
@@ -333,7 +333,7 @@ namespace MaaasCore
                 {
                     // Incorrect instance id
                     //
-                    logger.Warn("ERROR - instance id mismatch, updates not applied - need resync");
+                    logger.Warn("ERROR - instance id mismatch (response instance id > local instance id), updates not applied - need resync");
                     await this.sendResyncRequest();
                 }
             }
@@ -481,6 +481,8 @@ namespace MaaasCore
 
         public async Task processViewUpdate(MaaasOrientation orientation)
         {
+            logger.Info("Sending ViewUpdate for path: '{0}'", this._path);
+
             // Send the updated view metrics 
             JObject requestObject = new JObject(
                 new JProperty("Mode", "ViewUpdate"),

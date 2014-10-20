@@ -1,0 +1,40 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>f0b9b20f-daf2-428b-87b7-58d0bbad3bcb</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>MaaasClientWin</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Common\BasicPage.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\NavigationHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\ObservableDictionary.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\RelayCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\SuspensionManager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Controls\WinBorderWrapper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Controls\WinButtonWrapper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Controls\WinCanvasWrapper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Controls\WinCommandWrapper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Controls\WinControlWrapper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Controls\WinGridViewWrapper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Controls\WinImageWrapper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Controls\WinListBoxWrapper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Controls\WinListViewWrapper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Controls\WinPasswordBoxWrapper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Controls\WinPickerWrapper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Controls\WinRectangleWrapper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Controls\WinScrollWrapper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Controls\WinSliderWrapper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Controls\WinStackPanelWrapper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Controls\WinTextBlockWrapper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Controls\WinTextBoxWrapper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Controls\WinToggleSwitchWrapper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Controls\WinWebViewWrapper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Controls\WinWrapPanelWrapper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WinAppManager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WinPageView.cs" />
+  </ItemGroup>
+</Project>

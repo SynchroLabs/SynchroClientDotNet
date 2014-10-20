@@ -1,4 +1,4 @@
-﻿<Page
+﻿<common:BasicPage
     x:Name="pageRoot"
     x:Class="MaaasClientWin.LauncherPage"
     DataContext="{Binding DefaultViewModel, RelativeSource={RelativeSource Self}}"
@@ -28,7 +28,7 @@
         * Row 0 contains the back button and page title
         * Row 1 contains the rest of the page layout
     -->
-    <Grid DataContext="{Binding Group}">
+    <Grid>
         <Grid.ChildrenTransitions>
             <TransitionCollection>
                 <EntranceThemeTransition/>
@@ -61,9 +61,9 @@
                             <Image Source="{Binding ImagePath}" Stretch="UniformToFill" AutomationProperties.Name="{Binding Title}"/>
                         </Border>
                         <StackPanel Grid.Column="1" VerticalAlignment="Top" Margin="10,0,0,0">
-                            <TextBlock Text="{Binding Endpoint}" Style="{StaticResource TitleTextBlockStyle}" TextWrapping="NoWrap"/>
-                            <TextBlock Text="{Binding Name}" Style="{StaticResource CaptionTextBlockStyle}" TextWrapping="NoWrap"/>
-                            <TextBlock Text="{Binding Description}" Style="{StaticResource BodyTextBlockStyle}" MaxHeight="60"/>
+                            <TextBlock Text="{Binding Description}" Style="{StaticResource SubheaderTextBlockStyle}" MaxHeight="60"/>
+                            <TextBlock Text="{Binding Name}" Style="{StaticResource BaseTextBlockStyle}" TextWrapping="NoWrap"/>
+                            <TextBlock Text="{Binding Endpoint}" Style="{StaticResource BaseTextBlockStyle}" TextWrapping="NoWrap"/>
                         </StackPanel>
                     </Grid>
                 </DataTemplate>
@@ -98,4 +98,4 @@
                         IsHitTestVisible="false" TextWrapping="NoWrap" VerticalAlignment="Bottom" Margin="0,0,30,40"/>
         </Grid>
     </Grid>
-</Page>
+</common:BasicPage>

@@ -1,4 +1,4 @@
-﻿<common:LayoutAwarePage
+﻿<common:BasicPage
     x:Name="pageRoot"
     x:Class="MaaasClientWin.MaaasPage"
     DataContext="{Binding DefaultViewModel, RelativeSource={RelativeSource Self}}"
@@ -62,4 +62,4 @@
             </VisualStateGroup>
         </VisualStateManager.VisualStateGroups>
     </Grid>
-</common:LayoutAwarePage>
+</common:BasicPage>

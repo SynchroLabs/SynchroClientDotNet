@@ -1,47 +1,36 @@
-﻿using System;
+﻿using MaaasCore;
+using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using MaaasClientWin.Common;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
+using System.Net;
+using System.Windows;
 using System.Collections.ObjectModel;
-using MaaasCore;
+using Windows.UI.Xaml.Controls;
+using MaaasClientWin.Common;
+using Windows.UI.Xaml.Navigation;
+using Windows.UI.Xaml;
 
 namespace MaaasClientWin
 {
-    public sealed partial class LauncherPage : BasicPage
+    public partial class LauncherPage : BasicPage
     {
         static Logger logger = Logger.GetLogger("LauncherPage");
 
         public LauncherPage()
         {
-            this.InitializeComponent();
+            InitializeComponent();
         }
 
         protected override async void LoadState(LoadStateEventArgs args)
-        { 
+        {
             MaaasAppManager appManager = new WinAppManager();
             await appManager.loadState();
-            this.DefaultViewModel["Title"] = "Synchro Applications";
             this.DefaultViewModel["Items"] = appManager.Apps;
 
             this.AddMaaasAppButton.Click += AddMaaasAppButton_Click;
         }
 
-        private void itemGridView_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-        }
-
-        private void itemGridView_ItemClick(object sender, ItemClickEventArgs e)
+        private void appListControl_ItemClick(object sender, ItemClickEventArgs e)
         {
             MaaasApp maaasApp = (MaaasApp)e.ClickedItem;
             logger.Debug("Item click, endpoint: {0}", maaasApp.Endpoint);

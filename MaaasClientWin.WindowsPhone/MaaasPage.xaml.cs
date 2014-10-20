@@ -1,44 +1,30 @@
-﻿using MaaasClientWin.Common;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Windows;
 using MaaasCore;
 using MaaasShared;
-using MaasClient.Core;
-using Newtonsoft.Json.Linq;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Windows.Input;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Windows.Graphics.Display;
-using Windows.UI.Xaml;
+using Windows.UI.Core;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
+using MaaasClientWin.Common;
+using Windows.Phone.UI.Input;
 
 namespace MaaasClientWin
 {
-    /// <summary>
-    /// A basic page that provides characteristics common to most applications.
-    /// </summary>
-    public sealed partial class MaaasPage : BasicPage
+    public partial class MaaasPage : BasicPage
     {
         static Logger logger = Logger.GetLogger("MaaasPage");
 
         StateManager _stateManager;
-        WinPageView _pageView;
+        PageView _pageView;
 
         public MaaasPage()
         {
             this.InitializeComponent();
-            this.backButton.Click += backButton_Click;
-            DisplayInformation.GetForCurrentView().OrientationChanged += MaaasPage_OrientationChanged;
         }
-
-
 
         void MaaasPage_OrientationChanged(DisplayInformation sender, object args)
         {
@@ -59,11 +45,6 @@ namespace MaaasClientWin
             }
         }
 
-        void backButton_Click(object sender, RoutedEventArgs e)
-        {
-            _pageView.OnBackCommand();
-        }
-
         protected override async void LoadState(LoadStateEventArgs args)
         {
             string endpoint = args.NavigationParameter as string;
@@ -75,7 +56,7 @@ namespace MaaasClientWin
 
             MaaasApp app = appManager.GetApp(endpoint);
 
-            WinDeviceMetrics deviceMetrics = new WinDeviceMetrics();
+            WinPhoneDeviceMetrics deviceMetrics = new WinPhoneDeviceMetrics();
 
             Transport transport = new TransportHttp(endpoint);
             //Transport transport = new TransportWs(endpoint);
@@ -96,7 +77,7 @@ namespace MaaasClientWin
             _pageView = new WinPageView(_stateManager, _stateManager.ViewModel, this, this.mainScroll, backToMenu);
 
             _pageView.setPageTitle = title => this.pageTitle.Text = title;
-            _pageView.setBackEnabled = isEnabled => this.backButton.IsEnabled = isEnabled;
+            // Note: No on screen back button to enable/disable via _pageView.setBackEnabled on Windows Phone
 
             _stateManager.SetProcessingHandlers(_pageView.ProcessPageView, _pageView.ProcessMessageBox);
 
@@ -110,6 +91,13 @@ namespace MaaasClientWin
         {
             logger.Debug("Disconnecting orientation change listener");
             DisplayInformation.GetForCurrentView().OrientationChanged -= MaaasPage_OrientationChanged;
+        }
+
+        public override void OnHardwareBackPressed(object sender, BackPressedEventArgs e) 
+        {
+            logger.Info("Back button pressed");
+            e.Handled = true;
+            _pageView.OnBackCommand();
         }
     }
 }
