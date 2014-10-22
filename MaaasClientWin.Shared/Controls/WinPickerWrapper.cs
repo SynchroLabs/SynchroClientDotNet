@@ -188,7 +188,7 @@ namespace MaaasClientWin.Controls
                     if ((e.AddedItems != null) && (e.AddedItems.Count > 0))
                     {
                         BindingContextListItem listItem = (BindingContextListItem)e.AddedItems[0];
-                        StateManager.processCommand(command.Command, command.GetResolvedParameters(listItem.BindingContext));
+                        Task t = StateManager.processCommand(command.Command, command.GetResolvedParameters(listItem.BindingContext));
                     }
                 }
             }

@@ -11,6 +11,7 @@ using Android.Views;
 using Android.Widget;
 using MaaasCore;
 using Newtonsoft.Json.Linq;
+using System.Threading.Tasks;
 
 namespace SynchroClientAndroid.Controls
 {
@@ -277,7 +278,7 @@ namespace SynchroClientAndroid.Controls
                     //
                     BindingContextPickerAdapter adapter = (BindingContextPickerAdapter)picker.Adapter;
                     BindingContextListItem listItem = adapter.GetItemAtPosition(e.Position);
-                    StateManager.processCommand(command.Command, command.GetResolvedParameters(listItem.BindingContext));
+                    Task t = StateManager.processCommand(command.Command, command.GetResolvedParameters(listItem.BindingContext));
                 }
             }
         }

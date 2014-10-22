@@ -59,7 +59,7 @@ namespace MaaasCore
             if (_stateManager.IsBackSupported())
             {
                 logger.Debug("Back navigation");
-                _stateManager.sendBackRequest();
+                Task t = _stateManager.sendBackRequest();
                 return true;
             }
             else if ((_doBackToMenu != null) && _stateManager.IsOnMainPath())

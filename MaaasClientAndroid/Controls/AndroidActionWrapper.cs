@@ -11,6 +11,7 @@ using Android.Views;
 using Android.Widget;
 using MaaasCore;
 using Newtonsoft.Json.Linq;
+using System.Threading.Tasks;
 
 namespace SynchroClientAndroid.Controls
 {
@@ -68,7 +69,7 @@ namespace SynchroClientAndroid.Controls
             CommandInstance command = GetCommand(CommandName.OnClick);
             if (command != null)
             {
-                this.StateManager.processCommand(command.Command, command.GetResolvedParameters(BindingContext));
+                Task t = this.StateManager.processCommand(command.Command, command.GetResolvedParameters(BindingContext));
             }
         }
     }

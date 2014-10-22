@@ -49,7 +49,7 @@
     <CodesignEntitlements />
     <CodesignResourceRules />
     <CodesignExtraArgs />
-    <MtouchSdkVersion>7.1</MtouchSdkVersion>
+    <MtouchSdkVersion>8.0</MtouchSdkVersion>
     <MtouchLink>SdkOnly</MtouchLink>
     <MtouchProfiling>False</MtouchProfiling>
     <MtouchExtraArgs />

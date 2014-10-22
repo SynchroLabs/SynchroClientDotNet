@@ -8,6 +8,7 @@ using MonoTouch.UIKit;
 using MaaasCore;
 using Newtonsoft.Json.Linq;
 using System.Drawing;
+using System.Threading.Tasks;
 
 namespace MaaasClientIOS.Controls
 {
@@ -254,7 +255,7 @@ namespace MaaasClientIOS.Controls
                     // The item click command handler resolves its tokens relative to the item clicked (not the list view).
                     //
                     BindingContextPickerModel model = (BindingContextPickerModel)picker.Model;
-                    StateManager.processCommand(command.Command, command.GetResolvedParameters(model.GetBindingContext(row)));
+                    Task t = StateManager.processCommand(command.Command, command.GetResolvedParameters(model.GetBindingContext(row)));
                 }
             }
         }

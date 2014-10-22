@@ -12,6 +12,7 @@ using Android.Widget;
 using MaaasCore;
 using Newtonsoft.Json.Linq;
 using Android.Graphics;
+using System.Threading.Tasks;
 
 namespace SynchroClientAndroid.Controls
 {
@@ -342,7 +343,7 @@ namespace SynchroClientAndroid.Controls
                         BindingContextListItem listItem = adapter.GetItemAtPosition(e.Position);
                         if (listItem != null)
                         {
-                            StateManager.processCommand(command.Command, command.GetResolvedParameters(listItem.BindingContext));
+                            Task t = StateManager.processCommand(command.Command, command.GetResolvedParameters(listItem.BindingContext));
                         }
                     }
                 }
@@ -360,14 +361,14 @@ namespace SynchroClientAndroid.Controls
                             BindingContextListItem listItem = adapter.GetItemAtPosition(e.Position);
                             if (listItem != null)
                             {
-                                StateManager.processCommand(command.Command, command.GetResolvedParameters(listItem.BindingContext));
+                                Task t = StateManager.processCommand(command.Command, command.GetResolvedParameters(listItem.BindingContext));
                             }
                         }
                         else // ChoiceMode.Multiple
                         {
                             // The selection change command handler resolves its tokens relative to the list context when in multiple select mode.
                             //
-                            StateManager.processCommand(command.Command, command.GetResolvedParameters(this.BindingContext));
+                            Task t = StateManager.processCommand(command.Command, command.GetResolvedParameters(this.BindingContext));
                         }
                     }
                 }

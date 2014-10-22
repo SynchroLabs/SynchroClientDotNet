@@ -8,6 +8,7 @@ using MonoTouch.UIKit;
 using MaaasCore;
 using Newtonsoft.Json.Linq;
 using System.Drawing;
+using System.Threading.Tasks;
 
 namespace MaaasClientIOS.Controls
 {
@@ -49,7 +50,7 @@ namespace MaaasClientIOS.Controls
             if (command != null)
             {
                 logger.Debug("Button click with command: {0}", command);
-                this.StateManager.processCommand(command.Command, command.GetResolvedParameters(BindingContext));
+                Task t = this.StateManager.processCommand(command.Command, command.GetResolvedParameters(BindingContext));
             }
         }
     }

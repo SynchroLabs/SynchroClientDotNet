@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
@@ -49,13 +50,13 @@ namespace MaaasClientWin
             {
                 // Landscape
                 logger.Debug("Screen oriented to Landscape");
-                _stateManager.processViewUpdate(MaaasOrientation.Landscape);
+                Task t = _stateManager.processViewUpdate(MaaasOrientation.Landscape);
             }
             else
             {
                 // Portait
                 logger.Debug("Screen oriented to Portrait");
-                _stateManager.processViewUpdate(MaaasOrientation.Portrait);
+                Task t = _stateManager.processViewUpdate(MaaasOrientation.Portrait);
             }
         }
 

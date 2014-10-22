@@ -58,7 +58,7 @@ namespace MaaasClientWin.Controls
                 updateValueBindingForAttribute("value");
                 if (_updateOnChange)
                 {
-                    this.StateManager.processUpdate();
+                    Task t = this.StateManager.processUpdate();
                 }
             }
         }

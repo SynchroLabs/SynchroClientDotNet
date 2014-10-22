@@ -58,7 +58,8 @@ namespace SynchroClientAndroid.Controls
 
         // This is some test code (trying unsuccessfully to diagnose the sporadic java.net.UnknownHostException that comes
         // from HttpClient.getAsync (when trying to call GetAllByName() internally).  So far no information.  It fails a lot.
-        // 
+        //
+        /*
         private void hostLookup(string host)
         {
             try
@@ -81,6 +82,7 @@ namespace SynchroClientAndroid.Controls
                 logger.Debug("InetAddress.GetAllByName failed for: {0}", host);
             }
         }
+         */
 
         // Note: This used to return a Task and be called using the standard async/await method.  The problem with
         //       this approach is that the called task is still on the main thread until the first "await".  Since

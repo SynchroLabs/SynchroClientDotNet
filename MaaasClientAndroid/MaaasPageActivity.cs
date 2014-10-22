@@ -14,6 +14,7 @@ using Android.Util;
 using Android.Graphics;
 using Android.Content.PM;
 using Android.Support.V4.App;
+using System.Threading.Tasks;
 
 namespace SynchroClientAndroid
 {
@@ -177,13 +178,13 @@ namespace SynchroClientAndroid
             {
                 // Changed to portrait
                 logger.Debug("Screen oriented to Portrait");
-                _stateManager.processViewUpdate(MaaasOrientation.Portrait);
+                Task t = _stateManager.processViewUpdate(MaaasOrientation.Portrait);
             }
             else if (newConfig.Orientation == Android.Content.Res.Orientation.Landscape)
             {
                 // Changed to landscape
                 logger.Debug("Screen oriented to Landscape");
-                _stateManager.processViewUpdate(MaaasOrientation.Landscape);
+                Task t = _stateManager.processViewUpdate(MaaasOrientation.Landscape);
             }
         }
 

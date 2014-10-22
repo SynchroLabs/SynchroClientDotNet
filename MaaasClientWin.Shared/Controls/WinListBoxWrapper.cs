@@ -205,7 +205,7 @@ namespace MaaasClientWin.Controls
                         if ((e.AddedItems != null) && (e.AddedItems.Count > 0))
                         {
                             BindingContextListItem listItem = (BindingContextListItem)e.AddedItems[0];
-                            StateManager.processCommand(command.Command, command.GetResolvedParameters(listItem.BindingContext));
+                            Task t = StateManager.processCommand(command.Command, command.GetResolvedParameters(listItem.BindingContext));
                         }
                     }
                 }
@@ -226,14 +226,14 @@ namespace MaaasClientWin.Controls
                             if ((e.AddedItems != null) && (e.AddedItems.Count > 0))
                             {
                                 BindingContextListItem listItem = (BindingContextListItem)e.AddedItems[0];
-                                StateManager.processCommand(command.Command, command.GetResolvedParameters(listItem.BindingContext));
+                                Task t = StateManager.processCommand(command.Command, command.GetResolvedParameters(listItem.BindingContext));
                             }
                         }
                         else if (listbox.SelectionMode == SelectionMode.Multiple)
                         {
                             // For selection mode "Multiple", the command hander resovles its tokens relative to the listbox, not any list item(s).
                             //
-                            StateManager.processCommand(command.Command, command.GetResolvedParameters(this.BindingContext));
+                            Task t = StateManager.processCommand(command.Command, command.GetResolvedParameters(this.BindingContext));
                         }
                     }
                 }

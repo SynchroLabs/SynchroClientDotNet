@@ -8,6 +8,7 @@ using MonoTouch.UIKit;
 using MaaasCore;
 using Newtonsoft.Json.Linq;
 using System.Drawing;
+using System.Threading.Tasks;
 
 namespace MaaasClientIOS.Controls
 {
@@ -70,7 +71,7 @@ namespace MaaasClientIOS.Controls
                 updateValueBindingForAttribute("value");
                 if (_updateOnChange)
                 {
-                    this.StateManager.processUpdate();
+                    Task t = this.StateManager.processUpdate();
                 }
             }
         }

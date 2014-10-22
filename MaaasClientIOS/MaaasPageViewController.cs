@@ -5,6 +5,7 @@ using MaaasCore;
 using System.Net.Http;
 using MaaasShared;
 using ModernHttpClient;
+using System.Threading.Tasks;
 
 namespace MaaasClientIOS
 {
@@ -111,12 +112,12 @@ namespace MaaasClientIOS
             if (normalizeOrientation(toInterfaceOrientation) == UIInterfaceOrientation.Portrait)
             {
                 logger.Debug("Screen oriented to Portrait");
-                _stateManager.processViewUpdate(MaaasOrientation.Portrait);
+                Task t = _stateManager.processViewUpdate(MaaasOrientation.Portrait);
             }
             else 
             {
                 logger.Debug("Screen oriented to Landscape");
-                _stateManager.processViewUpdate(MaaasOrientation.Landscape);
+                Task t = _stateManager.processViewUpdate(MaaasOrientation.Landscape);
             }
 
             ((iOSPageView)_pageView).UpdateLayout();

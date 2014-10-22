@@ -12,6 +12,7 @@ using Android.Widget;
 using MaaasCore;
 using Newtonsoft.Json.Linq;
 using Android.Text;
+using System.Threading.Tasks;
 
 namespace SynchroClientAndroid.Controls
 {
@@ -70,7 +71,7 @@ namespace SynchroClientAndroid.Controls
                 updateValueBindingForAttribute("value");
                 if (_updateOnChange)
                 {
-                    this.StateManager.processUpdate();
+                    Task t = this.StateManager.processUpdate();
                 }
             }
         }

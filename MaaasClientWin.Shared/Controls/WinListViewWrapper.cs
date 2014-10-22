@@ -238,7 +238,7 @@ namespace MaaasClientWin.Controls
                             ControlWrapper wrapper = this.getChildControlWrapper((FrameworkElement)e.AddedItems[0]);
                             if (wrapper != null)
                             {
-                                StateManager.processCommand(command.Command, command.GetResolvedParameters(wrapper.BindingContext));
+                                Task t = StateManager.processCommand(command.Command, command.GetResolvedParameters(wrapper.BindingContext));
                             }
                         }
                     }
@@ -246,7 +246,7 @@ namespace MaaasClientWin.Controls
                     {
                         // For selection mode "Multiple", the command hander resovles its tokens relative to the listview, not any list item(s).
                         //
-                        StateManager.processCommand(command.Command, command.GetResolvedParameters(this.BindingContext));
+                        Task t = StateManager.processCommand(command.Command, command.GetResolvedParameters(this.BindingContext));
                     }
                 }
             }
@@ -267,7 +267,7 @@ namespace MaaasClientWin.Controls
                 ControlWrapper wrapper = this.getChildControlWrapper((FrameworkElement)e.ClickedItem);
                 if (wrapper != null)
                 {
-                    StateManager.processCommand(command.Command, command.GetResolvedParameters(wrapper.BindingContext));
+                    Task t = StateManager.processCommand(command.Command, command.GetResolvedParameters(wrapper.BindingContext));
                 }
             }
         }

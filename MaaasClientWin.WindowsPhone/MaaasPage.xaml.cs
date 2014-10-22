@@ -11,6 +11,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
 using MaaasClientWin.Common;
 using Windows.Phone.UI.Input;
+using System.Threading.Tasks;
 
 namespace MaaasClientWin
 {
@@ -35,13 +36,13 @@ namespace MaaasClientWin
             {
                 // Landscape
                 logger.Debug("Screen oriented to Landscape");
-                _stateManager.processViewUpdate(MaaasOrientation.Landscape);
+                Task t = _stateManager.processViewUpdate(MaaasOrientation.Landscape);
             }
             else
             {
                 // Portait
                 logger.Debug("Screen oriented to Portrait");
-                _stateManager.processViewUpdate(MaaasOrientation.Portrait);
+                Task t = _stateManager.processViewUpdate(MaaasOrientation.Portrait);
             }
         }
 

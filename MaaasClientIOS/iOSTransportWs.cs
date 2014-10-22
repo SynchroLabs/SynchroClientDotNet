@@ -20,7 +20,7 @@ namespace MaaasClientIOS
             _controller = controller;
         }
 
-        public virtual void postResponseToUI(ResponseHandler responseHandler, JObject responseObject)
+        public override void postResponseToUI(ResponseHandler responseHandler, JObject responseObject)
         {
             _controller.InvokeOnMainThread(() =>
             {
@@ -28,7 +28,7 @@ namespace MaaasClientIOS
             });
         }
 
-        public virtual void postFailureToUI(RequestFailureHandler failureHandler, JObject request, Exception ex)
+        public override void postFailureToUI(RequestFailureHandler failureHandler, JObject request, Exception ex)
         {
             _controller.InvokeOnMainThread(() =>
             {

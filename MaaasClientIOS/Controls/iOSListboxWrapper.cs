@@ -8,6 +8,7 @@ using MonoTouch.UIKit;
 using MaaasCore;
 using Newtonsoft.Json.Linq;
 using System.Drawing;
+using System.Threading.Tasks;
 
 namespace MaaasClientIOS.Controls
 {
@@ -507,7 +508,7 @@ namespace MaaasClientIOS.Controls
 
                         // The item click command handler resolves its tokens relative to the item clicked (not the list view).
                         //
-                        StateManager.processCommand(command.Command, command.GetResolvedParameters(listItem.BindingContext));
+                        Task t = StateManager.processCommand(command.Command, command.GetResolvedParameters(listItem.BindingContext));
                     }
                 }
             }
@@ -544,14 +545,14 @@ namespace MaaasClientIOS.Controls
                         {
                             // The selection change command handler resolves its tokens relative to the item selected when in single select mode.
                             //
-                            StateManager.processCommand(command.Command, command.GetResolvedParameters(listItem.BindingContext));
+                            Task t = StateManager.processCommand(command.Command, command.GetResolvedParameters(listItem.BindingContext));
                         }
                     }
                     else if (tableSource.SelectionMode == ListSelectionMode.Multiple)
                     {
                         // The selection change command handler resolves its tokens relative to the list context when in multiple select mode.
                         //
-                        StateManager.processCommand(command.Command, command.GetResolvedParameters(this.BindingContext));
+                        Task t = StateManager.processCommand(command.Command, command.GetResolvedParameters(this.BindingContext));
                     }
                 }
             }

@@ -51,7 +51,7 @@ namespace MaaasClientWin.Controls
             if (command != null)
             {
                 logger.Debug("ToggleSwitch toggled with command: {0}", command);
-                this.StateManager.processCommand(command.Command, command.GetResolvedParameters(BindingContext));
+                Task t = this.StateManager.processCommand(command.Command, command.GetResolvedParameters(BindingContext));
             }
         }
     }

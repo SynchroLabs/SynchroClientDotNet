@@ -12,6 +12,7 @@ using Android.Widget;
 using MaaasCore;
 using Newtonsoft.Json.Linq;
 using Android.Graphics;
+using System.Threading.Tasks;
 
 namespace SynchroClientAndroid.Controls
 {
@@ -420,7 +421,7 @@ namespace SynchroClientAndroid.Controls
                             ControlWrapper wrapper = this.getChildControlWrapper(contentView);
                             if (wrapper != null)
                             {
-                                StateManager.processCommand(command.Command, command.GetResolvedParameters(wrapper.BindingContext));
+                                Task t = StateManager.processCommand(command.Command, command.GetResolvedParameters(wrapper.BindingContext));
                             }
                         }
                     }
@@ -443,7 +444,7 @@ namespace SynchroClientAndroid.Controls
                                 ControlWrapper wrapper = this.getChildControlWrapper(contentView);
                                 if (wrapper != null)
                                 {
-                                    StateManager.processCommand(command.Command, command.GetResolvedParameters(wrapper.BindingContext));
+                                    Task t = StateManager.processCommand(command.Command, command.GetResolvedParameters(wrapper.BindingContext));
                                 }
                             }
                         }
@@ -451,7 +452,7 @@ namespace SynchroClientAndroid.Controls
                         {
                             // The selection change command handler resolves its tokens relative to the list context when in multiple select mode.
                             //
-                            StateManager.processCommand(command.Command, command.GetResolvedParameters(this.BindingContext));
+                            Task t = StateManager.processCommand(command.Command, command.GetResolvedParameters(this.BindingContext));
                         }
                     }
                 }
