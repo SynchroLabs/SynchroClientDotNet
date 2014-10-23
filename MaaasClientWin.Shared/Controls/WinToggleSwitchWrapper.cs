@@ -43,7 +43,7 @@ namespace MaaasClientWin.Controls
             toggleSwitch.Toggled += toggleSwitch_Toggled;
         }
 
-        void toggleSwitch_Toggled(object sender, RoutedEventArgs e)
+        async void toggleSwitch_Toggled(object sender, RoutedEventArgs e)
         {
             updateValueBindingForAttribute("value");
 
@@ -51,7 +51,7 @@ namespace MaaasClientWin.Controls
             if (command != null)
             {
                 logger.Debug("ToggleSwitch toggled with command: {0}", command);
-                Task t = this.StateManager.processCommand(command.Command, command.GetResolvedParameters(BindingContext));
+                await this.StateManager.sendCommandRequestAsync(command.Command, command.GetResolvedParameters(BindingContext));
             }
         }
     }

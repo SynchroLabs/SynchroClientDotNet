@@ -41,13 +41,13 @@ namespace SynchroClientAndroid.Controls
             }
         }
 
-        void button_Click(object sender, EventArgs e)
+        async void button_Click(object sender, EventArgs e)
         {
             CommandInstance command = GetCommand(CommandName.OnClick);
             if (command != null)
             {
                 logger.Debug("Button click with command: {0}", command);
-                Task t = this.StateManager.processCommand(command.Command, command.GetResolvedParameters(BindingContext));
+                await this.StateManager.sendCommandRequestAsync(command.Command, command.GetResolvedParameters(BindingContext));
             }
         }
     }

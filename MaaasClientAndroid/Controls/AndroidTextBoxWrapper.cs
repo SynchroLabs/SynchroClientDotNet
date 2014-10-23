@@ -54,7 +54,7 @@ namespace SynchroClientAndroid.Controls
             editText.TextChanged += editText_TextChanged;
         }
 
-        void editText_TextChanged(object sender, TextChangedEventArgs e)
+        async void editText_TextChanged(object sender, TextChangedEventArgs e)
         {
             var editText = sender as EditText;
 
@@ -71,7 +71,7 @@ namespace SynchroClientAndroid.Controls
                 updateValueBindingForAttribute("value");
                 if (_updateOnChange)
                 {
-                    Task t = this.StateManager.processUpdate();
+                    await this.StateManager.sendUpdateRequestAsync();
                 }
             }
         }

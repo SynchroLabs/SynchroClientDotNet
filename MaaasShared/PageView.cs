@@ -54,12 +54,12 @@ namespace MaaasCore
             } 
         }
 
-        public bool OnBackCommand()
+        public async Task<bool> OnBackCommand()
         {
             if (_stateManager.IsBackSupported())
             {
                 logger.Debug("Back navigation");
-                Task t = _stateManager.sendBackRequest();
+                await _stateManager.sendBackRequestAsync();
                 return true;
             }
             else if ((_doBackToMenu != null) && _stateManager.IsOnMainPath())

@@ -204,7 +204,7 @@ namespace MaaasClientWin.Controls
             _selectionChangingProgramatically = false;
         }
 
-        void listView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        async void listView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             logger.Debug("Listbox selection changed");
             ListView listview = (ListView)sender;
@@ -238,7 +238,7 @@ namespace MaaasClientWin.Controls
                             ControlWrapper wrapper = this.getChildControlWrapper((FrameworkElement)e.AddedItems[0]);
                             if (wrapper != null)
                             {
-                                Task t = StateManager.processCommand(command.Command, command.GetResolvedParameters(wrapper.BindingContext));
+                                await StateManager.sendCommandRequestAsync(command.Command, command.GetResolvedParameters(wrapper.BindingContext));
                             }
                         }
                     }
@@ -246,13 +246,13 @@ namespace MaaasClientWin.Controls
                     {
                         // For selection mode "Multiple", the command hander resovles its tokens relative to the listview, not any list item(s).
                         //
-                        Task t = StateManager.processCommand(command.Command, command.GetResolvedParameters(this.BindingContext));
+                        await StateManager.sendCommandRequestAsync(command.Command, command.GetResolvedParameters(this.BindingContext));
                     }
                 }
             }
         }
 
-        void listView_ItemClick(object sender, ItemClickEventArgs e)
+        async void listView_ItemClick(object sender, ItemClickEventArgs e)
         {
             // This will get called when the selection mode is "None" and an item is clicked (no selection change events will
             // fire in this case).
@@ -267,7 +267,7 @@ namespace MaaasClientWin.Controls
                 ControlWrapper wrapper = this.getChildControlWrapper((FrameworkElement)e.ClickedItem);
                 if (wrapper != null)
                 {
-                    Task t = StateManager.processCommand(command.Command, command.GetResolvedParameters(wrapper.BindingContext));
+                    await StateManager.sendCommandRequestAsync(command.Command, command.GetResolvedParameters(wrapper.BindingContext));
                 }
             }
         }

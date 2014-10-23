@@ -64,12 +64,12 @@ namespace SynchroClientAndroid.Controls
             }
         }
 
-        public void onItemSelected()
+        public async void onItemSelected()
         {
             CommandInstance command = GetCommand(CommandName.OnClick);
             if (command != null)
             {
-                Task t = this.StateManager.processCommand(command.Command, command.GetResolvedParameters(BindingContext));
+                await this.StateManager.sendCommandRequestAsync(command.Command, command.GetResolvedParameters(BindingContext));
             }
         }
     }

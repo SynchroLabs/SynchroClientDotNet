@@ -54,7 +54,7 @@ namespace MaaasClientIOS.Controls
             textBox.EditingChanged += textBox_EditingChanged;
         }
 
-        void textBox_EditingChanged(object sender, EventArgs e)
+        async void textBox_EditingChanged(object sender, EventArgs e)
         {
             var textBox = sender as UITextField;
 
@@ -71,7 +71,7 @@ namespace MaaasClientIOS.Controls
                 updateValueBindingForAttribute("value");
                 if (_updateOnChange)
                 {
-                    Task t = this.StateManager.processUpdate();
+                    await this.StateManager.sendUpdateRequestAsync();
                 }
             }
         }

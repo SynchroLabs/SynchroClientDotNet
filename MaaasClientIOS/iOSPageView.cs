@@ -9,6 +9,7 @@ using MaaasCore;
 using MaaasClientIOS.Controls;
 using Newtonsoft.Json.Linq;
 using System.Drawing;
+using System.Threading.Tasks;
 
 namespace MaaasClientIOS
 {
@@ -37,7 +38,7 @@ namespace MaaasClientIOS
             logger.Debug("Should pop item got called!");
             if (_pageView != null)
             {
-                _pageView.OnBackCommand();
+                Util.DontWait(_pageView.OnBackCommand());
             }
             return false;
         }

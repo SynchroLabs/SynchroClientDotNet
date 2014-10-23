@@ -161,7 +161,7 @@ namespace MaaasClientWin.Controls
             _selectionChangingProgramatically = false;
         }
 
-        void picker_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        async void picker_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             logger.Debug("Picker selection changed");
             ComboBox picker = (ComboBox)sender;
@@ -188,7 +188,7 @@ namespace MaaasClientWin.Controls
                     if ((e.AddedItems != null) && (e.AddedItems.Count > 0))
                     {
                         BindingContextListItem listItem = (BindingContextListItem)e.AddedItems[0];
-                        Task t = StateManager.processCommand(command.Command, command.GetResolvedParameters(listItem.BindingContext));
+                        await StateManager.sendCommandRequestAsync(command.Command, command.GetResolvedParameters(listItem.BindingContext));
                     }
                 }
             }

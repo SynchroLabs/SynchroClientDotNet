@@ -27,7 +27,7 @@ namespace MaaasClientWin
             this.InitializeComponent();
         }
 
-        void MaaasPage_OrientationChanged(DisplayInformation sender, object args)
+        async void MaaasPage_OrientationChanged(DisplayInformation sender, object args)
         {
             //The orientation of the device is now...
             // var orientation = this.normalizeOrientation(DisplayInformation.GetForCurrentView().CurrentOrientation);
@@ -36,13 +36,13 @@ namespace MaaasClientWin
             {
                 // Landscape
                 logger.Debug("Screen oriented to Landscape");
-                Task t = _stateManager.processViewUpdate(MaaasOrientation.Landscape);
+                await _stateManager.sendViewUpdateAsync(MaaasOrientation.Landscape);
             }
             else
             {
                 // Portait
                 logger.Debug("Screen oriented to Portrait");
-                Task t = _stateManager.processViewUpdate(MaaasOrientation.Portrait);
+                await _stateManager.sendViewUpdateAsync(MaaasOrientation.Portrait);
             }
         }
 
@@ -85,7 +85,7 @@ namespace MaaasClientWin
             logger.Debug("Connecting orientation change listener");
             DisplayInformation.GetForCurrentView().OrientationChanged += MaaasPage_OrientationChanged;
 
-            await _stateManager.startApplication();
+            await _stateManager.startApplicationAsync();
         }
 
         protected override void SaveState(SaveStateEventArgs args)
@@ -94,11 +94,11 @@ namespace MaaasClientWin
             DisplayInformation.GetForCurrentView().OrientationChanged -= MaaasPage_OrientationChanged;
         }
 
-        public override void OnHardwareBackPressed(object sender, BackPressedEventArgs e) 
+        public override async void OnHardwareBackPressed(object sender, BackPressedEventArgs e) 
         {
             logger.Info("Back button pressed");
             e.Handled = true;
-            _pageView.OnBackCommand();
+            await _pageView.OnBackCommand();
         }
     }
 }

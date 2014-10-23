@@ -61,7 +61,7 @@ namespace MaaasClientIOS
             _pageView = new iOSPageView(_stateManager, _stateManager.ViewModel, View, backToMenu);
 
             _stateManager.SetProcessingHandlers(_pageView.ProcessPageView, _pageView.ProcessMessageBox);
-            await _stateManager.startApplication();
+            await _stateManager.startApplicationAsync();
         }
 
         private UIInterfaceOrientation normalizeOrientation(UIInterfaceOrientation orientation)
@@ -81,6 +81,9 @@ namespace MaaasClientIOS
         // When the device rotates, the OS calls this method to determine if it should try and rotate the
         // application and then call WillAnimateRotation
         //
+        // The method that this method overrides is obsolete, which was causing a compiler warning.  Since
+        // we allow rotation in all cases (at least for now), we don't need this anyway.
+        /*
         public override bool ShouldAutorotateToInterfaceOrientation(UIInterfaceOrientation toInterfaceOrientation)
         {
             // We're passed to orientation that it will rotate to. We could just return true, but this
@@ -96,6 +99,7 @@ namespace MaaasClientIOS
                     return true;
             }
         }
+         */
 
         // Is called when the OS is going to rotate the application. It handles rotating the status bar
         // if it's present, as well as it's controls like the navigation controller and tab bar, but you 
@@ -103,7 +107,7 @@ namespace MaaasClientIOS
         // animation block in the underlying implementation, so it will automatically animate your control
         // repositioning.
         //
-        public override void WillAnimateRotation(UIInterfaceOrientation toInterfaceOrientation, double duration)
+        public override async void WillAnimateRotation(UIInterfaceOrientation toInterfaceOrientation, double duration)
         {
             // this.InterfaceOrientation == UIInterfaceOrientation.
             base.WillAnimateRotation(toInterfaceOrientation, duration);
@@ -112,12 +116,12 @@ namespace MaaasClientIOS
             if (normalizeOrientation(toInterfaceOrientation) == UIInterfaceOrientation.Portrait)
             {
                 logger.Debug("Screen oriented to Portrait");
-                Task t = _stateManager.processViewUpdate(MaaasOrientation.Portrait);
+                await _stateManager.sendViewUpdateAsync(MaaasOrientation.Portrait);
             }
             else 
             {
                 logger.Debug("Screen oriented to Landscape");
-                Task t = _stateManager.processViewUpdate(MaaasOrientation.Landscape);
+                await _stateManager.sendViewUpdateAsync(MaaasOrientation.Landscape);
             }
 
             ((iOSPageView)_pageView).UpdateLayout();

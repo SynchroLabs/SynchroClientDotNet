@@ -230,7 +230,7 @@ namespace MaaasClientIOS.Controls
             _selectionChangingProgramatically = false;
         }
 
-        void picker_ItemSelected(UIPickerView picker, int row)
+        async void picker_ItemSelected(UIPickerView picker, int row)
         {
             logger.Debug("Picker selection changed");
 
@@ -255,7 +255,7 @@ namespace MaaasClientIOS.Controls
                     // The item click command handler resolves its tokens relative to the item clicked (not the list view).
                     //
                     BindingContextPickerModel model = (BindingContextPickerModel)picker.Model;
-                    Task t = StateManager.processCommand(command.Command, command.GetResolvedParameters(model.GetBindingContext(row)));
+                    await StateManager.sendCommandRequestAsync(command.Command, command.GetResolvedParameters(model.GetBindingContext(row)));
                 }
             }
         }

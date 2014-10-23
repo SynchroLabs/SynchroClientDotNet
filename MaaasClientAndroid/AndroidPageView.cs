@@ -15,6 +15,7 @@ using Newtonsoft.Json.Linq;
 using Android.Util;
 using Android.Graphics;
 using Android.Graphics.Drawables;
+using System.Threading.Tasks;
 
 namespace SynchroClientAndroid
 {
@@ -198,7 +199,7 @@ namespace SynchroClientAndroid
         public bool OnCommandBarUp(IMenuItem item)
         {
             logger.Debug("Command bar Up button pushed");
-            this.OnBackCommand();
+            Util.DontWait(this.OnBackCommand());
             return true;
         }
 

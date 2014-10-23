@@ -174,7 +174,7 @@ namespace MaaasClientWin.Controls
             _selectionChangingProgramatically = false;
         }
 
-        void listbox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        async void listbox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             
             logger.Debug("Listbox selection changed");
@@ -205,7 +205,7 @@ namespace MaaasClientWin.Controls
                         if ((e.AddedItems != null) && (e.AddedItems.Count > 0))
                         {
                             BindingContextListItem listItem = (BindingContextListItem)e.AddedItems[0];
-                            Task t = StateManager.processCommand(command.Command, command.GetResolvedParameters(listItem.BindingContext));
+                            await StateManager.sendCommandRequestAsync(command.Command, command.GetResolvedParameters(listItem.BindingContext));
                         }
                     }
                 }
@@ -226,14 +226,14 @@ namespace MaaasClientWin.Controls
                             if ((e.AddedItems != null) && (e.AddedItems.Count > 0))
                             {
                                 BindingContextListItem listItem = (BindingContextListItem)e.AddedItems[0];
-                                Task t = StateManager.processCommand(command.Command, command.GetResolvedParameters(listItem.BindingContext));
+                                await StateManager.sendCommandRequestAsync(command.Command, command.GetResolvedParameters(listItem.BindingContext));
                             }
                         }
                         else if (listbox.SelectionMode == SelectionMode.Multiple)
                         {
                             // For selection mode "Multiple", the command hander resovles its tokens relative to the listbox, not any list item(s).
                             //
-                            Task t = StateManager.processCommand(command.Command, command.GetResolvedParameters(this.BindingContext));
+                            await StateManager.sendCommandRequestAsync(command.Command, command.GetResolvedParameters(this.BindingContext));
                         }
                     }
                 }

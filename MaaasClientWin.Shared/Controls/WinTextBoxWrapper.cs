@@ -41,7 +41,7 @@ namespace MaaasClientWin.Controls
             textBox.TextChanged += textBox_TextChanged;
         }
 
-        void textBox_TextChanged(object sender, TextChangedEventArgs e)
+        async void textBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             var textBox = sender as TextBox;
 
@@ -58,7 +58,7 @@ namespace MaaasClientWin.Controls
                 updateValueBindingForAttribute("value");
                 if (_updateOnChange)
                 {
-                    Task t = this.StateManager.processUpdate();
+                    await this.StateManager.sendUpdateRequestAsync();
                 }
             }
         }

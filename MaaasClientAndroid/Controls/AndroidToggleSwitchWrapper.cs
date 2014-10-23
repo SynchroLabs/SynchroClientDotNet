@@ -49,7 +49,7 @@ namespace SynchroClientAndroid.Controls
             toggleSwitch.CheckedChange += toggleSwitch_CheckedChange;
         }
 
-        void toggleSwitch_CheckedChange(object sender, CompoundButton.CheckedChangeEventArgs e)
+        async void toggleSwitch_CheckedChange(object sender, CompoundButton.CheckedChangeEventArgs e)
         {
             updateValueBindingForAttribute("value");
 
@@ -57,7 +57,7 @@ namespace SynchroClientAndroid.Controls
             if (command != null)
             {
                 logger.Debug("ToggleSwitch toggled with command: {0}", command);
-                Task t = this.StateManager.processCommand(command.Command, command.GetResolvedParameters(BindingContext));
+                await this.StateManager.sendCommandRequestAsync(command.Command, command.GetResolvedParameters(BindingContext));
             }
         }
     }

@@ -307,7 +307,7 @@ namespace SynchroClientAndroid.Controls
             _selectionChangingProgramatically = false;
         }
 
-        void listView_ItemClick(object sender, AdapterView.ItemClickEventArgs e)
+        async void listView_ItemClick(object sender, AdapterView.ItemClickEventArgs e)
         {
             ListView listView = (ListView)this.Control;
 
@@ -343,7 +343,7 @@ namespace SynchroClientAndroid.Controls
                         BindingContextListItem listItem = adapter.GetItemAtPosition(e.Position);
                         if (listItem != null)
                         {
-                            Task t = StateManager.processCommand(command.Command, command.GetResolvedParameters(listItem.BindingContext));
+                            await StateManager.sendCommandRequestAsync(command.Command, command.GetResolvedParameters(listItem.BindingContext));
                         }
                     }
                 }
@@ -361,14 +361,14 @@ namespace SynchroClientAndroid.Controls
                             BindingContextListItem listItem = adapter.GetItemAtPosition(e.Position);
                             if (listItem != null)
                             {
-                                Task t = StateManager.processCommand(command.Command, command.GetResolvedParameters(listItem.BindingContext));
+                                await StateManager.sendCommandRequestAsync(command.Command, command.GetResolvedParameters(listItem.BindingContext));
                             }
                         }
                         else // ChoiceMode.Multiple
                         {
                             // The selection change command handler resolves its tokens relative to the list context when in multiple select mode.
                             //
-                            Task t = StateManager.processCommand(command.Command, command.GetResolvedParameters(this.BindingContext));
+                            await StateManager.sendCommandRequestAsync(command.Command, command.GetResolvedParameters(this.BindingContext));
                         }
                     }
                 }

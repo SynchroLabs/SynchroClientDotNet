@@ -248,7 +248,7 @@ namespace SynchroClientAndroid.Controls
             _selectionChangingProgramatically = false;
         }
 
-        void picker_ItemSelected(object sender, AdapterView.ItemSelectedEventArgs e)
+        async void picker_ItemSelected(object sender, AdapterView.ItemSelectedEventArgs e)
         {
             logger.Debug("Picker selection changed");
             Spinner picker = (Spinner)sender;
@@ -278,7 +278,7 @@ namespace SynchroClientAndroid.Controls
                     //
                     BindingContextPickerAdapter adapter = (BindingContextPickerAdapter)picker.Adapter;
                     BindingContextListItem listItem = adapter.GetItemAtPosition(e.Position);
-                    Task t = StateManager.processCommand(command.Command, command.GetResolvedParameters(listItem.BindingContext));
+                    await StateManager.sendCommandRequestAsync(command.Command, command.GetResolvedParameters(listItem.BindingContext));
                 }
             }
         }

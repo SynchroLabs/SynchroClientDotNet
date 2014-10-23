@@ -383,7 +383,7 @@ namespace SynchroClientAndroid.Controls
             return isChecked;
         }
 
-        void listView_ItemClick(object sender, AdapterView.ItemClickEventArgs e)
+        async void listView_ItemClick(object sender, AdapterView.ItemClickEventArgs e)
         {
             ListView listView = (ListView)this.Control;
 
@@ -421,7 +421,7 @@ namespace SynchroClientAndroid.Controls
                             ControlWrapper wrapper = this.getChildControlWrapper(contentView);
                             if (wrapper != null)
                             {
-                                Task t = StateManager.processCommand(command.Command, command.GetResolvedParameters(wrapper.BindingContext));
+                                await StateManager.sendCommandRequestAsync(command.Command, command.GetResolvedParameters(wrapper.BindingContext));
                             }
                         }
                     }
@@ -444,7 +444,7 @@ namespace SynchroClientAndroid.Controls
                                 ControlWrapper wrapper = this.getChildControlWrapper(contentView);
                                 if (wrapper != null)
                                 {
-                                    Task t = StateManager.processCommand(command.Command, command.GetResolvedParameters(wrapper.BindingContext));
+                                    await StateManager.sendCommandRequestAsync(command.Command, command.GetResolvedParameters(wrapper.BindingContext));
                                 }
                             }
                         }
@@ -452,7 +452,7 @@ namespace SynchroClientAndroid.Controls
                         {
                             // The selection change command handler resolves its tokens relative to the list context when in multiple select mode.
                             //
-                            Task t = StateManager.processCommand(command.Command, command.GetResolvedParameters(this.BindingContext));
+                            await StateManager.sendCommandRequestAsync(command.Command, command.GetResolvedParameters(this.BindingContext));
                         }
                     }
                 }

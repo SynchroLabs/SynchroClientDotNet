@@ -167,10 +167,10 @@ namespace SynchroClientAndroid
             SetContentView(layout);
 
             _stateManager.SetProcessingHandlers(_pageView.ProcessPageView,_pageView.ProcessMessageBox);
-            await _stateManager.startApplication();
+            await _stateManager.startApplicationAsync();
         }
 
-        public override void OnConfigurationChanged(Android.Content.Res.Configuration newConfig)
+        public override async void OnConfigurationChanged(Android.Content.Res.Configuration newConfig)
         {
             base.OnConfigurationChanged(newConfig);
 
@@ -178,21 +178,21 @@ namespace SynchroClientAndroid
             {
                 // Changed to portrait
                 logger.Debug("Screen oriented to Portrait");
-                Task t = _stateManager.processViewUpdate(MaaasOrientation.Portrait);
+                await _stateManager.sendViewUpdateAsync(MaaasOrientation.Portrait);
             }
             else if (newConfig.Orientation == Android.Content.Res.Orientation.Landscape)
             {
                 // Changed to landscape
                 logger.Debug("Screen oriented to Landscape");
-                Task t = _stateManager.processViewUpdate(MaaasOrientation.Landscape);
+                await _stateManager.sendViewUpdateAsync(MaaasOrientation.Landscape);
             }
         }
 
-        public override void OnBackPressed()
+        public override async void OnBackPressed()
         {
             if (_pageView.HasBackCommand)
             {
-                _pageView.OnBackCommand();
+                await _pageView.OnBackCommand();
             }
             else
             {

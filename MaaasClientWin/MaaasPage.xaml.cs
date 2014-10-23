@@ -39,9 +39,7 @@ namespace MaaasClientWin
             DisplayInformation.GetForCurrentView().OrientationChanged += MaaasPage_OrientationChanged;
         }
 
-
-
-        void MaaasPage_OrientationChanged(DisplayInformation sender, object args)
+        async void MaaasPage_OrientationChanged(DisplayInformation sender, object args)
         {
             //The orientation of the device is now...
             // var orientation = this.normalizeOrientation(DisplayInformation.GetForCurrentView().CurrentOrientation);
@@ -50,19 +48,19 @@ namespace MaaasClientWin
             {
                 // Landscape
                 logger.Debug("Screen oriented to Landscape");
-                Task t = _stateManager.processViewUpdate(MaaasOrientation.Landscape);
+                await _stateManager.sendViewUpdateAsync(MaaasOrientation.Landscape);
             }
             else
             {
                 // Portait
                 logger.Debug("Screen oriented to Portrait");
-                Task t = _stateManager.processViewUpdate(MaaasOrientation.Portrait);
+                await _stateManager.sendViewUpdateAsync(MaaasOrientation.Portrait);
             }
         }
 
-        void backButton_Click(object sender, RoutedEventArgs e)
+        async void backButton_Click(object sender, RoutedEventArgs e)
         {
-            _pageView.OnBackCommand();
+            await _pageView.OnBackCommand();
         }
 
         protected override async void LoadState(LoadStateEventArgs args)
@@ -104,7 +102,7 @@ namespace MaaasClientWin
             logger.Debug("Connecting orientation change listener");
             DisplayInformation.GetForCurrentView().OrientationChanged += MaaasPage_OrientationChanged;
 
-            await _stateManager.startApplication();
+            await _stateManager.startApplicationAsync();
         }
 
         protected override void SaveState(SaveStateEventArgs args)

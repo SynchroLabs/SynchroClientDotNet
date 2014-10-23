@@ -36,13 +36,13 @@ namespace MaaasClientWin.Controls
             }
         }
 
-        void button_Click(object sender, RoutedEventArgs e)
+        async void button_Click(object sender, RoutedEventArgs e)
         {
             CommandInstance command = GetCommand(CommandName.OnClick);
             if (command != null)
             {
                 logger.Debug("Button click with command: {0}", command);
-                Task t = this.StateManager.processCommand(command.Command, command.GetResolvedParameters(BindingContext));
+                await this.StateManager.sendCommandRequestAsync(command.Command, command.GetResolvedParameters(BindingContext));
             }
         }
     }

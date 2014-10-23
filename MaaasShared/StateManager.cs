@@ -49,7 +49,7 @@ namespace MaaasCore
             _appManager = appManager;
             _app = app;
             _transport = transport;
-            _transport.setDefaultHandlers(this.ProcessResponse, this.ProcessRequestFailure);
+            _transport.setDefaultHandlers(this.ProcessResponseAsync, this.ProcessRequestFailure);
 
             _deviceMetrics = deviceMetrics;
         }
@@ -151,9 +151,9 @@ namespace MaaasCore
             });
         }
 
-        async void ProcessResponse(JObject responseAsJSON)
+        async void ProcessResponseAsync(JObject responseAsJSON)
         {
-            logger.Info("Got response: {0}", responseAsJSON); // !!! Debug
+            logger.Debug("Got response: {0}", responseAsJSON);
 
             if (responseAsJSON["NewSessionId"] != null)
             {
@@ -192,7 +192,7 @@ namespace MaaasCore
                         messageBox("Synchronization Error", "Server state was lost, restarting application", "Restart", "restart", async (command) =>
                         {
                             logger.Warn("Corrupt server state, restarting application...");
-                            await this.sendAppStartPageRequest();
+                            await this.sendAppStartPageRequestAsync();
                         });
 
                     }
@@ -213,7 +213,7 @@ namespace MaaasCore
                         // The best option in this situation is to request a Resync with the server...
                         //
                         logger.Warn("ERROR - client state out of sync - need resync");
-                        await this.sendResyncRequest();
+                        await this.sendResyncRequestAsync();
                     }
                 }
                 else
@@ -241,7 +241,7 @@ namespace MaaasCore
                 //
                 _appDefinition = responseAsJSON["App"] as JObject;
                 logger.Info("Got app definition for: {0} - {1}", _appDefinition["name"], _appDefinition["description"]);
-                await this.sendAppStartPageRequest(); 
+                await this.sendAppStartPageRequestAsync(); 
             }
             else if (responseAsJSON["ViewModel"] != null) // This means we have a new page/screen
             {
@@ -301,7 +301,7 @@ namespace MaaasCore
                             // Instance version was not one more than current version on view model update
                             //
                             logger.Warn("ERROR - instance version mismatch, updates not applied - need resync");
-                            await this.sendResyncRequest();
+                            await this.sendResyncRequestAsync();
                         }
                     }
 
@@ -321,7 +321,7 @@ namespace MaaasCore
                             // Instance version was not correct on view update
                             //
                             logger.Warn("ERROR - instance version mismatch on view update - need resync");
-                            await this.sendResyncRequest();
+                            await this.sendResyncRequestAsync();
                         }
                     }
                 }
@@ -334,7 +334,7 @@ namespace MaaasCore
                     // Incorrect instance id
                     //
                     logger.Warn("ERROR - instance id mismatch (response instance id > local instance id), updates not applied - need resync");
-                    await this.sendResyncRequest();
+                    await this.sendResyncRequestAsync();
                 }
             }
 
@@ -352,12 +352,12 @@ namespace MaaasCore
                 _onProcessMessageBox(jsonMessageBox, async (command) =>
                 {
                     logger.Info("Message box completed with command: '{0}'", command);
-                    await this.processCommand(command);
+                    await this.sendCommandRequestAsync(command);
                 });
             }
         }
 
-        public async Task startApplication()
+        public async Task startApplicationAsync()
         {
             logger.Info("Loading Synchro application definition for app at: {0}", _app.Endpoint);
             JObject requestObject = new JObject(
@@ -367,7 +367,7 @@ namespace MaaasCore
             await _transport.sendMessage(null, requestObject);
         }
 
-        private async Task sendAppStartPageRequest()
+        private async Task sendAppStartPageRequestAsync()
         {
             this._path = (string)_appDefinition["mainPage"];
 
@@ -384,7 +384,7 @@ namespace MaaasCore
             await _transport.sendMessage(_app.SessionId, requestObject);
         }
 
-        private async Task sendResyncRequest()
+        private async Task sendResyncRequestAsync()
         {
             logger.Info("Sending resync for path: '{0}'", this._path);
 
@@ -422,7 +422,7 @@ namespace MaaasCore
             return false;
         }
 
-        public async Task processUpdate()
+        public async Task sendUpdateRequestAsync()
         {
             logger.Debug("Process update for path: '{0}'", this._path);
 
@@ -441,7 +441,7 @@ namespace MaaasCore
             }
         }
 
-        public async Task processCommand(string command, JObject parameters = null)
+        public async Task sendCommandRequestAsync(string command, JObject parameters = null)
         {
             logger.Info("Sending command: '{0}' for path: '{1}'", command, this._path);
 
@@ -464,7 +464,7 @@ namespace MaaasCore
             await _transport.sendMessage(_app.SessionId, requestObject);
         }
 
-        public async Task sendBackRequest()
+        public async Task sendBackRequestAsync()
         {
             logger.Info("Sending 'back' for path: '{0}'", this._path);
 
@@ -479,7 +479,7 @@ namespace MaaasCore
             await _transport.sendMessage(_app.SessionId, requestObject);
         }
 
-        public async Task processViewUpdate(MaaasOrientation orientation)
+        public async Task sendViewUpdateAsync(MaaasOrientation orientation)
         {
             logger.Info("Sending ViewUpdate for path: '{0}'", this._path);
 
