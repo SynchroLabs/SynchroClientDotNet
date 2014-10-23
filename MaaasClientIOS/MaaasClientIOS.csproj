@@ -125,9 +125,6 @@
     <Compile Include="..\MaaasShared\TransportHttp.cs">
       <Link>Linked\TransportHttp.cs</Link>
     </Compile>
-    <Compile Include="..\MaaasShared\TransportWebSocket4Net.cs">
-      <Link>Linked\TransportWebSocket4Net.cs</Link>
-    </Compile>
     <Compile Include="..\MaaasShared\Util.cs">
       <Link>Linked\Util.cs</Link>
     </Compile>
@@ -157,7 +154,6 @@
     <Compile Include="iOSAppManager.cs" />
     <Compile Include="iOSDeviceMetrics.cs" />
     <Compile Include="iOSPageView.cs" />
-    <Compile Include="iOSTransportWs.cs" />
     <Compile Include="iOSUtil.cs" />
     <Compile Include="LauncherViewController.cs" />
     <Compile Include="Main.cs" />
@@ -2589,26 +2585,11 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Newtonsoft.Json.6.0.2\lib\portable-net40+sl5+wp80+win8+monotouch+monoandroid\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="SuperSocket.ClientEngine.Common">
-      <HintPath>References\WebSocket4Net.MonoTouch\bin\Debug\SuperSocket.ClientEngine.Common.dll</HintPath>
-    </Reference>
-    <Reference Include="SuperSocket.ClientEngine.Core">
-      <HintPath>References\WebSocket4Net.MonoTouch\bin\Debug\SuperSocket.ClientEngine.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="SuperSocket.ClientEngine.Protocol">
-      <HintPath>References\WebSocket4Net.MonoTouch\bin\Debug\SuperSocket.ClientEngine.Protocol.dll</HintPath>
-    </Reference>
-    <Reference Include="SuperSocket.ClientEngine.Proxy">
-      <HintPath>References\WebSocket4Net.MonoTouch\bin\Debug\SuperSocket.ClientEngine.Proxy.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Core" />
     <Reference Include="monotouch" />
-    <Reference Include="WebSocket4Net.MonoTouch">
-      <HintPath>References\WebSocket4Net.MonoTouch\bin\Debug\WebSocket4Net.MonoTouch.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <XamarinComponentReference Include="modernhttpclient">

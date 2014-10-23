@@ -140,10 +140,8 @@ namespace SynchroClientAndroid
             // !!! Doesn't appear to support cookies out of the box
             //
             // HttpClient httpClient = new HttpClient(new OkHttpNetworkHandler());
-            // _stateManager = new StateManager(endpoint, new TransportHttp(endPoint, httpClient));
             //
             Transport transport = new TransportHttp(endpoint);
-            //Transport transport = new AndroidTransportWs(this, endpoint);
 
             Action backToMenu = null;
             if (appManager.AppSeed == null)

@@ -1,7 +1,6 @@
 ﻿using MaaasClientWin.Common;
 using MaaasCore;
 using MaaasShared;
-using MaasClient.Core;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
