@@ -219,7 +219,7 @@ namespace MaaasClientIOS.Controls
             {
                 if (JToken.DeepEquals(selection, model.GetSelection(i, selectionItem)))
                 {
-                    int row = picker.SelectedRowInComponent(0);
+                    picker.SelectedRowInComponent(0);
                     _textBox.Text = picker.Model.GetTitle(picker, i, 0);
                     _lastSelectedPosition = i;
                     picker.Select(i, 0, true);

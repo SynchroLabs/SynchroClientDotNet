@@ -223,7 +223,7 @@ namespace MaaasClientIOS
             alertView.Message = "Are you sure you want to remove this Synchro application from your list";
 
             int idYes = alertView.AddButton("Yes");
-            int idNo = alertView.AddButton("No");
+            alertView.AddButton("No");
 
             alertView.Clicked += (s, b) =>
             {
