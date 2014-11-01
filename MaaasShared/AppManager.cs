@@ -39,7 +39,7 @@ namespace MaaasCore
     //     If yes: Start Maaas app at that seed.
     //     If no: determine whether any local app manager state exists (stored locally on the device)
     //       If no: initialize local app manager state from seed.json
-    //       Show launcher interface based on local app manager state
+    //     Show launcher interface based on local app manager state
     //
     // Launcher interface shows a list of apps (from the "apps" key in the app manager state)
     //   Provides ability to launch an app

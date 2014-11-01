@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
@@ -14,6 +15,75 @@ namespace MaaasClientWin.Controls
     //
     // http://msdn.microsoft.com/en-us/library/ms751709(v=vs.110).aspx
     //
+
+    class GridLengths
+    {
+        public GridLengths() {}
+        public GridLength Width { get; set; }
+        public GridLength Height { get; set; }
+    }
+
+    class SynchroGrid : Grid
+    {
+        static Logger logger = Logger.GetLogger("SynchroGrid");
+
+        // http://msdn.microsoft.com/en-us/library/windows/apps/windows.ui.xaml.frameworkelement.arrangeoverride
+        //
+        protected override Size ArrangeOverride(Windows.Foundation.Size finalSize)
+        {
+            // logger.Log(LogLevel.Info, "ArrangeOverride on grid with {0} children", this.Children.Count);
+            //
+            foreach (FrameworkElement element in this.Children)
+            {
+                // When we have a child that is invisible, we have to force the Grid view not to reserve space for it (by hammering over the 
+                // appropriate GridLength values with zero).  Otherwise, at least in the case of star spacing, it will still allocate
+                // a proportion of the overall space for the child, even though it is invisible.  Admittedly, the "invisible star child" is a
+                // special case, but an important one for layout purposes.
+                //
+
+                // logger.Log(LogLevel.Info, "Arrange - Child in row {0}, col {1} with desired size: {2}", Grid.GetRow(element), Grid.GetColumn(element), element.DesiredSize);
+                //
+                if ((element.Visibility == Visibility.Collapsed) && (element.Tag == null))
+                {
+                    // logger.Log(LogLevel.Info, "Setting height to 0 pixels");
+                    //
+                    GridLengths gl = new GridLengths();
+                    RowDefinition rowDef = this.RowDefinitions[Grid.GetRow(element)];
+                    if (rowDef != null)
+                    {
+                        gl.Height = rowDef.Height;
+                        rowDef.Height = new GridLength(0, GridUnitType.Pixel);
+                    }
+                    ColumnDefinition colDef = this.ColumnDefinitions[Grid.GetColumn(element)];
+                    if (colDef != null)
+                    {
+                        gl.Width = colDef.Width;
+                        colDef.Width = new GridLength(0, GridUnitType.Pixel);
+                    }
+                    element.Tag = gl;
+                }
+                else if ((element.Visibility != Visibility.Collapsed) && (element.Tag != null))
+                {
+                    // logger.Log(LogLevel.Info, "Setting height back");
+                    //
+                    GridLengths gl = (GridLengths)element.Tag;
+                    RowDefinition rowDef = this.RowDefinitions[Grid.GetRow(element)];
+                    if (rowDef != null)
+                    {
+                        rowDef.Height = gl.Height;
+                    }
+                    ColumnDefinition colDef = this.ColumnDefinitions[Grid.GetColumn(element)];
+                    if (colDef != null)
+                    {
+                        colDef.Width = gl.Width;
+                    }
+                    element.Tag = null;
+                }
+            }
+
+            return base.ArrangeOverride(finalSize);
+        }
+    }
 
     class WinStackPanelWrapper : WinControlWrapper
     {
@@ -36,7 +106,7 @@ namespace MaaasClientWin.Controls
             // to move away from the Windows StackPanel (which can't do that) and move to the Grid (which can).  So now
             // every stack panel is actually a Grid (with a single row or column, depending on orientation).
             //
-            _grid = new Grid();
+            _grid = new SynchroGrid();
             _border.Child = _grid;
             this._control = _border;
 
