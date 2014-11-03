@@ -670,6 +670,9 @@ namespace SynchroClientAndroid.Controls
                 case "actionBar.item":
                     controlWrapper = new AndroidActionWrapper(parent, bindingContext, controlSpec);
                     break;
+                case "actionBar.toggle":
+                    controlWrapper = new AndroidActionToggleWrapper(parent, bindingContext, controlSpec);
+                    break;
                 case "border":
                     controlWrapper = new AndroidBorderWrapper(parent, bindingContext, controlSpec);
                     break;

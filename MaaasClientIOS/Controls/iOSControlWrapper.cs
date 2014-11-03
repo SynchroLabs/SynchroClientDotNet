@@ -954,6 +954,9 @@ namespace MaaasClientIOS.Controls
                 case "navBar.button":
                     controlWrapper = new iOSToolBarWrapper(parent, bindingContext, controlSpec);
                     break;
+                case "navBar.toggle":
+                    controlWrapper = new iOSToolBarToggleWrapper(parent, bindingContext, controlSpec);
+                    break;
                 case "password":
                     controlWrapper = new iOSTextBoxWrapper(parent, bindingContext, controlSpec);
                     break;
@@ -980,6 +983,9 @@ namespace MaaasClientIOS.Controls
                     break;
                 case "toolBar.button":
                     controlWrapper = new iOSToolBarWrapper(parent, bindingContext, controlSpec);
+                    break;
+                case "toolBar.toggle":
+                    controlWrapper = new iOSToolBarToggleWrapper(parent, bindingContext, controlSpec);
                     break;
                 case "webview":
                     controlWrapper = new iOSWebViewWrapper(parent, bindingContext, controlSpec);

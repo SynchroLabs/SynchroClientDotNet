@@ -118,6 +118,7 @@
     <Compile Include="AndroidDeviceMetrics.cs" />
     <Compile Include="AndroidPageView.cs" />
     <Compile Include="AppDetailActivity.cs" />
+    <Compile Include="Controls\AndroidActionToggleWrapper.cs" />
     <Compile Include="Controls\AndroidActionWrapper.cs" />
     <Compile Include="Controls\AndroidBorderWrapper.cs" />
     <Compile Include="Controls\AndroidButtonWrapper.cs" />

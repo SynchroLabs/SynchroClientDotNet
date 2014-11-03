@@ -366,6 +366,9 @@ namespace MaaasClientWin.Controls
                 case "commandBar.button":
                     controlWrapper = new WinCommandWrapper(parent, bindingContext, controlSpec);
                     break;
+                case "commandBar.toggle":
+                    controlWrapper = new WinToggleWrapper(parent, bindingContext, controlSpec);
+                    break;
                 case "edit":
                     controlWrapper = new WinTextBoxWrapper(parent, bindingContext, controlSpec);
                     break;

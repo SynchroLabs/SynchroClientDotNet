@@ -25,6 +25,7 @@ namespace MaaasClientWin.Controls
             logger.Debug("Creating command element with label of: {0}", controlSpec["text"]);
 
             AppBarButton button = new AppBarButton();
+
             this._control = button;
 
             processElementProperty((string)controlSpec["text"], value => button.Label = ToString(value));
@@ -51,9 +52,11 @@ namespace MaaasClientWin.Controls
                     _pageView.Page.TopAppBar = new CommandBar();
                 }
                 commandBar = (CommandBar)_pageView.Page.TopAppBar;
+#else
+                logger.Error("Command bar value of Top not supported on this platform");
 #endif
             }
-            else if (((string)controlSpec["commandBar"]) == "Bottom")
+            else if ((controlSpec["commandBar"] == null) || (((string)controlSpec["commandBar"]) == "Bottom"))
             {
                 if (_pageView.Page.BottomAppBar == null)
                 {
