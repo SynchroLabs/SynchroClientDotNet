@@ -2614,5 +2614,23 @@
     <BundleResource Include="Resources\Default-Portrait%402x.png" />
     <BundleResource Include="Resources\Default-Landscape%402x.png" />
   </ItemGroup>
+  <ItemGroup>
+    <BundleResource Include="Resources\icons\blue\star-empty-mini.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <BundleResource Include="Resources\icons\blue\star-empty-mini%402x.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <BundleResource Include="Resources\icons\black\star-empty-mini.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <BundleResource Include="Resources\icons\black\star-empty-mini%402x.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <BundleResource Include="Resources\icons\grey\star-empty-mini.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <BundleResource Include="Resources\icons\grey\star-empty-mini%402x.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.MonoTouch.CSharp.targets" />
 </Project>
