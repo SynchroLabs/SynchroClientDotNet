@@ -25,6 +25,12 @@ namespace MaaasClientIOS.Controls
         protected string _uncheckedIcon;
         protected string _checkedIcon;
 
+        protected void setImage(string value)
+        {
+            _buttonItem.Image = UIImage.FromBundle("icons/blue/" + value);
+            this._pageView.SetNavBarButton(_buttonItem);
+        }
+
         public bool IsChecked
         {
             get { return _isChecked; }
@@ -41,7 +47,7 @@ namespace MaaasClientIOS.Controls
                         }
                         if (_checkedIcon != null)
                         {
-                            _buttonItem.Image = UIImage.FromBundle("icons/blue/" + ToString(_checkedIcon));
+                            setImage(_checkedIcon);
                         }
                     }
                     else
@@ -52,7 +58,7 @@ namespace MaaasClientIOS.Controls
                         }
                         if (_uncheckedIcon != null)
                         {
-                            _buttonItem.Image = UIImage.FromBundle("icons/blue/" + ToString(_uncheckedIcon));
+                            setImage(_uncheckedIcon);
                         }
                     }
                 }
@@ -93,7 +99,7 @@ namespace MaaasClientIOS.Controls
                 _uncheckedIcon = value;
                 if (!_isChecked)
                 {
-                    _buttonItem.Image = UIImage.FromBundle("icons/blue/" + ToString(_uncheckedIcon));
+                    setImage(_uncheckedIcon);
                 }
             }
         }
@@ -106,7 +112,7 @@ namespace MaaasClientIOS.Controls
                 _checkedIcon = value;
                 if (_isChecked)
                 {
-                    _buttonItem.Image = UIImage.FromBundle("icons/blue/" + ToString(_checkedIcon));
+                    setImage(_checkedIcon);
                 }
             }
         }

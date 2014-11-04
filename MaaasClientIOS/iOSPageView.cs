@@ -271,6 +271,15 @@ namespace MaaasClientIOS
         public void SetNavBarButton(UIBarButtonItem button)
         {
             _navBarButton = button;
+            if (_navBar != null)
+            {
+                // Due to a bug in positioning the right bar button image when the image is changed,
+                // we have to clear out the right bar button reference and reset it whenever the
+                // image changes.
+                //
+                _navBar.TopItem.RightBarButtonItem = null;
+                _navBar.TopItem.RightBarButtonItem = _navBarButton;
+            }
         }
 
         public void AddToolbarButton(UIBarButtonItem button)
