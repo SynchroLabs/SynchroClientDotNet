@@ -148,8 +148,27 @@ namespace MaaasClientIOS.Controls
 
             table.Source = new CheckableBindingContextTableSource(this, (JObject)controlSpec["itemTemplate"], selectionMode, listview_SelectionChanged, listview_ItemClicked);
 
-            processElementDimensions(controlSpec, 150, 50);
+            processElementDimensions(controlSpec, 320, 200);
             applyFrameworkElementDefaults(table);
+
+            if (controlSpec["header"] != null)
+            {
+                createControls(new JArray(controlSpec["header"]), (childControlSpec, childControlWrapper) =>
+                {
+                    table.TableHeaderView = childControlWrapper.Control;
+                });
+            }
+
+            if (controlSpec["footer"] != null)
+            {
+                createControls(new JArray(controlSpec["footer"]), (childControlSpec, childControlWrapper) =>
+                {
+                    logger.Info("Footer frame: {0}", childControlWrapper.Control.Frame);
+                    //childControlWrapper.Control.Frame = new RectangleF(0, 0, childControlWrapper.Control.Frame.Width, childControlWrapper.Control.Frame.Height);
+                    table.TableFooterView = childControlWrapper.Control;
+                    logger.Info("Footer frame: {0} after", childControlWrapper.Control.Frame);
+                });
+            }
 
             JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "items", Commands);
             ProcessCommands(bindingSpec, Commands);
@@ -215,6 +234,13 @@ namespace MaaasClientIOS.Controls
                 }
             }
 
+            // We remove the footer temporarily, otherwise we experience a really bad animation effect
+            // during the row animations below (the rows expand/contract very quickly, while the footer
+            // slowly floats to its new location).  Looks terrible, especially when filling empty list.
+            //
+            UIView footer = tableView.TableFooterView;
+            tableView.TableFooterView = null;
+
             tableView.BeginUpdates();
             if (reloadRows.Count > 0)
             {
@@ -229,6 +255,11 @@ namespace MaaasClientIOS.Controls
                 tableView.DeleteRows(deleteRows.ToArray(), UITableViewRowAnimation.Fade);
             }
             tableView.EndUpdates(); // applies the changes
+
+            if (footer != null)
+            {
+                tableView.TableFooterView = footer;
+            }
 
             ValueBinding selectionBinding = GetValueBinding("selection");
             if (selectionBinding != null)

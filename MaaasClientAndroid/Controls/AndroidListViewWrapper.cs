@@ -160,6 +160,7 @@ namespace SynchroClientAndroid.Controls
 
         bool _selectionChangingProgramatically = false;
         JToken _localSelection;
+        int _listStart = 0;
 
         static string[] Commands = new string[] { CommandName.OnItemClick, CommandName.OnSelectionChange };
 
@@ -170,6 +171,7 @@ namespace SynchroClientAndroid.Controls
 
             ListView listView = new ListView(((AndroidControlWrapper)parent).Control.Context);
             this._control = listView;
+
 
             ChoiceMode choiceMode = ChoiceMode.None;
 
@@ -190,6 +192,25 @@ namespace SynchroClientAndroid.Controls
             listView.ChoiceMode = choiceMode;
 
             applyFrameworkElementDefaults(listView);
+
+            if (controlSpec["header"] != null)
+            {
+                createControls(new JArray(controlSpec["header"]), (childControlSpec, childControlWrapper) =>
+                {
+                    childControlWrapper.Control.LayoutParameters = new ListView.LayoutParams(childControlWrapper.Control.LayoutParameters.Width, childControlWrapper.Control.LayoutParameters.Height);
+                    listView.AddHeaderView(childControlWrapper.Control, null, false);
+                    _listStart++;
+                });
+            }
+
+            if (controlSpec["footer"] != null)
+            {
+                createControls(new JArray(controlSpec["footer"]), (childControlSpec, childControlWrapper) =>
+                {
+                    childControlWrapper.Control.LayoutParameters = new ListView.LayoutParams(childControlWrapper.Control.LayoutParameters.Width, childControlWrapper.Control.LayoutParameters.Height);
+                    listView.AddFooterView(childControlWrapper.Control, null, false);
+                });
+            }
 
             JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "items", Commands);
             ProcessCommands(bindingSpec, Commands);
@@ -232,10 +253,11 @@ namespace SynchroClientAndroid.Controls
             // setListViewHeightBasedOnChildren();
         }
 
+        /*
         public void setListViewHeightBasedOnChildren()
         {
             ListView listView = (ListView)_control;
-            IListAdapter adapter = listView.Adapter;
+            ListViewAdapter adapter = getListViewAdapter(listView);
             if (adapter == null)
             {
                 return;
@@ -253,6 +275,17 @@ namespace SynchroClientAndroid.Controls
             _height = totalHeight + (listView.DividerHeight * (adapter.Count + 1));
             this.updateSize();
         }
+         */
+
+        protected ListViewAdapter getListViewAdapter(ListView listView)
+        {
+            if (listView.Adapter is HeaderViewListAdapter)
+            {
+                return (ListViewAdapter)((HeaderViewListAdapter)listView.Adapter).WrappedAdapter;
+            }
+
+            return (ListViewAdapter)listView.Adapter;
+        }
 
         public JToken getListViewContents(ListView listbox)
         {
@@ -266,7 +299,7 @@ namespace SynchroClientAndroid.Controls
 
             _selectionChangingProgramatically = true;
 
-            ListViewAdapter adapter = (ListViewAdapter)listView.Adapter;
+            ListViewAdapter adapter = getListViewAdapter(listView);
             adapter.SetContents(bindingContext, "$data");
             adapter.NotifyDataSetChanged();
 
@@ -292,8 +325,7 @@ namespace SynchroClientAndroid.Controls
         //
         public JToken getListViewSelection(ListView listView, string selectionItem)
         {
-            ListViewAdapter adapter = (ListViewAdapter)listView.Adapter;
-
+            ListViewAdapter adapter = getListViewAdapter(listView);
             List<BindingContext> selectedBindingContexts = new List<BindingContext>();
             var checkedItems = listView.CheckedItemPositions;
             for (var i = 0; i < checkedItems.Size(); i++)
@@ -301,7 +333,7 @@ namespace SynchroClientAndroid.Controls
                 int key = checkedItems.KeyAt(i);
                 if (checkedItems.Get(key))
                 {
-                    selectedBindingContexts.Add(adapter.GetBindingContext(key));
+                    selectedBindingContexts.Add(adapter.GetBindingContext(key - _listStart));
                 }
             }
 
@@ -338,7 +370,7 @@ namespace SynchroClientAndroid.Controls
         {
             _selectionChangingProgramatically = true;
 
-            ListViewAdapter adapter = (ListViewAdapter)listView.Adapter;
+            ListViewAdapter adapter = getListViewAdapter(listView);
 
             listView.ClearChoices();
 
@@ -352,7 +384,7 @@ namespace SynchroClientAndroid.Controls
                     {
                         if (JToken.DeepEquals(item, bindingContext.Select(selectionItem).GetValue()))
                         {
-                            listView.SetItemChecked(n, true);
+                            listView.SetItemChecked(n + _listStart, true);
                             break;
                         }
                     }
@@ -361,7 +393,7 @@ namespace SynchroClientAndroid.Controls
                 {
                     if (JToken.DeepEquals(selection, bindingContext.Select(selectionItem).GetValue()))
                     {
-                        listView.SetItemChecked(n, true);
+                        listView.SetItemChecked(n + _listStart, true);
                     }
                 }
             }
@@ -369,6 +401,7 @@ namespace SynchroClientAndroid.Controls
             _selectionChangingProgramatically = false;
         }
 
+        /*
         static bool isListViewItemChecked(ListView listView, int position)
         {
             bool isChecked = false;
@@ -382,6 +415,7 @@ namespace SynchroClientAndroid.Controls
             }
             return isChecked;
         }
+        */
 
         async void listView_ItemClick(object sender, AdapterView.ItemClickEventArgs e)
         {

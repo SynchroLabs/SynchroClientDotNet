@@ -42,6 +42,30 @@ namespace MaaasClientWin.Controls
                     break;
             }
 
+            if (controlSpec["header"] != null)
+            {
+                createControls(new JArray(controlSpec["header"]), (childControlSpec, childControlWrapper) =>
+                {
+                    listView.Header = childControlWrapper.Control;
+                });
+            }
+
+            if (controlSpec["footer"] != null)
+            {
+                // On Windows there is what appears to be a bug when a list view with a footer "grows".  The new items
+                // show up instantly (without animation), except for the items behind where the footer used to be, which
+                // animate in.  This is pretty ugly.  Removing the item container transition solves this.  It also means
+                // that the list doesn't animate in when initially set, which is kind of a bummer.  It would be nice if
+                // we could somehow schedule turning off the transitions until after the initial list fill.
+                //
+                listView.ItemContainerTransitions = new Windows.UI.Xaml.Media.Animation.TransitionCollection();
+
+                createControls(new JArray(controlSpec["footer"]), (childControlSpec, childControlWrapper) =>
+                {
+                    listView.Footer = childControlWrapper.Control;
+                });
+            }
+
             JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "items", Commands);
             ProcessCommands(bindingSpec, Commands);
 
