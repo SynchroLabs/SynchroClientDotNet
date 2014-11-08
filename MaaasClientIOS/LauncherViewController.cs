@@ -9,7 +9,7 @@ using System.Collections.Generic;
 
 namespace MaaasClientIOS
 {
-    public class TableSource : UITableViewSource
+    public class AppTableSource : UITableViewSource
     {
         public delegate void AppSelectedHandler(MaaasApp app);
         public event AppSelectedHandler AppSelectedEvent;
@@ -17,7 +17,7 @@ namespace MaaasClientIOS
         protected List<MaaasApp> Items;
 
         string cellIdentifier = "MaaasAppTableCell";
-        public TableSource(List<MaaasApp> items)
+        public AppTableSource(List<MaaasApp> items)
         {
             Items = items;
         }
@@ -112,7 +112,7 @@ namespace MaaasClientIOS
             _view = new LauncherView();
             View = _view;
 
-            TableSource source = new TableSource(tableItems);
+            AppTableSource source = new AppTableSource(tableItems);
             source.AppSelectedEvent += source_AppSelectedEvent;
             _view.table.Source = source;
 

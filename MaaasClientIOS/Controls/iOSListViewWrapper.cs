@@ -158,15 +158,12 @@ namespace MaaasClientIOS.Controls
                     table.TableHeaderView = childControlWrapper.Control;
                 });
             }
-
+             
             if (controlSpec["footer"] != null)
             {
                 createControls(new JArray(controlSpec["footer"]), (childControlSpec, childControlWrapper) =>
                 {
-                    logger.Info("Footer frame: {0}", childControlWrapper.Control.Frame);
-                    //childControlWrapper.Control.Frame = new RectangleF(0, 0, childControlWrapper.Control.Frame.Width, childControlWrapper.Control.Frame.Height);
                     table.TableFooterView = childControlWrapper.Control;
-                    logger.Info("Footer frame: {0} after", childControlWrapper.Control.Frame);
                 });
             }
 
@@ -239,7 +236,16 @@ namespace MaaasClientIOS.Controls
             // slowly floats to its new location).  Looks terrible, especially when filling empty list.
             //
             UIView footer = tableView.TableFooterView;
-            tableView.TableFooterView = null;
+            if (footer != null)
+            {
+                // Note: Setting TableFooterView to null when it's already null causes a couple of very
+                //       ugly issues (including a malloc error for writing to space that's already been
+                //       freed, and an animation error on EndUpdates complaining about the number of
+                //       rows after modification not being correct, even though they are).  So we check
+                //       to make sure it's non-null before we clear it.  This is probably Xamarin.
+                //
+                tableView.TableFooterView = null;
+            }
 
             tableView.BeginUpdates();
             if (reloadRows.Count > 0)

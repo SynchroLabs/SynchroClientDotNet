@@ -252,6 +252,8 @@ namespace MaaasCore
 
                 this._viewModel.InitializeViewModelData((JObject)jsonViewModel);
 
+                logger.Info("Got ViewModel for path: '{0}' with instanceId: {1} and instanceVersion: {2}", this._path, this._instanceId, this._instanceVersion);
+
                 // In certain situations, like a resync where the instance matched but the version
                 // was out of date, you might get only the ViewModel (and not the View).
                 //
@@ -263,10 +265,10 @@ namespace MaaasCore
                     JObject jsonPageView = (JObject)responseAsJSON["View"];
                     _onProcessPageView(jsonPageView);
                 }
-
-                logger.Info("Got ViewModel for path: '{0}' with instanceId: {1} and instanceVersion: {2}", this._path, this._instanceId, this._instanceVersion);
-
-                this._viewModel.UpdateViewFromViewModel();
+                else
+                {
+                    this._viewModel.UpdateViewFromViewModel();
+                }
             }
             else // Updating existing page/screen
             {

@@ -794,10 +794,18 @@ namespace MaaasClientIOS.Controls
             if (defaultWidth == 0)
             {
                 defaultWidth = this.Control.IntrinsicContentSize.Width;
+                if (defaultWidth == -1)
+                {
+                    defaultWidth = 0;
+                }
             }
             if (defaultHeight == 0)
             {
                 defaultHeight = this.Control.IntrinsicContentSize.Height;
+                if (defaultHeight == -1)
+                {
+                    defaultHeight = 0;
+                }
             }
 
             this.Control.Frame = new RectangleF(0, 0, defaultWidth, defaultHeight);

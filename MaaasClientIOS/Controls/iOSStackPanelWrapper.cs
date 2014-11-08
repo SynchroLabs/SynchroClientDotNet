@@ -34,7 +34,7 @@ namespace MaaasClientIOS.Controls
         public float GetStarSpace(int numStars)
         {
             float starSpace = 0.0f;
-            if (_totalStars > 0)
+            if ((_totalStarSpace > 0) && (_totalStars > 0))
             {
                 starSpace = (_totalStarSpace/_totalStars) * numStars;
                 _totalStars -= numStars;
@@ -46,6 +46,8 @@ namespace MaaasClientIOS.Controls
 
     class StackPanelView : PaddedView
     {
+        static Logger logger = Logger.GetLogger("StackPanelView");
+
         protected iOSControlWrapper _controlWrapper;
         protected Orientation _orientation;
         protected float _spacing = 10;
@@ -66,6 +68,51 @@ namespace MaaasClientIOS.Controls
             } 
         }
 
+        public override SizeF IntrinsicContentSize
+        {
+            get
+            {
+                // Compute the "wrap contents" (minimum) size for our contents.  This will not include
+                // any allocation for star-sized children, if any (whose minimum size is implicitly zero).
+                //
+                SizeF intrinsicSize = new SizeF(0, 0);
+
+                foreach (UIView childView in this.Subviews)
+                {
+                    if (childView.Hidden)
+                    {
+                        // Skip hidden children for layout purposes
+                        continue;
+                    }
+
+                    iOSControlWrapper childControlWrapper = _controlWrapper.getChildControlWrapper(childView);
+
+                    // For FillParent ("star sized") elements, we don't want to count the current value in that dimension in
+                    // the maximum or total values (those items will grow to fit when we arrange them later).
+                    //
+                    float countedChildHeight = (childControlWrapper.FrameProperties.StarHeight == 0) ? childView.Frame.Height : 0;
+                    float countedChildWidth = (childControlWrapper.FrameProperties.StarWidth == 0) ? childView.Frame.Width : 0;
+
+                    UIEdgeInsets margin = childControlWrapper.Margin;
+
+                    if (_orientation == Orientation.Horizontal)
+                    {
+                        // Add to the width, update height as appropriate
+                        intrinsicSize.Width += countedChildWidth + (margin.Left + margin.Right);
+                        intrinsicSize.Height = Math.Max(intrinsicSize.Height, countedChildHeight + (margin.Top + margin.Bottom));
+                    }
+                    else // Orientation.Vertical
+                    {
+                        // Add to the height, update width as appropriate
+                        intrinsicSize.Height += countedChildHeight + (margin.Top + margin.Bottom);
+                        intrinsicSize.Width = Math.Max(intrinsicSize.Width, countedChildWidth + (margin.Left + margin.Right));
+                    }
+                }
+
+                return intrinsicSize;
+            }
+        }
+
         public override void AddSubview(UIView view)
         {
             base.AddSubview(view);
@@ -77,15 +124,21 @@ namespace MaaasClientIOS.Controls
 
             base.LayoutSubviews();
 
+            if (((_controlWrapper.FrameProperties.HeightSpec == SizeSpec.FillParent) && (this.Frame.Height == 0)) ||
+                ((_controlWrapper.FrameProperties.WidthSpec == SizeSpec.FillParent) && (this.Frame.Width == 0)))
+            {
+                // If either dimension is star sized, and the current size in that dimension is zero, then we
+                // can't layout our children (we have no space to lay them out in anyway).  So this is a noop.
+                //
+                return;
+            }
+
             // Determine the maximum subview size in the dimension perpendicular to the orientation, and the total
             // subview allocation in the orientation direction.
             //
             int totalStars = 0;
 
-            float totalAllocatedHeight = 0;
-            float totalAllocatedWidth = 0;
-
-            SizeF maxDimensions = new SizeF(0, 0);
+            SizeF contentSize = this.IntrinsicContentSize;
 
             foreach (UIView childView in this.Subviews)
             {
@@ -97,31 +150,13 @@ namespace MaaasClientIOS.Controls
 
                 iOSControlWrapper childControlWrapper = _controlWrapper.getChildControlWrapper(childView);
 
-                // For FillParent ("star sized") elements, we don't want to count the current value in that dimension in
-                // the maximum or total values (those items will grow to fit when we arrange them later).
-                //
-                float countedChildHeight = (childControlWrapper.FrameProperties.StarHeight == 0) ? childView.Frame.Height : 0;
-                float countedChildWidth = (childControlWrapper.FrameProperties.StarWidth == 0) ? childView.Frame.Width : 0;
-
-                UIEdgeInsets margin = childControlWrapper.Margin;
-
                 if (_orientation == Orientation.Horizontal)
                 {
-                    // Determine total width allocation
-                    totalAllocatedWidth += countedChildWidth + (margin.Left + margin.Right);
                     totalStars += childControlWrapper.FrameProperties.StarWidth;
-
-                    // Determine max height 
-                    maxDimensions.Height = Math.Max(maxDimensions.Height, countedChildHeight + (margin.Top + margin.Bottom));
                 }
                 else // Orientation.Vertical
                 {
-                    // Determine total height allocation
-                    totalAllocatedHeight += countedChildHeight + (margin.Top + margin.Bottom);
                     totalStars += childControlWrapper.FrameProperties.StarHeight;
-
-                    // Determine max width
-                    maxDimensions.Width = Math.Max(maxDimensions.Width, countedChildWidth + (margin.Left + margin.Right));
                 }
             }
 
@@ -132,26 +167,25 @@ namespace MaaasClientIOS.Controls
             {
                 if (_controlWrapper.FrameProperties.WidthSpec != SizeSpec.WrapContent)
                 {
-                    totalStarSpace = Math.Max(0, this.Frame.Width - totalAllocatedWidth);
+                    totalStarSpace = Math.Max(0, this.Frame.Width - contentSize.Width);
                 }
 
                 if (_controlWrapper.FrameProperties.HeightSpec != SizeSpec.WrapContent)
                 {
-                    maxDimensions.Height = this.Frame.Height;
+                    contentSize.Height = this.Frame.Height;
                 }
             }
 
             if (_orientation == Orientation.Vertical)
             {
-
                 if (_controlWrapper.FrameProperties.HeightSpec != SizeSpec.WrapContent)
                 {
-                    totalStarSpace = Math.Max(0, this.Frame.Height - totalAllocatedHeight);
+                    totalStarSpace = Math.Max(0, this.Frame.Height - contentSize.Height);
                 }
 
                 if (_controlWrapper.FrameProperties.WidthSpec != SizeSpec.WrapContent)
                 {
-                    maxDimensions.Width = this.Frame.Width;
+                    contentSize.Width = this.Frame.Width;
                 }
             }
 
@@ -197,7 +231,7 @@ namespace MaaasClientIOS.Controls
                         // Filling to parent height (already top aligned, so set width relative to parent,
                         // accounting for margins.
                         //
-                        childFrame.Height = this.Frame.Height - (margin.Top + margin.Bottom);
+                        childFrame.Height = Math.Max(0, this.Frame.Height - (margin.Top + margin.Bottom));
                     }
                     else
                     {
@@ -206,11 +240,11 @@ namespace MaaasClientIOS.Controls
                         if (childControlWrapper.VerticalAlignment == VerticalAlignment.Center)
                         {
                             // Should we consider margin when centering?  For now, we don't.
-                            childFrame.Y = _currTop + ((maxDimensions.Height - childFrame.Height) / 2);
+                            childFrame.Y = _currTop + ((contentSize.Height - childFrame.Height) / 2);
                         }
                         else if (childControlWrapper.VerticalAlignment == VerticalAlignment.Bottom)
                         {
-                            childFrame.Y = _currTop + (maxDimensions.Height - childFrame.Height) - margin.Bottom;
+                            childFrame.Y = _currTop + (contentSize.Height - childFrame.Height) - margin.Bottom;
                         }
                     }
                     _currLeft = childFrame.X + childFrame.Width;
@@ -233,7 +267,7 @@ namespace MaaasClientIOS.Controls
                         // Filling to parent width (already left aligned, so set width relative to parent,
                         // accounting for margins.
                         //
-                        childFrame.Width = this.Frame.Width - (margin.Left + margin.Right);
+                        childFrame.Width = Math.Max(0, this.Frame.Width - (margin.Left + margin.Right));
                     }
                     else
                     {
@@ -242,11 +276,11 @@ namespace MaaasClientIOS.Controls
                         if (childControlWrapper.HorizontalAlignment == HorizontalAlignment.Center)
                         {
                             // Should we consider margin when centering?  For now, we don't.
-                            childFrame.X = _currLeft + ((maxDimensions.Width - childFrame.Width) / 2);
+                            childFrame.X = _currLeft + ((contentSize.Width - childFrame.Width) / 2);
                         }
                         else if (childControlWrapper.HorizontalAlignment == HorizontalAlignment.Right)
                         {
-                            childFrame.X = _currLeft + (maxDimensions.Width - childFrame.Width) - margin.Right;
+                            childFrame.X = _currLeft + (contentSize.Width - childFrame.Width) - margin.Right;
                         }
                     }
                     _currTop = childFrame.Y + childFrame.Height;
