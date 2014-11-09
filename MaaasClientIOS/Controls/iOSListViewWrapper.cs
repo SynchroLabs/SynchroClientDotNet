@@ -80,7 +80,7 @@ namespace MaaasClientIOS.Controls
         public override NSString CellIdentifier { get { return _cellIdentifier; } }
 
         protected iOSControlWrapper _parentControlWrapper;
-        protected iOSControlWrapper _contentControlWrapper; // !!! Need to unregister when we go out of scope
+        protected iOSControlWrapper _contentControlWrapper;
         protected JObject _itemTemplate;
 
         protected BindingContext _bindingContext;
@@ -92,17 +92,28 @@ namespace MaaasClientIOS.Controls
             _itemTemplate = itemTemplate;
             _bindingContext = bindingContext;
 
-            // Creating the content control here subverts the whole idea of being able to recycle cells.
-            // We could maintain the content control for active cells by just creating/destroying them
-            // as appropriate in BindCell.  The reason we aren't doing that is that we need to know the
-            // cell height *before* the cell is created and bound (so we just create the contents for all
-            // items in advance so we can measure them in GetHeightForRow).
+            // Creating the content control here subverts the whole idea of recycling cells (we are technically
+            // recycling the cells themselves, but we are maintaining the contents of the cells, a bunch of bound
+            // controls, which is kind of against the spirit of supporting large lists without chewing up lots of
+            // resources).
             //
-            // If the row height was the same for all items (perhaps specified in a rowHeight attribute, or
-            // if we know somehow that the container control is a fixed height), then we could do this 
-            // the optimal way.  Ideally, we could do it dynamically (the current way if row height is
-            // unknown, and the more optimal way if it is known).  That way, for large lists you would
-            // encourage fixed row height, but otherwise not worry about it.
+            // What we should do is create the bound (in the Synchro sense) controls when this item is bound
+            // to a cell.  Since we are going to be asked for the height of the cell later, and since that can
+            // change once we bind the controls to a cell and the cell lays them out, we need to keep a reference
+            // to the controls around (so we can see how tall they are at any time).
+            //
+            // But in order to really "recycle" the cells, we should remove that reference when this item becomes
+            // "unbound" from the cell to which it is bound (at which point we, coincidentally, don't need to know
+            // the height anymore).  This would entail doing an Unregister() on the content control wrapper, then
+            // nulling out the reference to it.  The probelm is that we don't really get an unbinding notification,
+            // and the only way to get that is to have the BindingContentTableViewCell keep track of what is bound
+            // to it, such that when something else gets bound to it, it can notify the thing that it is going to
+            // unbind.  That's an exercise for later.
+            //
+            // If the row height was the same for all items (perhaps specified in a rowHeight attribute, or if we
+            // know somehow that the container control is a fixed height for all rows), then we could do this a much
+            // more optimal way (we could create/assign the content control on BindCell, hand it to the cell, keep
+            // no reference, and let the cell Unregister it directly when it was done with it).
             //
             _contentControlWrapper = iOSControlWrapper.CreateControl(_parentControlWrapper, _bindingContext, _itemTemplate);
             _contentControlWrapper.Control.LayoutSubviews();
@@ -114,6 +125,9 @@ namespace MaaasClientIOS.Controls
             return new BindingContextTableViewCell(CellIdentifier);
         }
 
+        // Note that it is not uncommon to get a request to bind this item to a cell to which it has already been
+        // most recently bound.  Check for and handle this case as appropriate.
+        //
         public override void BindCell(UITableView tableView, UITableViewCell cell)
         {
             BindingContextTableViewCell tableViewCell = (BindingContextTableViewCell)cell;            
