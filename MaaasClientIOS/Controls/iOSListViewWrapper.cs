@@ -174,6 +174,195 @@ namespace MaaasClientIOS.Controls
         }
     }
 
+    abstract class TableContainerView : UIView
+    {
+        static Logger logger = Logger.GetLogger("ContainerView");
+
+        protected UITableView _tableView;
+        protected iOSControlWrapper _controlWrapper;
+
+        public TableContainerView(UITableView tableView, iOSControlWrapper controlWrapper)
+            : base()
+        {
+            this._tableView = tableView;
+            this.ControlWrapper = controlWrapper;
+        }
+
+        public iOSControlWrapper ControlWrapper
+        {
+            get { return _controlWrapper; }
+            set 
+            {
+                if (_controlWrapper != null)
+                {
+                    if (_controlWrapper.Control.Superview == this)
+                    {
+                        _controlWrapper.Control.RemoveFromSuperview();
+                    }
+                }
+                _controlWrapper = value;
+                if (_controlWrapper != null)
+                {
+                    base.AddSubview(_controlWrapper.Control);
+                    this.LayoutSubviews();
+                }
+            }
+        }
+
+        public abstract void UpdateSize();
+
+        public override void LayoutSubviews()
+        {
+            // logger.Info("LayoutSubviews");
+
+            if (_controlWrapper != null)
+            {
+                SizeF panelSize = this.Frame.Size;
+
+                UIView childView = _controlWrapper.Control;
+                if (childView.Hidden)
+                {
+                    panelSize.Height = 0;
+                }
+                else
+                {
+                    RectangleF childFrame = childView.Frame;
+                    UIEdgeInsets margin = _controlWrapper.Margin;
+
+                    if (_controlWrapper.FrameProperties.WidthSpec == SizeSpec.WrapContent)
+                    {
+                        // Panel width will size to content
+                        //
+                        childFrame.X = margin.Left;
+                        panelSize.Width = childFrame.X + childFrame.Width + margin.Right;
+                    }
+                    else
+                    {
+                        // Panel width is explicit, so align content using the content horizontal alignment (along with margin)
+                        //
+                        childFrame.X = margin.Left;
+
+                        if (_controlWrapper.FrameProperties.WidthSpec == SizeSpec.FillParent)
+                        {
+                            // Child will fill parent (less margins)
+                            //
+                            childFrame.Width = panelSize.Width - (margin.Left + margin.Right);
+                        }
+                        else
+                        {
+                            // Align child in parent
+                            //
+                            if (_controlWrapper.HorizontalAlignment == HorizontalAlignment.Center)
+                            {
+                                // Ignoring margins on center for now.
+                                childFrame.X = (panelSize.Width - childFrame.Width) / 2;
+                            }
+                            else if (_controlWrapper.HorizontalAlignment == HorizontalAlignment.Right)
+                            {
+                                childFrame.X = (panelSize.Width - childFrame.Width - margin.Right);
+                            }
+                        }
+                    }
+
+                    if (_controlWrapper.FrameProperties.HeightSpec == SizeSpec.WrapContent)
+                    {
+                        // Panel height will size to content
+                        //
+                        childFrame.Y = margin.Top;
+                        panelSize.Height = childFrame.Y + childFrame.Height + margin.Bottom;
+                    }
+                    else if (_controlWrapper.FrameProperties.HeightSpec == SizeSpec.Explicit)
+                    {
+                        // Panel height is explicit, so align content using the content vertical alignment (along with margin)
+                        //
+                        childFrame.Y = margin.Top;
+
+                        if (_controlWrapper.FrameProperties.HeightSpec == SizeSpec.FillParent)
+                        {
+                            // Child will fill parent (less margin)
+                            //
+                            childFrame.Height = panelSize.Height - (margin.Top + margin.Bottom);
+                        }
+                        else
+                        {
+                            // Align child in parent
+                            //
+                            if (_controlWrapper.VerticalAlignment == VerticalAlignment.Center)
+                            {
+                                // Ignoring margins on center for now.
+                                childFrame.Y = (panelSize.Height - childFrame.Height) / 2;
+                            }
+                            else if (_controlWrapper.VerticalAlignment == VerticalAlignment.Bottom)
+                            {
+                                childFrame.Y = (panelSize.Height - childFrame.Height - margin.Bottom);
+                            }
+                        }
+
+                    }
+
+                    // Update the content position
+                    //
+                    childView.Frame = childFrame;
+                    // logger.Info("Child frame: {0}", childView.Frame);
+                }
+
+
+                // See if the container panel changed size
+                //
+                if ((this.Frame.Width != panelSize.Width) || (this.Frame.Height != panelSize.Height))
+                {
+                    // Resize the container panel...
+                    //
+                    RectangleF panelFrame = this.Frame;
+                    panelFrame.Size = panelSize;
+                    this.Frame = panelFrame;
+                    // logger.Info("Frame size chaged to: {0}", this.Frame);
+
+                    this.UpdateSize();
+                }
+            }
+
+            base.LayoutSubviews();
+        }
+    }
+
+    class TableHeaderView : TableContainerView
+    {
+        public TableHeaderView(UITableView tableView, iOSControlWrapper controlWrapper)
+            : base(tableView, controlWrapper)
+        {
+            _tableView = tableView;
+        }
+
+        public override void UpdateSize()
+        {
+            // Apparently, The UITableView doesn't really expect its header/footer to change in size after
+            // it is set.  Because ours can (due to layout changes based on binding), we have to poke the
+            // table view by resetting the header/footer view, which seems get it to recognize the new size.
+            //
+            // Normally, when a child control changes size, it just lets its superview know that it needs to
+            // update its layout, but the table view apparently doesn't work that way (for header/footer).
+            //
+            _tableView.TableHeaderView = this;
+        }
+    }
+
+    class TableFooterView : TableContainerView
+    {
+        public TableFooterView(UITableView tableView, iOSControlWrapper controlWrapper)
+            : base(tableView, controlWrapper)
+        {
+            _tableView = tableView;
+        }
+
+        public override void UpdateSize()
+        {
+            // See comment in TableHeaderView:UpdateSize() above...
+            //
+            _tableView.TableFooterView = this;
+        }
+    }
+
     class iOSListViewWrapper : iOSControlWrapper
     {
         static Logger logger = Logger.GetLogger("iOSListViewWrapper");
@@ -209,8 +398,8 @@ namespace MaaasClientIOS.Controls
             if (controlSpec["header"] != null)
             {
                 createControls(new JArray(controlSpec["header"]), (childControlSpec, childControlWrapper) =>
-                {
-                    table.TableHeaderView = childControlWrapper.Control;
+                {                    
+                    table.TableHeaderView = new TableHeaderView(table, childControlWrapper);
                 });
             }
              
@@ -218,7 +407,7 @@ namespace MaaasClientIOS.Controls
             {
                 createControls(new JArray(controlSpec["footer"]), (childControlSpec, childControlWrapper) =>
                 {
-                    table.TableFooterView = childControlWrapper.Control;
+                    table.TableFooterView = new TableFooterView(table, childControlWrapper);
                 });
             }
 
