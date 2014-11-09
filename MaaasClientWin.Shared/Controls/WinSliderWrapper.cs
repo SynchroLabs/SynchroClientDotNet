@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Controls.Primitives;
 
 namespace MaaasClientWin.Controls
 {
@@ -16,23 +17,32 @@ namespace MaaasClientWin.Controls
         public WinSliderWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
-            Slider slider = new Slider();
-            this._control = slider;
+            RangeBase rangeControl = null;
 
-            slider.Orientation = Orientation.Horizontal; // iOS/Android only support horizontal, so we limit this for now...
-            
-            applyFrameworkElementDefaults(slider);
-
-            JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "value");
-            if (!processElementBoundValue("value", (string)bindingSpec["value"], () => { return slider.Value; }, value => slider.Value = ToDouble(value)))
+            if ((string)controlSpec["control"] == "progressbar")
             {
-                processElementProperty((string)controlSpec["value"], value => slider.Value = ToDouble(value));
+                rangeControl = new ProgressBar();
+            }
+            else
+            {
+                rangeControl = new Slider();
+                ((Slider)rangeControl).Orientation = Orientation.Horizontal; // iOS/Android only support horizontal, so we limit this for now...
             }
 
-            processElementProperty((string)controlSpec["minimum"], value => slider.Minimum = ToDouble(value));
-            processElementProperty((string)controlSpec["maximum"], value => slider.Maximum = ToDouble(value));
+            this._control = rangeControl;
+            
+            applyFrameworkElementDefaults(rangeControl);
 
-            slider.ValueChanged += slider_ValueChanged;  
+            JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "value");
+            if (!processElementBoundValue("value", (string)bindingSpec["value"], () => { return rangeControl.Value; }, value => rangeControl.Value = ToDouble(value)))
+            {
+                processElementProperty((string)controlSpec["value"], value => rangeControl.Value = ToDouble(value));
+            }
+
+            processElementProperty((string)controlSpec["minimum"], value => rangeControl.Minimum = ToDouble(value));
+            processElementProperty((string)controlSpec["maximum"], value => rangeControl.Maximum = ToDouble(value));
+
+            rangeControl.ValueChanged += slider_ValueChanged;  
         }
 
         private void slider_ValueChanged(object sender, Windows.UI.Xaml.Controls.Primitives.RangeBaseValueChangedEventArgs e)

@@ -971,6 +971,12 @@ namespace MaaasClientIOS.Controls
                 case "picker":
                     controlWrapper = new iOSPickerWrapper(parent, bindingContext, controlSpec);
                     break;
+                case "progressbar":
+                    controlWrapper = new iOSProgressBarWrapper(parent, bindingContext, controlSpec);
+                    break;
+                case "progressring":
+                    controlWrapper = new iOSProgressRingWrapper(parent, bindingContext, controlSpec);
+                    break;
                 case "rectangle":
                     controlWrapper = new iOSRectangleWrapper(parent, bindingContext, controlSpec);
                     break;

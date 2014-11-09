@@ -103,6 +103,8 @@ Global
 		{B80825FA-E75B-4E55-86F8-08D5FA0954B9}.Debug|iPhone.Build.0 = Debug|Any CPU
 		{B80825FA-E75B-4E55-86F8-08D5FA0954B9}.Debug|iPhone.Deploy.0 = Debug|Any CPU
 		{B80825FA-E75B-4E55-86F8-08D5FA0954B9}.Debug|iPhoneSimulator.ActiveCfg = Debug|Any CPU
+		{B80825FA-E75B-4E55-86F8-08D5FA0954B9}.Debug|iPhoneSimulator.Build.0 = Debug|Any CPU
+		{B80825FA-E75B-4E55-86F8-08D5FA0954B9}.Debug|iPhoneSimulator.Deploy.0 = Debug|Any CPU
 		{B80825FA-E75B-4E55-86F8-08D5FA0954B9}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
 		{B80825FA-E75B-4E55-86F8-08D5FA0954B9}.Debug|Mixed Platforms.Build.0 = Debug|x86
 		{B80825FA-E75B-4E55-86F8-08D5FA0954B9}.Debug|Mixed Platforms.Deploy.0 = Debug|x86
@@ -159,6 +161,8 @@ Global
 		{0E61C099-F528-4CBB-A580-AC07D2E6D890}.Debug|iPhone.Build.0 = Debug|Any CPU
 		{0E61C099-F528-4CBB-A580-AC07D2E6D890}.Debug|iPhone.Deploy.0 = Debug|Any CPU
 		{0E61C099-F528-4CBB-A580-AC07D2E6D890}.Debug|iPhoneSimulator.ActiveCfg = Debug|Any CPU
+		{0E61C099-F528-4CBB-A580-AC07D2E6D890}.Debug|iPhoneSimulator.Build.0 = Debug|Any CPU
+		{0E61C099-F528-4CBB-A580-AC07D2E6D890}.Debug|iPhoneSimulator.Deploy.0 = Debug|Any CPU
 		{0E61C099-F528-4CBB-A580-AC07D2E6D890}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
 		{0E61C099-F528-4CBB-A580-AC07D2E6D890}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
 		{0E61C099-F528-4CBB-A580-AC07D2E6D890}.Debug|Mixed Platforms.Deploy.0 = Debug|Any CPU
@@ -300,6 +304,8 @@ Global
 		{F75440B2-DFB5-4E78-832F-D1BEA3E33CDA}.Debug|ARM.Deploy.0 = Debug|ARM
 		{F75440B2-DFB5-4E78-832F-D1BEA3E33CDA}.Debug|iPhone.ActiveCfg = Debug|Any CPU
 		{F75440B2-DFB5-4E78-832F-D1BEA3E33CDA}.Debug|iPhoneSimulator.ActiveCfg = Debug|Any CPU
+		{F75440B2-DFB5-4E78-832F-D1BEA3E33CDA}.Debug|iPhoneSimulator.Build.0 = Debug|Any CPU
+		{F75440B2-DFB5-4E78-832F-D1BEA3E33CDA}.Debug|iPhoneSimulator.Deploy.0 = Debug|Any CPU
 		{F75440B2-DFB5-4E78-832F-D1BEA3E33CDA}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
 		{F75440B2-DFB5-4E78-832F-D1BEA3E33CDA}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
 		{F75440B2-DFB5-4E78-832F-D1BEA3E33CDA}.Debug|Mixed Platforms.Deploy.0 = Debug|Any CPU

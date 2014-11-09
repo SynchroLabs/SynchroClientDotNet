@@ -390,6 +390,12 @@ namespace MaaasClientWin.Controls
                 case "picker":
                     controlWrapper = new WinPickerWrapper(parent, bindingContext, controlSpec);
                     break;
+                case "progressbar":
+                    controlWrapper = new WinSliderWrapper(parent, bindingContext, controlSpec);
+                    break;
+                case "progressring":
+                    controlWrapper = new WinProgressRingWrapper(parent, bindingContext, controlSpec);
+                    break;
                 case "rectangle":
                     controlWrapper = new WinRectangleWrapper(parent, bindingContext, controlSpec);
                     break;

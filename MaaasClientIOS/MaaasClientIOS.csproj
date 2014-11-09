@@ -141,6 +141,8 @@
     <Compile Include="Controls\iOSListBoxWrapper.cs" />
     <Compile Include="Controls\iOSListViewWrapper.cs" />
     <Compile Include="Controls\iOSPickerWrapper.cs" />
+    <Compile Include="Controls\iOSProgressBarWrapper.cs" />
+    <Compile Include="Controls\iOSProgressRingWrapper.cs" />
     <Compile Include="Controls\iOSRectangleWrapper.cs" />
     <Compile Include="Controls\iOSScrollWrapper.cs" />
     <Compile Include="Controls\iOSSliderWrapper.cs" />

@@ -22,41 +22,69 @@ namespace SynchroClientAndroid.Controls
         //
         int _min = 0;
         int _max = 0;
+        int _progress = 0;
+
+        void upadateBar()
+        {
+            ProgressBar bar = (ProgressBar)this.Control;
+            bar.Max = _max - _min;
+            bar.Progress = _progress - _min;
+        }
+
+        void setMin(double min)
+        {
+            _min = (int)min;
+            upadateBar();
+        }
+
+        void setMax(double max)
+        {
+            _max = (int)max;
+            upadateBar();
+        }
+
+        void setProgress(double progress)
+        {
+            _progress = (int)progress;
+            upadateBar();
+        }
+
+        double getProgress()
+        {
+            ProgressBar bar = (ProgressBar)this.Control;
+            return bar.Progress + _min;
+        }
 
         public AndroidSliderWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
-            logger.Debug("Creating slider element");
-            SeekBar seekBar = new SeekBar(((AndroidControlWrapper)parent).Control.Context);
-            this._control = seekBar;
+            ProgressBar bar = null;
 
-            applyFrameworkElementDefaults(seekBar);
-
-            JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "value");
-            if (!processElementBoundValue("value", (string)bindingSpec["value"], () => { return _min + seekBar.Progress; }, value => seekBar.Progress = (int)ToDouble(value) - _min))
+            if ((string)controlSpec["control"] == "progressbar")
             {
-                processElementProperty((string)controlSpec["value"], value => seekBar.Progress = (int)ToDouble(value));
+                logger.Debug("Creating progress bar element");
+                bar = new ProgressBar(((AndroidControlWrapper)parent).Control.Context, null, Android.Resource.Attribute.ProgressBarStyleHorizontal);
+                bar.Indeterminate = false;
+            }
+            else
+            {
+                logger.Debug("Creating slider element");
+                bar = new SeekBar(((AndroidControlWrapper)parent).Control.Context);
+                ((SeekBar)bar).ProgressChanged += seekBar_ProgressChanged;
             }
 
-            processElementProperty((string)controlSpec["minimum"], value => {
-                _min = (int)ToDouble(value);
-                updateSeekBarRange();
-            });
-            processElementProperty((string)controlSpec["maximum"], value => {
-                _max = (int)ToDouble(value);
-                updateSeekBarRange();
-            });
+            this._control = bar;
 
-            seekBar.ProgressChanged += seekBar_ProgressChanged;
-        }
+            applyFrameworkElementDefaults(bar);
 
-        void updateSeekBarRange()
-        {
-            SeekBar seekBar = (SeekBar)this.Control;
+            JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "value");
+            if (!processElementBoundValue("value", (string)bindingSpec["value"], () => { return getProgress(); }, value => setProgress(ToDouble(value))))
+            {
+                processElementProperty((string)controlSpec["value"], value => setProgress(ToDouble(value)));
+            }
 
-            int progress = seekBar.Progress;
-            seekBar.Max = _max - _min;
-            seekBar.Progress = progress;
+            processElementProperty((string)controlSpec["minimum"], value => setMin(ToDouble(value)));
+            processElementProperty((string)controlSpec["maximum"], value => setMax(ToDouble(value)));
         }
 
         void seekBar_ProgressChanged(object sender, SeekBar.ProgressChangedEventArgs e)

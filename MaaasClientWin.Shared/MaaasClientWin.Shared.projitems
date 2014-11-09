@@ -25,6 +25,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Controls\WinListViewWrapper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Controls\WinPasswordBoxWrapper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Controls\WinPickerWrapper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Controls\WinProgressRingWrapper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Controls\WinRectangleWrapper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Controls\WinScrollWrapper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Controls\WinSliderWrapper.cs" />

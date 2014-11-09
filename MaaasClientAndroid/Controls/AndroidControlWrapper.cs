@@ -703,6 +703,12 @@ namespace SynchroClientAndroid.Controls
                 case "picker":
                     controlWrapper = new AndroidPickerWrapper(parent, bindingContext, controlSpec);
                     break;
+                case "progressbar":
+                    controlWrapper = new AndroidSliderWrapper(parent, bindingContext, controlSpec);
+                    break;
+                case "progressring":
+                    controlWrapper = new AndroidProgressRingWrapper(parent, bindingContext, controlSpec);
+                    break;
                 case "rectangle":
                     controlWrapper = new AndroidRectangleWrapper(parent, bindingContext, controlSpec);
                     break;
