@@ -247,6 +247,16 @@ namespace MaaasClientIOS.Controls
                             childFrame.Y = _currTop + (contentSize.Height - childFrame.Height) - margin.Bottom;
                         }
                     }
+
+                    childView.Frame = childFrame; // <== This is where we size child (the frame may or may not have actually changed)
+
+                    // We are going to explicitly call LayoutSubviews on the child here, as opposed to using SetNeedsLayout, because we want
+                    // the child to do the layout now so that we can accomodate size changes to the child (caused by its own LayoutSubviews)
+                    // in our own layout logic here...
+                    //
+                    childView.LayoutSubviews();
+                    childFrame = childView.Frame;
+
                     _currLeft = childFrame.X + childFrame.Width;
                 }
                 else // Orientation.Vertical
@@ -283,14 +293,18 @@ namespace MaaasClientIOS.Controls
                             childFrame.X = _currLeft + (contentSize.Width - childFrame.Width) - margin.Right;
                         }
                     }
+
+                    childView.Frame = childFrame; // <== This is where we size child (the frame may or may not have actually changed)
+
+                    // We are going to explicitly call LayoutSubviews on the child here, as opposed to using SetNeedsLayout, because we want
+                    // the child to do the layout now so that we can accomodate size changes to the child (caused by its own LayoutSubviews)
+                    // in our own layout logic here...
+                    //
+                    childView.LayoutSubviews();
+                    childFrame = childView.Frame;
+
                     _currTop = childFrame.Y + childFrame.Height;
                 }
-                childView.Frame = childFrame; // <== This is where we size child (the frame may or may not have actually changed)
-
-                // It seems like calling LayoutSubviews after you resize a contained view is the contract (more efficient to do this
-                // only when the child size actually changed).
-                //
-                childView.LayoutSubviews(); 
 
                 if ((childFrame.X + childFrame.Width + margin.Right) > newPanelSize.Width)
                 {

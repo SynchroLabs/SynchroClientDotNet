@@ -14,19 +14,49 @@ namespace MaaasClientIOS.Controls
 {
     public class BindingContextTableViewCell : UITableViewCell
     {
-        protected UIView _control;
+        static Logger logger = Logger.GetLogger("BindingContextTableViewCell");
 
-        public UIView Control
+        protected void updateCellWidth()
         {
-            get { return _control; }
+            if (_controlWrapper != null)
+            {
+                if (_controlWrapper.FrameProperties.WidthSpec == SizeSpec.FillParent)
+                {
+                    RectangleF cellBounds = _controlWrapper.Control.Frame;
+                    cellBounds.Width = this.Frame.Width;
+                    _controlWrapper.Control.Frame = cellBounds;
+                    _controlWrapper.Control.LayoutSubviews();
+                    // logger.Info("Sized 'fill parent width' cell width, now sized at: {0}", _controlWrapper.Control.Frame);
+                }
+            }
+        }
+
+        protected iOSControlWrapper _controlWrapper;
+        public iOSControlWrapper ControlWrapper
+        {
+            get { return _controlWrapper; }
             set
             {
-                if (_control != null)
+                if (_controlWrapper != value)
                 {
-                    _control.RemoveFromSuperview();
+                    if (_controlWrapper != null)
+                    {
+                        // Due to how the iOS table view cell recycling logic works, sometimes a binding/control set
+                        // that's being replaced has already been added to another cell, so we only want to remove the
+                        // current (soon to be previous) control set if it still belongs to this cell.
+                        // 
+                        if (_controlWrapper.Control.Superview == this)
+                        {
+                            _controlWrapper.Control.RemoveFromSuperview();
+                        }
+                    }
+                    _controlWrapper = value;
+                    if (_controlWrapper != null)
+                    {
+                        this.AddSubview(_controlWrapper.Control);
+                        updateCellWidth();
+                    }
                 }
-                _control = value;
-                this.AddSubview(_control);
             }
         }
 
@@ -34,10 +64,18 @@ namespace MaaasClientIOS.Controls
             : base(UITableViewCellStyle.Default, cellIdentifier)
         {
         }
+
+        public override void LayoutSubviews()
+        {
+            updateCellWidth();
+            base.LayoutSubviews();
+        }
     }
 
     public class BindingContextTableSourceItem : TableSourceItem
     {
+        static Logger logger = Logger.GetLogger("BindingContextTableSourceItem");
+
         static NSString _cellIdentifier = new NSString("ListViewCell");
         public override NSString CellIdentifier { get { return _cellIdentifier; } }
 
@@ -68,6 +106,7 @@ namespace MaaasClientIOS.Controls
             //
             _contentControlWrapper = iOSControlWrapper.CreateControl(_parentControlWrapper, _bindingContext, _itemTemplate);
             _contentControlWrapper.Control.LayoutSubviews();
+            // logger.Info("Creating new item, with frame after layout: {0}", _contentControlWrapper.Control.Frame);
         }
 
         public override UITableViewCell CreateCell(UITableView tableView)
@@ -78,13 +117,15 @@ namespace MaaasClientIOS.Controls
         public override void BindCell(UITableView tableView, UITableViewCell cell)
         {
             BindingContextTableViewCell tableViewCell = (BindingContextTableViewCell)cell;            
-            tableViewCell.Control = _contentControlWrapper.Control;
+            tableViewCell.ControlWrapper = _contentControlWrapper;
         }
 
         public override float GetHeightForRow(UITableView tableView)
         {
-            // !!! There is no notification method to use to determing when the changes (updated via binding) might
+            // !!! There is no notification method to use to determine when the changes (updated via binding) might
             //     have changed the size of the control and thus should reload the row (getting the new height).
+            //
+            // logger.Info("Returning row height of: {0}", _contentControlWrapper.Control.Frame.Height);
             //
             return _contentControlWrapper.Control.Frame.Height;
         }
