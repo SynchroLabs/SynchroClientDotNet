@@ -959,6 +959,9 @@ namespace MaaasClientIOS.Controls
                 case "listview":
                     controlWrapper = new iOSListViewWrapper(parent, bindingContext, controlSpec);
                     break;
+                case "location":
+                    controlWrapper = new iOSLocationWrapper(parent, bindingContext, controlSpec);
+                    break;
                 case "navBar.button":
                     controlWrapper = new iOSToolBarWrapper(parent, bindingContext, controlSpec);
                     break;

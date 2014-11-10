@@ -262,7 +262,15 @@ namespace MaaasClientIOS
             UIView panel = _rootControlWrapper.Control;
             foreach (var subview in panel.Subviews)
             {
-                subview.RemoveFromSuperview();
+                // There was a special case when transitioning to a page that triggered location permission, the OS put
+                // up an alert view to confirm location services as we were bulding the new page (when it encountered the
+                // "location" control).  Without the check below, we actually took down the system alert view a half-second
+                // or so later when we swapped in our new page.
+                //
+                if (!(subview is UIAlertView))
+                {
+                    subview.RemoveFromSuperview();
+                }
             }
             _rootControlWrapper.ChildControls.Clear();
             _contentScrollView = null;

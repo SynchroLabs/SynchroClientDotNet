@@ -128,6 +128,7 @@
     <Compile Include="Controls\AndroidImageWrapper.cs" />
     <Compile Include="Controls\AndroidListBoxWrapper.cs" />
     <Compile Include="Controls\AndroidListViewWrapper.cs" />
+    <Compile Include="Controls\AndroidLocationWrapper.cs" />
     <Compile Include="Controls\AndroidPickerWrapper.cs" />
     <Compile Include="Controls\AndroidProgressRingWrapper.cs" />
     <Compile Include="Controls\AndroidRectangleWrapper.cs" />

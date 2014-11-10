@@ -35,42 +35,52 @@ namespace MaaasClientIOS.Controls
                 foreach (UIView view in this.Subviews)
                 {
                     iOSControlWrapper childControlWrapper = _controlWrapper.getChildControlWrapper(view);
-                    RectangleF childFrame = view.Frame;
-
-                    if (_orientation == Orientation.Vertical)
+                    if (childControlWrapper != null)
                     {
-                        // Vertical scroll, child width is FillParent
-                        //
-                        if (childControlWrapper.FrameProperties.WidthSpec == SizeSpec.FillParent)
+                        RectangleF childFrame = view.Frame;
+
+                        if (_orientation == Orientation.Vertical)
                         {
-                            childFrame.Width = this.Frame.Width;
+                            // Vertical scroll, child width is FillParent
+                            //
+                            if (childControlWrapper.FrameProperties.WidthSpec == SizeSpec.FillParent)
+                            {
+                                childFrame.Width = this.Frame.Width;
+                            }
+
+                            // Vertical scroll, size scroll area to content height
+                            //
+                            if ((view.Frame.Y + view.Frame.Height) > size.Height)
+                            {
+                                size.Height = view.Frame.Y + view.Frame.Height;
+                            }
+                        }
+                        else
+                        {
+                            // Horizontal scroll, child height is FillParent
+                            //
+                            if (childControlWrapper.FrameProperties.HeightSpec == SizeSpec.FillParent)
+                            {
+                                childFrame.Height = this.Frame.Height;
+                            }
+
+                            // Horizontal scroll, size scroll area to content width
+                            //
+                            if ((view.Frame.X + view.Frame.Width) > size.Width)
+                            {
+                                size.Width = view.Frame.X + view.Frame.Width;
+                            }
                         }
 
-                        // Vertical scroll, size scroll area to content height
-                        //
-                        if ((view.Frame.Y + view.Frame.Height) > size.Height)
-                        {
-                            size.Height = view.Frame.Y + view.Frame.Height;
-                        }
+                        view.Frame = childFrame;
                     }
                     else
                     {
-                        // Horizontal scroll, child height is FillParent
+                        // Apparently, iOS (7.0+ ?) likes to throw in a couple of it's own subviews into an auto-sizing 
+                        // scroll view.  Neat.
                         //
-                        if (childControlWrapper.FrameProperties.HeightSpec == SizeSpec.FillParent)
-                        {
-                            childFrame.Height = this.Frame.Height;
-                        }
-
-                        // Horizontal scroll, size scroll area to content width
-                        //
-                        if ((view.Frame.X + view.Frame.Width) > size.Width)
-                        {
-                            size.Width = view.Frame.X + view.Frame.Width;
-                        }
+                        logger.Warn("Found subview that was not Synchro control: {0}", view);
                     }
-
-                    view.Frame = childFrame;
                 }
                 this.ContentSize = size;
             }

@@ -3,4 +3,5 @@
 	<uses-sdk android:minSdkVersion="14" android:targetSdkVersion="14" />
 	<application android:label="Synchro"></application>
 	<uses-permission android:name="android.permission.INTERNET" />
+	<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 </manifest>

@@ -384,6 +384,9 @@ namespace MaaasClientWin.Controls
                 case "listview":
                     controlWrapper = new WinListViewWrapper(parent, bindingContext, controlSpec);
                     break;
+                case "location":
+                    controlWrapper = new WinLocationWrapper(parent, bindingContext, controlSpec);
+                    break;
                 case "password":
                     controlWrapper = new WinPasswordBoxWrapper(parent, bindingContext, controlSpec);
                     break;
