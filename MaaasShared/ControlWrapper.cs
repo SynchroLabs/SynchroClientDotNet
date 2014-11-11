@@ -138,9 +138,13 @@ namespace MaaasCore
             return starCnt;
         }
 
-        public static Double ToDouble(object value)
+        public static Double ToDouble(object value, double defaultValue = 0)
         {
-            if (value is JValue)
+            if (value == null)
+            {
+                return defaultValue;
+            }
+            else if (value is JValue)
             {
                 var jvalue = value as JValue;
                 return (double)jvalue;
@@ -148,9 +152,9 @@ namespace MaaasCore
             return Convert.ToDouble(value);
         }
 
-        public static String ToString(object value)
+        public static String ToString(object value, string defaultValue = "")
         {
-            string result = "";
+            string result = defaultValue;
 
             if (value != null)
             {
@@ -167,25 +171,23 @@ namespace MaaasCore
             return result;
         }
 
-        public static Boolean ToBoolean(object value)
+        public static Boolean ToBoolean(object value, Boolean defaultValue = false)
         {
-            Boolean result = false;
+            Boolean result = defaultValue;
 
             if (value is JToken)
             {
                 result = TokenConverter.ToBoolean((JToken)value);
             }
-            else
+            else if (value is String)
             {
-                if (value is String)
-                {
-                    result = ((string)value).Length > 0;
-                }
-                else
-                {
-                    result = Convert.ToBoolean(value);
-                }
+                result = ((string)value).Length > 0;
             }
+            else if (value != null)
+            {
+                result = Convert.ToBoolean(value);
+            }
+
             return result;
         }
 
@@ -507,7 +509,7 @@ namespace MaaasCore
 
         // Process a value binding on an element.  If a value is supplied, a value binding to that binding context will be created.
         //
-        protected Boolean processElementBoundValue(string attributeName, string value, GetViewValue getValue, SetViewValue setValue)
+        protected Boolean processElementBoundValue(string attributeName, string value, GetViewValue getValue, SetViewValue setValue = null)
         {
             if (value != null)
             {
@@ -597,7 +599,7 @@ namespace MaaasCore
         // bound values go away, such as when an array element is removed, causing a cooresponding (bound) list
         // or list view item to be removed.
         //
-        public void Unregister()
+        public virtual void Unregister()
         {
             foreach (ValueBinding valueBinding in _valueBindings.Values)
             {

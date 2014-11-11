@@ -18,6 +18,8 @@ namespace MaaasCore
         protected ViewModel _viewModel;
         protected Action _doBackToMenu;
 
+        protected ControlWrapper _rootControlWrapper;
+
         protected string onBackCommand = null;
 
         public PageView(StateManager stateManager, ViewModel viewModel, Action doBackToMenu)
@@ -77,7 +79,12 @@ namespace MaaasCore
 
         public void ProcessPageView(JObject pageView)
         {
-            ClearContent();
+            if (_rootControlWrapper != null)
+            {
+                _rootControlWrapper.Unregister();
+                ClearContent();
+                _rootControlWrapper = null;
+            }
 
             if (this.setBackEnabled != null)
             {
@@ -90,14 +97,12 @@ namespace MaaasCore
                 setPageTitle(pageTitle);
             }
 
-            ControlWrapper rootControlWrapper = null;
-
             JArray elements = (JArray)pageView["elements"];
             if (elements.Count == 1)
             {
                 // The only element is the container of all page elements, so make it the root element, and populate it...
                 //
-                rootControlWrapper = CreateRootContainerControl((JObject)elements[0]);
+                _rootControlWrapper = CreateRootContainerControl((JObject)elements[0]);
             }
             else if (elements.Count > 1)
             {
@@ -109,10 +114,10 @@ namespace MaaasCore
                     new JProperty("contents", elements)
                 );
 
-                rootControlWrapper = CreateRootContainerControl(controlSpec);
+                _rootControlWrapper = CreateRootContainerControl(controlSpec);
             }
 
-            SetContent(rootControlWrapper);
+            SetContent(_rootControlWrapper);
         }
     }
 }

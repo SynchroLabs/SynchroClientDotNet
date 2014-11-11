@@ -455,7 +455,10 @@ namespace MaaasCore
 
         public void UpdateViewFromViewModel()
         {
-            _setViewValue(_bindingContext.GetValue());
+            if (_setViewValue != null)
+            {
+                _setViewValue(_bindingContext.GetValue());
+            }
         }
 
         public BindingContext BindingContext { get { return _bindingContext; } }

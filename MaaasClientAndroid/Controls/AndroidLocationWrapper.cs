@@ -19,8 +19,127 @@ namespace SynchroClientAndroid.Controls
     {
         static Logger logger = Logger.GetLogger("LocationListener");
 
+        AndroidLocationWrapper _locationWrapper;
+
         public LocationListener(AndroidLocationWrapper locationWrapper) : base()
         {
+            _locationWrapper = locationWrapper;
+        }
+
+        public void OnProviderEnabled(string provider)
+        {
+            _locationWrapper.OnProviderEnabled(provider);
+        }
+
+        public void OnProviderDisabled(string provider)
+        {
+            _locationWrapper.OnProviderDisabled(provider);
+        }
+
+        public void OnStatusChanged(string provider, Availability status, Bundle extras)
+        {
+            _locationWrapper.OnStatusChanged(provider, status, extras);
+        }
+
+        public void OnLocationChanged(Android.Locations.Location location)
+        {
+            _locationWrapper.OnLocationChanged(location);
+        }
+    }
+
+    class AndroidLocationWrapper : AndroidControlWrapper
+    {
+        static Logger logger = Logger.GetLogger("AndroidLocationWrapper");
+
+        bool _updateOnChange = false;
+
+        LocationManager _locMgr;
+        LocationListener _listener;
+
+        Location _location;
+
+        public AndroidLocationWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
+            base(parent, bindingContext)
+        {
+            logger.Debug("Creating location element");
+            this._isVisualElement = false;
+
+            int threshold = (int)ToDouble(controlSpec["movementThreshold"], 100);
+
+            Context ctx = ((AndroidControlWrapper)parent).Control.Context;
+            _locMgr = ctx.GetSystemService(Context.LocationService) as LocationManager;
+
+            Criteria locationCriteria = new Criteria();
+
+            locationCriteria.Accuracy = Accuracy.Coarse;
+            locationCriteria.PowerRequirement = Power.Medium;
+
+            string locationProvider = _locMgr.GetBestProvider(locationCriteria, true);
+            if (locationProvider != null)
+            {
+                if (_locMgr.IsProviderEnabled(locationProvider))
+                {
+                    _listener = new LocationListener(this);
+                    _locMgr.RequestLocationUpdates(locationProvider, 2000, threshold, _listener);
+                }
+                else
+                {
+                    logger.Info("Location provider {0} not enabled", locationProvider);
+                }
+            }
+            else
+            {
+                logger.Info("No location providers available");
+            }
+
+            JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "value");
+            processElementBoundValue("value", (string)bindingSpec["value"], () =>
+            {
+                JObject obj = new JObject(
+                    new JProperty("latitude", _location.Latitude),
+                    new JProperty("longitude", _location.Longitude)
+                );
+
+                if (_location.HasAccuracy)
+                {
+                    obj.Add(new JProperty("accuracy", _location.Accuracy));
+                }
+
+                /* Altitude, when provided, represents meters above the WGS 84 reference ellipsoid,
+                 * which is of little or no utility to apps on our platform.
+                 * 
+                if (_location.HasAltitude)
+                {
+                    obj.Add(new JProperty("altitude", _location.Altitude));
+                }
+                 */
+
+                if (_location.HasBearing)
+                {
+                    obj.Add(new JProperty("heading", _location.Bearing));
+                }
+
+                if (_location.HasSpeed)
+                {
+                    obj.Add(new JProperty("speed", _location.Speed));
+                }
+
+                //_location.Time // UTC time, seconds since 1970
+
+                return obj;
+            });
+
+            if ((string)bindingSpec["sync"] == "change")
+            {
+                _updateOnChange = true;
+            }
+        }
+
+        public override void Unregister()
+        {
+            logger.Info("Location control unregistered, discontinuing location updates");
+            _locMgr.RemoveUpdates(_listener);
+            base.Unregister();
         }
 
         public void OnProviderEnabled(string provider)
@@ -38,42 +157,15 @@ namespace SynchroClientAndroid.Controls
             logger.Info("Status change: {0}", status);
         }
 
-        public void OnLocationChanged(Android.Locations.Location location)
+        async public void OnLocationChanged(Android.Locations.Location location)
         {
             logger.Info("Location change: {0}", location);
-        }
-    }
+            _location = location;
 
-    class AndroidLocationWrapper : AndroidControlWrapper
-    {
-        static Logger logger = Logger.GetLogger("AndroidLocationWrapper");
-
-        LocationManager _locMgr;
-
-        public AndroidLocationWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
-            base(parent, bindingContext)
-        {
-            logger.Debug("Creating location element");
-            this._isVisualElement = false;
-
-            Context ctx = ((AndroidControlWrapper)parent).Control.Context;
-            _locMgr = ctx.GetSystemService(Context.LocationService) as LocationManager;
-
-            Criteria locationCriteria = new Criteria();
-
-            locationCriteria.Accuracy = Accuracy.Coarse;
-            locationCriteria.PowerRequirement = Power.Medium;
-
-            string locationProvider = _locMgr.GetBestProvider(locationCriteria, true);
-            if (locationProvider != null)
+            updateValueBindingForAttribute("value");
+            if (_updateOnChange)
             {
-                _locMgr.RequestLocationUpdates(locationProvider, 2000, 1, new LocationListener(this)); // min time, min dist
-                //_locMgr.RemoveUpdates(listener)
-                //_locMgr.RequestSingleUpdate(locationCriteria, pendingIntent);
-            }
-            else
-            {
-                logger.Info("No location providers available");
+                await this.StateManager.sendUpdateRequestAsync();
             }
         }
     }
