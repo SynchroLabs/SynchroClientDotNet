@@ -230,6 +230,8 @@ namespace MaaasCore
                 return;
             }
 
+            bool updateRequired = false;
+
             if (responseAsJSON["App"] != null) // This means we have a new app
             {
                 // Note that we already have an app definition from the MaaasApp that was passed in.  The App in this
@@ -241,7 +243,8 @@ namespace MaaasCore
                 //
                 _appDefinition = responseAsJSON["App"] as JObject;
                 logger.Info("Got app definition for: {0} - {1}", _appDefinition["name"], _appDefinition["description"]);
-                await this.sendAppStartPageRequestAsync(); 
+                await this.sendAppStartPageRequestAsync();
+                return;
             }
             else if (responseAsJSON["ViewModel"] != null) // This means we have a new page/screen
             {
@@ -264,6 +267,12 @@ namespace MaaasCore
 
                     JObject jsonPageView = (JObject)responseAsJSON["View"];
                     _onProcessPageView(jsonPageView);
+
+                    // If the view model is dirty after rendering the page, then the changes are going to have been
+                    // written by new view controls that produced initial output (such as location or sensor controls).
+                    // We need to signal than a viewModel "Update" is required to get these changes to the server.
+                    //
+                    updateRequired = this._viewModel.IsDirty();
                 }
                 else
                 {
@@ -304,6 +313,7 @@ namespace MaaasCore
                             //
                             logger.Warn("ERROR - instance version mismatch, updates not applied - need resync");
                             await this.sendResyncRequestAsync();
+                            return;
                         }
                     }
 
@@ -316,7 +326,7 @@ namespace MaaasCore
                             this._path = (string)responseAsJSON["Path"];
                             JObject jsonPageView = (JObject)responseAsJSON["View"];
                             _onProcessPageView(jsonPageView);
-                            this._viewModel.UpdateViewFromViewModel();
+                            updateRequired = this._viewModel.IsDirty();
                         }
                         else
                         {
@@ -324,6 +334,7 @@ namespace MaaasCore
                             //
                             logger.Warn("ERROR - instance version mismatch on view update - need resync");
                             await this.sendResyncRequestAsync();
+                            return;
                         }
                     }
                 }
@@ -337,14 +348,8 @@ namespace MaaasCore
                     //
                     logger.Warn("ERROR - instance id mismatch (response instance id > local instance id), updates not applied - need resync");
                     await this.sendResyncRequestAsync();
+                    return;
                 }
-            }
-
-            if (responseAsJSON["NextRequest"] != null)
-            {
-                logger.Debug("Got NextRequest, composing and sending it now...");
-                JObject requestObject = (JObject)responseAsJSON["NextRequest"].DeepClone();
-                await _transport.sendMessage(_app.SessionId, requestObject);
             }
 
             if (responseAsJSON["MessageBox"] != null)
@@ -356,6 +361,25 @@ namespace MaaasCore
                     logger.Info("Message box completed with command: '{0}'", command);
                     await this.sendCommandRequestAsync(command);
                 });
+            }
+
+            if (responseAsJSON["NextRequest"] != null)
+            {
+                logger.Debug("Got NextRequest, composing and sending it now...");
+                JObject requestObject = (JObject)responseAsJSON["NextRequest"].DeepClone();
+
+                if (updateRequired)
+                {
+                    logger.Debug("Adding pending viewModel updates to next request (after request processing)");
+                    addDeltasToRequestObject(requestObject);
+                }
+
+                await _transport.sendMessage(_app.SessionId, requestObject);
+            }
+            else if (updateRequired)
+            {
+                logger.Debug("Sending pending viewModel updates (after request processing)");
+                await this.sendUpdateRequestAsync();
             }
         }
 
@@ -403,9 +427,7 @@ namespace MaaasCore
 
         private bool addDeltasToRequestObject(JObject requestObject)
         {
-            var vmDeltas = new Dictionary<string, JToken>();
-            this._viewModel.CollectChangedValues((key, value) => vmDeltas[key] = value);
-
+            var vmDeltas = this._viewModel.CollectChangedValues();
             if (vmDeltas.Count > 0)
             {
                 requestObject.Add("ViewModelDeltas",
@@ -428,18 +450,24 @@ namespace MaaasCore
         {
             logger.Debug("Process update for path: '{0}'", this._path);
 
-            JObject requestObject = new JObject(
-                new JProperty("Mode", "Update"),
-                new JProperty("Path", this._path),
-                new JProperty("TransactionId", getNewTransactionId()),
-                new JProperty("InstanceId", this._instanceId),
-                new JProperty("InstanceVersion", this._instanceVersion)
-            );
-
-            if (addDeltasToRequestObject(requestObject))
+            // We check dirty here, even though addDeltas is a noop if there aren't any deltas, in order
+            // to avoid generating a new transaction id when we're not going to do a new transaction.
+            //
+            if (this._viewModel.IsDirty())
             {
-                // Only going to send the updates if there were any changes...
-                await _transport.sendMessage(_app.SessionId, requestObject);
+                JObject requestObject = new JObject(
+                    new JProperty("Mode", "Update"),
+                    new JProperty("Path", this._path),
+                    new JProperty("TransactionId", getNewTransactionId()),
+                    new JProperty("InstanceId", this._instanceId),
+                    new JProperty("InstanceVersion", this._instanceVersion)
+                );
+
+                if (addDeltasToRequestObject(requestObject))
+                {
+                    // Only going to send the updates if there were any changes...
+                    await _transport.sendMessage(_app.SessionId, requestObject);
+                }
             }
         }
 

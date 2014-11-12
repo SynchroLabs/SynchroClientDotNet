@@ -21,6 +21,7 @@ namespace MaaasCore
         public static CommandName OnItemClick { get { return new CommandName("onItemClick"); } }
         public static CommandName OnSelectionChange { get { return new CommandName("onSelectionChange"); } }
         public static CommandName OnToggle { get { return new CommandName("onToggle"); } }
+        public static CommandName OnUpdate { get { return new CommandName("onUpdate"); } }
     }
 
     // This class corresponds to an instance of a command in a view

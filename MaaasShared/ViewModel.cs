@@ -408,8 +408,22 @@ namespace MaaasCore
             UpdateViewFromViewModel(bindingUpdates, bindingContext);
         }
 
-        public void CollectChangedValues(Action<string, JToken> setValue)
+        public bool IsDirty()
         {
+            foreach (ValueBinding valueBinding in _valueBindings)
+            {
+                if (valueBinding.IsDirty)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public Dictionary<string, JToken> CollectChangedValues()
+        {
+            var vmDeltas = new Dictionary<string, JToken>();
+
             foreach (ValueBinding valueBinding in _valueBindings)
             {
                 if (valueBinding.IsDirty)
@@ -417,10 +431,12 @@ namespace MaaasCore
                     string path = valueBinding.BindingContext.BindingPath;
                     JToken value = valueBinding.BindingContext.GetValue();
                     logger.Debug("Changed view model item - path: {0} - value: {1}", path, value);
-                    setValue(path, value);
+                    vmDeltas[path] = value;
                     valueBinding.IsDirty = false;
                 }
             }
+
+            return vmDeltas;
         }
     }
 }

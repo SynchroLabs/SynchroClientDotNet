@@ -14,6 +14,18 @@ namespace MaaasCore
         Multiple
     }
     
+    public enum LocationStatus : uint
+    {
+        Unknown = 0,
+        DeterminingAvailabily,
+        Available,
+        NotAvailable,
+        PendingApproval,
+        NotApproved,
+        Active,
+        Failed
+    }
+
     public enum FontFaceType
     {
         FONT_DEFAULT,

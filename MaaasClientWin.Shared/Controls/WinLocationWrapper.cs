@@ -12,10 +12,14 @@ namespace MaaasClientWin.Controls
     {
         static Logger logger = Logger.GetLogger("WinLocationWrapper");
 
+        static string[] Commands = new string[] { CommandName.OnUpdate };
+
         bool _updateOnChange = false;
 
         Geolocator _geo;
-        Geoposition _position;
+
+        LocationStatus _status = LocationStatus.Unknown;
+        Geoposition _location;
 
         CoreDispatcher _dispatcher;
 
@@ -30,9 +34,18 @@ namespace MaaasClientWin.Controls
             int threshold = (int)ToDouble(controlSpec["movementThreshold"], 100);
 
             _geo = new Geolocator();
-            if (_geo != null)
+            if (_geo.LocationStatus == PositionStatus.Disabled)
             {
-                logger.Info("Geolcator status on init: {0}", _geo.LocationStatus);
+                _status = LocationStatus.NotApproved;
+            }
+            else if (_geo.LocationStatus == PositionStatus.NotAvailable)
+            {
+                _status = LocationStatus.NotAvailable;
+                _geo = null;
+            }
+            else
+            {
+                _status = LocationStatus.DeterminingAvailabily;
                 _geo.DesiredAccuracyInMeters = 100;
                 _geo.ReportInterval = 2000;
                 _geo.MovementThreshold = threshold;
@@ -40,38 +53,49 @@ namespace MaaasClientWin.Controls
                 _geo.StatusChanged += geo_StatusChanged;
             }
 
-            JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "value");
+            JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "value", Commands);
+            ProcessCommands(bindingSpec, Commands);
+
             processElementBoundValue("value", (string)bindingSpec["value"], () => 
             {
                 JObject obj = new JObject(
-                    new JProperty("latitude", _position.Coordinate.Point.Position.Latitude),
-                    new JProperty("longitude", _position.Coordinate.Point.Position.Longitude),
-                    new JProperty("accuracy", _position.Coordinate.Accuracy)
-                );
+                    new JProperty("available", ((_status == LocationStatus.Available) || (_status == LocationStatus.Active))),
+                    new JProperty("status", _status.ToString())
+                    );
 
-                /*
-                 * Altitude is too ambiguous to be of any real use in our apps, due to the variety
-                 * of different types of altitude representations provided.  For more information, 
-                 * see: Geoposition.Coordinate.Point.AltitudeReferenceSystem 
-                 *
-                if (_position.Coordinate.AltitudeAccuracy != null)
+                if (_location != null)
                 {
-                    obj.Add(new JProperty("altitude", _position.Coordinate.Point.Position.Altitude));
-                    obj.Add(new JProperty("altitudeAccuracy", _position.Coordinate.AltitudeAccuracy));
-                }
-                 */
+                    obj.Add(new JProperty("coordinate", new JObject(
+                        new JProperty("latitude", _location.Coordinate.Point.Position.Latitude),
+                        new JProperty("longitude", _location.Coordinate.Point.Position.Longitude)
+                        )));
 
-                if (_position.Coordinate.Heading != null)
-                {
-                    obj.Add(new JProperty("heading", _position.Coordinate.Heading));
-                }
+                    obj.Add(new JProperty("accuracy", _location.Coordinate.Accuracy));
 
-                if (_position.Coordinate.Speed != null)
-                {
-                    obj.Add(new JProperty("speed", _position.Coordinate.Speed));
-                }
+                    /*
+                     * Altitude is too ambiguous to be of any real use in our apps, due to the variety
+                     * of different types of altitude representations provided.  For more information, 
+                     * see: Geoposition.Coordinate.Point.AltitudeReferenceSystem 
+                     *
+                    if (_position.Coordinate.AltitudeAccuracy != null)
+                    {
+                        obj.Add(new JProperty("altitude", _position.Coordinate.Point.Position.Altitude));
+                        obj.Add(new JProperty("altitudeAccuracy", _position.Coordinate.AltitudeAccuracy));
+                    }
+                     */
 
-                // _position.Coordinate.Timestamp // DateTimeOffset
+                    if (!double.IsNaN(_location.Coordinate.Heading.GetValueOrDefault(double.NaN)))
+                    {
+                        obj.Add(new JProperty("heading", _location.Coordinate.Heading));
+                    }
+
+                    if (!double.IsNaN(_location.Coordinate.Speed.GetValueOrDefault(double.NaN)))
+                    {
+                        obj.Add(new JProperty("speed", _location.Coordinate.Speed));
+                    }
+
+                    // _position.Coordinate.Timestamp // DateTimeOffset
+                }
 
                 return obj;
             });
@@ -80,22 +104,46 @@ namespace MaaasClientWin.Controls
             {
                 _updateOnChange = true;
             }
+
+            // This triggers the viewModel update so the initial status gets back to the server
+            //
+            updateValueBindingForAttribute("value");
+        }
+
+        protected void stopLocationServices()
+        {
+            if (_geo != null)
+            {
+                _geo.PositionChanged -= geo_PositionChanged;
+                _geo.StatusChanged -= geo_StatusChanged;
+            }
+            _geo = null;
         }
 
         public override void Unregister()
         {
             logger.Info("Location control unregistered, discontinuing location updates");
-            _geo.PositionChanged -= geo_PositionChanged;
-            _geo.StatusChanged -= geo_StatusChanged;
+            this.stopLocationServices();
             base.Unregister();
         }
         
         void geo_StatusChanged(Geolocator sender, StatusChangedEventArgs args)
         {
-            // "Initializing"
-            // "Ready"
-            logger.Info("Geo status: {0}", args.Status);
+            // When it's going to work we see:
+            //
+            //     NoData (sometimes)
+            //     Initializing
+            //     Ready (immediately before PositionChanged notification)
+            //
             logger.Info("Geolcator status on status change: {0}", _geo.LocationStatus);
+
+            if ((_geo.LocationStatus == PositionStatus.Disabled) || (_geo.LocationStatus == PositionStatus.NotAvailable))
+            {
+                // !!! No location for you!
+                //
+                _status = LocationStatus.NotAvailable;
+                this.stopLocationServices();
+            }
         }
 
         async void geo_PositionChanged(Geolocator sender, PositionChangedEventArgs args)
@@ -107,12 +155,19 @@ namespace MaaasClientWin.Controls
                 args.Position.Coordinate.Accuracy
                 );
 
-            _position = args.Position;
+            _status = LocationStatus.Active;
+            _location = args.Position;
 
             await _dispatcher.RunAsync(CoreDispatcherPriority.Normal, async () =>
             {
                 updateValueBindingForAttribute("value");
-                if (_updateOnChange)
+
+                CommandInstance command = GetCommand(CommandName.OnUpdate);
+                if (command != null)
+                {
+                    await this.StateManager.sendCommandRequestAsync(command.Command, command.GetResolvedParameters(BindingContext));
+                }
+                else if (_updateOnChange)
                 {
                     await this.StateManager.sendUpdateRequestAsync();
                 }

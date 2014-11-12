@@ -51,11 +51,14 @@ namespace SynchroClientAndroid.Controls
     {
         static Logger logger = Logger.GetLogger("AndroidLocationWrapper");
 
+        static string[] Commands = new string[] { CommandName.OnUpdate };
+
         bool _updateOnChange = false;
 
         LocationManager _locMgr;
         LocationListener _listener;
 
+        LocationStatus _status = LocationStatus.Unknown;
         Location _location;
 
         public AndroidLocationWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
@@ -79,52 +82,70 @@ namespace SynchroClientAndroid.Controls
             {
                 if (_locMgr.IsProviderEnabled(locationProvider))
                 {
+                    logger.Info("Using best location provider: {0}", locationProvider);
+                    _status = LocationStatus.Available;
                     _listener = new LocationListener(this);
                     _locMgr.RequestLocationUpdates(locationProvider, 2000, threshold, _listener);
                 }
                 else
                 {
-                    logger.Info("Location provider {0} not enabled", locationProvider);
+                    logger.Info("Best location provider: {0} - not enabled", locationProvider);
+                    _status = LocationStatus.NotAvailable;
                 }
             }
             else
             {
+                // You will always get some kind of provider back if location services are
+                // enabled, so this means that they are not enabled...
+                //
                 logger.Info("No location providers available");
+                _status = LocationStatus.NotApproved;
             }
 
-            JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "value");
+            JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "value", Commands);
+            ProcessCommands(bindingSpec, Commands);
+
             processElementBoundValue("value", (string)bindingSpec["value"], () =>
             {
                 JObject obj = new JObject(
-                    new JProperty("latitude", _location.Latitude),
-                    new JProperty("longitude", _location.Longitude)
-                );
+                    new JProperty("available", ((_status == LocationStatus.Available) || (_status == LocationStatus.Active))),
+                    new JProperty("status", _status.ToString())
+                    );
 
-                if (_location.HasAccuracy)
+                if (_location != null)
                 {
-                    obj.Add(new JProperty("accuracy", _location.Accuracy));
-                }
+                    obj.Add(new JProperty("coordinate", new JObject(
+                        new JProperty("latitude", _location.Latitude),
+                        new JProperty("longitude", _location.Longitude)
+                        )));
 
-                /* Altitude, when provided, represents meters above the WGS 84 reference ellipsoid,
-                 * which is of little or no utility to apps on our platform.
-                 * 
-                if (_location.HasAltitude)
-                {
-                    obj.Add(new JProperty("altitude", _location.Altitude));
-                }
-                 */
+                    if (_location.HasAccuracy)
+                    {
+                        obj.Add(new JProperty("accuracy", _location.Accuracy));
+                    }
 
-                if (_location.HasBearing)
-                {
-                    obj.Add(new JProperty("heading", _location.Bearing));
-                }
+                    /* Altitude, when provided, represents meters above the WGS 84 reference ellipsoid,
+                     * which is of little or no utility to apps on our platform.  There also doesn't 
+                     * appear to be any altittude accuracy on Android as there is on the othert platforms.
+                     * 
+                    if (_location.HasAltitude)
+                    {
+                        obj.Add(new JProperty("altitude", _location.Altitude));
+                    }
+                     */
 
-                if (_location.HasSpeed)
-                {
-                    obj.Add(new JProperty("speed", _location.Speed));
-                }
+                    if (_location.HasBearing)
+                    {
+                        obj.Add(new JProperty("heading", _location.Bearing));
+                    }
 
-                //_location.Time // UTC time, seconds since 1970
+                    if (_location.HasSpeed)
+                    {
+                        obj.Add(new JProperty("speed", _location.Speed));
+                    }
+
+                    //_location.Time // UTC time, seconds since 1970
+                }
 
                 return obj;
             });
@@ -133,12 +154,19 @@ namespace SynchroClientAndroid.Controls
             {
                 _updateOnChange = true;
             }
+
+            // This triggers the viewModel update so the initial status gets back to the server
+            //
+            updateValueBindingForAttribute("value");
         }
 
         public override void Unregister()
         {
             logger.Info("Location control unregistered, discontinuing location updates");
-            _locMgr.RemoveUpdates(_listener);
+            if (_listener != null)
+            {
+                _locMgr.RemoveUpdates(_listener);
+            }
             base.Unregister();
         }
 
@@ -154,16 +182,40 @@ namespace SynchroClientAndroid.Controls
 
         public void OnStatusChanged(string provider, Availability status, Bundle extras)
         {
+            // !!! Are we going to get these for providers other than the one we're using?
+            //
+            // Availability.Available;
+            // Availability.OutOfService;
+            // Availability.TemporarilyUnavailable''
+            //
             logger.Info("Status change: {0}", status);
+            if (status == Availability.Available)
+            {
+                if (_status != LocationStatus.Available)
+                {
+                    _status = LocationStatus.Available;
+                }
+            }
+            else if ((status == Availability.OutOfService) || (status == Availability.TemporarilyUnavailable))
+            {
+                _status = LocationStatus.NotAvailable;
+            }
         }
 
         async public void OnLocationChanged(Android.Locations.Location location)
         {
             logger.Info("Location change: {0}", location);
+            _status = LocationStatus.Active;
             _location = location;
 
             updateValueBindingForAttribute("value");
-            if (_updateOnChange)
+
+            CommandInstance command = GetCommand(CommandName.OnUpdate);
+            if (command != null)
+            {
+                await this.StateManager.sendCommandRequestAsync(command.Command, command.GetResolvedParameters(BindingContext));
+            }
+            else if (_updateOnChange)
             {
                 await this.StateManager.sendUpdateRequestAsync();
             }
