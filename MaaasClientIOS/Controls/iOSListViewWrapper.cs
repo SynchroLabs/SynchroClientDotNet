@@ -41,18 +41,22 @@ namespace MaaasClientIOS.Controls
                 {
                     if (_controlWrapper != null)
                     {
-                        // Due to how the iOS table view cell recycling logic works, sometimes a binding/control set
-                        // that's being replaced has already been added to another cell, so we only want to remove the
-                        // current (soon to be previous) control set if it still belongs to this cell.
-                        // 
-                        if (_controlWrapper.Control.Superview == this)
-                        {
-                            _controlWrapper.Control.RemoveFromSuperview();
-                        }
+                        // Remove any control currently set into this cell...
+                        //
+                        _controlWrapper.Control.RemoveFromSuperview();
                     }
                     _controlWrapper = value;
                     if (_controlWrapper != null)
                     {
+                        if (_controlWrapper.Control.Superview != null)
+                        {
+                            // If the control we're setting in this cell is still a child of something (presumably
+                            // the cell to which it was previously assigned), we need to remove it from that parent
+                            // before we assign it as our child (otherwise there are cases where a cell will end up
+                            // with either zero or more than one set of controls, depending on the iOS version).
+                            //
+                            _controlWrapper.Control.RemoveFromSuperview();                            
+                        }
                         this.AddSubview(_controlWrapper.Control);
                         updateCellWidth();
                     }
@@ -185,28 +189,30 @@ namespace MaaasClientIOS.Controls
             : base()
         {
             this._tableView = tableView;
-            this.ControlWrapper = controlWrapper;
-        }
+            this._controlWrapper = controlWrapper;
 
-        public iOSControlWrapper ControlWrapper
-        {
-            get { return _controlWrapper; }
-            set 
+            // For explicit (static) child dimensions - size parent UIView to fit...
+            //
+            SizeF panelSize = this.Frame.Size;
+            UIEdgeInsets margin = _controlWrapper.Margin;
+
+            if (_controlWrapper.FrameProperties.WidthSpec == SizeSpec.Explicit)
             {
-                if (_controlWrapper != null)
-                {
-                    if (_controlWrapper.Control.Superview == this)
-                    {
-                        _controlWrapper.Control.RemoveFromSuperview();
-                    }
-                }
-                _controlWrapper = value;
-                if (_controlWrapper != null)
-                {
-                    base.AddSubview(_controlWrapper.Control);
-                    this.LayoutSubviews();
-                }
+                panelSize.Width = _controlWrapper.Control.Frame.Width + margin.Left + margin.Right;
             }
+            if (_controlWrapper.FrameProperties.HeightSpec == SizeSpec.Explicit)
+            {
+                panelSize.Height = _controlWrapper.Control.Frame.Height + margin.Top + margin.Bottom;
+            }
+            if ((panelSize.Width != this.Frame.Size.Width) || (panelSize.Height != this.Frame.Height))
+            {
+                RectangleF panelFrame = this.Frame;
+                panelFrame.Size = panelSize;
+                this.Frame = panelFrame;
+            }
+
+            base.AddSubview(_controlWrapper.Control);
+            this.LayoutSubviews();
         }
 
         public abstract void UpdateSize();

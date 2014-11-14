@@ -35,7 +35,17 @@ namespace MaaasClientIOS.Controls
 
             if (CLLocationManager.LocationServicesEnabled)
             {
-                _locMgr.RequestWhenInUseAuthorization();
+                if (_locMgr.RespondsToSelector(new MonoTouch.ObjCRuntime.Selector("requestWhenInUseAuthorization")))
+                {
+                    // RequestWhenInUseAuthorization is only present in iOS 8.0 and later.  If available, we nee
+                    // to call it to get authorized (using our custom message defined in Info.plist under the key: 
+                    // NSLocationWhenInUseUsageDescription).  If not present, we don't call it (prior to iOS 8.0, 
+                    // the operating system just pops up a generic permission dialog automatically when the below
+                    // location services are accessed).
+                    //
+                    _locMgr.RequestWhenInUseAuthorization();
+                }
+
                 _locMgr.DesiredAccuracy = 100; //desired accuracy, in meters
                 _locMgr.DistanceFilter = threshold;
                 _locMgr.AuthorizationChanged += locMgr_AuthorizationChanged;
