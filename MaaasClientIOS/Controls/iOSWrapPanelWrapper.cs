@@ -54,6 +54,8 @@ namespace MaaasClientIOS.Controls
 
     public class WrapPanelCollectionViewSource : UICollectionViewSource
     {
+        static Logger logger = Logger.GetLogger("WrapPanelCollectionViewSource");
+
         public WrapPanelCollectionViewSource()
         {
             ControlWrappers = new List<iOSControlWrapper>();
@@ -80,6 +82,8 @@ namespace MaaasClientIOS.Controls
         {
             var cell = (WrapPanelCell)collectionView.DequeueReusableCell(WrapPanelCell.CellID, indexPath);
 
+            // logger.Info("Updating cell {0} with frame: {1}", indexPath.Item, cell.Frame);
+
             iOSControlWrapper controlWrapper = ControlWrappers[indexPath.Row];
             cell.UpdateView(controlWrapper);
 
@@ -100,6 +104,66 @@ namespace MaaasClientIOS.Controls
             controlSize.Height += controlWrapper.MarginTop + controlWrapper.MarginBottom;
             controlSize.Width += controlWrapper.MarginLeft + controlWrapper.MarginRight;
             return controlSize;
+        }
+    }
+
+    public class WrapPanelCollectionViewLayout : UICollectionViewFlowLayout
+    {
+        static Logger logger = Logger.GetLogger("WrapPanelCollectionViewLayout");
+
+        public override UICollectionViewLayoutAttributes[] LayoutAttributesForElementsInRect(RectangleF rect)
+        {
+            UICollectionViewLayoutAttributes[] attributesArray = base.LayoutAttributesForElementsInRect(rect);
+
+            foreach (UICollectionViewLayoutAttributes attributes in attributesArray) 
+            {
+                if (attributes.RepresentedElementKind == null) 
+                {
+                    attributes.Frame = this.LayoutAttributesForItem(attributes.IndexPath).Frame;
+                }
+            }
+
+            return attributesArray;
+        }
+
+        // By default, the UICollectionViewFlowLayout fully justifies all "full" lines (rows/columns).  That is
+        // not what we want.  We want the rows/columns to be left/top justified respectively.  That is what
+        // we do below...
+        //
+        public override UICollectionViewLayoutAttributes LayoutAttributesForItem(NSIndexPath indexPath)
+        {
+            UICollectionViewLayoutAttributes attributes = base.LayoutAttributesForItem(indexPath);
+
+            if (indexPath.Item == 0) // degenerate case 1, first item of section
+                return attributes;
+
+            NSIndexPath ipPrev = NSIndexPath.FromRowSection(indexPath.Item-1, indexPath.Section);
+
+            RectangleF prevFrame = this.LayoutAttributesForItem(ipPrev).Frame;
+            RectangleF frame = attributes.Frame;
+
+            if (this.ScrollDirection == UICollectionViewScrollDirection.Vertical)
+            {
+                // Vertical scroll means horizontal layout...
+                //
+                float prevRight = prevFrame.X + prevFrame.Width + 0;
+                if (attributes.Frame.X <= prevRight) // degenerate case 2, first item of row
+                    return attributes;
+                frame.X = prevRight;
+            }
+            else  // UICollectionViewScrollDirection.Horizontal;
+            {
+                // Horizontal scroll means vertical layout...
+                //
+                float prevBottom = prevFrame.Y + prevFrame.Height + 0;
+                if (attributes.Frame.Y <= prevBottom) // degenerate case 2, first item of column
+                    return attributes;
+                frame.Y = prevBottom;
+            }
+
+            attributes.Frame = frame;
+
+            return attributes;
         }
     }
 
@@ -150,7 +214,7 @@ namespace MaaasClientIOS.Controls
         {
             logger.Debug("Creating wrap panel element");
 
-            UICollectionViewFlowLayout layout = new UICollectionViewFlowLayout();
+            UICollectionViewFlowLayout layout = new WrapPanelCollectionViewLayout();
             UICollectionView view = new UICollectionView(new RectangleF(), layout);
 
             this._control = view;

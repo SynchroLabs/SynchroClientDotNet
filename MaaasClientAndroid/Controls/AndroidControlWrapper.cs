@@ -335,7 +335,7 @@ namespace SynchroClientAndroid.Controls
             }
         }
 
-        public void AddToLinearLayout(LinearLayout layout, JObject childControlSpec)
+        public void AddToLinearLayout(ViewGroup layout, JObject childControlSpec)
         {
             LinearLayout.LayoutParams linearLayoutParams = this.Control.LayoutParameters as LinearLayout.LayoutParams;
 
@@ -368,7 +368,17 @@ namespace SynchroClientAndroid.Controls
             int heightStarCount = GetStarCount((string)childControlSpec["height"]);
             int widthStarCount = GetStarCount((string)childControlSpec["width"]);
 
-            if (layout.Orientation == Orientation.Horizontal)
+            Orientation orientation = Orientation.Horizontal;
+            if (layout is LinearLayout)
+            {
+                orientation = ((LinearLayout)layout).Orientation;
+            }
+            else if (layout is FlowLayout)
+            {
+                orientation = ((FlowLayout)layout).Orientation;
+            }
+
+            if (orientation == Orientation.Horizontal)
             {
                 if (heightStarCount > 0)
                 {
@@ -474,7 +484,7 @@ namespace SynchroClientAndroid.Controls
             }
             else if (alignmentValue == "Center")
             {
-                alignment = GravityFlags.Center;
+                alignment = GravityFlags.CenterHorizontal;
             }
             else if (alignmentValue == "Stretch")
             {
@@ -502,7 +512,7 @@ namespace SynchroClientAndroid.Controls
             }
             else if (alignmentValue == "Center")
             {
-                alignment = GravityFlags.Center;
+                alignment = GravityFlags.CenterVertical;
             }
             else if (alignmentValue == "Stretch")
             {

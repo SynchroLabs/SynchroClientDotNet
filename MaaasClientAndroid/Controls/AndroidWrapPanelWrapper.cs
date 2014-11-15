@@ -33,26 +33,92 @@ namespace SynchroClientAndroid.Controls
  
     public class FlowLayout : ViewGroup
     {
-        public int HorizontalSpacing = 20;  // !!!
-        public int VerticalSpacing = 20;    // !!!
+        static Logger logger = Logger.GetLogger("FlowLayout");
+
+        public FlowLayout(Context context)
+            : base(context)
+        {
+        }
+
+        public bool DebugDraw = false;
 
         protected Orientation _orientation = Orientation.Horizontal;
         public Orientation Orientation
         {
             get { return _orientation; }
-            set 
-            { 
+            set
+            {
                 _orientation = value;
                 this.Invalidate();
                 this.RequestLayout();
             }
         }
 
-        public bool DebugDraw = false;
-
-        public FlowLayout(Context context)
-            : base(context)
+        protected int _itemHeight = 0;
+        public int ItemHeight
         {
+            get { return _itemHeight; }
+            set
+            {
+                _itemHeight = value;
+                this.RequestLayout();
+            }
+        }
+
+        protected int _itemWidth = 0;
+        public int ItemWidth
+        {
+            get { return _itemWidth; }
+            set
+            {
+                _itemWidth = value;
+                this.RequestLayout();
+            }
+        }
+
+        // The line elements have been position in the dimension in which the are running, but we can't position
+        // them in the other dimension until we fill the line (and know the "thickness" of the line, as determined
+        // by the size of the thickest element on the line).  So this function goes back and positions in the 
+        // dimension opposite of the running dimension based on the line thickness, the element margins, and the
+        // element alignment (gravity).
+        //
+        protected void positionLineElements(List<View> lineContents, int linePosition, int lineThickness)
+        {
+            foreach (View lineMember in lineContents)
+            {
+                var lp = (WrapLayoutParams)lineMember.LayoutParameters;
+
+                if (_orientation == Orientation.Horizontal)
+                {
+                    if (lp.Gravity.HasFlag(GravityFlags.Top))
+                    {
+                        lp.Y = PaddingTop + linePosition + lp.TopMargin;
+                    }
+                    else if (lp.Gravity.HasFlag(GravityFlags.Bottom))
+                    {
+                        lp.Y = PaddingTop + linePosition + lineThickness - (lineMember.MeasuredHeight + lp.BottomMargin);
+                    }
+                    else // Center - default
+                    {
+                        lp.Y = PaddingTop + linePosition + (lineThickness - lineMember.MeasuredHeight)/2;
+                    }
+                }
+                else
+                {
+                    if (lp.Gravity.HasFlag(GravityFlags.Left))
+                    {
+                        lp.X = PaddingLeft + linePosition + lp.LeftMargin;
+                    }
+                    else if (lp.Gravity.HasFlag(GravityFlags.Right))
+                    {
+                        lp.X = PaddingLeft + linePosition + lineThickness - (lineMember.MeasuredWidth + lp.RightMargin);
+                    }
+                    else // Center - default
+                    {
+                        lp.X = PaddingLeft + linePosition + (lineThickness - lineMember.MeasuredWidth)/2;
+                    }
+                }
+            }
         }
 
         protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
@@ -77,14 +143,15 @@ namespace SynchroClientAndroid.Controls
                 mode = modeHeight;
             }
 
-            var lineThicknessWithSpacing = 0;
             var lineThickness = 0;
-            var lineLengthWithSpacing = 0;
+            var lineLength = 0;
 
-            var prevLinePosition = 0;
+            var linePosition = 0;
 
             var controlMaxLength = 0;
             var controlMaxThickness = 0;
+
+            List<View> lineContents = new List<View>();
 
             var count = ChildCount;
             for (var i = 0; i < count; i++)
@@ -98,70 +165,91 @@ namespace SynchroClientAndroid.Controls
                 var lp = (WrapLayoutParams)child.LayoutParameters;
 
                 child.Measure(
-                    GetChildMeasureSpec(widthMeasureSpec, PaddingLeft + PaddingTop, lp.Width),
-                    GetChildMeasureSpec(heightMeasureSpec, PaddingTop + PaddingBottom, lp.Height)
+                    GetChildMeasureSpec(widthMeasureSpec, PaddingLeft + PaddingTop + lp.LeftMargin + lp.RightMargin, lp.Width),
+                    GetChildMeasureSpec(heightMeasureSpec, PaddingTop + PaddingBottom + lp.TopMargin + lp.BottomMargin, lp.Height)
                     );
 
-                var hSpacing = GetHorizontalSpacing(lp);
-                var vSpacing = GetVerticalSpacing(lp);
+                var childTotalWidth = _itemWidth != 0 ? _itemWidth : child.MeasuredWidth + lp.LeftMargin + lp.RightMargin;
+                var childTotalHeight = _itemHeight != 0 ? _itemHeight : child.MeasuredHeight + lp.TopMargin + lp.BottomMargin;
 
-                var childWidth = child.MeasuredWidth;
-                var childHeight = child.MeasuredHeight;
-
-                int childLength;
-                int childThickness;
-                int spacingLength;
-                int spacingThickness;
+                int childLength;    // Running dimension
+                int childThickness; // Opposite dimension
 
                 if (_orientation == Orientation.Horizontal)
                 {
-                    childLength = childWidth;
-                    childThickness = childHeight;
-                    spacingLength = hSpacing;
-                    spacingThickness = vSpacing;
+                    childLength = childTotalWidth;
+                    childThickness = childTotalHeight;
                 }
                 else
                 {
-                    childLength = childHeight;
-                    childThickness = childWidth;
-                    spacingLength = vSpacing;
-                    spacingThickness = hSpacing;
+                    childLength = childTotalHeight;
+                    childThickness = childTotalWidth;
                 }
 
-                var lineLength = lineLengthWithSpacing + childLength;
-                lineLengthWithSpacing = lineLength + spacingLength;
-
-                var newLine = lp.NewLine || ((MeasureSpecMode)mode != MeasureSpecMode.Unspecified && lineLength > size);
-                if (newLine)
+                if (((MeasureSpecMode)mode != MeasureSpecMode.Unspecified) && ((lineLength + childLength) > size))
                 {
-                    prevLinePosition = prevLinePosition + lineThicknessWithSpacing;
+                    // New line...
+                    //
+                    this.positionLineElements(lineContents, linePosition, lineThickness);
+                    lineContents.Clear();
 
+                    linePosition = linePosition + lineThickness;
                     lineThickness = childThickness;
                     lineLength = childLength;
-                    lineThicknessWithSpacing = childThickness + spacingThickness;
-                    lineLengthWithSpacing = lineLength + spacingLength;
-                }
-
-                lineThicknessWithSpacing = Math.Max(lineThicknessWithSpacing, childThickness + spacingThickness);
-                lineThickness = Math.Max(lineThickness, childThickness);
-
-                int posX;
-                int posY;
-                if (_orientation == Orientation.Horizontal)
-                {
-                    posX = PaddingLeft + lineLength - childLength;
-                    posY = PaddingTop + prevLinePosition;
                 }
                 else
                 {
-                    posX = PaddingLeft + prevLinePosition;
-                    posY = PaddingTop + lineLength - childHeight;
+                    // Continuation of current line...
+                    //
+                    lineThickness = Math.Max(lineThickness, childThickness);
+                    lineLength += childLength;
                 }
-                lp.SetPosition(posX, posY);
+
+                lineContents.Add(child);
+
+                // The positioning below is complex because of the case where there is a fixed item size and the element
+                // needs to be positioning in the running dimension within that fixed size (as opposed to just stacking it
+                // next to the previous element, as happens without fixed element sizes).  In the case where there is not
+                // a fixed element size, the child "total" size is the same as the measured size plus margins, meaning that
+                // the math below results in the same position regardless of the gravity / math used.
+                //
+                if (_orientation == Orientation.Horizontal)
+                {
+                    if (lp.Gravity.HasFlag(GravityFlags.Left))
+                    {
+                        lp.X = PaddingLeft + lineLength - childTotalWidth + lp.LeftMargin;
+                    }
+                    else if (lp.Gravity.HasFlag(GravityFlags.Right))
+                    {
+                        lp.X = PaddingLeft + lineLength - (child.MeasuredWidth + lp.RightMargin);
+                    }
+                    else // Center - default
+                    {
+                        lp.X = PaddingLeft + lineLength - childTotalWidth + ((childTotalWidth - child.MeasuredWidth) / 2);
+                    }
+                }
+                else
+                {
+                    if (lp.Gravity.HasFlag(GravityFlags.Top))
+                    {
+                        lp.Y = PaddingTop + lineLength - childTotalHeight + lp.TopMargin;
+                    }
+                    else if (lp.Gravity.HasFlag(GravityFlags.Bottom))
+                    {
+                        lp.Y = PaddingTop + lineLength - (child.MeasuredHeight + lp.BottomMargin);
+                    }
+                    else // Center - default
+                    {
+                        lp.Y = PaddingTop + lineLength - childTotalHeight + ((childTotalHeight - child.MeasuredHeight) / 2);
+                    }
+                }
 
                 controlMaxLength = Math.Max(controlMaxLength, lineLength);
-                controlMaxThickness = prevLinePosition + lineThickness;
+                controlMaxThickness = linePosition + lineThickness;
             }
+
+            this.positionLineElements(lineContents, linePosition, lineThickness);
+            lineContents.Clear();
 
             if (_orientation == Orientation.Horizontal)
             {
@@ -171,34 +259,6 @@ namespace SynchroClientAndroid.Controls
             {
                 SetMeasuredDimension(ResolveSize(controlMaxThickness, widthMeasureSpec), ResolveSize(controlMaxLength, heightMeasureSpec));
             }
-        }
-
-        private int GetVerticalSpacing(WrapLayoutParams lp)
-        {
-            int vSpacing;
-            if (lp.VerticalSpacingSpecified())
-            {
-                vSpacing = lp.VerticalSpacing;
-            }
-            else
-            {
-                vSpacing = VerticalSpacing;
-            }
-            return vSpacing;
-        }
-
-        private int GetHorizontalSpacing(WrapLayoutParams lp)
-        {
-            int hSpacing;
-            if (lp.HorizontalSpacingSpecified())
-            {
-                hSpacing = lp.HorizontalSpacing;
-            }
-            else
-            {
-                hSpacing = HorizontalSpacing;
-            }
-            return hSpacing;
         }
 
         protected override void OnLayout(bool changed, int l, int t, int r, int b)
@@ -224,7 +284,11 @@ namespace SynchroClientAndroid.Controls
 
         protected override ViewGroup.LayoutParams GenerateLayoutParams(ViewGroup.LayoutParams p)
         {
-            if (p is MarginLayoutParams)
+            if (p is LinearLayout.LayoutParams)
+            {
+                return new WrapLayoutParams((LinearLayout.LayoutParams)p);
+            }
+            else if (p is MarginLayoutParams)
             {
                 return new WrapLayoutParams((MarginLayoutParams)p);
             }
@@ -234,18 +298,10 @@ namespace SynchroClientAndroid.Controls
             }
         }
 
-        // !!! This whole horizontal/vertical spacing notion is going away in favor of layout
-        //     spacing based on the item margins.
-        //
-        public class WrapLayoutParams : ViewGroup.MarginLayoutParams
+        public class WrapLayoutParams : LinearLayout.LayoutParams
         {
-            private const int NoSpacing = -1;
-
             public int X;
             public int Y;
-            public int HorizontalSpacing = NoSpacing;
-            public int VerticalSpacing = NoSpacing;
-            public bool NewLine = false;
 
             public WrapLayoutParams(int width, int height) : base(width, height) { }
 
@@ -253,14 +309,18 @@ namespace SynchroClientAndroid.Controls
 
             public WrapLayoutParams(ViewGroup.MarginLayoutParams layoutParams) : base(layoutParams) { }
 
-            public bool HorizontalSpacingSpecified()
+            // Xamarin does't expose the copy constructor (which takes a LinearLayout.LayoutParams), so we call
+            // the MarginLayoutParams base class constructor, then propagate the gravity and weight ourselves.
+            //
+            public WrapLayoutParams(LinearLayout.LayoutParams layoutParams) : base((ViewGroup.MarginLayoutParams)layoutParams) 
             {
-                return HorizontalSpacing != NoSpacing;
+                this.Gravity = layoutParams.Gravity;
+                this.Weight = layoutParams.Weight;
             }
 
-            public bool VerticalSpacingSpecified()
+            public override string ToString()
             {
-                return VerticalSpacing != NoSpacing;
+                return "WrapLayoutParams pos(" + X + "," + Y + "), gravity: " + this.Gravity;
             }
 
             public void SetPosition(int x, int y)
@@ -287,10 +347,8 @@ namespace SynchroClientAndroid.Controls
 
             processElementProperty((string)controlSpec["orientation"], value => layout.Orientation = ToOrientation(value, Orientation.Vertical), Orientation.Vertical);
 
-            // !!! Need to support fixed size items
-            //
-            // processElementProperty((string)controlSpec["itemHeight"], value => _panel.ItemHeight = ToDeviceUnits(value));
-            // processElementProperty((string)controlSpec["itemWidth"], value => _panel.ItemWidth = ToDeviceUnits(value));
+            processElementProperty((string)controlSpec["itemHeight"], value => layout.ItemHeight = (int)ToDeviceUnits(value));
+            processElementProperty((string)controlSpec["itemWidth"], value => layout.ItemWidth = (int)ToDeviceUnits(value));
 
             processThicknessProperty(controlSpec["padding"], new PaddingThicknessSetter(this.Control));
 
@@ -298,7 +356,7 @@ namespace SynchroClientAndroid.Controls
             {
                 createControls((JArray)controlSpec["contents"], (childControlSpec, childControlWrapper) =>
                 {
-                    layout.AddView(childControlWrapper.Control);
+                    childControlWrapper.AddToLinearLayout(layout, childControlSpec);
                 });
             }
 
