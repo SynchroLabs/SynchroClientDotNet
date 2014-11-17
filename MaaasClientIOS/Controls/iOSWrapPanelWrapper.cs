@@ -63,6 +63,12 @@ namespace MaaasClientIOS.Controls
 
         public List<iOSControlWrapper> ControlWrappers { get; private set; }
 
+        protected float _itemHeight = 0;
+        public float ItemHeight { get { return _itemHeight; } set { _itemHeight = value; } }
+
+        protected float _itemWidth = 0;
+        public float ItemWidth { get { return _itemWidth; } set { _itemWidth = value; } }
+
         public override Int32 NumberOfSections(UICollectionView collectionView)
         {
             return 1;
@@ -90,7 +96,7 @@ namespace MaaasClientIOS.Controls
             return cell;
         }
 
-        // Not sure I exactly understand the magic of this particular trainwreck, but see:
+        // Not sure I exactly understand the magic of this particular trainwrec, but see:
         //
         //    http://forums.xamarin.com/discussion/531/how-can-i-provide-uicollectionviewdelegate-getsizeforitem-in-uicollectionviewcontroller
         //    https://bugzilla.xamarin.com/show_bug.cgi?id=8716
@@ -98,12 +104,35 @@ namespace MaaasClientIOS.Controls
         [Export("collectionView:layout:sizeForItemAtIndexPath:")]
         public virtual SizeF SizeForItemAtIndexPath(UICollectionView collectionView, UICollectionViewLayout layout, NSIndexPath indexPath)
         {
-            // Return the size for this item (plus margins)
+            return this.SizeForItemAtIndexPath(indexPath);
+        }
+
+        public SizeF SizeForItemAtIndexPath(NSIndexPath indexPath)
+        {
             iOSControlWrapper controlWrapper = ControlWrappers[indexPath.Row];
             SizeF controlSize = controlWrapper.Control.Frame.Size;
-            controlSize.Height += controlWrapper.MarginTop + controlWrapper.MarginBottom;
-            controlSize.Width += controlWrapper.MarginLeft + controlWrapper.MarginRight;
+            if (_itemHeight > 0)
+            {
+                controlSize.Height = _itemHeight;
+            }
+            else
+            {
+                controlSize.Height += controlWrapper.MarginTop + controlWrapper.MarginBottom;
+            }
+            if (_itemWidth > 0)
+            {
+                controlSize.Width = _itemWidth;
+            }
+            else
+            {
+                controlSize.Width += controlWrapper.MarginLeft + controlWrapper.MarginRight;
+            }
             return controlSize;
+        }
+
+        public iOSControlWrapper ItemAtIndexPath(NSIndexPath indexPath)
+        {
+            return ControlWrappers[indexPath.Row];
         }
     }
 
@@ -111,59 +140,200 @@ namespace MaaasClientIOS.Controls
     {
         static Logger logger = Logger.GetLogger("WrapPanelCollectionViewLayout");
 
+        protected WrapPanelCollectionViewSource _source;
+
+        public WrapPanelCollectionViewLayout(WrapPanelCollectionViewSource source) : base()
+        {
+            _source = source;
+        }
+
+        public float ItemHeight
+        {
+            get { return _source.ItemHeight; }
+            set
+            {
+                _source.ItemHeight = value;
+                this.InvalidateLayout();
+            }
+        }
+
+        public float ItemWidth
+        {
+            get { return _source.ItemWidth; }
+            set
+            {
+                _source.ItemWidth = value;
+                this.InvalidateLayout();
+            }
+        }
+
+        protected void positionLineElements(List<UICollectionViewLayoutAttributes> lineContents, float linePosition, float lineThickness)
+        {
+            logger.Debug("Positioning line with {0} elements, position: {1}, thickness: {2}", lineContents.Count, linePosition, lineThickness);
+            float lineLength = 0;
+
+            foreach (UICollectionViewLayoutAttributes lineMember in lineContents)
+            {
+                iOSControlWrapper controlWrapper = _source.ItemAtIndexPath(lineMember.IndexPath);
+                SizeF allocatedSize = _source.SizeForItemAtIndexPath(lineMember.IndexPath);
+                SizeF actualSize = controlWrapper.Control.Frame.Size;
+
+                float X, Y;
+
+                if (this.ScrollDirection == UICollectionViewScrollDirection.Vertical)
+                {
+                    // Vertical scroll means horizontal layout...
+                    //
+                    if (controlWrapper.HorizontalAlignment == HorizontalAlignment.Left)
+                    {
+                        X = lineLength + controlWrapper.MarginLeft;
+                    }
+                    else if (controlWrapper.HorizontalAlignment == HorizontalAlignment.Right)
+                    {
+                        X = lineLength + allocatedSize.Width - (actualSize.Width + controlWrapper.MarginRight);
+                    }
+                    else // HorizontalAlignment.Center - default
+                    {
+                        X = lineLength + ((allocatedSize.Width - actualSize.Width) / 2);
+                    }
+                    lineLength += allocatedSize.Width;
+
+                    if (controlWrapper.VerticalAlignment == VerticalAlignment.Top)
+                    {
+                        Y = linePosition + controlWrapper.MarginTop;
+                    }
+                    else if (controlWrapper.VerticalAlignment == VerticalAlignment.Bottom)
+                    {
+                        Y = linePosition + lineThickness - (actualSize.Height + controlWrapper.MarginBottom);
+                    }
+                    else // VerticalAlignment.Center - default
+                    {
+                        Y = linePosition + ((lineThickness - actualSize.Height) / 2);
+                    }
+                }
+                else  // UICollectionViewScrollDirection.Horizontal;
+                {
+                    // Horizontal scroll means vertical layout...
+                    //
+                    if (controlWrapper.HorizontalAlignment == HorizontalAlignment.Left)
+                    {
+                        X = linePosition + controlWrapper.MarginLeft;
+                    }
+                    else if (controlWrapper.HorizontalAlignment == HorizontalAlignment.Right)
+                    {
+                        X = linePosition + lineThickness - (actualSize.Width + controlWrapper.MarginRight);
+                    }
+                    else // HorizontalAlignment.Center - default
+                    {
+                        X = linePosition + ((lineThickness - actualSize.Width) / 2);
+                    }
+
+                    if (controlWrapper.VerticalAlignment == VerticalAlignment.Top)
+                    {
+                        Y = lineLength + controlWrapper.MarginTop;
+                    }
+                    else if (controlWrapper.VerticalAlignment == VerticalAlignment.Bottom)
+                    {
+                        Y = lineLength + allocatedSize.Height - (actualSize.Height + controlWrapper.MarginBottom);
+                    }
+                    else // VerticalAlignment.Center - default
+                    {
+                        Y = lineLength + ((allocatedSize.Height - actualSize.Height) / 2);
+                    }
+                    lineLength += allocatedSize.Height;
+                }
+
+                RectangleF frame = lineMember.Frame;
+                frame.X = X;
+                frame.Y = Y;
+                lineMember.Frame = frame;
+            }
+        }
+
+        // We're going to take advantage of the fact that the UICollectionViewFlowLayout will take care of organizing
+        // the items into "lines" (rows/columns as appropriate).  We then just process and lay out the line elements
+        // to position each element appropriately given its margins and alignment.
+        //
         public override UICollectionViewLayoutAttributes[] LayoutAttributesForElementsInRect(RectangleF rect)
         {
+            logger.Debug("LayoutAttributesForElementsInRect: {0}", rect);
             UICollectionViewLayoutAttributes[] attributesArray = base.LayoutAttributesForElementsInRect(rect);
+
+            List<UICollectionViewLayoutAttributes> lineContents = new List<UICollectionViewLayoutAttributes>();
+
+            float lineLength = 0;
+            float linePosition = 0;
+            float lineThickness = 0;
 
             foreach (UICollectionViewLayoutAttributes attributes in attributesArray) 
             {
-                if (attributes.RepresentedElementKind == null) 
+                if (attributes.RepresentedElementKind == null)
                 {
                     attributes.Frame = this.LayoutAttributesForItem(attributes.IndexPath).Frame;
+
+                    if (this.ScrollDirection == UICollectionViewScrollDirection.Vertical)
+                    {
+                        // Vertical scroll means horizontal layout...
+                        //
+                        if (attributes.Frame.X < (lineLength - 1)) // Make sure it's enough less that it's not a rounding error
+                        {
+                            // New line...
+                            //
+                            if (lineContents.Count > 0)
+                            {
+                                this.positionLineElements(lineContents, linePosition, lineThickness);
+                                lineContents.Clear();
+                            }
+
+                            linePosition = attributes.Frame.Y;
+                            lineThickness = attributes.Frame.Height; 
+                        }
+                        else
+                        {
+                            // Continuation of current line...
+                            //
+                            linePosition = Math.Min(linePosition, attributes.Frame.Y);
+                            lineThickness = Math.Max(lineThickness, attributes.Frame.Height);
+                        }
+
+                        lineLength = attributes.Frame.X + attributes.Frame.Width;
+                    }
+                    else  // UICollectionViewScrollDirection.Horizontal;
+                    {
+                        // Horizontal scroll means vertical layout...
+                        //
+                        if (attributes.Frame.Y < (lineLength - 1)) // Make sure it's enough less that it's not a rounding error
+                        {
+                            // New line...
+                            //
+                            if (lineContents.Count > 0)
+                            {
+                                this.positionLineElements(lineContents, linePosition, lineThickness);
+                                lineContents.Clear();
+                            }
+
+                            linePosition = attributes.Frame.X;
+                            lineThickness = attributes.Frame.Width;
+                        }
+                        else
+                        {
+                            // Continuation of current line...
+                            //
+                            linePosition = Math.Min(linePosition, attributes.Frame.X);
+                            lineThickness = Math.Max(lineThickness, attributes.Frame.Width);
+                        }
+
+                        lineLength = attributes.Frame.Y + attributes.Frame.Height;
+                    }
+
+                    lineContents.Add(attributes);
                 }
             }
 
+            this.positionLineElements(lineContents, linePosition, lineThickness);
+            lineContents.Clear();
+
             return attributesArray;
-        }
-
-        // By default, the UICollectionViewFlowLayout fully justifies all "full" lines (rows/columns).  That is
-        // not what we want.  We want the rows/columns to be left/top justified respectively.  That is what
-        // we do below...
-        //
-        public override UICollectionViewLayoutAttributes LayoutAttributesForItem(NSIndexPath indexPath)
-        {
-            UICollectionViewLayoutAttributes attributes = base.LayoutAttributesForItem(indexPath);
-
-            if (indexPath.Item == 0) // degenerate case 1, first item of section
-                return attributes;
-
-            NSIndexPath ipPrev = NSIndexPath.FromRowSection(indexPath.Item-1, indexPath.Section);
-
-            RectangleF prevFrame = this.LayoutAttributesForItem(ipPrev).Frame;
-            RectangleF frame = attributes.Frame;
-
-            if (this.ScrollDirection == UICollectionViewScrollDirection.Vertical)
-            {
-                // Vertical scroll means horizontal layout...
-                //
-                float prevRight = prevFrame.X + prevFrame.Width + 0;
-                if (attributes.Frame.X <= prevRight) // degenerate case 2, first item of row
-                    return attributes;
-                frame.X = prevRight;
-            }
-            else  // UICollectionViewScrollDirection.Horizontal;
-            {
-                // Horizontal scroll means vertical layout...
-                //
-                float prevBottom = prevFrame.Y + prevFrame.Height + 0;
-                if (attributes.Frame.Y <= prevBottom) // degenerate case 2, first item of column
-                    return attributes;
-                frame.Y = prevBottom;
-            }
-
-            attributes.Frame = frame;
-
-            return attributes;
         }
     }
 
@@ -214,7 +384,8 @@ namespace MaaasClientIOS.Controls
         {
             logger.Debug("Creating wrap panel element");
 
-            UICollectionViewFlowLayout layout = new WrapPanelCollectionViewLayout();
+            var source = new WrapPanelCollectionViewSource();
+            WrapPanelCollectionViewLayout layout = new WrapPanelCollectionViewLayout(source);
             UICollectionView view = new UICollectionView(new RectangleF(), layout);
 
             this._control = view;
@@ -239,14 +410,13 @@ namespace MaaasClientIOS.Controls
                 }
             });
 
-            // !!! Need support for fixed item height/width - has implications to item positioning within fixed dimension
+            // Need support for fixed item height/width - has implications to item positioning within fixed dimension
             //
-            // processElementProperty((string)controlSpec["itemHeight"], value => _panel.ItemHeight = ToDeviceUnits(value));
-            // processElementProperty((string)controlSpec["itemWidth"], value => _panel.ItemWidth = ToDeviceUnits(value));
+            processElementProperty((string)controlSpec["itemHeight"], value => layout.ItemHeight = (float)ToDeviceUnits(value));
+            processElementProperty((string)controlSpec["itemWidth"], value => layout.ItemWidth = (float)ToDeviceUnits(value));
 
             processThicknessProperty(controlSpec["padding"], new PaddingThicknessSetter(layout));
 
-            var source = new WrapPanelCollectionViewSource();
             if (controlSpec["contents"] != null)
             {
                 createControls((JArray)controlSpec["contents"], (childControlSpec, childControlWrapper) =>

@@ -143,6 +143,21 @@ namespace MaaasClientWin.Controls
     //
     public class WrapPanel : Panel
     {
+        public WrapPanel()
+        {
+        }
+
+        protected Orientation _orientation = Orientation.Horizontal;
+        public Orientation Orientation
+        {
+            get { return _orientation; }
+            set
+            {
+                _orientation = value;
+                this.InvalidateMeasure();
+            }
+        }
+
         protected double _itemHeight = 0;
         public double ItemHeight
         {
@@ -163,21 +178,6 @@ namespace MaaasClientWin.Controls
                 _itemWidth = value;
                 this.InvalidateMeasure();
             }
-        }
-
-        protected Orientation _orientation = Orientation.Horizontal;
-        public Orientation Orientation
-        {
-            get { return _orientation; }
-            set 
-            { 
-                _orientation = value; 
-                this.InvalidateMeasure();
-            }
-        }
-
-        public WrapPanel()
-        {
         }
 
         // Measures the child elements of a WrapPanel in anticipation  of arranging them during 
