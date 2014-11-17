@@ -16,6 +16,7 @@ using Android.Util;
 using Android.Graphics;
 using Android.Graphics.Drawables;
 using System.Threading.Tasks;
+using Android.Views.InputMethods;
 
 namespace SynchroClientAndroid
 {
@@ -203,8 +204,27 @@ namespace SynchroClientAndroid
             return true;
         }
 
+        protected void HideSoftKeyboard()
+        {
+            Context ctx = _rootControlWrapper.Control.Context;
+            InputMethodManager inputManager =  ctx.GetSystemService(Context.InputMethodService) as InputMethodManager;
+
+            View view = this._activity.CurrentFocus;
+            if (view != null) 
+            {
+                // In any sane Android universe, doing either ClearFocus() or hiding w/ ImplicitOnly should work,
+                // and frankly, the fact that the control with focus is being removed from the view should do it
+                // automatically, but in the real world, the kb stays up when the view is removed, and only the 
+                // shithammering below seems to work to dimiss the kb.
+                //
+                view.ClearFocus();
+                inputManager.HideSoftInputFromWindow(view.WindowToken, HideSoftInputFlags.None); // HideSoftInputFlags.ImplicitOnly); 
+            }
+        }
+
         public override void ClearContent()
         {
+            this.HideSoftKeyboard();
             this._actionBarItems.Clear();
             this._activity.InvalidateOptionsMenu();
 
