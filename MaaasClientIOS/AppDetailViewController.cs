@@ -307,23 +307,43 @@ namespace MaaasClientIOS
                 return;
             }
 
-            Transport transport = new TransportHttp(endpoint);
+            bool formatException = false;
+            try
+            {
+                Uri endpointUri = TransportHttp.UriFromHostString(endpoint);
+                Transport transport = new TransportHttp(endpointUri);
 
-            JObject appDefinition = await transport.getAppDefinition();
-            if (appDefinition == null)
+                JObject appDefinition = await transport.getAppDefinition();
+                if (appDefinition == null)
+                {
+                    UIAlertView alertView = new UIAlertView();
+                    alertView.Title = "Synchro Application Search";
+                    alertView.Message = "No Synchro application found at the supplied endpoint";
+                    alertView.AddButton("OK");
+                    alertView.Show();
+                    return;
+                }
+                else
+                {
+                    _app = new MaaasApp(endpoint, appDefinition);
+                    _view.Populate(_app);
+                    _view.UpdateVisibility(DisplayMode.Add);
+                }
+            }
+            catch (FormatException)
+            {
+                // Can't await async message dialog in catch block (until C# 6.0).
+                //
+                formatException = true;
+            }
+
+            if (formatException)
             {
                 UIAlertView alertView = new UIAlertView();
                 alertView.Title = "Synchro Application Search";
-                alertView.Message = "No Synchro application found at the supplied endpoint";
+                alertView.Message = "Endpoint not formatted correctly";
                 alertView.AddButton("OK");
                 alertView.Show();
-                return;
-            }
-            else
-            {
-                _app = new MaaasApp(endpoint, appDefinition);
-                _view.Populate(_app);
-                _view.UpdateVisibility(DisplayMode.Add);
             }
         }
 

@@ -141,7 +141,7 @@ namespace SynchroClientAndroid
             //
             // HttpClient httpClient = new HttpClient(new OkHttpNetworkHandler());
             //
-            Transport transport = new TransportHttp(endpoint);
+            Transport transport = new TransportHttp(TransportHttp.UriFromHostString(endpoint));
 
             Action backToMenu = null;
             if (appManager.AppSeed == null)

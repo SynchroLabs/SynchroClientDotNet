@@ -87,23 +87,40 @@ namespace MaaasClientWin
                 return;
             }
 
-            Transport transport = new TransportHttp(endpoint);
+            bool formatException = false;
+            try
+            {
+                Uri endpointUri = TransportHttp.UriFromHostString(endpoint);
+                Transport transport = new TransportHttp(endpointUri);
 
-            JObject appDefinition = await transport.getAppDefinition();
-            if (appDefinition == null)
-            {
-                var errMessage = new MessageDialog("No Synchro application found at the supplied endpoint", "Synchro Application Search");
-                await errMessage.ShowAsync();
+                JObject appDefinition = await transport.getAppDefinition();
+                if (appDefinition == null)
+                {
+                    var errMessage = new MessageDialog("No Synchro application found at the supplied endpoint", "Synchro Application Search");
+                    await errMessage.ShowAsync();
+                }
+                else
+                {
+                    this.App = new MaaasApp(endpoint, appDefinition);
+                    this.SearchGrid.Visibility = Visibility.Collapsed;
+                    this.DetailsGrid.Visibility = Visibility.Visible;
+                    this.ActionsGrid.Visibility = Visibility.Visible;
+                    this.BtnSave.Visibility = Visibility.Visible;
+                    this.BtnLaunch.Visibility = Visibility.Collapsed;
+                    this.BtnDelete.Visibility = Visibility.Collapsed;
+                }
             }
-            else
+            catch (FormatException)
             {
-                this.App = new MaaasApp(endpoint, appDefinition);
-                this.SearchGrid.Visibility = Visibility.Collapsed;
-                this.DetailsGrid.Visibility = Visibility.Visible;
-                this.ActionsGrid.Visibility = Visibility.Visible;
-                this.BtnSave.Visibility = Visibility.Visible;
-                this.BtnLaunch.Visibility = Visibility.Collapsed;
-                this.BtnDelete.Visibility = Visibility.Collapsed;
+                // Can't await async message dialog in catch block (until C# 6.0).
+                //
+                formatException = true;
+            }
+
+            if (formatException)
+            {
+                var errMessage = new MessageDialog("Endpoint not formatted correctly", "Synchro Application Search");
+                await errMessage.ShowAsync();
             }
         }
 

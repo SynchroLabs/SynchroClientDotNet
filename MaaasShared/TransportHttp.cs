@@ -13,12 +13,14 @@ namespace MaaasShared
     {
         static Logger logger = Logger.GetLogger("TransportHttp");
 
+        protected Uri _uri;
         private HttpClient _httpClient;
 
         private string _sessionId;
 
-        public TransportHttp(string host, HttpClient client = null) : base(host)
+        public TransportHttp(Uri uri, HttpClient client = null) : base()
         {
+            _uri = uri;
             if (client != null)
             {
                 _httpClient = client;
@@ -35,6 +37,11 @@ namespace MaaasShared
 
             // Not clear if this does anything (100-continue case doesn't always repro)
             _httpClient.DefaultRequestHeaders.ExpectContinue = false;
+        }
+
+        static public Uri UriFromHostString(string host, string protocol = "http")
+        {
+            return  new Uri(protocol + "://" + host);
         }
 
         public override async Task sendMessage(string sessionId, JObject requestObject, ResponseHandler responseHandler, RequestFailureHandler requestFailureHandler)

@@ -59,7 +59,7 @@ namespace MaaasClientWin
 
             WinPhoneDeviceMetrics deviceMetrics = new WinPhoneDeviceMetrics();
 
-            Transport transport = new TransportHttp(endpoint);
+            Transport transport = new TransportHttp(TransportHttp.UriFromHostString(endpoint));
             //Transport transport = new TransportWs(endpoint);
 
             Action backToMenu = null;

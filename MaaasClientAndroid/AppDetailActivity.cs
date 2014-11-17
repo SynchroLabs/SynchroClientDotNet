@@ -117,28 +117,50 @@ namespace SynchroClientAndroid
                 return;
             }
 
-            Transport transport = new TransportHttp(endpoint);
+            bool formatException = false;
+            try
+            {
+                Uri endpointUri = TransportHttp.UriFromHostString(endpoint);
+                Transport transport = new TransportHttp(endpointUri);
 
-            JObject appDefinition = await transport.getAppDefinition();
-            if (appDefinition == null)
+                JObject appDefinition = await transport.getAppDefinition();
+                if (appDefinition == null)
+                {
+                    AlertDialog.Builder builder;
+                    builder = new AlertDialog.Builder(this);
+                    builder.SetTitle("Synchro Application Search");
+                    builder.SetMessage("No Synchro application found at the supplied endpoint");
+                    builder.SetPositiveButton("OK", delegate { });
+                    builder.SetCancelable(true);
+                    builder.Show();
+                }
+                else
+                {
+                    this.app = new MaaasApp(endpoint, appDefinition);
+                    this.layoutFind.Visibility = ViewStates.Gone;
+                    this.layoutDetails.Visibility = ViewStates.Visible;
+                    this.btnSave.Visibility = ViewStates.Visible;
+                    this.btnLaunch.Visibility = ViewStates.Gone;
+                    this.btnDelete.Visibility = ViewStates.Gone;
+                    this.populateControlsFromApp();
+                }
+            }
+            catch (FormatException)
+            {
+                // Can't await async message dialog in catch block (until C# 6.0).
+                //
+                formatException = true;
+            }
+
+            if (formatException)
             {
                 AlertDialog.Builder builder;
                 builder = new AlertDialog.Builder(this);
                 builder.SetTitle("Synchro Application Search");
-                builder.SetMessage("No Synchro application found at the supplied endpoint");
+                builder.SetMessage("Endpoint not formatted correctly");
                 builder.SetPositiveButton("OK", delegate { });
                 builder.SetCancelable(true);
                 builder.Show();
-            }
-            else
-            {
-                this.app = new MaaasApp(endpoint, appDefinition);
-                this.layoutFind.Visibility = ViewStates.Gone;
-                this.layoutDetails.Visibility = ViewStates.Visible;
-                this.btnSave.Visibility = ViewStates.Visible;
-                this.btnLaunch.Visibility = ViewStates.Gone;
-                this.btnDelete.Visibility = ViewStates.Gone;
-                this.populateControlsFromApp();
             }
         }
 

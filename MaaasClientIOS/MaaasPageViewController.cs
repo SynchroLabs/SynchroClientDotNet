@@ -39,7 +39,7 @@ namespace MaaasClientIOS
 
             // Using AFNetworkHandler via ModernHttpClient component
             HttpClient httpClient = new HttpClient(new AFNetworkHandler());
-            Transport transport = new TransportHttp(_maaasApp.Endpoint, httpClient);
+            Transport transport = new TransportHttp(TransportHttp.UriFromHostString(_maaasApp.Endpoint), httpClient);
             //Transport transport = new iOSTransportWs(this, _maaasApp.Endpoint);
 
             Action backToMenu = null;

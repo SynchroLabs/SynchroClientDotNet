@@ -11,13 +11,11 @@ namespace MaaasCore
     {
         public static string SessionIdHeader = "synchro-api-session-id";
 
-        protected Uri _uri;
         protected ResponseHandler _responseHandler;
         protected RequestFailureHandler _requestFailureHandler;
 
-        public Transport(string host, string protocol = "http")
+        public Transport()
         {
-            _uri = new Uri(protocol + "://" + host);
         }
 
         public void setDefaultHandlers(ResponseHandler responseHandler, RequestFailureHandler requestFailureHandler)
