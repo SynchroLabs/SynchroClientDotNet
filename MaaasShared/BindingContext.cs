@@ -115,12 +115,21 @@ namespace MaaasCore
 
         // Given a path to a changed view model element, determine if the binding is impacted.
         //
-        public Boolean IsBindingUpdated(string updatedElementPath)
+        public Boolean IsBindingUpdated(string updatedElementPath, Boolean objectChange)
         {
-            if (_bindingPath.StartsWith(updatedElementPath))
+            if (objectChange && (_bindingPath.StartsWith(updatedElementPath)))
             {
-                // The updated token is either the same token that the binding is bound to, 
-                // or it is an ancestor, so this binding needs to be updated.
+                // If this is an object change (meaning the object/array itself changed), then a binding
+                // update is required if the path matches or is an ancestor of the binging path.
+                //
+                return true;
+            }
+            else if (_bindingPath.Equals(updatedElementPath))
+            {
+                // If this is a primitive value change, or an object/array contents change (meaning
+                // that the object itself did not change), then a binding update is only required if
+                // the path matches exactly.
+                //
                 return true;
             }
 

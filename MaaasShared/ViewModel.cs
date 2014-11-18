@@ -136,7 +136,7 @@ namespace MaaasCore
         // that is impacted by a token in bindingUpdates will have its view updated.  If no bindingUpdates
         // is provided, all bindings will have their view updated.  
         //
-        // If bindingUpdates is provided, and binding impacted by a path for which rebinding is indicated
+        // If bindingUpdates is provided, any binding impacted by a path for which rebinding is indicated
         // will be rebound.
         //
         // Usages:
@@ -158,7 +158,7 @@ namespace MaaasCore
                     {
                         foreach (BindingUpdate update in bindingUpdates)
                         {
-                            if (valueBinding.BindingContext.IsBindingUpdated(update.BindingPath))
+                            if (valueBinding.BindingContext.IsBindingUpdated(update.BindingPath, update.RebindRequired))
                             {
                                 isUpdateRequired = true;
                                 if (update.RebindRequired)
@@ -194,7 +194,7 @@ namespace MaaasCore
                     {
                         foreach (BindingUpdate update in bindingUpdates)
                         {
-                            if (propBinding.IsBindingUpdated(update.BindingPath))
+                            if (propBinding.IsBindingUpdated(update.BindingPath, update.RebindRequired))
                             {
                                 isUpdateRequired = true;
                                 if (update.RebindRequired)
@@ -229,7 +229,7 @@ namespace MaaasCore
             logger.Debug("Processing view model updates: {0}", viewModelDeltas);
             if ((viewModelDeltas.Type == JTokenType.Array))
             {
-                // Removals are genrally reported as removals from the end of the list with increasing indexes.  If
+                // Removals are generally reported as removals from the end of the list with increasing indexes.  If
                 // we process them in this way, the first removal will change the list positions of remaining items
                 // and cause subsequent removals to be off (typically to fail).  And we don't really want to rely
                 // on ordering in the first place.  So what we are going to do is track all of the removals, and then

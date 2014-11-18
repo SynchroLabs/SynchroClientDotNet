@@ -300,6 +300,7 @@ namespace MaaasCore
                             this._instanceVersion++;
 
                             JToken jsonViewModelDeltas = (JToken)responseAsJSON["ViewModelDeltas"];
+                            // logger.Debug("ViewModel deltas: {0}", jsonViewModelDeltas);
 
                             // If we don't have a new View, we'll update the current view as part of applying
                             // the deltas.  If we do have a new View, we'll skip that, since we have to
