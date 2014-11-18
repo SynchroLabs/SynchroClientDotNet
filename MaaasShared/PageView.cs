@@ -18,7 +18,16 @@ namespace MaaasCore
         protected ViewModel _viewModel;
         protected Action _doBackToMenu;
 
-        protected ControlWrapper _rootControlWrapper;
+        // This is the top level container of controls for a page.  If the page specifies a single top level
+        // element, then this represents that element.  If not, then this is a container control that we 
+        // created to wrap those elements (currently a vertical stackpanel).
+        //
+        // Derived classes have a similarly named _rootControlWrapper which represents the actual topmost
+        // visual element, typically a scroll container, that is re-populated as page contents change, and
+        // which has a single child, the _rootContainerControlWrapper (which will change as the active page
+        // changes).
+        //
+        protected ControlWrapper _rootContainerControlWrapper;
 
         protected string onBackCommand = null;
 
@@ -79,11 +88,11 @@ namespace MaaasCore
 
         public void ProcessPageView(JObject pageView)
         {
-            if (_rootControlWrapper != null)
+            if (_rootContainerControlWrapper != null)
             {
-                _rootControlWrapper.Unregister();
+                _rootContainerControlWrapper.Unregister();
                 ClearContent();
-                _rootControlWrapper = null;
+                _rootContainerControlWrapper = null;
             }
 
             if (this.setBackEnabled != null)
@@ -102,7 +111,7 @@ namespace MaaasCore
             {
                 // The only element is the container of all page elements, so make it the root element, and populate it...
                 //
-                _rootControlWrapper = CreateRootContainerControl((JObject)elements[0]);
+                _rootContainerControlWrapper = CreateRootContainerControl((JObject)elements[0]);
             }
             else if (elements.Count > 1)
             {
@@ -114,10 +123,10 @@ namespace MaaasCore
                     new JProperty("contents", elements)
                 );
 
-                _rootControlWrapper = CreateRootContainerControl(controlSpec);
+                _rootContainerControlWrapper = CreateRootContainerControl(controlSpec);
             }
 
-            SetContent(_rootControlWrapper);
+            SetContent(_rootContainerControlWrapper);
         }
     }
 }
