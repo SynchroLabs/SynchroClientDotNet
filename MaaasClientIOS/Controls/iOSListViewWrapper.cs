@@ -481,10 +481,19 @@ namespace MaaasClientIOS.Controls
                 }
             }
 
+            // Setting this to false, then back to true below, disables all row-motion animations, which
+            // also eliminates to need for the footer gymnastics we used to do below, which in turn allows 
+            // the list items to stay in place as new items are added to the bottom and the footer is moved
+            // down.  The row motion animations were kind of nice, but were causing way too many problems 
+            // to be worth their while.
+            //
+            UIView.AnimationsEnabled = false;
+
             // We remove the footer temporarily, otherwise we experience a really bad animation effect
             // during the row animations below (the rows expand/contract very quickly, while the footer
             // slowly floats to its new location).  Looks terrible, especially when filling empty list.
             //
+            /*
             UIView footer = tableView.TableFooterView;
             if (footer != null)
             {
@@ -496,26 +505,35 @@ namespace MaaasClientIOS.Controls
                 //
                 tableView.TableFooterView = null;
             }
+            */
 
+            // Note: The UITableViewRowAnimation specified variously below control the animation of
+            //       the reveal of the row itself, and are not related to the other area of row animation,
+            //       where rows themselves move around to reinforce insertion/deletion of rows.
+            //
             tableView.BeginUpdates();
             if (reloadRows.Count > 0)
             {
-                tableView.ReloadRows(reloadRows.ToArray(), UITableViewRowAnimation.Fade);
+                tableView.ReloadRows(reloadRows.ToArray(), UITableViewRowAnimation.None);
             }
             if (insertRows.Count > 0)
             {
-                tableView.InsertRows(insertRows.ToArray(), UITableViewRowAnimation.Fade);
+                tableView.InsertRows(insertRows.ToArray(), UITableViewRowAnimation.None);
             }
             if (deleteRows.Count > 0)
             {
-                tableView.DeleteRows(deleteRows.ToArray(), UITableViewRowAnimation.Fade);
+                tableView.DeleteRows(deleteRows.ToArray(), UITableViewRowAnimation.None);
             }
-            tableView.EndUpdates(); // applies the changes
+            tableView.EndUpdates();
 
+            UIView.AnimationsEnabled = true;
+
+            /*
             if (footer != null)
             {
                 tableView.TableFooterView = footer;
             }
+            */
 
             ValueBinding selectionBinding = GetValueBinding("selection");
             if (selectionBinding != null)
