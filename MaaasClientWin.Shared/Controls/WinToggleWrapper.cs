@@ -1,5 +1,4 @@
 ﻿using MaaasCore;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -29,11 +28,11 @@ namespace MaaasClientWin.Controls
 
             if (!processElementBoundValue("value", (string)bindingSpec["value"], () => { return button.IsChecked; }, value => button.IsChecked = ToBoolean(value)))
             {
-                processElementProperty((string)controlSpec["value"], value => button.IsChecked = ToBoolean(value));
+                processElementProperty(controlSpec["value"], value => button.IsChecked = ToBoolean(value));
             }
 
-            processElementProperty((string)controlSpec["text"], value => button.Label = ToString(value));
-            processElementProperty((string)controlSpec["icon"], value =>
+            processElementProperty(controlSpec["text"], value => button.Label = ToString(value));
+            processElementProperty(controlSpec["icon"], value =>
             {
                 Symbol iconSymbol;
                 if (Enum.TryParse(ToString(value), out iconSymbol))

@@ -6,7 +6,6 @@ using System.Text;
 using MonoTouch.Foundation;
 using MonoTouch.UIKit;
 using MaaasCore;
-using Newtonsoft.Json.Linq;
 using System.Threading.Tasks;
 
 namespace MaaasClientIOS.Controls
@@ -45,11 +44,11 @@ namespace MaaasClientIOS.Controls
                 // Custom items, can specify text, icon, or both
                 //
                 buttonItem = new UIBarButtonItem("", UIBarButtonItemStyle.Plain, buttonItem_Clicked);
-                processElementProperty((string)controlSpec["text"], value => buttonItem.Title = ToString(value));
-                processElementProperty((string)controlSpec["icon"], value => buttonItem.Image = UIImage.FromBundle("icons/blue/" + ToString(value)));
+                processElementProperty(controlSpec["text"], value => buttonItem.Title = ToString(value));
+                processElementProperty(controlSpec["icon"], value => buttonItem.Image = UIImage.FromBundle("icons/blue/" + ToString(value)));
             }
             
-            processElementProperty((string)controlSpec["enabled"], value => buttonItem.Enabled = ToBoolean(value));
+            processElementProperty(controlSpec["enabled"], value => buttonItem.Enabled = ToBoolean(value));
 
             if ((string)controlSpec["control"] == "navBar.button")
             {

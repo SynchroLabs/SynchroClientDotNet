@@ -6,7 +6,6 @@ using System.Text;
 using MonoTouch.Foundation;
 using MonoTouch.UIKit;
 using MaaasCore;
-using Newtonsoft.Json.Linq;
 using System.Threading.Tasks;
 
 namespace MaaasClientIOS.Controls
@@ -131,18 +130,18 @@ namespace MaaasClientIOS.Controls
 
             if (!processElementBoundValue("value", (string)bindingSpec["value"], () => { return this.IsChecked; }, value => this.IsChecked = ToBoolean(value)))
             {
-                processElementProperty((string)controlSpec["value"], value => this.IsChecked = ToBoolean(value));
+                processElementProperty(controlSpec["value"], value => this.IsChecked = ToBoolean(value));
             }
 
-            processElementProperty((string)controlSpec["text"], value => _buttonItem.Title = ToString(value));
-            processElementProperty((string)controlSpec["icon"], value => _buttonItem.Image = UIImage.FromBundle("icons/blue/" + ToString(value)));
+            processElementProperty(controlSpec["text"], value => _buttonItem.Title = ToString(value));
+            processElementProperty(controlSpec["icon"], value => _buttonItem.Image = UIImage.FromBundle("icons/blue/" + ToString(value)));
 
-            processElementProperty((string)controlSpec["uncheckedtext"], value => this.UncheckedText = ToString(value));
-            processElementProperty((string)controlSpec["checkedtext"], value => this.CheckedText = ToString(value));
-            processElementProperty((string)controlSpec["uncheckedicon"], value => this.UncheckedIcon = ToString(value));
-            processElementProperty((string)controlSpec["checkedicon"], value => this.CheckedIcon = ToString(value));
+            processElementProperty(controlSpec["uncheckedtext"], value => this.UncheckedText = ToString(value));
+            processElementProperty(controlSpec["checkedtext"], value => this.CheckedText = ToString(value));
+            processElementProperty(controlSpec["uncheckedicon"], value => this.UncheckedIcon = ToString(value));
+            processElementProperty(controlSpec["checkedicon"], value => this.CheckedIcon = ToString(value));
 
-            processElementProperty((string)controlSpec["enabled"], value => _buttonItem.Enabled = ToBoolean(value));
+            processElementProperty(controlSpec["enabled"], value => _buttonItem.Enabled = ToBoolean(value));
 
             if ((string)controlSpec["control"] == "navBar.toggle")
             {

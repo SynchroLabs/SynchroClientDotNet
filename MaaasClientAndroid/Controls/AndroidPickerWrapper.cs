@@ -10,7 +10,6 @@ using Android.Runtime;
 using Android.Views;
 using Android.Widget;
 using MaaasCore;
-using Newtonsoft.Json.Linq;
 using System.Threading.Tasks;
 
 namespace SynchroClientAndroid.Controls
@@ -226,7 +225,7 @@ namespace SynchroClientAndroid.Controls
                 BindingContextListItem item = adapter.GetItemAtPosition(picker.SelectedItemPosition);
                 return item.GetSelection(selectionItem);
             }
-            return new Newtonsoft.Json.Linq.JValue(false); // This is a "null" selection
+            return new MaaasCore.JValue(false); // This is a "null" selection
         }
 
         public void setPickerSelection(Spinner picker, string selectionItem, JToken selection)

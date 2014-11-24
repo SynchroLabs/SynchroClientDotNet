@@ -1,5 +1,4 @@
 ﻿using MaaasCore;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -412,9 +411,9 @@ namespace MaaasClientWin.Controls
 
             applyFrameworkElementDefaults(_border);
 
-            processElementProperty((string)controlSpec["orientation"], value => _panel.Orientation = ToOrientation(value, Orientation.Horizontal));
-            processElementProperty((string)controlSpec["itemHeight"], value => _panel.ItemHeight = ToDeviceUnits(value));
-            processElementProperty((string)controlSpec["itemWidth"], value => _panel.ItemWidth = ToDeviceUnits(value));
+            processElementProperty(controlSpec["orientation"], value => _panel.Orientation = ToOrientation(value, Orientation.Horizontal));
+            processElementProperty(controlSpec["itemHeight"], value => _panel.ItemHeight = ToDeviceUnits(value));
+            processElementProperty(controlSpec["itemWidth"], value => _panel.ItemWidth = ToDeviceUnits(value));
 
             processThicknessProperty(controlSpec["padding"], () => _border.Padding, value => _border.Padding = (Thickness)value);
 

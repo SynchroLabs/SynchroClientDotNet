@@ -6,7 +6,6 @@ using System.Text;
 using MonoTouch.Foundation;
 using MonoTouch.UIKit;
 using MaaasCore;
-using Newtonsoft.Json.Linq;
 
 namespace MaaasClientIOS.Controls
 {
@@ -43,9 +42,9 @@ namespace MaaasClientIOS.Controls
 
             applyFrameworkElementDefaults(progress);
 
-            processElementProperty((string)controlSpec["value"], value => progress.Progress = (float)GetProgress(ToDouble(value)));
-            processElementProperty((string)controlSpec["minimum"], value => _min = ToDouble(value));
-            processElementProperty((string)controlSpec["maximum"], value => _max = ToDouble(value));
+            processElementProperty(controlSpec["value"], value => progress.Progress = (float)GetProgress(ToDouble(value)));
+            processElementProperty(controlSpec["minimum"], value => _min = ToDouble(value));
+            processElementProperty(controlSpec["maximum"], value => _max = ToDouble(value));
         }
     }
 }

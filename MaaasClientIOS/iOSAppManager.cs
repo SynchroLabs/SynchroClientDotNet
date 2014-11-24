@@ -8,7 +8,6 @@ using MonoTouch.UIKit;
 using MaaasCore;
 using System.Threading.Tasks;
 using System.IO;
-using Newtonsoft.Json.Linq;
 
 namespace MaaasClientIOS
 {

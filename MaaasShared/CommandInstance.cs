@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -51,13 +50,26 @@ namespace MaaasCore
         //
         public JObject GetResolvedParameters(BindingContext bindingContext)
         {
-            return new JObject(
-                from parameter in _parameters
-                select new JProperty(
-                    parameter.Key,
-                    parameter.Value.Type == JTokenType.String ? PropertyValue.Expand((string)parameter.Value, bindingContext) : parameter.Value
-                    )
-                );
+            JObject obj = new JObject();
+            foreach (var parameter in _parameters)
+            {
+                JToken value = parameter.Value;
+                if (parameter.Value.Type == JTokenType.String)
+                {
+                    var expanded = PropertyValue.Expand((string)parameter.Value, bindingContext);
+                    if (expanded is JToken)
+                    {
+                        value = ((JToken)expanded).DeepClone();
+                    }
+                    else
+                    {
+                        value = new JValue(expanded);
+                    }
+                } 
+
+                obj.Add(parameter.Key, value);
+            }
+            return obj;
         }
     }
 }

@@ -10,7 +10,6 @@ using Android.Runtime;
 using Android.Views;
 using Android.Widget;
 using MaaasCore;
-using Newtonsoft.Json.Linq;
 using Android.Webkit;
 
 namespace SynchroClientAndroid.Controls

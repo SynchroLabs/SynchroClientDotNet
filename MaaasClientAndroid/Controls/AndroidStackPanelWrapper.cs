@@ -10,7 +10,6 @@ using Android.Runtime;
 using Android.Views;
 using Android.Widget;
 using MaaasCore;
-using Newtonsoft.Json.Linq;
 
 namespace SynchroClientAndroid.Controls
 {
@@ -34,7 +33,7 @@ namespace SynchroClientAndroid.Controls
             //
             layout.BaselineAligned = false;
 
-            processElementProperty((string)controlSpec["orientation"], value => layout.Orientation = ToOrientation(value, Orientation.Vertical), Orientation.Vertical);
+            processElementProperty(controlSpec["orientation"], value => layout.Orientation = ToOrientation(value, Orientation.Vertical), Orientation.Vertical);
 
             processThicknessProperty(controlSpec["padding"], new PaddingThicknessSetter(this.Control));
 

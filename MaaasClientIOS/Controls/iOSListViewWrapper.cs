@@ -6,7 +6,6 @@ using System.Text;
 using MonoTouch.Foundation;
 using MonoTouch.UIKit;
 using MaaasCore;
-using Newtonsoft.Json.Linq;
 using System.Drawing;
 using System.Threading.Tasks;
 
@@ -403,7 +402,7 @@ namespace MaaasClientIOS.Controls
 
             if (controlSpec["header"] != null)
             {
-                createControls(new JArray(controlSpec["header"]), (childControlSpec, childControlWrapper) =>
+                createControls(new JArray(){ controlSpec["header"] }, (childControlSpec, childControlWrapper) =>
                 {                    
                     table.TableHeaderView = new TableHeaderView(table, childControlWrapper);
                 });
@@ -411,7 +410,7 @@ namespace MaaasClientIOS.Controls
              
             if (controlSpec["footer"] != null)
             {
-                createControls(new JArray(controlSpec["footer"]), (childControlSpec, childControlWrapper) =>
+                createControls(new JArray(){ controlSpec["footer"] }, (childControlSpec, childControlWrapper) =>
                 {
                     table.TableFooterView = new TableFooterView(table, childControlWrapper);
                 });
@@ -559,10 +558,12 @@ namespace MaaasClientIOS.Controls
 
             if (tableSource.SelectionMode == ListSelectionMode.Multiple)
             {
-                return new JArray(
-                    from item in checkedItems
-                    select ((BindingContextTableSourceItem)item.TableSourceItem).BindingContext.Select(selectionItem).GetValue()
-                    );
+                JArray array = new JArray();
+                foreach (var item in checkedItems)
+                {
+                    array.Add(((BindingContextTableSourceItem)item.TableSourceItem).BindingContext.Select(selectionItem).GetValue().DeepClone());
+                }
+                return array;
             }
             else
             {
@@ -601,7 +602,7 @@ namespace MaaasClientIOS.Controls
                 if (selection is JArray)
                 {
                     JArray array = selection as JArray;
-                    foreach (JToken item in array.Children())
+                    foreach (JToken item in array)
                     {
                         if (JToken.DeepEquals(item, boundValue))
                         {

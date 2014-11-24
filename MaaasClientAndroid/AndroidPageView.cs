@@ -11,7 +11,6 @@ using Android.Views;
 using Android.Widget;
 using MaaasCore;
 using SynchroClientAndroid.Controls;
-using Newtonsoft.Json.Linq;
 using Android.Util;
 using Android.Graphics;
 using Android.Graphics.Drawables;

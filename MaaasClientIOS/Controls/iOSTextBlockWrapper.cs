@@ -6,7 +6,6 @@ using System.Text;
 using MonoTouch.Foundation;
 using MonoTouch.UIKit;
 using MaaasCore;
-using Newtonsoft.Json.Linq;
 using System.Drawing;
 
 namespace MaaasClientIOS.Controls
@@ -124,7 +123,7 @@ namespace MaaasClientIOS.Controls
             processElementDimensions(controlSpec, 0, 0);
             applyFrameworkElementDefaults(textBlock);
 
-            processElementProperty((string)controlSpec["foreground"], value =>
+            processElementProperty(controlSpec["foreground"], value =>
             {
                 ColorARGB colorArgb = ControlWrapper.getColor(ToString(value));
                 UIColor color = UIColor.FromRGBA(colorArgb.r, colorArgb.g, colorArgb.b, colorArgb.a);
@@ -133,12 +132,12 @@ namespace MaaasClientIOS.Controls
 
             processFontAttribute(controlSpec, new TextBlockFontSetter(textBlock));
 
-            processElementProperty((string)controlSpec["value"], value => 
+            processElementProperty(controlSpec["value"], value => 
             {
                 textBlock.Text = ToString(value);
             });
 
-            processElementProperty((string)controlSpec["ellipsize"], value =>
+            processElementProperty(controlSpec["ellipsize"], value =>
             {
                 // Other trimming options:
                 //
@@ -156,7 +155,7 @@ namespace MaaasClientIOS.Controls
                 }
             });
 
-            processElementProperty((string)controlSpec["textAlignment"], value =>
+            processElementProperty(controlSpec["textAlignment"], value =>
             {
                 String alignString = ToString(value);
                 if (alignString == "Left")

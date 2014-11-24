@@ -1,5 +1,4 @@
 ﻿using MaaasCore;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -209,7 +208,7 @@ namespace MaaasClientWin.Controls
         // example, "IsEnabled" exists as a property on most instances of FrameworkElement objects, though it is not defined in a single
         // common base class.
         //
-        protected void processElementPropertyIfPresent(string attributeValue, string propertyName, ConvertValue convertValue = null)
+        protected void processElementPropertyIfPresent(JToken attributeValue, string propertyName, ConvertValue convertValue = null)
         {
             if (attributeValue != null)
             {
@@ -229,7 +228,7 @@ namespace MaaasClientWin.Controls
         {
             if (thicknessAttributeValue is JValue)
             {
-                processElementProperty((string)thicknessAttributeValue, value =>
+                processElementProperty(thicknessAttributeValue, value =>
                 {
                     Thickness thickness = new Thickness(ToDouble(value));
                     setThickness(thickness);
@@ -239,25 +238,25 @@ namespace MaaasClientWin.Controls
             {
                 JObject marginObject = thicknessAttributeValue as JObject;
 
-                processElementProperty((string)marginObject.Property("left"), value =>
+                processElementProperty(marginObject.GetValue("left"), value =>
                 {
                     Thickness thickness = (Thickness)getThickness();
                     thickness.Left = ToDouble(value);
                     setThickness(thickness);
                 });
-                processElementProperty((string)marginObject.Property("top"), value =>
+                processElementProperty(marginObject.GetValue("top"), value =>
                 {
                     Thickness thickness = (Thickness)getThickness();
                     thickness.Top = ToDouble(value);
                     setThickness(thickness);
                 });
-                processElementProperty((string)marginObject.Property("right"), value =>
+                processElementProperty(marginObject.GetValue("right"), value =>
                 {
                     Thickness thickness = (Thickness)getThickness();
                     thickness.Right = ToDouble(value);
                     setThickness(thickness);
                 });
-                processElementProperty((string)marginObject.Property("bottom"), value =>
+                processElementProperty(marginObject.GetValue("bottom"), value =>
                 {
                     Thickness thickness = (Thickness)getThickness();
                     thickness.Bottom = ToDouble(value);
@@ -309,24 +308,24 @@ namespace MaaasClientWin.Controls
         protected void processCommonFrameworkElementProperies(JObject controlSpec)
         {
             logger.Debug("Processing framework element properties");
-            processElementProperty((string)controlSpec["name"], value => this.Control.Name = ToString(value));
-            processElementProperty((string)controlSpec["horizontalAlignment"], value => this.Control.HorizontalAlignment = ToHorizontalAlignment(value));
-            processElementProperty((string)controlSpec["verticalAlignment"], value => this.Control.VerticalAlignment = ToVerticalAlignment(value));
-            processElementProperty((string)controlSpec["height"], value => setHeight(this.Control, value));
-            processElementProperty((string)controlSpec["width"], value => setWidth(this.Control, value));
-            processElementProperty((string)controlSpec["minheight"], value => this.Control.MinHeight = ToDeviceUnits(value));
-            processElementProperty((string)controlSpec["minwidth"], value => this.Control.MinWidth = ToDeviceUnits(value));
-            processElementProperty((string)controlSpec["maxheight"], value => this.Control.MaxHeight = ToDeviceUnits(value));
-            processElementProperty((string)controlSpec["maxwidth"], value => this.Control.MaxWidth = ToDeviceUnits(value));
-            processElementProperty((string)controlSpec["opacity"], value => this.Control.Opacity = ToDouble(value));
-            processElementProperty((string)controlSpec["visibility"], value => this.Control.Visibility = ToBoolean(value) ? Visibility.Visible : Visibility.Collapsed);
+            processElementProperty(controlSpec["name"], value => this.Control.Name = ToString(value));
+            processElementProperty(controlSpec["horizontalAlignment"], value => this.Control.HorizontalAlignment = ToHorizontalAlignment(value));
+            processElementProperty(controlSpec["verticalAlignment"], value => this.Control.VerticalAlignment = ToVerticalAlignment(value));
+            processElementProperty(controlSpec["height"], value => setHeight(this.Control, value));
+            processElementProperty(controlSpec["width"], value => setWidth(this.Control, value));
+            processElementProperty(controlSpec["minheight"], value => this.Control.MinHeight = ToDeviceUnits(value));
+            processElementProperty(controlSpec["minwidth"], value => this.Control.MinWidth = ToDeviceUnits(value));
+            processElementProperty(controlSpec["maxheight"], value => this.Control.MaxHeight = ToDeviceUnits(value));
+            processElementProperty(controlSpec["maxwidth"], value => this.Control.MaxWidth = ToDeviceUnits(value));
+            processElementProperty(controlSpec["opacity"], value => this.Control.Opacity = ToDouble(value));
+            processElementProperty(controlSpec["visibility"], value => this.Control.Visibility = ToBoolean(value) ? Visibility.Visible : Visibility.Collapsed);
             processThicknessProperty(controlSpec["margin"], () => this.Control.Margin, value => this.Control.Margin = (Thickness)value);
             processFontAttribute(controlSpec, new WinFontSetter(this.Control));
 
             // These elements are very common among derived classes, so we'll do some runtime reflection...
-            processElementPropertyIfPresent((string)controlSpec["enabled"], "IsEnabled", value => ToBoolean(value));
-            processElementPropertyIfPresent((string)controlSpec["background"], "Background", value => ToBrush(value));
-            processElementPropertyIfPresent((string)controlSpec["foreground"], "Foreground", value => ToBrush(value));
+            processElementPropertyIfPresent(controlSpec["enabled"], "IsEnabled", value => ToBoolean(value));
+            processElementPropertyIfPresent(controlSpec["background"], "Background", value => ToBrush(value));
+            processElementPropertyIfPresent(controlSpec["foreground"], "Foreground", value => ToBrush(value));
         }
 
         public WinControlWrapper getChildControlWrapper(FrameworkElement control)

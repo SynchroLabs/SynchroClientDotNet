@@ -10,7 +10,6 @@ using Android.Runtime;
 using Android.Views;
 using Android.Widget;
 using MaaasCore;
-using Newtonsoft.Json.Linq;
 using Android.Graphics;
 using System.Threading.Tasks;
 
@@ -198,18 +197,12 @@ namespace SynchroClientAndroid.Controls
         public JToken getListboxContents(ListView listView)
         {
             logger.Debug("Getting listbox contents");
-
-            List<string> items = new List<string>();
+            JArray array = new JArray();
             for (int n = 0; n < listView.Count; n++)
             {
-                items.Add(listView.GetItemAtPosition(n).ToString());
+                array.Add(new MaaasCore.JValue(listView.GetItemAtPosition(n).ToString()));
             }
-
-            return new JArray(
-                from item in items
-                select new Newtonsoft.Json.Linq.JValue(item)
-                );
-
+            return array;
         }
 
         public void setListboxContents(ListView listView, BindingContext bindingContext, string itemContent)
@@ -255,10 +248,12 @@ namespace SynchroClientAndroid.Controls
 
             if (listView.ChoiceMode == ChoiceMode.Multiple)
             {
-                return new JArray(
-                    from BindingContextListItem listItem in selectedListItems
-                    select listItem.GetSelection(selectionItem)
-                );
+                JArray array = new JArray();
+                foreach (BindingContextListItem listItem in selectedListItems)
+                {
+                    array.Add(listItem.GetSelection(selectionItem));
+                }
+                return array;
             }
             else if (listView.ChoiceMode == ChoiceMode.Single)
             {
@@ -266,7 +261,7 @@ namespace SynchroClientAndroid.Controls
                 {
                     return selectedListItems[0].GetSelection(selectionItem);
                 }
-                return new Newtonsoft.Json.Linq.JValue(false); // This is a "null" selection
+                return new MaaasCore.JValue(false); // This is a "null" selection
             }
 
             return null;
@@ -286,7 +281,7 @@ namespace SynchroClientAndroid.Controls
                 if (selection is JArray)
                 {
                     JArray array = selection as JArray;
-                    foreach (JToken item in array.Children())
+                    foreach (JToken item in array)
                     {
                         if (JToken.DeepEquals(item, listItem.GetSelection(selectionItem)))
                         {

@@ -1,5 +1,4 @@
 ﻿using MaaasCore;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,7 +24,7 @@ namespace MaaasClientWin.Controls
 
             applyFrameworkElementDefaults(button);
  
-            processElementProperty((string)controlSpec["caption"], value => button.Content = ToString(value));
+            processElementProperty(controlSpec["caption"], value => button.Content = ToString(value));
 
             JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, CommandName.OnClick, Commands);
             ProcessCommands(bindingSpec, Commands);

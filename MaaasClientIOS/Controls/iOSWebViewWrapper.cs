@@ -6,7 +6,6 @@ using System.Text;
 using MonoTouch.Foundation;
 using MonoTouch.UIKit;
 using MaaasCore;
-using Newtonsoft.Json.Linq;
 using System.Drawing;
 
 namespace MaaasClientIOS.Controls
@@ -29,8 +28,8 @@ namespace MaaasClientIOS.Controls
             applyFrameworkElementDefaults(webView);
 
             // !!! TODO - iOS Web View
-            processElementProperty((string)controlSpec["contents"], value => webView.LoadHtmlString(ToString(value), null));
-            processElementProperty((string)controlSpec["url"], value => webView.LoadRequest(new NSUrlRequest(new NSUrl(ToString(value)))));
+            processElementProperty(controlSpec["contents"], value => webView.LoadHtmlString(ToString(value), null));
+            processElementProperty(controlSpec["url"], value => webView.LoadRequest(new NSUrlRequest(new NSUrl(ToString(value)))));
         }
     }
 }

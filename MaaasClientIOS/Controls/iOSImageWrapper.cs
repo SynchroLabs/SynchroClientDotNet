@@ -7,7 +7,6 @@ using AFNetworking;
 using MonoTouch.Foundation;
 using MonoTouch.UIKit;
 using MaaasCore;
-using Newtonsoft.Json.Linq;
 //using System.Drawing;
 //using MonoTouch.CoreGraphics;
 
@@ -38,7 +37,7 @@ namespace MaaasClientIOS.Controls
 
             processElementDimensions(controlSpec, 128, 128);
             applyFrameworkElementDefaults(image);
-            processElementProperty((string)controlSpec["resource"], value =>
+            processElementProperty(controlSpec["resource"], value =>
             {
                 if (value == null)
                 {

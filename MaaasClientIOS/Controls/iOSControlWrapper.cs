@@ -6,7 +6,6 @@ using System.Text;
 using MonoTouch.Foundation;
 using MonoTouch.UIKit;
 using MaaasCore;
-using Newtonsoft.Json.Linq;
 using System.Drawing;
 using System.Text.RegularExpressions;
 
@@ -698,9 +697,9 @@ namespace MaaasClientIOS.Controls
 
         public void processThicknessProperty(JToken thicknessAttributeValue, ThicknessSetter thicknessSetter)
         {
-            if (thicknessAttributeValue is Newtonsoft.Json.Linq.JValue)
+            if (thicknessAttributeValue is JValue)
             {
-                processElementProperty((string)thicknessAttributeValue, value =>
+                processElementProperty(thicknessAttributeValue, value =>
                 {
                     thicknessSetter.SetThickness((int)ToDeviceUnits(value));
                 });
@@ -709,19 +708,19 @@ namespace MaaasClientIOS.Controls
             {
                 JObject marginObject = thicknessAttributeValue as JObject;
 
-                processElementProperty((string)marginObject.Property("left"), value =>
+                processElementProperty(marginObject.GetValue("left"), value =>
                 {
                     thicknessSetter.SetThicknessLeft((int)ToDeviceUnits(value));
                 });
-                processElementProperty((string)marginObject.Property("top"), value =>
+                processElementProperty(marginObject.GetValue("top"), value =>
                 {
                     thicknessSetter.SetThicknessTop((int)ToDeviceUnits(value));
                 });
-                processElementProperty((string)marginObject.Property("right"), value =>
+                processElementProperty(marginObject.GetValue("right"), value =>
                 {
                     thicknessSetter.SetThicknessRight((int)ToDeviceUnits(value));
                 });
-                processElementProperty((string)marginObject.Property("bottom"), value =>
+                processElementProperty(marginObject.GetValue("bottom"), value =>
                 {
                     thicknessSetter.SetThicknessBottom((int)ToDeviceUnits(value));
                 });
@@ -824,7 +823,7 @@ namespace MaaasClientIOS.Controls
                 {
                     this.FrameProperties.HeightSpec = SizeSpec.Explicit;
                 }
-                processElementProperty((string)controlSpec["height"], value =>
+                processElementProperty(controlSpec["height"], value =>
                 {
                     RectangleF frame = this.Control.Frame;
                     frame.Height = (float)ToDeviceUnits(value);
@@ -849,7 +848,7 @@ namespace MaaasClientIOS.Controls
                 {
                     this.FrameProperties.WidthSpec = SizeSpec.Explicit;
                 }
-                processElementProperty((string)controlSpec["width"], value =>
+                processElementProperty(controlSpec["width"], value =>
                 {
                     RectangleF frame = this.Control.Frame;
                     frame.Width = (float)ToDeviceUnits(value);
@@ -871,19 +870,19 @@ namespace MaaasClientIOS.Controls
 
             // !!! This could be a little more thourough ;)
 
-            //processElementProperty((string)controlSpec["name"], value => this.Control.Name = ToString(value));
-            //processElementProperty((string)controlSpec["minheight"], value => this.Control.MinHeight = ToDeviceUnits(value));
-            //processElementProperty((string)controlSpec["minwidth"], value => this.Control.MinWidth = ToDeviceUnits(value));
-            //processElementProperty((string)controlSpec["maxheight"], value => this.Control.MaxHeight = ToDeviceUnits(value));
-            //processElementProperty((string)controlSpec["maxwidth"], value => this.Control.MaxWidth = ToDeviceUnits(value));
+            //processElementProperty(controlSpec["name"], value => this.Control.Name = ToString(value));
+            //processElementProperty(controlSpec["minheight"], value => this.Control.MinHeight = ToDeviceUnits(value));
+            //processElementProperty(controlSpec["minwidth"], value => this.Control.MinWidth = ToDeviceUnits(value));
+            //processElementProperty(controlSpec["maxheight"], value => this.Control.MaxHeight = ToDeviceUnits(value));
+            //processElementProperty(controlSpec["maxwidth"], value => this.Control.MaxWidth = ToDeviceUnits(value));
 
-            processElementProperty((string)controlSpec["horizontalAlignment"], value => this.HorizontalAlignment = ToHorizontalAlignment(value));
-            processElementProperty((string)controlSpec["verticalAlignment"], value => this.VerticalAlignment = ToVerticalAlignment(value));
+            processElementProperty(controlSpec["horizontalAlignment"], value => this.HorizontalAlignment = ToHorizontalAlignment(value));
+            processElementProperty(controlSpec["verticalAlignment"], value => this.VerticalAlignment = ToVerticalAlignment(value));
 
-            processElementProperty((string)controlSpec["opacity"], value => this.Control.Layer.Opacity = (float)ToDouble(value));
+            processElementProperty(controlSpec["opacity"], value => this.Control.Layer.Opacity = (float)ToDouble(value));
 
-            processElementProperty((string)controlSpec["background"], value => this.Control.BackgroundColor = ToColor(value));
-            processElementProperty((string)controlSpec["visibility"], value => 
+            processElementProperty(controlSpec["background"], value => this.Control.BackgroundColor = ToColor(value));
+            processElementProperty(controlSpec["visibility"], value => 
             {
                 this.Control.Hidden = !ToBoolean(value);
                 if (this.Control.Superview != null)
@@ -894,20 +893,20 @@ namespace MaaasClientIOS.Controls
 
             if (this.Control is UIControl)
             {
-                processElementProperty((string)controlSpec["enabled"], value => ((UIControl)this.Control).Enabled = ToBoolean(value));
+                processElementProperty(controlSpec["enabled"], value => ((UIControl)this.Control).Enabled = ToBoolean(value));
             }
             else
             {
-                processElementProperty((string)controlSpec["enabled"], value => this.Control.UserInteractionEnabled = ToBoolean(value));
+                processElementProperty(controlSpec["enabled"], value => this.Control.UserInteractionEnabled = ToBoolean(value));
             }
 
             processThicknessProperty(controlSpec["margin"], new MarginThicknessSetter(this));
 
             // These elements are very common among derived classes, so we'll do some runtime reflection...
             //
-            // processElementProperty((string)controlSpec["fontsize"], value => textView.TextSize = (float)ToDouble(value) * 160/72);
-            // processElementPropertyIfPresent((string)controlSpec["fontweight"], "FontWeight", value => ToFontWeight(value));
-            // processElementPropertyIfPresent((string)controlSpec["foreground"], "Foreground", value => ToBrush(value));
+            // processElementProperty(controlSpec["fontsize"], value => textView.TextSize = (float)ToDouble(value) * 160/72);
+            // processElementPropertyIfPresent(controlSpec["fontweight"], "FontWeight", value => ToFontWeight(value));
+            // processElementPropertyIfPresent(controlSpec["foreground"], "Foreground", value => ToBrush(value));
         }
 
         public iOSControlWrapper getChildControlWrapper(UIView control)

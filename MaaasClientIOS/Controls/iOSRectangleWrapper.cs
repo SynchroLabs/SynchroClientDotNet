@@ -6,7 +6,6 @@ using System.Text;
 using MonoTouch.Foundation;
 using MonoTouch.UIKit;
 using MaaasCore;
-using Newtonsoft.Json.Linq;
 using System.Drawing;
 
 namespace MaaasClientIOS.Controls
@@ -58,10 +57,10 @@ namespace MaaasClientIOS.Controls
             processElementDimensions(controlSpec, 128, 128);
             applyFrameworkElementDefaults(rect);
 
-            processElementProperty((string)controlSpec["border"], value => rect.Layer.BorderColor = ToColor(value).CGColor);
-            processElementProperty((string)controlSpec["borderThickness"], value => rect.Layer.BorderWidth = (float)ToDeviceUnits(value));
-            processElementProperty((string)controlSpec["cornerRadius"], value => rect.Layer.CornerRadius = (float)ToDeviceUnits(value));
-            processElementProperty((string)controlSpec["fill"], value => rect.Color = ToColor(value));
+            processElementProperty(controlSpec["border"], value => rect.Layer.BorderColor = ToColor(value).CGColor);
+            processElementProperty(controlSpec["borderThickness"], value => rect.Layer.BorderWidth = (float)ToDeviceUnits(value));
+            processElementProperty(controlSpec["cornerRadius"], value => rect.Layer.CornerRadius = (float)ToDeviceUnits(value));
+            processElementProperty(controlSpec["fill"], value => rect.Color = ToColor(value));
         }
     }
 }

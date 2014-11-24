@@ -11,8 +11,6 @@ using Android.Support.V4.App;
 using Android.Views;
 using Android.Widget;
 using MaaasCore;
-using MaaasShared;
-using Newtonsoft.Json.Linq;
 
 namespace SynchroClientAndroid
 {

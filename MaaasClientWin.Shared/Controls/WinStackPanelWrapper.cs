@@ -1,5 +1,4 @@
 ﻿using MaaasCore;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -169,7 +168,7 @@ namespace MaaasClientWin.Controls
                     index++;
                 });
 
-                processElementProperty((string)controlSpec["orientation"], value => UpdateOrientation(ToOrientation(value, _orientation)));
+                processElementProperty(controlSpec["orientation"], value => UpdateOrientation(ToOrientation(value, _orientation)));
             }
         }
 

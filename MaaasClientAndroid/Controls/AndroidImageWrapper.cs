@@ -10,7 +10,6 @@ using Android.Runtime;
 using Android.Views;
 using Android.Widget;
 using MaaasCore;
-using Newtonsoft.Json.Linq;
 using Android.Graphics;
 using System.Threading.Tasks;
 using System.Net.Http;
@@ -42,7 +41,7 @@ namespace SynchroClientAndroid.Controls
             // image.SetScaleType(ImageView.ScaleType.CenterInside); // Fit preserving aspect
 
             var ctx = SynchronizationContext.Current;
-            processElementProperty((string)controlSpec["resource"], value =>
+            processElementProperty(controlSpec["resource"], value =>
             {
                 if (value == null)
                 {

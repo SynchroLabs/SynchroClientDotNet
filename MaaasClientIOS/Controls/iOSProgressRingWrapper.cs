@@ -6,7 +6,6 @@ using System.Text;
 using MonoTouch.Foundation;
 using MonoTouch.UIKit;
 using MaaasCore;
-using Newtonsoft.Json.Linq;
 
 namespace MaaasClientIOS.Controls
 {
@@ -28,7 +27,7 @@ namespace MaaasClientIOS.Controls
 
             applyFrameworkElementDefaults(progress);
 
-            processElementProperty((string)controlSpec["value"], value => 
+            processElementProperty(controlSpec["value"], value => 
             {
                 bool animate = ToBoolean(value);
                 if (animate && !progress.IsAnimating)

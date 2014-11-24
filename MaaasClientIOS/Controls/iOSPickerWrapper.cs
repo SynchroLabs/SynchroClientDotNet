@@ -6,7 +6,6 @@ using System.Text;
 using MonoTouch.Foundation;
 using MonoTouch.UIKit;
 using MaaasCore;
-using Newtonsoft.Json.Linq;
 using System.Drawing;
 using System.Threading.Tasks;
 
@@ -206,7 +205,7 @@ namespace MaaasClientIOS.Controls
             {
                 return model.GetSelection(picker.SelectedRowInComponent(0), selectionItem);
             }
-            return new Newtonsoft.Json.Linq.JValue(false); // This is a "null" selection
+            return new JValue(false); // This is a "null" selection
         }
 
         public void setPickerSelection(UIPickerView picker, string selectionItem, JToken selection)

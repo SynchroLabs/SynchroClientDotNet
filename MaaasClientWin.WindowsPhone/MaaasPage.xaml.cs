@@ -4,7 +4,6 @@ using System.Linq;
 using System.Net;
 using System.Windows;
 using MaaasCore;
-using MaaasShared;
 using Windows.Graphics.Display;
 using Windows.UI.Core;
 using Windows.UI.Xaml.Controls;

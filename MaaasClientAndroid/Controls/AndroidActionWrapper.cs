@@ -10,7 +10,6 @@ using Android.Runtime;
 using Android.Views;
 using Android.Widget;
 using MaaasCore;
-using Newtonsoft.Json.Linq;
 using System.Threading.Tasks;
 
 namespace SynchroClientAndroid.Controls
@@ -30,9 +29,9 @@ namespace SynchroClientAndroid.Controls
 
             AndroidActionBarItem actionBarItem = _pageView.CreateAndAddActionBarItem();
 
-            processElementProperty((string)controlSpec["text"], value => actionBarItem.Title = ToString(value));
-            processElementProperty((string)controlSpec["icon"], value => actionBarItem.Icon = ToString(value));
-            processElementProperty((string)controlSpec["enabled"], value => actionBarItem.IsEnabled = ToBoolean(value));
+            processElementProperty(controlSpec["text"], value => actionBarItem.Title = ToString(value));
+            processElementProperty(controlSpec["icon"], value => actionBarItem.Icon = ToString(value));
+            processElementProperty(controlSpec["enabled"], value => actionBarItem.IsEnabled = ToBoolean(value));
 
             actionBarItem.ShowAsAction = ShowAsAction.Never;
             if (controlSpec["showAsAction"] != null)

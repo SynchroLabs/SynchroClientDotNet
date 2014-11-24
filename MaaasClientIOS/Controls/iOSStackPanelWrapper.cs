@@ -6,7 +6,6 @@ using System.Text;
 using MonoTouch.Foundation;
 using MonoTouch.UIKit;
 using MaaasCore;
-using Newtonsoft.Json.Linq;
 using System.Drawing;
 
 namespace MaaasClientIOS.Controls
@@ -368,7 +367,7 @@ namespace MaaasClientIOS.Controls
             processElementDimensions(controlSpec, 0, 0);
             applyFrameworkElementDefaults(stackPanel, false);
 
-            processElementProperty((string)controlSpec["orientation"], value => stackPanel.Orientation = ToOrientation(value, Orientation.Vertical), Orientation.Vertical);
+            processElementProperty(controlSpec["orientation"], value => stackPanel.Orientation = ToOrientation(value, Orientation.Vertical), Orientation.Vertical);
 
             processThicknessProperty(controlSpec["padding"], new PaddedViewThicknessSetter(stackPanel));
 

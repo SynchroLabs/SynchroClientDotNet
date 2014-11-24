@@ -7,7 +7,6 @@ using MonoTouch.Foundation;
 using MonoTouch.UIKit;
 using MaaasCore;
 using MaaasClientIOS.Controls;
-using Newtonsoft.Json.Linq;
 using System.Drawing;
 using System.Threading.Tasks;
 

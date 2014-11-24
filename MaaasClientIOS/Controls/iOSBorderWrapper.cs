@@ -6,7 +6,6 @@ using System.Text;
 using MonoTouch.Foundation;
 using MonoTouch.UIKit;
 using MaaasCore;
-using Newtonsoft.Json.Linq;
 using System.Drawing;
 
 namespace MaaasClientIOS.Controls
@@ -267,9 +266,9 @@ namespace MaaasClientIOS.Controls
 
             // If border thickness or padding change, need to resize view to child...
             //
-            processElementProperty((string)controlSpec["border"], value => border.Layer.BorderColor = ToColor(value).CGColor);
-            processElementProperty((string)controlSpec["borderThickness"], value => border.BorderWidth = (float)ToDeviceUnits(value));
-            processElementProperty((string)controlSpec["cornerRadius"], value => border.Layer.CornerRadius = (float)ToDeviceUnits(value));
+            processElementProperty(controlSpec["border"], value => border.Layer.BorderColor = ToColor(value).CGColor);
+            processElementProperty(controlSpec["borderThickness"], value => border.BorderWidth = (float)ToDeviceUnits(value));
+            processElementProperty(controlSpec["cornerRadius"], value => border.Layer.CornerRadius = (float)ToDeviceUnits(value));
             processThicknessProperty(controlSpec["padding"], new PaddedViewThicknessSetter(border));
 
             // "background" color handled by base class

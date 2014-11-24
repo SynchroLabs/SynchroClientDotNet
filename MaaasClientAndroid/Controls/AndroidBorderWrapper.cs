@@ -10,7 +10,6 @@ using Android.Runtime;
 using Android.Views;
 using Android.Widget;
 using MaaasCore;
-using Newtonsoft.Json.Linq;
 
 namespace SynchroClientAndroid.Controls
 {
@@ -117,15 +116,15 @@ namespace SynchroClientAndroid.Controls
             // If border thickness or padding change, need to record value and update layout padding...
             //
             BorderPaddingThicknessSetter borderThicknessSetter = new BorderPaddingThicknessSetter(this.Control);
-            processElementProperty((string)controlSpec["border"], value => _rect.SetStrokeColor(ToColor(value)));
-            processElementProperty((string)controlSpec["borderThickness"], value =>
+            processElementProperty(controlSpec["border"], value => _rect.SetStrokeColor(ToColor(value)));
+            processElementProperty(controlSpec["borderThickness"], value =>
             {
                 _thickness = (int)ToDeviceUnits(value);
                 _rect.SetStrokeWidth(_thickness);
                 borderThicknessSetter.Inset = _thickness;
             });
-            processElementProperty((string)controlSpec["cornerRadius"], value => _rect.SetCornerRadius((float)ToDeviceUnits(value)));
-            processElementProperty((string)controlSpec["background"], value => _rect.SetFillColor(ToColor(value)));
+            processElementProperty(controlSpec["cornerRadius"], value => _rect.SetCornerRadius((float)ToDeviceUnits(value)));
+            processElementProperty(controlSpec["background"], value => _rect.SetFillColor(ToColor(value)));
             processThicknessProperty(controlSpec["padding"], borderThicknessSetter);
 
             // In theory we're only jamming one child in here (so it doesn't really matter whether the linear layout is
@@ -145,7 +144,7 @@ namespace SynchroClientAndroid.Controls
                 createControls((JArray)controlSpec["contents"], (childControlSpec, childControlWrapper) =>
                 {
                     childControlWrapper.AddToLinearLayout(_layout, childControlSpec);
-                    processElementProperty((string)childControlSpec["verticalAlignment"], value => _layout.SetGravity(ToVerticalAlignment(value)));
+                    processElementProperty(childControlSpec["verticalAlignment"], value => _layout.SetGravity(ToVerticalAlignment(value)));
                 });
             }
         }

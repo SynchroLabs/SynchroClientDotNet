@@ -1,5 +1,4 @@
 ﻿using MaaasCore;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,12 +29,12 @@ namespace MaaasClientWin.Controls
 
             if (!processElementBoundValue("value", (string)bindingSpec["value"], () => { return toggleSwitch.IsOn; }, value => toggleSwitch.IsOn = ToBoolean(value)))
             {
-                processElementProperty((string)controlSpec["value"], value => toggleSwitch.IsOn = ToBoolean(value));
+                processElementProperty(controlSpec["value"], value => toggleSwitch.IsOn = ToBoolean(value));
             }
 
-            processElementProperty((string)controlSpec["header"], value => toggleSwitch.Header = ToString(value));
-            processElementProperty((string)controlSpec["onLabel"], value => toggleSwitch.OnContent = ToString(value));
-            processElementProperty((string)controlSpec["offLabel"], value => toggleSwitch.OffContent = ToString(value));
+            processElementProperty(controlSpec["header"], value => toggleSwitch.Header = ToString(value));
+            processElementProperty(controlSpec["onLabel"], value => toggleSwitch.OnContent = ToString(value));
+            processElementProperty(controlSpec["offLabel"], value => toggleSwitch.OffContent = ToString(value));
 
             // Since the Toggled handler both updates the view model (locally) and may potentially have a command associated, 
             // we have to add handler in all cases (even when there is no command).

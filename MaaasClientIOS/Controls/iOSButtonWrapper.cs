@@ -6,7 +6,6 @@ using System.Text;
 using MonoTouch.Foundation;
 using MonoTouch.UIKit;
 using MaaasCore;
-using Newtonsoft.Json.Linq;
 using System.Drawing;
 using System.Threading.Tasks;
 
@@ -29,7 +28,7 @@ namespace MaaasClientIOS.Controls
             processElementDimensions(controlSpec);
             applyFrameworkElementDefaults(button);
 
-            processElementProperty((string)controlSpec["caption"], value => 
+            processElementProperty(controlSpec["caption"], value => 
             {
                 button.SetTitle(ToString(value), UIControlState.Normal);
                 this.SizeToFit();

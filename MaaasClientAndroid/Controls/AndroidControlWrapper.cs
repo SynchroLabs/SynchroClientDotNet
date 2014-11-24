@@ -10,7 +10,6 @@ using Android.Runtime;
 using Android.Views;
 using Android.Widget;
 using MaaasCore;
-using Newtonsoft.Json.Linq;
 using Android.Util;
 using Android.Graphics;
 
@@ -549,9 +548,9 @@ namespace SynchroClientAndroid.Controls
 
         public void processThicknessProperty(JToken thicknessAttributeValue, ThicknessSetter thicknessSetter)
         {
-            if (thicknessAttributeValue is Newtonsoft.Json.Linq.JValue)
+            if (thicknessAttributeValue is MaaasCore.JValue)
             {
-                processElementProperty((string)thicknessAttributeValue, value =>
+                processElementProperty(thicknessAttributeValue, value =>
                 {
                     thicknessSetter.SetThickness((int)ToDeviceUnits(value));
                 }, "0");
@@ -560,19 +559,19 @@ namespace SynchroClientAndroid.Controls
             {
                 JObject marginObject = thicknessAttributeValue as JObject;
 
-                processElementProperty((string)marginObject.Property("left"), value =>
+                processElementProperty(marginObject.GetValue("left"), value =>
                 {
                     thicknessSetter.SetThicknessLeft((int)ToDeviceUnits(value));
                 }, "0");
-                processElementProperty((string)marginObject.Property("top"), value =>
+                processElementProperty(marginObject.GetValue("top"), value =>
                 {
                     thicknessSetter.SetThicknessTop((int)ToDeviceUnits(value));
                 }, "0");
-                processElementProperty((string)marginObject.Property("right"), value =>
+                processElementProperty(marginObject.GetValue("right"), value =>
                 {
                     thicknessSetter.SetThicknessRight((int)ToDeviceUnits(value));
                 }, "0");
-                processElementProperty((string)marginObject.Property("bottom"), value =>
+                processElementProperty(marginObject.GetValue("bottom"), value =>
                 {
                     thicknessSetter.SetThicknessBottom((int)ToDeviceUnits(value));
                 }, "0");
@@ -615,29 +614,29 @@ namespace SynchroClientAndroid.Controls
 
             //processElementProperty((string)controlSpec["name"], value => this.Control.Name = ToString(value));
 
-            processElementProperty((string)controlSpec["horizontalAlignment"], value => this.HorizontalAlignment = ToHorizontalAlignment(value));
-            processElementProperty((string)controlSpec["verticalAlignment"], value => this.VerticalAlignment = ToVerticalAlignment(value));
+            processElementProperty(controlSpec["horizontalAlignment"], value => this.HorizontalAlignment = ToHorizontalAlignment(value));
+            processElementProperty(controlSpec["verticalAlignment"], value => this.VerticalAlignment = ToVerticalAlignment(value));
 
-            processElementProperty((string)controlSpec["height"], value => setHeight(value));
-            processElementProperty((string)controlSpec["width"], value => setWidth(value));
+            processElementProperty(controlSpec["height"], value => setHeight(value));
+            processElementProperty(controlSpec["width"], value => setWidth(value));
             updateSize(); // To init the layout params
 
-            processElementProperty((string)controlSpec["minheight"], value => this.Control.SetMinimumHeight((int)ToDeviceUnits(value)));
-            processElementProperty((string)controlSpec["minwidth"], value => this.Control.SetMinimumWidth((int)ToDeviceUnits(value)));
+            processElementProperty(controlSpec["minheight"], value => this.Control.SetMinimumHeight((int)ToDeviceUnits(value)));
+            processElementProperty(controlSpec["minwidth"], value => this.Control.SetMinimumWidth((int)ToDeviceUnits(value)));
 
-            //processElementProperty((string)controlSpec["maxheight"], value => this.Control.MaxHeight = ToDeviceUnits(value));
-            //processElementProperty((string)controlSpec["maxwidth"], value => this.Control.MaxWidth = ToDeviceUnits(value));
+            //processElementProperty(controlSpec["maxheight"], value => this.Control.MaxHeight = ToDeviceUnits(value));
+            //processElementProperty(controlSpec["maxwidth"], value => this.Control.MaxWidth = ToDeviceUnits(value));
 
-            processElementProperty((string)controlSpec["opacity"], value => this.Control.Alpha = (float)ToDouble(value));
-            processElementProperty((string)controlSpec["visibility"], value => this.Control.Visibility = ToBoolean(value) ? ViewStates.Visible : ViewStates.Gone);
-            processElementProperty((string)controlSpec["enabled"], value => this.Control.Enabled = ToBoolean(value));
+            processElementProperty(controlSpec["opacity"], value => this.Control.Alpha = (float)ToDouble(value));
+            processElementProperty(controlSpec["visibility"], value => this.Control.Visibility = ToBoolean(value) ? ViewStates.Visible : ViewStates.Gone);
+            processElementProperty(controlSpec["enabled"], value => this.Control.Enabled = ToBoolean(value));
 
             processThicknessProperty(controlSpec["margin"], new MarginThicknessSetter(this));
             // Since some controls have to treat padding differently, the padding attribute is handled by the individual control classes
 
             if (!(this is AndroidBorderWrapper) && !(this is AndroidRectangleWrapper))
             {
-                processElementProperty((string)controlSpec["background"], value => this.Control.SetBackgroundColor(ToColor(value)));
+                processElementProperty(controlSpec["background"], value => this.Control.SetBackgroundColor(ToColor(value)));
             }
 
             processFontAttribute(controlSpec, new AndroidFontSetter(this.Control));
@@ -645,7 +644,7 @@ namespace SynchroClientAndroid.Controls
             TextView textView = this.Control as TextView;
             if (textView != null)
             {
-                processElementProperty((string)controlSpec["foreground"], value => textView.SetTextColor(ToColor(value)));
+                processElementProperty(controlSpec["foreground"], value => textView.SetTextColor(ToColor(value)));
             }
 
             // These elements are very common among derived classes, so we'll do some runtime reflection...

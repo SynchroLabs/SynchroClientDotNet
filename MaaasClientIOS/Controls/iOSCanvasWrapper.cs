@@ -6,7 +6,6 @@ using System.Text;
 using MonoTouch.Foundation;
 using MonoTouch.UIKit;
 using MaaasCore;
-using Newtonsoft.Json.Linq;
 using System.Drawing;
 
 namespace MaaasClientIOS.Controls
@@ -30,14 +29,14 @@ namespace MaaasClientIOS.Controls
             {
                 createControls((JArray)controlSpec["contents"], (childControlSpec, childControlWrapper) =>
                 {
-                    childControlWrapper.processElementProperty((string)childControlSpec["left"], value =>
+                    childControlWrapper.processElementProperty(childControlSpec["left"], value =>
                     {
                         RectangleF childFrame = childControlWrapper.Control.Frame;
                         childFrame.X = (float)ToDeviceUnits(value);
                         childControlWrapper.Control.Frame = childFrame;
                         // !!! Resize canvas to contain control
                     });
-                    childControlWrapper.processElementProperty((string)childControlSpec["top"], value =>
+                    childControlWrapper.processElementProperty(childControlSpec["top"], value =>
                     {
                         RectangleF childFrame = childControlWrapper.Control.Frame;
                         childFrame.Y = (float)ToDeviceUnits(value);

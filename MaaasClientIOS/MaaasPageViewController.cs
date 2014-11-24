@@ -3,7 +3,6 @@ using MonoTouch.UIKit;
 using System.Drawing;
 using MaaasCore;
 using System.Net.Http;
-using MaaasShared;
 using ModernHttpClient;
 using System.Threading.Tasks;
 

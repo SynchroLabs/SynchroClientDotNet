@@ -6,7 +6,6 @@ using System.Text;
 using MonoTouch.Foundation;
 using MonoTouch.UIKit;
 using MaaasCore;
-using Newtonsoft.Json.Linq;
 using System.Threading.Tasks;
 
 namespace MaaasClientIOS.Controls
@@ -34,12 +33,12 @@ namespace MaaasClientIOS.Controls
 
             if (!processElementBoundValue("value", (string)bindingSpec["value"], () => { return toggleSwitch.On; }, value => toggleSwitch.On = ToBoolean(value)))
             {
-                processElementProperty((string)controlSpec["value"], value => toggleSwitch.On = ToBoolean(value));
+                processElementProperty(controlSpec["value"], value => toggleSwitch.On = ToBoolean(value));
             }
 
-            // !!! processElementProperty((string)controlSpec["header"], value => toggleSwitch.Text = ToString(value));
-            // !!! processElementProperty((string)controlSpec["onLabel"], value => toggleSwitch.TextOn = ToString(value));
-            // !!! processElementProperty((string)controlSpec["offLabel"], value => toggleSwitch.TextOff = ToString(value));
+            // !!! processElementProperty(controlSpec["header"], value => toggleSwitch.Text = ToString(value));
+            // !!! processElementProperty(controlSpec["onLabel"], value => toggleSwitch.TextOn = ToString(value));
+            // !!! processElementProperty(controlSpec["offLabel"], value => toggleSwitch.TextOff = ToString(value));
 
             toggleSwitch.ValueChanged += toggleSwitch_ValueChanged;
         }

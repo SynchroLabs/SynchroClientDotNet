@@ -45,6 +45,9 @@
     <Compile Include="CommandInstance.cs" />
     <Compile Include="ControlWrapper.cs" />
     <Compile Include="DeviceMetrics.cs" />
+    <Compile Include="Json.cs" />
+    <Compile Include="JsonParser.cs" />
+    <Compile Include="JsonWriter.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="PageView.cs" />
     <Compile Include="StateManager.cs" />

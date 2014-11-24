@@ -6,8 +6,6 @@ using System.Net;
 using System.Windows;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using MaaasShared;
-using Newtonsoft.Json.Linq;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using MaaasClientWin;

@@ -1,5 +1,4 @@
 ﻿using MaaasCore;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,14 +21,14 @@ namespace MaaasClientWin.Controls
             this._control = rect;
 
             applyFrameworkElementDefaults(rect);
-            processElementProperty((string)controlSpec["border"], value => rect.Stroke = ToBrush(value));
-            processElementProperty((string)controlSpec["borderThickness"], value => rect.StrokeThickness = (float)ToDeviceUnits(value));
-            processElementProperty((string)controlSpec["cornerRadius"], value => 
+            processElementProperty(controlSpec["border"], value => rect.Stroke = ToBrush(value));
+            processElementProperty(controlSpec["borderThickness"], value => rect.StrokeThickness = (float)ToDeviceUnits(value));
+            processElementProperty(controlSpec["cornerRadius"], value => 
             {
                 rect.RadiusX = (float)ToDeviceUnits(value);
                 rect.RadiusY = (float)ToDeviceUnits(value);
             });
-            processElementProperty((string)controlSpec["fill"], value => rect.Fill = ToBrush(value));
+            processElementProperty(controlSpec["fill"], value => rect.Fill = ToBrush(value));
         }
     }
 }

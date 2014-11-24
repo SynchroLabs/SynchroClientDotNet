@@ -6,7 +6,6 @@ using System.Text;
 using MonoTouch.Foundation;
 using MonoTouch.UIKit;
 using MaaasCore;
-using Newtonsoft.Json.Linq;
 using System.Drawing;
 
 namespace MaaasClientIOS.Controls
@@ -397,7 +396,7 @@ namespace MaaasClientIOS.Controls
             layout.MinimumInteritemSpacing = 0;
             layout.MinimumLineSpacing = 0;
 
-            processElementProperty((string)controlSpec["orientation"], value =>
+            processElementProperty(controlSpec["orientation"], value =>
             {
                 Orientation orientation = ToOrientation(value, Orientation.Horizontal);
                 if (orientation == Orientation.Horizontal)
@@ -412,8 +411,8 @@ namespace MaaasClientIOS.Controls
 
             // Need support for fixed item height/width - has implications to item positioning within fixed dimension
             //
-            processElementProperty((string)controlSpec["itemHeight"], value => layout.ItemHeight = (float)ToDeviceUnits(value));
-            processElementProperty((string)controlSpec["itemWidth"], value => layout.ItemWidth = (float)ToDeviceUnits(value));
+            processElementProperty(controlSpec["itemHeight"], value => layout.ItemHeight = (float)ToDeviceUnits(value));
+            processElementProperty(controlSpec["itemWidth"], value => layout.ItemWidth = (float)ToDeviceUnits(value));
 
             processThicknessProperty(controlSpec["padding"], new PaddingThicknessSetter(layout));
 

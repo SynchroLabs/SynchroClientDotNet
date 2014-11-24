@@ -1,5 +1,4 @@
 ﻿using MaaasCore;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -75,10 +74,12 @@ namespace MaaasClientWin.Controls
         public JToken getListboxContents(ListBox listbox)
         {
             logger.Debug("Getting listbox contents");
-            return new JArray(
-                from BindingContextListItem item in listbox.Items
-                select item.GetValue()
-                );
+            JArray array = new JArray();
+            foreach (BindingContextListItem item in listbox.Items)
+            {
+                array.Add(new JValue(item.GetValue().ToString()));
+            }
+            return array;
         }
 
         public void setListboxContents(ListBox listbox, BindingContext bindingContext, string itemContent)
@@ -118,10 +119,12 @@ namespace MaaasClientWin.Controls
         {
             if (listbox.SelectionMode == SelectionMode.Multiple)
             {
-                return new JArray(
-                    from BindingContextListItem item in listbox.SelectedItems
-                    select item.GetSelection(selectionItem)
-                    );
+                JArray array = new JArray();
+                foreach (BindingContextListItem item in listbox.SelectedItems)
+                {
+                    array.Add(item.GetSelection(selectionItem));
+                }
+                return array;
             }
             else
             {
@@ -143,7 +146,7 @@ namespace MaaasClientWin.Controls
                 foreach (BindingContextListItem listItem in listbox.Items)
                 {
                     JArray array = selection as JArray;
-                    foreach (JToken item in array.Values())
+                    foreach (JToken item in array)
                     {
                         if (JToken.DeepEquals(item, listItem.GetSelection(selectionItem)))
                         {

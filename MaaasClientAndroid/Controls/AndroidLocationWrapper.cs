@@ -10,7 +10,6 @@ using Android.Runtime;
 using Android.Views;
 using Android.Widget;
 using MaaasCore;
-using Newtonsoft.Json.Linq;
 using Android.Locations;
 
 namespace SynchroClientAndroid.Controls
@@ -107,21 +106,23 @@ namespace SynchroClientAndroid.Controls
 
             processElementBoundValue("value", (string)bindingSpec["value"], () =>
             {
-                JObject obj = new JObject(
-                    new JProperty("available", ((_status == LocationStatus.Available) || (_status == LocationStatus.Active))),
-                    new JProperty("status", _status.ToString())
-                    );
+                JObject obj = new JObject()
+                {
+                    { "available", new MaaasCore.JValue((_status == LocationStatus.Available) || (_status == LocationStatus.Active)) },
+                    { "status", new MaaasCore.JValue(_status.ToString()) }
+                };
 
                 if (_location != null)
                 {
-                    obj.Add(new JProperty("coordinate", new JObject(
-                        new JProperty("latitude", _location.Latitude),
-                        new JProperty("longitude", _location.Longitude)
-                        )));
+                    obj.Add("coordinate", new JObject()
+                    {
+                        { "latitude", new MaaasCore.JValue(_location.Latitude) },
+                        { "longitude", new MaaasCore.JValue(_location.Longitude) }
+                    });
 
                     if (_location.HasAccuracy)
                     {
-                        obj.Add(new JProperty("accuracy", _location.Accuracy));
+                        obj.Add("accuracy", new MaaasCore.JValue(_location.Accuracy));
                     }
 
                     /* Altitude, when provided, represents meters above the WGS 84 reference ellipsoid,
@@ -130,18 +131,18 @@ namespace SynchroClientAndroid.Controls
                      * 
                     if (_location.HasAltitude)
                     {
-                        obj.Add(new JProperty("altitude", _location.Altitude));
+                        obj.Add("altitude", MaaasCore.JValue(_location.Altitude));
                     }
                      */
 
                     if (_location.HasBearing)
                     {
-                        obj.Add(new JProperty("heading", _location.Bearing));
+                        obj.Add("heading", new MaaasCore.JValue(_location.Bearing));
                     }
 
                     if (_location.HasSpeed)
                     {
-                        obj.Add(new JProperty("speed", _location.Speed));
+                        obj.Add("speed", new MaaasCore.JValue(_location.Speed));
                     }
 
                     //_location.Time // UTC time, seconds since 1970

@@ -1,5 +1,4 @@
 ﻿using MaaasCore;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,9 +23,9 @@ namespace MaaasClientWin.Controls
 
             applyFrameworkElementDefaults(_border);
 
-            processElementProperty((string)controlSpec["border"], value => _border.BorderBrush = ToBrush(value));
+            processElementProperty(controlSpec["border"], value => _border.BorderBrush = ToBrush(value));
             processThicknessProperty(controlSpec["borderThickness"], () => _border.BorderThickness, value => _border.BorderThickness = (Thickness)value);
-            processElementProperty((string)controlSpec["cornerRadius"], value => _border.CornerRadius = new CornerRadius(ToDouble(value)));
+            processElementProperty(controlSpec["cornerRadius"], value => _border.CornerRadius = new CornerRadius(ToDouble(value)));
             processThicknessProperty(controlSpec["padding"], () => _border.Padding, value => _border.Padding = (Thickness)value);
             // "background" color handled by base class
 

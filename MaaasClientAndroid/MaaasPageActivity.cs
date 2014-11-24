@@ -7,7 +7,6 @@ using Android.Views;
 using Android.Widget;
 using Android.OS;
 using MaaasCore;
-using MaaasShared;
 using System.Net.Http;
 using ModernHttpClient;
 using Android.Util;

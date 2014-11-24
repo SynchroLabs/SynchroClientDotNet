@@ -1,6 +1,5 @@
 ﻿using MaaasCore;
 using MonoTouch.CoreLocation;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -66,19 +65,21 @@ namespace MaaasClientIOS.Controls
 
             processElementBoundValue("value", (string)bindingSpec["value"], () =>
             {
-                JObject obj = new JObject(
-                    new JProperty("available", ((_status == LocationStatus.Available) || (_status == LocationStatus.Active))),
-                    new JProperty("status", _status.ToString())
-                    );
+                JObject obj = new JObject()
+                {
+                    { "available", new JValue((_status == LocationStatus.Available) || (_status == LocationStatus.Active)) },
+                    { "status", new JValue(_status.ToString()) }
+                };
 
                 if (_location != null)
                 {
-                    obj.Add(new JProperty("coordinate", new JObject(
-                        new JProperty("latitude", _location.Coordinate.Latitude),
-                        new JProperty("longitude", _location.Coordinate.Longitude)
-                        )));
+                    obj.Add("coordinate", new JObject()
+                    {
+                        { "latitude", new JValue(_location.Coordinate.Latitude) },
+                        { "longitude", new JValue(_location.Coordinate.Longitude) }
+                    });
 
-                    obj.Add(new JProperty("accuracy", _location.HorizontalAccuracy));
+                    obj.Add("accuracy", new JValue(_location.HorizontalAccuracy));
 
                     /*
                      * Altitude is kind of a train wreck on Windows and Android, so we are supressing it here
@@ -86,19 +87,19 @@ namespace MaaasClientIOS.Controls
                      * 
                     if (_location.VerticalAccuracy >= 0)
                     {
-                        obj.Add(new JProperty("altitude", _location.Altitude));
-                        obj.Add(new JProperty("altitudeAccuracy", _location.VerticalAccuracy));
+                        obj.Add("altitude", new JValue(_location.Altitude));
+                        obj.Add("altitudeAccuracy", new JValue(_location.VerticalAccuracy));
                     }
                      */
 
                     if (_location.Course >= 0)
                     {
-                        obj.Add(new JProperty("heading", _location.Course));
+                        obj.Add("heading", new JValue(_location.Course));
                     }
 
                     if (_location.Speed >= 0)
                     {
-                        obj.Add(new JProperty("speed", _location.Speed));
+                        obj.Add("speed", new JValue(_location.Speed));
                     }
 
                     // _location.Timestamp // NSDate

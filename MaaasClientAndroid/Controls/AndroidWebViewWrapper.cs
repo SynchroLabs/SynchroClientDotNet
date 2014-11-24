@@ -10,7 +10,6 @@ using Android.Runtime;
 using Android.Views;
 using Android.Widget;
 using MaaasCore;
-using Newtonsoft.Json.Linq;
 using Android.Webkit;
 
 namespace SynchroClientAndroid.Controls
@@ -31,8 +30,8 @@ namespace SynchroClientAndroid.Controls
             applyFrameworkElementDefaults(webView);
 
             // !!! TODO - Android Web View
-            processElementProperty((string)controlSpec["contents"], value => webView.LoadData(ToString(value), "text/html; charset=UTF-8", null));
-            processElementProperty((string)controlSpec["url"], value => webView.LoadUrl(ToString(value)));
+            processElementProperty(controlSpec["contents"], value => webView.LoadData(ToString(value), "text/html; charset=UTF-8", null));
+            processElementProperty(controlSpec["url"], value => webView.LoadUrl(ToString(value)));
         }
     }
 }

@@ -6,7 +6,6 @@ using System.Text;
 using MonoTouch.Foundation;
 using MonoTouch.UIKit;
 using MaaasCore;
-using Newtonsoft.Json.Linq;
 using System.Drawing;
 using System.Threading.Tasks;
 
@@ -429,10 +428,12 @@ namespace MaaasClientIOS.Controls
 
             if (tableSource.SelectionMode == ListSelectionMode.Multiple)
             {
-                return new JArray(
-                    from item in checkedItems
-                    select ((BindingContextAsStringTableSourceItem)item.TableSourceItem).GetSelection(selectionItem)
-                    );
+                JArray array = new JArray();
+                foreach (var item in checkedItems)
+                {
+                    array.Add(((BindingContextAsStringTableSourceItem)item.TableSourceItem).GetSelection(selectionItem));
+                }
+                return array;
             }
             else
             {
@@ -461,7 +462,7 @@ namespace MaaasClientIOS.Controls
                 if (selection is JArray)
                 {
                     JArray array = selection as JArray;
-                    foreach (JToken item in array.Children())
+                    foreach (JToken item in array)
                     {
                         if (JToken.DeepEquals(item, listItem.GetSelection(selectionItem)))
                         {

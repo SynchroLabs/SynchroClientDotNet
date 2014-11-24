@@ -10,7 +10,6 @@ using Android.Runtime;
 using Android.Views;
 using Android.Widget;
 using MaaasCore;
-using Newtonsoft.Json.Linq;
 using Android.Util;
 using Android.Graphics;
 
@@ -345,10 +344,10 @@ namespace SynchroClientAndroid.Controls
 
             applyFrameworkElementDefaults(layout);
 
-            processElementProperty((string)controlSpec["orientation"], value => layout.Orientation = ToOrientation(value, Orientation.Vertical), Orientation.Vertical);
+            processElementProperty(controlSpec["orientation"], value => layout.Orientation = ToOrientation(value, Orientation.Vertical), Orientation.Vertical);
 
-            processElementProperty((string)controlSpec["itemHeight"], value => layout.ItemHeight = (int)ToDeviceUnits(value));
-            processElementProperty((string)controlSpec["itemWidth"], value => layout.ItemWidth = (int)ToDeviceUnits(value));
+            processElementProperty(controlSpec["itemHeight"], value => layout.ItemHeight = (int)ToDeviceUnits(value));
+            processElementProperty(controlSpec["itemWidth"], value => layout.ItemWidth = (int)ToDeviceUnits(value));
 
             processThicknessProperty(controlSpec["padding"], new PaddingThicknessSetter(this.Control));
 

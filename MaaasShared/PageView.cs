@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -117,11 +116,12 @@ namespace MaaasCore
             {
                 // There is a collection of page elements, create a default container (vertical stackpanel), make it the root, and populate it...
                 //
-                JObject controlSpec = new JObject(
-                    new JProperty("control", "stackpanel"),
-                    new JProperty("orientation", "vertical"),
-                    new JProperty("contents", elements)
-                );
+                JObject controlSpec = new JObject()
+                {
+                    { "control", new JValue("stackpanel") },
+                    { "orientation", new JValue("vertical") },
+                    { "contents", elements }
+                };
 
                 _rootContainerControlWrapper = CreateRootContainerControl(controlSpec);
             }

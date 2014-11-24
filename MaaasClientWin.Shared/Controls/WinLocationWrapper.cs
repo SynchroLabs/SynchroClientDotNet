@@ -1,5 +1,4 @@
 ﻿using MaaasCore;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -58,19 +57,21 @@ namespace MaaasClientWin.Controls
 
             processElementBoundValue("value", (string)bindingSpec["value"], () => 
             {
-                JObject obj = new JObject(
-                    new JProperty("available", ((_status == LocationStatus.Available) || (_status == LocationStatus.Active))),
-                    new JProperty("status", _status.ToString())
-                    );
+                JObject obj = new JObject()
+                {
+                    { "available", new JValue(((_status == LocationStatus.Available) || (_status == LocationStatus.Active))) },
+                    { "status", new JValue(_status.ToString()) }
+                };
 
                 if (_location != null)
                 {
-                    obj.Add(new JProperty("coordinate", new JObject(
-                        new JProperty("latitude", _location.Coordinate.Point.Position.Latitude),
-                        new JProperty("longitude", _location.Coordinate.Point.Position.Longitude)
-                        )));
+                    obj.Add("coordinate", new JObject()
+                    {
+                        { "latitude", new JValue(_location.Coordinate.Point.Position.Latitude) },
+                        { "longitude", new JValue(_location.Coordinate.Point.Position.Longitude) }
+                    });
 
-                    obj.Add(new JProperty("accuracy", _location.Coordinate.Accuracy));
+                    obj.Add("accuracy", new JValue(_location.Coordinate.Accuracy));
 
                     /*
                      * Altitude is too ambiguous to be of any real use in our apps, due to the variety
@@ -86,12 +87,12 @@ namespace MaaasClientWin.Controls
 
                     if (!double.IsNaN(_location.Coordinate.Heading.GetValueOrDefault(double.NaN)))
                     {
-                        obj.Add(new JProperty("heading", _location.Coordinate.Heading));
+                        obj.Add("heading", new JValue(_location.Coordinate.Heading));
                     }
 
                     if (!double.IsNaN(_location.Coordinate.Speed.GetValueOrDefault(double.NaN)))
                     {
-                        obj.Add(new JProperty("speed", _location.Coordinate.Speed));
+                        obj.Add("speed", new JValue(_location.Coordinate.Speed));
                     }
 
                     // _position.Coordinate.Timestamp // DateTimeOffset

@@ -1,6 +1,4 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -76,63 +74,67 @@ namespace MaaasCore
 
         JObject PackageDeviceMetrics()
         {
-            return new JObject(
-                new JProperty("os", this.DeviceMetrics.OS),
-                new JProperty("osName", this.DeviceMetrics.OSName),
-                new JProperty("deviceName", this.DeviceMetrics.DeviceName),
-                new JProperty("deviceType", this.DeviceMetrics.DeviceType.ToString()),
-                new JProperty("deviceClass", this.DeviceMetrics.DeviceClass.ToString()),
-                new JProperty("naturalOrientation", this.DeviceMetrics.NaturalOrientation.ToString()),
-                new JProperty("widthInches", this.DeviceMetrics.WidthInches),
-                new JProperty("heightInches", this.DeviceMetrics.HeightInches),
-                new JProperty("widthDeviceUnits", this.DeviceMetrics.WidthDeviceUnits),
-                new JProperty("heightDeviceUnits", this.DeviceMetrics.HeightDeviceUnits),
-                new JProperty("deviceScalingFactor", this.DeviceMetrics.DeviceScalingFactor),
-                new JProperty("widthUnits", this.DeviceMetrics.WidthUnits),
-                new JProperty("heightUnits", this.DeviceMetrics.HeightUnits),
-                new JProperty("scalingFactor", this.DeviceMetrics.ScalingFactor)
-            );
+            return new JObject()
+            {
+                { "os", new JValue(this.DeviceMetrics.OS) },
+                { "osName", new JValue(this.DeviceMetrics.OSName) },
+                { "deviceName", new JValue(this.DeviceMetrics.DeviceName) },
+                { "deviceType", new JValue(this.DeviceMetrics.DeviceType.ToString()) },
+                { "deviceClass", new JValue(this.DeviceMetrics.DeviceClass.ToString()) },
+                { "naturalOrientation", new JValue(this.DeviceMetrics.NaturalOrientation.ToString()) },
+                { "widthInches", new JValue(this.DeviceMetrics.WidthInches) },
+                { "heightInches", new JValue(this.DeviceMetrics.HeightInches) },
+                { "widthDeviceUnits", new JValue(this.DeviceMetrics.WidthDeviceUnits) },
+                { "heightDeviceUnits", new JValue(this.DeviceMetrics.HeightDeviceUnits) },
+                { "deviceScalingFactor", new JValue(this.DeviceMetrics.DeviceScalingFactor) },
+                { "widthUnits", new JValue(this.DeviceMetrics.WidthUnits) },
+                { "heightUnits", new JValue(this.DeviceMetrics.HeightUnits) },
+                { "scalingFactor", new JValue(this.DeviceMetrics.ScalingFactor) }
+            };
         }
 
         JObject PackageViewMetrics(MaaasOrientation orientation)
         {
             if (orientation == this.DeviceMetrics.NaturalOrientation)
             {
-                return new JObject(
-                    new JProperty("orientation", orientation.ToString()),
-                    new JProperty("widthInches", this.DeviceMetrics.WidthInches),
-                    new JProperty("heightInches", this.DeviceMetrics.HeightInches),
-                    new JProperty("widthUnits", this.DeviceMetrics.WidthUnits),
-                    new JProperty("heightUnits", this.DeviceMetrics.HeightUnits)
-                );
+                return new JObject()
+                {
+                    { "orientation", new JValue(orientation.ToString()) },
+                    { "widthInches", new JValue(this.DeviceMetrics.WidthInches) },
+                    { "heightInches", new JValue(this.DeviceMetrics.HeightInches) },
+                    { "widthUnits", new JValue(this.DeviceMetrics.WidthUnits) },
+                    { "heightUnits", new JValue(this.DeviceMetrics.HeightUnits) }
+                };
             }
             else
             {
-                return new JObject(
-                    new JProperty("orientation", orientation.ToString()),
-                    new JProperty("widthInches", this.DeviceMetrics.HeightInches),
-                    new JProperty("heightInches", this.DeviceMetrics.WidthInches),
-                    new JProperty("widthUnits", this.DeviceMetrics.HeightUnits),
-                    new JProperty("heightUnits", this.DeviceMetrics.WidthUnits)
-                );
+                return new JObject()
+                {
+                    { "orientation", new JValue(orientation.ToString()) },
+                    { "widthInches", new JValue(this.DeviceMetrics.HeightInches) },
+                    { "heightInches", new JValue(this.DeviceMetrics.WidthInches) },
+                    { "widthUnits", new JValue(this.DeviceMetrics.HeightUnits) },
+                    { "heightUnits", new JValue(this.DeviceMetrics.WidthUnits) }
+                };
             }
         }
 
         void messageBox(string title, string message, string buttonLabel, string buttonCommand, CommandHandler onCommand)
         {
-            var messageBox =
-                new JObject(
-                    new JProperty("title", title),
-                    new JProperty("message", message),
-                    new JProperty("options",
-                        new JArray(
-                            new JObject(
-                                new JProperty("label", buttonLabel),
-                                new JProperty("command", buttonCommand)
-                            )
-                        )
-                    )
-                );
+            var messageBox = new JObject()
+            {
+                { "title", new JValue(title) },
+                { "message", new JValue(message) },
+                { "options", new JArray()
+                    {
+                        new JObject()
+                        {
+                            { "label", new JValue(buttonLabel) },
+                            { "command", new JValue(buttonCommand) }
+                        }
+                    }
+                }
+            };
 
             _onProcessMessageBox(messageBox, (command) =>
             {
@@ -153,7 +155,7 @@ namespace MaaasCore
 
         async void ProcessResponseAsync(JObject responseAsJSON)
         {
-            logger.Debug("Got response: {0}", responseAsJSON);
+            logger.Info("Got response: {0}", (string)responseAsJSON);
 
             if (responseAsJSON["NewSessionId"] != null)
             {
@@ -387,10 +389,11 @@ namespace MaaasCore
         public async Task startApplicationAsync()
         {
             logger.Info("Loading Synchro application definition for app at: {0}", _app.Endpoint);
-            JObject requestObject = new JObject(
-                new JProperty("Mode", "AppDefinition"),
-                new JProperty("TransactionId", 0)
-            );
+            JObject requestObject = new JObject()
+            {
+                { "Mode", new JValue("AppDefinition") },
+                { "TransactionId", new JValue(0) }
+            };
             await _transport.sendMessage(null, requestObject);
         }
 
@@ -400,13 +403,14 @@ namespace MaaasCore
 
             logger.Info("Request app start page at path: '{0}'", this._path);
 
-            JObject requestObject = new JObject(
-                new JProperty("Mode", "Page"),
-                new JProperty("Path", this._path),
-                new JProperty("TransactionId", getNewTransactionId()),
-                new JProperty("DeviceMetrics", this.PackageDeviceMetrics()), // Send over device metrics (these won't ever change, per session)
-                new JProperty("ViewMetrics", this.PackageViewMetrics(_deviceMetrics.CurrentOrientation)) // Send over view metrics
-            );
+            JObject requestObject = new JObject()
+            {
+                { "Mode", new JValue("Page") },
+                { "Path", new JValue(this._path) },
+                { "TransactionId", new JValue(getNewTransactionId()) },
+                { "DeviceMetrics", this.PackageDeviceMetrics() }, // Send over device metrics (these won't ever change, per session)
+                { "ViewMetrics", this.PackageViewMetrics(_deviceMetrics.CurrentOrientation) } // Send over view metrics
+            };
 
             await _transport.sendMessage(_app.SessionId, requestObject);
         }
@@ -415,13 +419,14 @@ namespace MaaasCore
         {
             logger.Info("Sending resync for path: '{0}'", this._path);
 
-            JObject requestObject = new JObject(
-                new JProperty("Mode", "Resync"),
-                new JProperty("Path", this._path),
-                new JProperty("TransactionId", getNewTransactionId()),
-                new JProperty("InstanceId", this._instanceId),
-                new JProperty("InstanceVersion", this._instanceVersion)
-            );
+            JObject requestObject = new JObject()
+            {
+                { "Mode", new JValue("Resync") },
+                { "Path", new JValue(this._path) },
+                { "TransactionId", new JValue(getNewTransactionId()) },
+                { "InstanceId", new JValue(this._instanceId) },
+                { "InstanceVersion", new JValue(this._instanceVersion) }
+            };
 
             await _transport.sendMessage(_app.SessionId, requestObject);
         }
@@ -431,15 +436,17 @@ namespace MaaasCore
             var vmDeltas = this._viewModel.CollectChangedValues();
             if (vmDeltas.Count > 0)
             {
-                requestObject.Add("ViewModelDeltas",
-                    new JArray(
-                        from delta in vmDeltas
-                        select new JObject(
-                            new JProperty("path", delta.Key),
-                            new JProperty("value", delta.Value)
-                        )
-                    )
-                );
+                JArray deltas = new JArray();
+                foreach (var delta in vmDeltas)
+                {
+                    deltas.Add(new JObject()
+                    {
+                        { "path", new JValue(delta.Key) },
+                        { "value", delta.Value.DeepClone() }
+                    });
+                }
+
+                requestObject.Add("ViewModelDeltas", deltas);
 
                 return true;
             }
@@ -456,13 +463,14 @@ namespace MaaasCore
             //
             if (this._viewModel.IsDirty())
             {
-                JObject requestObject = new JObject(
-                    new JProperty("Mode", "Update"),
-                    new JProperty("Path", this._path),
-                    new JProperty("TransactionId", getNewTransactionId()),
-                    new JProperty("InstanceId", this._instanceId),
-                    new JProperty("InstanceVersion", this._instanceVersion)
-                );
+                JObject requestObject = new JObject()
+                {
+                    { "Mode", new JValue("Update") },
+                    { "Path", new JValue(this._path) },
+                    { "TransactionId", new JValue(getNewTransactionId()) },
+                    { "InstanceId", new JValue(this._instanceId) },
+                    { "InstanceVersion", new JValue(this._instanceVersion) }
+                };
 
                 if (addDeltasToRequestObject(requestObject))
                 {
@@ -476,14 +484,16 @@ namespace MaaasCore
         {
             logger.Info("Sending command: '{0}' for path: '{1}'", command, this._path);
 
-            JObject requestObject = new JObject(
-                new JProperty("Mode", "Command"),
-                new JProperty("Path", this._path),
-                new JProperty("TransactionId", getNewTransactionId()),
-                new JProperty("InstanceId", this._instanceId),
-                new JProperty("InstanceVersion", this._instanceVersion),
-                new JProperty("Command", command)
-            );
+            JObject requestObject = new JObject()
+            {
+                { "Mode", new JValue("Command") },
+                { "Path", new JValue(this._path) },
+                { "TransactionId", new JValue(getNewTransactionId()) },
+                { "InstanceId", new JValue(this._instanceId) },
+                { "InstanceVersion", new JValue(this._instanceVersion) },
+                { "Command", new JValue(command) }
+
+            };
 
             if (parameters != null)
             {
@@ -499,13 +509,14 @@ namespace MaaasCore
         {
             logger.Info("Sending 'back' for path: '{0}'", this._path);
 
-            JObject requestObject = new JObject(
-                new JProperty("Mode", "Back"),
-                new JProperty("Path", this._path),
-                new JProperty("TransactionId", getNewTransactionId()),
-                new JProperty("InstanceId", this._instanceId),
-                new JProperty("InstanceVersion", this._instanceVersion)
-            );
+            JObject requestObject = new JObject()
+            {
+                { "Mode", new JValue("Back") },
+                { "Path", new JValue(this._path) },
+                { "TransactionId", new JValue(getNewTransactionId()) },
+                { "InstanceId", new JValue(this._instanceId) },
+                { "InstanceVersion", new JValue(this._instanceVersion) }
+            };
 
             await _transport.sendMessage(_app.SessionId, requestObject);
         }
@@ -515,14 +526,15 @@ namespace MaaasCore
             logger.Info("Sending ViewUpdate for path: '{0}'", this._path);
 
             // Send the updated view metrics 
-            JObject requestObject = new JObject(
-                new JProperty("Mode", "ViewUpdate"),
-                new JProperty("Path", this._path),
-                new JProperty("TransactionId", getNewTransactionId()),
-                new JProperty("InstanceId", this._instanceId),
-                new JProperty("InstanceVersion", this._instanceVersion),
-                new JProperty("ViewMetrics", this.PackageViewMetrics(orientation))
-            );
+            JObject requestObject = new JObject()
+            {
+                { "Mode", new JValue("ViewUpdate") },
+                { "Path", new JValue(this._path) },
+                { "TransactionId", new JValue(getNewTransactionId()) },
+                { "InstanceId", new JValue(this._instanceId) },
+                { "InstanceVersion", new JValue(this._instanceVersion) },
+                { "ViewMetrics", this.PackageViewMetrics(orientation) }
+            };
 
             await _transport.sendMessage(_app.SessionId, requestObject);
         }

@@ -1,5 +1,4 @@
 ﻿using MaaasCore;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,7 +23,7 @@ namespace MaaasClientWin.Controls
             _scroller = new ScrollViewer();
             this._control = _scroller;
 
-            processElementProperty((string)controlSpec["orientation"], value => setOrientation(ToOrientation(value, Orientation.Vertical)), Orientation.Vertical);
+            processElementProperty(controlSpec["orientation"], value => setOrientation(ToOrientation(value, Orientation.Vertical)), Orientation.Vertical);
 
             applyFrameworkElementDefaults(_scroller);
 

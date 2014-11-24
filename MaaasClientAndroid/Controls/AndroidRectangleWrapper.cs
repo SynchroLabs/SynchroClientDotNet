@@ -10,7 +10,6 @@ using Android.Runtime;
 using Android.Views;
 using Android.Widget;
 using MaaasCore;
-using Newtonsoft.Json.Linq;
 using Android.Graphics.Drawables;
 using Android.Graphics.Drawables.Shapes;
 using Android.Graphics;
@@ -113,10 +112,10 @@ namespace SynchroClientAndroid.Controls
 
             applyFrameworkElementDefaults(drawableView);
 
-            processElementProperty((string)controlSpec["border"], value => _rect.SetStrokeColor(ToColor(value)));
-            processElementProperty((string)controlSpec["borderThickness"], value => _rect.SetStrokeWidth((int)ToDeviceUnits(value)));
-            processElementProperty((string)controlSpec["cornerRadius"], value => _rect.SetCornerRadius((float)ToDeviceUnits(value)));
-            processElementProperty((string)controlSpec["fill"], value => _rect.SetFillColor(ToColor(value)));
+            processElementProperty(controlSpec["border"], value => _rect.SetStrokeColor(ToColor(value)));
+            processElementProperty(controlSpec["borderThickness"], value => _rect.SetStrokeWidth((int)ToDeviceUnits(value)));
+            processElementProperty(controlSpec["cornerRadius"], value => _rect.SetCornerRadius((float)ToDeviceUnits(value)));
+            processElementProperty(controlSpec["fill"], value => _rect.SetFillColor(ToColor(value)));
         }
     }
 }

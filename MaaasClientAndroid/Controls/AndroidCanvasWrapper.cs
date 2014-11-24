@@ -10,7 +10,6 @@ using Android.Runtime;
 using Android.Views;
 using Android.Widget;
 using MaaasCore;
-using Newtonsoft.Json.Linq;
 
 namespace SynchroClientAndroid.Controls
 {
@@ -30,7 +29,7 @@ namespace SynchroClientAndroid.Controls
             // !!! http://alvinalexander.com/java/jwarehouse/android/core/java/android/widget/AbsoluteLayout.java.shtml
 
             applyFrameworkElementDefaults(absLayout);
-            processElementProperty((string)controlSpec["background"], value => absLayout.SetBackgroundColor(ToColor(value)));
+            processElementProperty(controlSpec["background"], value => absLayout.SetBackgroundColor(ToColor(value)));
 
             if (controlSpec["contents"] != null)
             {
@@ -55,12 +54,12 @@ namespace SynchroClientAndroid.Controls
 
                     // Bind the x and y position to the appropriate properties of the AbsoluteLayout.LayoutParams....
                     //
-                    childControlWrapper.processElementProperty((string)childControlSpec["left"], value =>
+                    childControlWrapper.processElementProperty(childControlSpec["left"], value =>
                     {
                         ((AbsoluteLayout.LayoutParams)childControlWrapper.Control.LayoutParameters).X = (int)ToDeviceUnits(value);
                         absLayout.ForceLayout();
                     });
-                    childControlWrapper.processElementProperty((string)childControlSpec["top"], value => {
+                    childControlWrapper.processElementProperty(childControlSpec["top"], value => {
                         ((AbsoluteLayout.LayoutParams)childControlWrapper.Control.LayoutParameters).Y = (int)ToDeviceUnits(value);
                         absLayout.ForceLayout();
                     });

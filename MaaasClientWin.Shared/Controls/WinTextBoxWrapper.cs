@@ -1,5 +1,4 @@
 ﻿using MaaasCore;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,7 +27,7 @@ namespace MaaasClientWin.Controls
             JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "value");
             if (!processElementBoundValue("value", (string)bindingSpec["value"], () => { return textBox.Text; }, value => textBox.Text = ToString(value)))
             {
-                processElementProperty((string)controlSpec["value"], value => textBox.Text = ToString(value));
+                processElementProperty(controlSpec["value"], value => textBox.Text = ToString(value));
             }
 
             if ((string)bindingSpec["sync"] == "change")
@@ -36,7 +35,7 @@ namespace MaaasClientWin.Controls
                 _updateOnChange = true;
             }
 
-            processElementProperty((string)controlSpec["placeholder"], value => textBox.PlaceholderText = ToString(value));
+            processElementProperty(controlSpec["placeholder"], value => textBox.PlaceholderText = ToString(value));
 
             textBox.TextChanged += textBox_TextChanged;
         }

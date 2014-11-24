@@ -1,5 +1,4 @@
 ﻿using MaaasCore;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +6,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MaaasShared
+namespace MaaasCore
 {
     class TransportHttp : Transport
     {
@@ -76,7 +75,7 @@ namespace MaaasShared
 
             try
             {
-                StringContent jsonContent = new StringContent(requestObject.ToString(), System.Text.Encoding.UTF8, "application/json");
+                StringContent jsonContent = new StringContent(requestObject.ToJson(), System.Text.Encoding.UTF8, "application/json");
                 var response = await _httpClient.PostAsync(_uri, jsonContent);
                 response.EnsureSuccessStatusCode();
 
@@ -85,7 +84,7 @@ namespace MaaasShared
                 watch.Stop();
                 logger.Debug("TIMER: Elapsed time for request was: {0} ms", watch.ElapsedMilliseconds);
 
-                JObject responseObject = JObject.Parse(responseMessage);
+                JObject responseObject = (JObject)JToken.Parse(responseMessage);
                 responseHandler(responseObject);
             }
             catch (Exception e)

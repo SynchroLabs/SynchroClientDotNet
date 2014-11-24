@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -23,7 +22,7 @@ namespace MaaasCore
                         result = array.Count.ToString();
                         break;
                     default:
-                        result = token.ToString();
+                        result = (string)token; //.ToString();
                         break;
                 }
             }
@@ -47,7 +46,7 @@ namespace MaaasCore
                         result = str.Length > 0;
                         break;
                     case JTokenType.Float:
-                        result = (float)token != 0;
+                        result = (double)token != 0;
                         break;
                     case JTokenType.Integer:
                         result = (int)token != 0;
@@ -135,9 +134,10 @@ namespace MaaasCore
                         // Top-level binding spec object contains "command", and the default binding attribute is a command, so
                         // promote { command: "doSomething" } to { defaultBindingAttribute: { command: "doSomething" } }
                         //
-                        bindingObject = new JObject(
-                            new JProperty(defaultBindingAttribute, bindingObject)
-                            );
+                        bindingObject = new JObject()
+                        {
+                            { defaultBindingAttribute, bindingObject }
+                        };
                     }
                 }
                 else
@@ -145,27 +145,34 @@ namespace MaaasCore
                     // Top level binding spec was not an object (was an array or value), so promote that value to be the value
                     // of the default binding attribute
                     //
-                    bindingObject = new JObject(
-                        new JProperty(defaultBindingAttribute, bindingSpec.DeepClone())
-                        );
+                    bindingObject = new JObject()
+                    {
+                        { defaultBindingAttribute, bindingSpec.DeepClone() }
+                    };
                 }
 
                 // Now that we've handled the default binding attribute cases, let's look for commands that need promotion...
                 //
                 if (commandAttributes != null)
                 {
+                    List<string> commandKeys = new List<string>();
                     foreach (var attribute in bindingObject)
                     {
                         if (commandAttributes.Contains(attribute.Key))
                         {
-                            // Processing a command (attribute name corresponds to a command)
+                            commandKeys.Add(attribute.Key);
+                        }
+                    }
+
+                    foreach (var commandAttribute in commandAttributes)
+                    {
+                        // Processing a command (attribute name corresponds to a command)
+                        //
+                        if (bindingObject[commandAttribute] is JValue)
+                        {
+                            // If attribute value is simple value type, promote "attributeValue" to { command: "attributeValue" }
                             //
-                            if (attribute.Value is JValue)
-                            {
-                                // If attribute value is simple value type, promote "attributeValue" to { command: "attributeValue" }
-                                //
-                                attribute.Value.Replace(new JObject(new JProperty("command", attribute.Value)));
-                            }
+                            bindingObject[commandAttribute] = new JObject(){ { "command", bindingObject[commandAttribute] } };
                         }
                     }
                 }
@@ -214,7 +221,7 @@ namespace MaaasCore
                 _resolvedValue = _bindingContext.GetValue().DeepClone();
                 if (_negated)
                 {
-                    _resolvedValue = !TokenConverter.ToBoolean(_resolvedValue);
+                    _resolvedValue = new JValue(!TokenConverter.ToBoolean(_resolvedValue));
                 }
             }
         }
@@ -236,7 +243,7 @@ namespace MaaasCore
                     JToken resolvedValue = _bindingContext.GetValue();
                     if (_negated)
                     {
-                        resolvedValue = !TokenConverter.ToBoolean(resolvedValue);
+                        resolvedValue = new JValue(!TokenConverter.ToBoolean(resolvedValue));
                     }
                     return resolvedValue;
                 }

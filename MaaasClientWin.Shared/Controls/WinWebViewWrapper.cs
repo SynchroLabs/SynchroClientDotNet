@@ -1,5 +1,4 @@
 ﻿using MaaasCore;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,8 +25,8 @@ namespace MaaasClientWin.Controls
             applyFrameworkElementDefaults(webView);
 
             // !!! TODO - Windows Web View
-            processElementProperty((string)controlSpec["contents"], value => webView.NavigateToString(ToString(value)));
-            processElementProperty((string)controlSpec["url"], value => webView.Navigate(new Uri(ToString(value))));
+            processElementProperty(controlSpec["contents"], value => webView.NavigateToString(ToString(value)));
+            processElementProperty(controlSpec["url"], value => webView.Navigate(new Uri(ToString(value))));
         }
     }
 }

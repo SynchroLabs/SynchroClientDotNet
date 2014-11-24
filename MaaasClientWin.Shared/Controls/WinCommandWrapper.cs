@@ -1,5 +1,4 @@
 ﻿using MaaasCore;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,8 +27,8 @@ namespace MaaasClientWin.Controls
 
             this._control = button;
 
-            processElementProperty((string)controlSpec["text"], value => button.Label = ToString(value));
-            processElementProperty((string)controlSpec["icon"], value => 
+            processElementProperty(controlSpec["text"], value => button.Label = ToString(value));
+            processElementProperty(controlSpec["icon"], value => 
             {   
                 Symbol iconSymbol;
                 if (Enum.TryParse(ToString(value), out iconSymbol))

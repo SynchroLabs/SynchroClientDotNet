@@ -1,5 +1,4 @@
 ﻿using MaaasCore;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -88,10 +87,12 @@ namespace MaaasClientWin.Controls
         public JToken getPickerContents(ComboBox picker)
         {
             logger.Debug("Getting picker contents");
-            return new JArray(
-                from BindingContextListItem item in picker.Items
-                select item.GetValue()
-                );
+            JArray array = new JArray();
+            foreach (BindingContextListItem item in picker.Items)
+            {
+                array.Add(item.GetValue());
+            }
+            return array;
         }
 
         public void setPickerContents(ComboBox picker, BindingContext bindingContext, string itemContent)

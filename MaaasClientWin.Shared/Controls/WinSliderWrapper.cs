@@ -1,5 +1,4 @@
 ﻿using MaaasCore;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -36,11 +35,11 @@ namespace MaaasClientWin.Controls
             JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "value");
             if (!processElementBoundValue("value", (string)bindingSpec["value"], () => { return rangeControl.Value; }, value => rangeControl.Value = ToDouble(value)))
             {
-                processElementProperty((string)controlSpec["value"], value => rangeControl.Value = ToDouble(value));
+                processElementProperty(controlSpec["value"], value => rangeControl.Value = ToDouble(value));
             }
 
-            processElementProperty((string)controlSpec["minimum"], value => rangeControl.Minimum = ToDouble(value));
-            processElementProperty((string)controlSpec["maximum"], value => rangeControl.Maximum = ToDouble(value));
+            processElementProperty(controlSpec["minimum"], value => rangeControl.Minimum = ToDouble(value));
+            processElementProperty(controlSpec["maximum"], value => rangeControl.Maximum = ToDouble(value));
 
             rangeControl.ValueChanged += slider_ValueChanged;  
         }

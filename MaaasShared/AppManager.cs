@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -101,11 +100,12 @@ namespace MaaasCore
 
         private static JObject appToJson(MaaasApp app)
         {
-            return new JObject(
-                new JProperty("endpoint", app.Endpoint),
-                new JProperty("definition", app.AppDefinition.DeepClone()),
-                new JProperty("sessionId", app.SessionId)
-                );
+            return new JObject()
+            {
+                { "endpoint", new JValue(app.Endpoint) },
+                { "definition", app.AppDefinition.DeepClone() },
+                { "sessionId", new JValue(app.SessionId) }
+            };
         }
 
         public void serializeFromJson(JObject json)
@@ -119,7 +119,7 @@ namespace MaaasCore
             JArray apps = json["apps"] as JArray;
             if (apps != null)
             {
-                foreach (JToken item in apps.Children())
+                foreach (JToken item in apps)
                 {
                     JObject app = item as JObject;
                     if (app != null)
@@ -141,10 +141,12 @@ namespace MaaasCore
 
             if (_apps.Count > 0)
             {
-                obj.Add("apps", new JArray(
-                    from app in _apps
-                    select appToJson(app)
-                    ));
+                JArray array = new JArray();
+                foreach (var app in _apps)
+                {
+                    array.Add(appToJson(app));
+                }                
+                obj.Add("apps", array);
             }
 
             return obj;
@@ -153,7 +155,7 @@ namespace MaaasCore
         public async Task<bool> loadState()
         {
             string bundledState = await this.loadBundledState();
-            JObject parsedBundledState = JObject.Parse(bundledState);
+            JObject parsedBundledState = (JObject)JToken.Parse(bundledState);
 
             JObject seed = parsedBundledState["seed"] as JObject;
             if (seed != null)
@@ -175,7 +177,7 @@ namespace MaaasCore
                     localState = bundledState;
                     await this.saveLocalState(localState);
                 }
-                JObject parsedLocalState = JObject.Parse(localState);
+                JObject parsedLocalState = (JObject)JToken.Parse(localState);
                 serializeFromJson(parsedLocalState);
             }
 
@@ -185,7 +187,7 @@ namespace MaaasCore
         public async Task<bool> saveState()
         {
             JObject json = this.serializeToJson();
-            return await this.saveLocalState(json.ToString());
+            return await this.saveLocalState(json.ToJson());
         }
 
         // Abstract serialization that may or may not be async per platform.

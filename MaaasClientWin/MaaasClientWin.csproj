@@ -127,6 +127,15 @@
     <Compile Include="..\MaaasShared\DeviceMetrics.cs">
       <Link>Linked\DeviceMetrics.cs</Link>
     </Compile>
+    <Compile Include="..\MaaasShared\Json.cs">
+      <Link>Linked\Json.cs</Link>
+    </Compile>
+    <Compile Include="..\MaaasShared\JsonParser.cs">
+      <Link>Linked\JsonParser.cs</Link>
+    </Compile>
+    <Compile Include="..\MaaasShared\JsonWriter.cs">
+      <Link>Linked\JsonWriter.cs</Link>
+    </Compile>
     <Compile Include="..\MaaasShared\Logger.cs">
       <Link>Linked\Logger.cs</Link>
     </Compile>
@@ -172,9 +181,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <None Include="MaaasClientWin_TemporaryKey.pfx" />
-    <None Include="packages.config">
-      <SubType>Designer</SubType>
-    </None>
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Assets\icon_512.png" />
@@ -208,10 +215,7 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Newtonsoft.Json.6.0.2\lib\netcore45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
+    <WCFMetadata Include="Service References\" />
   </ItemGroup>
   <Import Project="..\MaaasClientWin.Shared\MaaasClientWin.Shared.projitems" Label="Shared" />
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '12.0' ">

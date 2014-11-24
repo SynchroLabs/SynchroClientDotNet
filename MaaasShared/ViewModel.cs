@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -337,15 +336,7 @@ namespace MaaasCore
                 // Remove all tokens indicated as removed
                 foreach (JToken vmItemValue in removals)
                 {
-                    if ((vmItemValue.Parent is JProperty) && (vmItemValue is JValue))
-                    {
-                        // Cannot remove a value from a property - you have to remove the property itself from its parent (a JObject).
-                        vmItemValue.Parent.Remove();
-                    }
-                    else 
-                    {
-                        vmItemValue.Remove();
-                    }
+                    vmItemValue.Remove();
                 }
 
                 logger.Debug("View model after processing updates: {0}", this._rootObject);

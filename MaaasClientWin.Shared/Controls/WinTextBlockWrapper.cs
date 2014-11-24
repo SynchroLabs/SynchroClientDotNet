@@ -1,5 +1,4 @@
 ﻿using MaaasCore;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,9 +25,9 @@ namespace MaaasClientWin.Controls
 
             applyFrameworkElementDefaults(textBlock);
 
-            processElementProperty((string)controlSpec["value"], value => textBlock.Text = ToString(value));
+            processElementProperty(controlSpec["value"], value => textBlock.Text = ToString(value));
 
-            processElementProperty((string)controlSpec["ellipsize"], value =>
+            processElementProperty(controlSpec["ellipsize"], value =>
             {
                 // Other trimming options:
                 //
@@ -48,7 +47,7 @@ namespace MaaasClientWin.Controls
                 }
             });
 
-            processElementProperty((string)controlSpec["textAlignment"], value =>
+            processElementProperty(controlSpec["textAlignment"], value =>
             {
                 String alignString = ToString(value);
                 if (alignString == "Left")

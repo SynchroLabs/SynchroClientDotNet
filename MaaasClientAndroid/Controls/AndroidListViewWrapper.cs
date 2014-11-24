@@ -10,7 +10,6 @@ using Android.Runtime;
 using Android.Views;
 using Android.Widget;
 using MaaasCore;
-using Newtonsoft.Json.Linq;
 using Android.Graphics;
 using System.Threading.Tasks;
 
@@ -195,7 +194,7 @@ namespace SynchroClientAndroid.Controls
 
             if (controlSpec["header"] != null)
             {
-                createControls(new JArray(controlSpec["header"]), (childControlSpec, childControlWrapper) =>
+                createControls(new JArray(){ controlSpec["header"] }, (childControlSpec, childControlWrapper) =>
                 {
                     childControlWrapper.Control.LayoutParameters = new ListView.LayoutParams(childControlWrapper.Control.LayoutParameters.Width, childControlWrapper.Control.LayoutParameters.Height);
                     listView.AddHeaderView(childControlWrapper.Control, null, false);
@@ -205,7 +204,7 @@ namespace SynchroClientAndroid.Controls
 
             if (controlSpec["footer"] != null)
             {
-                createControls(new JArray(controlSpec["footer"]), (childControlSpec, childControlWrapper) =>
+                createControls(new JArray(){ controlSpec["footer"] }, (childControlSpec, childControlWrapper) =>
                 {
                     childControlWrapper.Control.LayoutParameters = new ListView.LayoutParams(childControlWrapper.Control.LayoutParameters.Width, childControlWrapper.Control.LayoutParameters.Height);
                     listView.AddFooterView(childControlWrapper.Control, null, false);
@@ -339,10 +338,12 @@ namespace SynchroClientAndroid.Controls
 
             if (listView.ChoiceMode == ChoiceMode.Multiple)
             {
-                return new JArray(
-                    from BindingContext bindingContext in selectedBindingContexts
-                    select bindingContext.Select(selectionItem).GetValue()
-                );
+                JArray array = new JArray();
+                foreach (BindingContext bindingContext in selectedBindingContexts)
+                {
+                    array.Add(bindingContext.Select(selectionItem).GetValue().DeepClone());
+                }
+                return array;
             }
             else if (listView.ChoiceMode == ChoiceMode.Single)
             {
@@ -353,7 +354,7 @@ namespace SynchroClientAndroid.Controls
                     //     
                     return selectedBindingContexts[0].Select(selectionItem).GetValue().DeepClone();
                 }
-                return new Newtonsoft.Json.Linq.JValue(false); // This is a "null" selection
+                return new MaaasCore.JValue(false); // This is a "null" selection
             }
 
             return null;
@@ -380,7 +381,7 @@ namespace SynchroClientAndroid.Controls
                 if (selection is JArray)
                 {
                     JArray array = selection as JArray;
-                    foreach (JToken item in array.Children())
+                    foreach (JToken item in array)
                     {
                         if (JToken.DeepEquals(item, bindingContext.Select(selectionItem).GetValue()))
                         {

@@ -10,7 +10,6 @@ using Android.Runtime;
 using Android.Views;
 using Android.Widget;
 using MaaasCore;
-using Newtonsoft.Json.Linq;
 using Android.Text;
 using System.Threading.Tasks;
 
@@ -41,7 +40,7 @@ namespace SynchroClientAndroid.Controls
             JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "value");
             if (!processElementBoundValue("value", (string)bindingSpec["value"], () => { return editText.Text; }, value => editText.Text = ToString(value)))
             {
-                processElementProperty((string)controlSpec["value"], value => editText.Text = ToString(value));
+                processElementProperty(controlSpec["value"], value => editText.Text = ToString(value));
             }
 
             if ((string)bindingSpec["sync"] == "change")
@@ -49,7 +48,7 @@ namespace SynchroClientAndroid.Controls
                 _updateOnChange = true;
             }
 
-            processElementProperty((string)controlSpec["placeholder"], value => editText.Hint = ToString(value));
+            processElementProperty(controlSpec["placeholder"], value => editText.Hint = ToString(value));
 
             editText.TextChanged += editText_TextChanged;
         }

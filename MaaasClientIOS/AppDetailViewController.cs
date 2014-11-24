@@ -5,8 +5,6 @@ using MonoTouch.CoreFoundation;
 using MonoTouch.UIKit;
 using MonoTouch.Foundation;
 using MaaasCore;
-using MaaasShared;
-using Newtonsoft.Json.Linq;
 
 namespace MaaasClientIOS
 {

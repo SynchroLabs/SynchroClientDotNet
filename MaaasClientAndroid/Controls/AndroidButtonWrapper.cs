@@ -10,7 +10,6 @@ using Android.Runtime;
 using Android.Views;
 using Android.Widget;
 using MaaasCore;
-using Newtonsoft.Json.Linq;
 using System.Threading.Tasks;
 
 namespace SynchroClientAndroid.Controls
@@ -30,7 +29,7 @@ namespace SynchroClientAndroid.Controls
 
             applyFrameworkElementDefaults(button);
 
-            processElementProperty((string)controlSpec["caption"], value => button.Text = ToString(value));
+            processElementProperty(controlSpec["caption"], value => button.Text = ToString(value));
 
             JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, CommandName.OnClick, Commands);
             ProcessCommands(bindingSpec, Commands);

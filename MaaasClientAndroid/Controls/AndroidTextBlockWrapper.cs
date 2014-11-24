@@ -10,7 +10,6 @@ using Android.Runtime;
 using Android.Views;
 using Android.Widget;
 using MaaasCore;
-using Newtonsoft.Json.Linq;
 
 namespace SynchroClientAndroid.Controls
 {
@@ -28,9 +27,9 @@ namespace SynchroClientAndroid.Controls
 
             applyFrameworkElementDefaults(textView);
 
-            processElementProperty((string)controlSpec["value"], value => textView.Text = ToString(value));
+            processElementProperty(controlSpec["value"], value => textView.Text = ToString(value));
 
-            processElementProperty((string)controlSpec["ellipsize"], value =>
+            processElementProperty(controlSpec["ellipsize"], value =>
             {
                 // Other trimming options:
                 //
@@ -49,7 +48,7 @@ namespace SynchroClientAndroid.Controls
                 }
             });
 
-            processElementProperty((string)controlSpec["textAlignment"], value =>
+            processElementProperty(controlSpec["textAlignment"], value =>
             {
                 // This gravity here specifies how this control's contents should be aligned within the control box, whereas
                 // the layout gravity specifies how the control box itself should be aligned within its container.

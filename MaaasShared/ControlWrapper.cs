@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -475,7 +474,7 @@ namespace MaaasCore
             {
                 JObject fontObject = fontAttributeValue as JObject;
 
-                processElementProperty((string)fontObject.Property("face"), value =>
+                processElementProperty(fontObject.GetValue("face"), value =>
                 {
                     FontFaceType faceType = FontFaceType.FONT_DEFAULT;
                     string faceTypeString = ToString(value);
@@ -494,17 +493,17 @@ namespace MaaasCore
                     fontSetter.SetFaceType(faceType);
                 });
 
-                processElementProperty((string)fontObject.Property("size"), value =>
+                processElementProperty(fontObject.GetValue("size"), value =>
                 {
                     fontSetter.SetSize(ToDeviceUnitsFromTypographicPoints(value));
                 });
 
-                processElementProperty((string)fontObject.Property("bold"), value =>
+                processElementProperty(fontObject.GetValue("bold"), value =>
                 {
                     fontSetter.SetBold(ToBoolean(value));
                 });
 
-                processElementProperty((string)fontObject.Property("italic"), value =>
+                processElementProperty(fontObject.GetValue("italic"), value =>
                 {
                     fontSetter.SetItalic(ToBoolean(value));
                 });
@@ -513,7 +512,7 @@ namespace MaaasCore
             // This will handle the simple style "fontsize" attribute (this is the most common font attribute and is
             // very often used by itself, so we'll support this alternate syntax).
             //
-            processElementProperty((string)controlSpec["fontsize"], value =>
+            processElementProperty(controlSpec["fontsize"], value =>
             {
                 fontSetter.SetSize(ToDeviceUnitsFromTypographicPoints(value));
             });
@@ -544,7 +543,7 @@ namespace MaaasCore
         //
         // This is "public" because there are cases when a parent element needs to process properties on its children after creation.
         //
-        public void processElementProperty(string value, SetViewValue setValue, object defaultValue = null)
+        public void processElementProperty(JToken value, SetViewValue setValue, object defaultValue = null)
         {
             if (value == null)
             {
@@ -554,10 +553,10 @@ namespace MaaasCore
                 }
                 return;
             }
-            else if (PropertyValue.ContainsBindingTokens(value))
+            else if ((value.Type == JTokenType.String) && PropertyValue.ContainsBindingTokens((string)value))
             {
                 // If value contains a binding, create a Binding and add it to metadata
-                PropertyBinding binding = ViewModel.CreateAndRegisterPropertyBinding(this.BindingContext, value, setValue);
+                PropertyBinding binding = ViewModel.CreateAndRegisterPropertyBinding(this.BindingContext, (string)value, setValue);
                 _propertyBindings.Add(binding);
 
                 // Immediate content update during configuration.

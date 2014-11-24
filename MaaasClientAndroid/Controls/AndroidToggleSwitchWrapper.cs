@@ -10,7 +10,6 @@ using Android.Runtime;
 using Android.Views;
 using Android.Widget;
 using MaaasCore;
-using Newtonsoft.Json.Linq;
 using System.Threading.Tasks;
 
 namespace SynchroClientAndroid.Controls
@@ -36,12 +35,12 @@ namespace SynchroClientAndroid.Controls
 
             if (!processElementBoundValue("value", (string)bindingSpec["value"], () => { return toggleSwitch.Checked; }, value => toggleSwitch.Checked = ToBoolean(value)))
             {
-                processElementProperty((string)controlSpec["value"], value => toggleSwitch.Checked = ToBoolean(value));
+                processElementProperty(controlSpec["value"], value => toggleSwitch.Checked = ToBoolean(value));
             }
 
-            processElementProperty((string)controlSpec["header"], value => toggleSwitch.Text = ToString(value));
-            processElementProperty((string)controlSpec["onLabel"], value => toggleSwitch.TextOn = ToString(value));
-            processElementProperty((string)controlSpec["offLabel"], value => toggleSwitch.TextOff = ToString(value));
+            processElementProperty(controlSpec["header"], value => toggleSwitch.Text = ToString(value));
+            processElementProperty(controlSpec["onLabel"], value => toggleSwitch.TextOn = ToString(value));
+            processElementProperty(controlSpec["offLabel"], value => toggleSwitch.TextOff = ToString(value));
 
             // Since the Toggled handler both updates the view model (locally) and may potentially have a command associated, 
             // we have to add handler in all cases (even when there is no command).

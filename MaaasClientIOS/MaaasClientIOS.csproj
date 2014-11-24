@@ -122,6 +122,15 @@
     <Compile Include="..\MaaasShared\DeviceMetrics.cs">
       <Link>Linked\DeviceMetrics.cs</Link>
     </Compile>
+    <Compile Include="..\MaaasShared\Json.cs">
+      <Link>Linked\Json.cs</Link>
+    </Compile>
+    <Compile Include="..\MaaasShared\JsonParser.cs">
+      <Link>Linked\JsonParser.cs</Link>
+    </Compile>
+    <Compile Include="..\MaaasShared\JsonWriter.cs">
+      <Link>Linked\JsonWriter.cs</Link>
+    </Compile>
     <Compile Include="..\MaaasShared\Logger.cs">
       <Link>Linked\Logger.cs</Link>
     </Compile>
@@ -2598,10 +2607,6 @@
     </Reference>
     <Reference Include="ModernHttpClient.iOS">
       <HintPath>..\Components\modernhttpclient-1.1.0\lib\ios\ModernHttpClient.iOS.dll</HintPath>
-    </Reference>
-    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Newtonsoft.Json.6.0.2\lib\portable-net40+sl5+wp80+win8+monotouch+monoandroid\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Net.Http" />

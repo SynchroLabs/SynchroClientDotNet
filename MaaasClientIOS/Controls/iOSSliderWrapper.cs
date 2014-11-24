@@ -6,7 +6,6 @@ using System.Text;
 using MonoTouch.Foundation;
 using MonoTouch.UIKit;
 using MaaasCore;
-using Newtonsoft.Json.Linq;
 
 namespace MaaasClientIOS.Controls
 {
@@ -29,11 +28,11 @@ namespace MaaasClientIOS.Controls
             JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "value");
             if (!processElementBoundValue("value", (string)bindingSpec["value"], () => { return slider.Value; }, value => setValue((float)ToDouble(value))))
             {
-                processElementProperty((string)controlSpec["value"], value => setValue((float)ToDouble(value)));
+                processElementProperty(controlSpec["value"], value => setValue((float)ToDouble(value)));
             }
 
-            processElementProperty((string)controlSpec["minimum"], value => setMin((float)ToDouble(value)));
-            processElementProperty((string)controlSpec["maximum"], value => setMax((float)ToDouble(value)));
+            processElementProperty(controlSpec["minimum"], value => setMin((float)ToDouble(value)));
+            processElementProperty(controlSpec["maximum"], value => setMax((float)ToDouble(value)));
 
             slider.ValueChanged += slider_ValueChanged;
         }

@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -35,10 +34,11 @@ namespace MaaasCore
         {
             JObject appDefinition = null;
 
-            JObject requestObject = new JObject(
-                new JProperty("Mode", "AppDefinition"),
-                new JProperty("TransactionId", 0)
-            );
+            JObject requestObject = new JObject()
+            {
+                { "Mode", new JValue("AppDefinition") },
+                { "TransactionId", new JValue(0) }
+            };
             await this.sendMessage(
                 null, 
                 requestObject, 

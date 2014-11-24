@@ -10,7 +10,6 @@ using Android.Runtime;
 using Android.Views;
 using Android.Widget;
 using MaaasCore;
-using Newtonsoft.Json.Linq;
 
 namespace SynchroClientAndroid.Controls
 {
@@ -80,11 +79,11 @@ namespace SynchroClientAndroid.Controls
             JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "value");
             if (!processElementBoundValue("value", (string)bindingSpec["value"], () => { return getProgress(); }, value => setProgress(ToDouble(value))))
             {
-                processElementProperty((string)controlSpec["value"], value => setProgress(ToDouble(value)));
+                processElementProperty(controlSpec["value"], value => setProgress(ToDouble(value)));
             }
 
-            processElementProperty((string)controlSpec["minimum"], value => setMin(ToDouble(value)));
-            processElementProperty((string)controlSpec["maximum"], value => setMax(ToDouble(value)));
+            processElementProperty(controlSpec["minimum"], value => setMin(ToDouble(value)));
+            processElementProperty(controlSpec["maximum"], value => setMax(ToDouble(value)));
         }
 
         void seekBar_ProgressChanged(object sender, SeekBar.ProgressChangedEventArgs e)

@@ -1,5 +1,4 @@
 ﻿using MaaasCore;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -20,7 +19,7 @@ namespace MaaasClientWin.Controls
 
             applyFrameworkElementDefaults(ring);
  
-            processElementProperty((string)controlSpec["value"], value => ring.IsActive = ToBoolean(value));
+            processElementProperty(controlSpec["value"], value => ring.IsActive = ToBoolean(value));
         }
     }
 }

@@ -1,5 +1,4 @@
 ﻿using MaaasCore;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -44,7 +43,7 @@ namespace MaaasClientWin.Controls
 
             if (controlSpec["header"] != null)
             {
-                createControls(new JArray(controlSpec["header"]), (childControlSpec, childControlWrapper) =>
+                createControls(new JArray(){ controlSpec["header"] }, (childControlSpec, childControlWrapper) =>
                 {
                     listView.Header = childControlWrapper.Control;
                 });
@@ -60,7 +59,7 @@ namespace MaaasClientWin.Controls
                 //
                 listView.ItemContainerTransitions = new Windows.UI.Xaml.Media.Animation.TransitionCollection();
 
-                createControls(new JArray(controlSpec["footer"]), (childControlSpec, childControlWrapper) =>
+                createControls(new JArray(){ controlSpec["footer"] }, (childControlSpec, childControlWrapper) =>
                 {
                     listView.Footer = childControlWrapper.Control;
                 });
@@ -159,10 +158,12 @@ namespace MaaasClientWin.Controls
         {
             if (listview.SelectionMode == ListViewSelectionMode.Multiple)
             {
-                return new JArray(
-                    from FrameworkElement control in listview.SelectedItems
-                    select this.getChildControlWrapper(control).BindingContext.Select(selectionItem).GetValue()
-                );
+                JArray array = new JArray();
+                foreach (FrameworkElement control in listview.SelectedItems)
+                {
+                    array.Add(this.getChildControlWrapper(control).BindingContext.Select(selectionItem).GetValue().DeepClone());
+                }
+                return array;
             }
             else if (listview.SelectionMode == ListViewSelectionMode.Single)
             {
@@ -193,7 +194,7 @@ namespace MaaasClientWin.Controls
                     if (selection is JArray)
                     {
                         JArray array = selection as JArray;
-                        foreach (JToken item in array.Children())
+                        foreach (JToken item in array)
                         {
                             if (JToken.DeepEquals(item, this.getChildControlWrapper(control).BindingContext.Select(selectionItem).GetValue()))
                             {

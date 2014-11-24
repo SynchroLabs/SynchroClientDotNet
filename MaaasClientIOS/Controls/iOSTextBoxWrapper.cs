@@ -6,7 +6,6 @@ using System.Text;
 using MonoTouch.Foundation;
 using MonoTouch.UIKit;
 using MaaasCore;
-using Newtonsoft.Json.Linq;
 using System.Drawing;
 using System.Threading.Tasks;
 
@@ -40,7 +39,7 @@ namespace MaaasClientIOS.Controls
             JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "value");
             if (!processElementBoundValue("value", (string)bindingSpec["value"], () => { return textBox.Text; }, value => textBox.Text = ToString(value)))
             {
-                processElementProperty((string)controlSpec["value"], value => textBox.Text = ToString(value));
+                processElementProperty(controlSpec["value"], value => textBox.Text = ToString(value));
                 textBox.SizeToFit();
             }
 
@@ -49,7 +48,7 @@ namespace MaaasClientIOS.Controls
                 _updateOnChange = true;
             }
 
-            processElementProperty((string)controlSpec["placeholder"], value => textBox.Placeholder = ToString(value));
+            processElementProperty(controlSpec["placeholder"], value => textBox.Placeholder = ToString(value));
 
             textBox.EditingChanged += textBox_EditingChanged;
         }
