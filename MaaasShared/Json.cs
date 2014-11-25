@@ -64,6 +64,7 @@ namespace MaaasCore
         {
             get
             {
+                bool useDotNotation = false;
                 string path = "";
 
                 JToken parent = Parent;
@@ -85,11 +86,18 @@ namespace MaaasCore
                     {
                         JArray parentArray = parent as JArray;
                         int pos = parentArray.IndexOf(this);
-                        if (path.Length > 0)
+                        if (useDotNotation)
                         {
-                            path += ".";
+                            if (path.Length > 0)
+                            {
+                                path += ".";
+                            }
+                            path += pos.ToString();
                         }
-                        path += pos.ToString();
+                        else
+                        {
+                            path += "[" + pos.ToString() + "]";
+                        }
                     }
                 }
 
@@ -767,7 +775,7 @@ namespace MaaasCore
             {
                 return false;
             }
-            return this.Value == other.Value;
+            return this.Value.Equals(other.Value);
         }
 
         override public JToken DeepClone()

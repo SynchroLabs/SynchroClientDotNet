@@ -36,7 +36,7 @@ namespace MaaasCore
             }
         }
 
-        private static Regex _bindingTokensRE = new Regex(@"[$]([^.]*)"); // Token starts with $, separated by dot
+        private static Regex _bindingTokensRE = new Regex(@"[$]([^.]*)[.]?"); // Token starts with $, separated by dot
 
         private void resolveBinding(string parentPath, string bindingPath)
         {
@@ -86,7 +86,7 @@ namespace MaaasCore
 
             if ((parentPath.Length > 0) && (_bindingPath.Length > 0))
             {
-                _bindingPath = parentPath + "." + _bindingPath; ;
+                _bindingPath = parentPath + "." + _bindingPath;
             }
             else if (parentPath.Length > 0)
             {

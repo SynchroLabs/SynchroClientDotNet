@@ -75,6 +75,7 @@ namespace MaaasCore
             else if ((_doBackToMenu != null) && _stateManager.IsOnMainPath())
             {
                 logger.Debug("Back navigation - returning to menu");
+                _rootContainerControlWrapper.Unregister();
                 _doBackToMenu();
                 return true;
             }

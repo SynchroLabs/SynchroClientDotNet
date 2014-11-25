@@ -157,8 +157,15 @@ namespace MaaasCore
             }
             else if (value is JValue)
             {
-                var jvalue = value as JValue;
-                return (double)jvalue;
+                JValue jValue = value as JValue;
+                if (jValue.Type == JTokenType.String)
+                {
+                    value = (string)jValue;
+                }
+                else
+                {
+                    return (double)jValue;
+                }
             }
             return Convert.ToDouble(value);
         }
@@ -171,7 +178,10 @@ namespace MaaasCore
             {
                 if (value is JToken)
                 {
-                    result = TokenConverter.ToString((JToken)value);
+                    if (((JToken)value).Type != JTokenType.Null)
+                    {
+                        result = TokenConverter.ToString((JToken)value);
+                    }
                 }
                 else
                 {
