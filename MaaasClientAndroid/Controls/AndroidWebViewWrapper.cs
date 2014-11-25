@@ -27,6 +27,9 @@ namespace SynchroClientAndroid.Controls
             WebView webView = new WebView(((AndroidControlWrapper)parent).Control.Context);
             this._control = webView;
 
+            // http://developer.android.com/guide/webapps/webview.html
+            webView.SetWebViewClient(new WebViewClient());
+
             applyFrameworkElementDefaults(webView);
 
             // !!! TODO - Android Web View

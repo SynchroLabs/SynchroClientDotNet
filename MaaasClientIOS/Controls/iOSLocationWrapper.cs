@@ -142,6 +142,7 @@ namespace MaaasClientIOS.Controls
             //
             logger.Info("Location manager failed: {0}", e.Error);
             _status = LocationStatus.Failed;
+            updateValueBindingForAttribute("value");
         }
 
         protected LocationStatus fromNativeStatus(CLAuthorizationStatus status)
@@ -178,6 +179,7 @@ namespace MaaasClientIOS.Controls
         {
             logger.Info("Location manager authorization change: {0}", e.Status);
             _status = fromNativeStatus(e.Status);
+            updateValueBindingForAttribute("value");
         }
 
         async void locMgr_LocationsUpdated(object sender, CLLocationsUpdatedEventArgs e)
