@@ -2594,9 +2594,6 @@
     <BundleResource Include="Resources\icons\grey\yin-yang-mini%402x.png" />
     <BundleResource Include="Resources\icons\grey\yin-yang-mini.png" />
     <BundleResource Include="Resources\icons\license.txt" />
-    <None Include="packages.config">
-      <SubType>Designer</SubType>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="MaaasPageViewController.cs" />

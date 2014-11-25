@@ -181,7 +181,6 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <None Include="MaaasClientWin_TemporaryKey.pfx" />
-    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Assets\icon_512.png" />
