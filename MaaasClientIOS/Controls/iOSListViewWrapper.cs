@@ -15,21 +15,6 @@ namespace MaaasClientIOS.Controls
     {
         static Logger logger = Logger.GetLogger("BindingContextTableViewCell");
 
-        protected void updateCellWidth()
-        {
-            if (_controlWrapper != null)
-            {
-                if (_controlWrapper.FrameProperties.WidthSpec == SizeSpec.FillParent)
-                {
-                    RectangleF cellBounds = _controlWrapper.Control.Frame;
-                    cellBounds.Width = this.Frame.Width;
-                    _controlWrapper.Control.Frame = cellBounds;
-                    _controlWrapper.Control.LayoutSubviews();
-                    // logger.Info("Sized 'fill parent width' cell width, now sized at: {0}", _controlWrapper.Control.Frame);
-                }
-            }
-        }
-
         protected iOSControlWrapper _controlWrapper;
         public iOSControlWrapper ControlWrapper
         {
@@ -57,7 +42,6 @@ namespace MaaasClientIOS.Controls
                             _controlWrapper.Control.RemoveFromSuperview();                            
                         }
                         this.AddSubview(_controlWrapper.Control);
-                        updateCellWidth();
                     }
                 }
             }
@@ -68,9 +52,26 @@ namespace MaaasClientIOS.Controls
         {
         }
 
+        public static void UpdateControlWidth(iOSControlWrapper wrapper, float cellWidth)
+        {
+            // If this control is "fill" width and the width provided is different than the current width, set
+            // the new width and layout any subviews.
+            //
+            if (wrapper.FrameProperties.WidthSpec == SizeSpec.FillParent)
+            {
+                if (wrapper.Control.Frame.Width != cellWidth)
+                {
+                    RectangleF cellBounds = wrapper.Control.Frame;
+                    cellBounds.Width = cellWidth;
+                    wrapper.Control.Frame = cellBounds;
+                    wrapper.Control.LayoutSubviews();
+                }
+            }
+        }
+
         public override void LayoutSubviews()
         {
-            updateCellWidth();
+            UpdateControlWidth(_controlWrapper, this.Frame.Width);
             base.LayoutSubviews();
         }
     }
@@ -119,8 +120,6 @@ namespace MaaasClientIOS.Controls
             // no reference, and let the cell Unregister it directly when it was done with it).
             //
             _contentControlWrapper = iOSControlWrapper.CreateControl(_parentControlWrapper, _bindingContext, _itemTemplate);
-            _contentControlWrapper.Control.LayoutSubviews();
-            // logger.Info("Creating new item, with frame after layout: {0}", _contentControlWrapper.Control.Frame);
         }
 
         public override UITableViewCell CreateCell(UITableView tableView)
@@ -133,17 +132,26 @@ namespace MaaasClientIOS.Controls
         //
         public override void BindCell(UITableView tableView, UITableViewCell cell)
         {
-            BindingContextTableViewCell tableViewCell = (BindingContextTableViewCell)cell;            
+            BindingContextTableViewCell tableViewCell = (BindingContextTableViewCell)cell;
+
+            // Now that we have the actual cell width, we're going to let the content control have a chance to set
+            // its width and layout its children (assuming it's fill width and the width provided is different from
+            // any current width).
+            //
+            BindingContextTableViewCell.UpdateControlWidth(_contentControlWrapper, cell.Frame.Width);
+
             tableViewCell.ControlWrapper = _contentControlWrapper;
         }
 
         public override float GetHeightForRow(UITableView tableView)
         {
-            // !!! There is no notification method to use to determine when the changes (updated via binding) might
-            //     have changed the size of the control and thus should reload the row (getting the new height).
+            // If the cell contents is set to fill width ("*") and wrap height, then we have to set the actual width
+            // before we can compute the height, which we need here in order to avoid returning a zero (which causes
+            // some redraw bugginess).
             //
+            BindingContextTableViewCell.UpdateControlWidth(_contentControlWrapper, tableView.Frame.Width);
+
             // logger.Info("Returning row height of: {0}", _contentControlWrapper.Control.Frame.Height);
-            //
             return _contentControlWrapper.Control.Frame.Height;
         }
     }
@@ -310,7 +318,6 @@ namespace MaaasClientIOS.Controls
                     childView.Frame = childFrame;
                     // logger.Info("Child frame: {0}", childView.Frame);
                 }
-
 
                 // See if the container panel changed size
                 //
@@ -533,7 +540,7 @@ namespace MaaasClientIOS.Controls
                 tableView.TableFooterView = footer;
             }
             */
-
+            
             ValueBinding selectionBinding = GetValueBinding("selection");
             if (selectionBinding != null)
             {

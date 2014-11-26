@@ -155,7 +155,7 @@ namespace MaaasCore
 
         async void ProcessResponseAsync(JObject responseAsJSON)
         {
-            logger.Info("Got response: {0}", (string)responseAsJSON);
+            // logger.Info("Got response: {0}", (string)responseAsJSON);
 
             if (responseAsJSON["NewSessionId"] != null)
             {
