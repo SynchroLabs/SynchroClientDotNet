@@ -25,6 +25,8 @@ namespace SynchroClientAndroid.Controls
     {
         static Logger logger = Logger.GetLogger("AndroidImageWrapper");
 
+        protected Uri _loadedImage = null;
+
         public AndroidImageWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
@@ -46,6 +48,13 @@ namespace SynchroClientAndroid.Controls
                 if (value == null)
                 {
                     image.SetImageDrawable(null);
+                    _loadedImage = null;
+                }
+                else if (value.Equals(_loadedImage))
+                {
+                    // NOOP
+                    //
+                    logger.Debug("Image being loaded is same as current image, NOOP");
                 }
                 else
                 {
@@ -130,6 +139,7 @@ namespace SynchroClientAndroid.Controls
                             ﻿var bitmap = await BitmapFactory.DecodeStreamAsync(stream);
                              ctx.Post(_ => { image.SetImageBitmap(bitmap); }, null);
                              //image.SetImageBitmap(bitmap);
+                             _loadedImage = uri;
                         }
                     }
                 }

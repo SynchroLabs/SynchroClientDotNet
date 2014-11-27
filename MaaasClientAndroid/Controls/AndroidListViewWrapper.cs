@@ -105,11 +105,35 @@ namespace SynchroClientAndroid.Controls
         {
             if ((_itemContexts != null) && (_itemContexts[position] != null))
             {
-                AndroidControlWrapper controlWrapper = AndroidControlWrapper.CreateControl(_parentControl, _itemContexts[position], _itemTemplate);
+                logger.Debug("Getting view for item at position: {0}", position);
+                if (convertView != null)
+                {
+                    AndroidControlWrapper currentWrapper = _parentControl.getChildControlWrapper(((ListItemView)convertView).ContentView);
+                    if (currentWrapper != null)
+                    {
+                        if (currentWrapper.BindingContext.BindingPath.Equals(_itemContexts[position].BindingPath))
+                        {
+                            // Android is kind of stupid about list item management.  For example, when list contents are reset, such
+                            // as when list items are added, you will be asked to provide a view for each visible cell, including the
+                            // ones that didn't change.  In our case, if the contents of a given item change, then any controls bound
+                            // to those contents will update automatically.  So as long a the binding context path for a cell doesn't
+                            // change, we don't need to genererate a new view (we can just hand back the existing view, which, as just
+                            // stated, will manage its own updating).  This fixes the annoying flicker that used to happen when new
+                            // items were added to the end of the list (because new cells were being generated for all the the existing
+                            // list positions).
+                            //
+                            return convertView;
+                        }
+                        else
+                        {
+                            // We are going to generate a new view (below) to replace this view, so let's clean this view up...
+                            //
+                            currentWrapper.Unregister();
+                        }
+                    }
+                }
 
-                // !!! Need some kind of unregister strategy (when rows get shitcanned by the view).  Maybe:
-                //
-                //         controlWrapper.Control.ViewDetachedFromWindow += Control_ViewDetachedFromWindow;
+                AndroidControlWrapper controlWrapper = AndroidControlWrapper.CreateControl(_parentControl, _itemContexts[position], _itemTemplate);
 
                 // By specifying IgnoreItemViewType we are telling the ListView not to recycle views (convertView will always be null).  It might be
                 // nice to try to take advantage of view recycling, but that presents somewhat of a challenge in terms of the way our data binding 
