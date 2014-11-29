@@ -39,14 +39,6 @@ namespace MaaasClientIOS.Controls
             {
                 ContentView.Subviews[0].RemoveFromSuperview();
             }
-
-            // Add margins to position
-            controlWrapper.Control.Frame = new RectangleF(
-                controlWrapper.Control.Frame.X + controlWrapper.MarginLeft,
-                controlWrapper.Control.Frame.Y + controlWrapper.MarginTop,
-                controlWrapper.Control.Frame.Width,
-                controlWrapper.Control.Frame.Height
-                );
             ContentView.AddSubview(controlWrapper.Control);
         }
     }
@@ -345,32 +337,89 @@ namespace MaaasClientIOS.Controls
             _layout = layout;
         }
 
-        public override void SetThicknessLeft(int thickness)
+        public override void SetThicknessLeft(float thickness)
         {
             UIEdgeInsets insets = _layout.SectionInset;
             insets.Left = thickness;
             _layout.SectionInset = insets;
         }
 
-        public override void SetThicknessTop(int thickness)
+        public override void SetThicknessTop(float thickness)
         {
             UIEdgeInsets insets = _layout.SectionInset;
             insets.Top = thickness;
             _layout.SectionInset = insets;
         }
 
-        public override void SetThicknessRight(int thickness)
+        public override void SetThicknessRight(float thickness)
         {
             UIEdgeInsets insets = _layout.SectionInset;
             insets.Right = thickness;
             _layout.SectionInset = insets;
         }
 
-        public override void SetThicknessBottom(int thickness)
+        public override void SetThicknessBottom(float thickness)
         {
             UIEdgeInsets insets = _layout.SectionInset;
             insets.Bottom = thickness;
             _layout.SectionInset = insets;
+        }
+    }
+
+    class WrapPanelCollectionView : UICollectionView
+    {
+        protected iOSControlWrapper _controlWrapper;
+
+        public WrapPanelCollectionView(iOSControlWrapper controlWrapper, UICollectionViewLayout layout)
+            : base(new RectangleF(), layout)
+        {
+            _controlWrapper = controlWrapper;
+            this.BackgroundColor = UIColor.Clear; // UICollectionView background defaults to Black
+        }
+
+        public override void LayoutSubviews()
+        {
+            base.LayoutSubviews();
+
+            WrapPanelCollectionViewLayout layout = this.CollectionViewLayout as WrapPanelCollectionViewLayout;
+            if (layout != null)
+            {
+                WrapPanelCollectionViewSource viewSource = this.Source as WrapPanelCollectionViewSource;
+
+                SizeF frameSize = this.Frame.Size;
+
+                if (layout.ScrollDirection == UICollectionViewScrollDirection.Horizontal)
+                {
+                    // Vertical wrapping (width may vary based on contents, height must be explicit)
+                    //
+                    if (_controlWrapper.FrameProperties.WidthSpec == SizeSpec.WrapContent)
+                    {                        
+                        frameSize.Width = this.ContentSize.Width;
+                    }
+                }
+                else
+                {
+                    // Horizontal wrapping (height may vary based on contents, width must be explicit)
+                    //
+                    if (_controlWrapper.FrameProperties.HeightSpec == SizeSpec.WrapContent)
+                    {
+                        frameSize.Height = this.ContentSize.Height;
+                    }
+                }
+
+                if ((frameSize.Width != this.Frame.Width) || (frameSize.Height != this.Frame.Height))
+                {
+                    RectangleF frame = this.Frame;
+                    frame.Size = frameSize;
+                    this.Frame = frame;
+                    /*
+                    if (this.Superview != null)
+                    {
+                        this.Superview.SetNeedsLayout();
+                    }
+                     */
+                }
+            }
         }
     }
 
@@ -385,7 +434,7 @@ namespace MaaasClientIOS.Controls
 
             var source = new WrapPanelCollectionViewSource();
             WrapPanelCollectionViewLayout layout = new WrapPanelCollectionViewLayout(source);
-            UICollectionView view = new UICollectionView(new RectangleF(), layout);
+            UICollectionView view = new WrapPanelCollectionView(this, layout);
 
             this._control = view;
 

@@ -32,7 +32,7 @@ namespace MaaasClientWin.Controls
                 processElementProperty(controlSpec["value"], value => toggleSwitch.IsOn = ToBoolean(value));
             }
 
-            processElementProperty(controlSpec["header"], value => toggleSwitch.Header = ToString(value));
+            processElementProperty(controlSpec["caption"], value => toggleSwitch.Header = ToString(value));
             processElementProperty(controlSpec["onLabel"], value => toggleSwitch.OnContent = ToString(value));
             processElementProperty(controlSpec["offLabel"], value => toggleSwitch.OffContent = ToString(value));
 

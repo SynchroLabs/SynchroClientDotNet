@@ -450,17 +450,17 @@ namespace MaaasClientIOS.Controls
 
     public abstract class ThicknessSetter
     {
-        public virtual void SetThickness(int thickness)
+        public virtual void SetThickness(float thickness)
         {
             this.SetThicknessTop(thickness);
             this.SetThicknessLeft(thickness);
             this.SetThicknessBottom(thickness);
             this.SetThicknessRight(thickness);
         }
-        public abstract void SetThicknessLeft(int thickness);
-        public abstract void SetThicknessTop(int thickness);
-        public abstract void SetThicknessRight(int thickness);
-        public abstract void SetThicknessBottom(int thickness);
+        public abstract void SetThicknessLeft(float thickness);
+        public abstract void SetThicknessTop(float thickness);
+        public abstract void SetThicknessRight(float thickness);
+        public abstract void SetThicknessBottom(float thickness);
     }
 
     public class MarginThicknessSetter : ThicknessSetter
@@ -472,22 +472,22 @@ namespace MaaasClientIOS.Controls
             _controlWrapper = controlWrapper;
         }
 
-        public override void SetThicknessLeft(int thickness)
+        public override void SetThicknessLeft(float thickness)
         {
             _controlWrapper.MarginLeft = thickness;
         }
 
-        public override void SetThicknessTop(int thickness)
+        public override void SetThicknessTop(float thickness)
         {
             _controlWrapper.MarginTop = thickness;
         }
 
-        public override void SetThicknessRight(int thickness)
+        public override void SetThicknessRight(float thickness)
         {
             _controlWrapper.MarginRight = thickness;
         }
 
-        public override void SetThicknessBottom(int thickness)
+        public override void SetThicknessBottom(float thickness)
         {
             _controlWrapper.MarginBottom = thickness;
         }
@@ -701,7 +701,7 @@ namespace MaaasClientIOS.Controls
             {
                 processElementProperty(thicknessAttributeValue, value =>
                 {
-                    thicknessSetter.SetThickness((int)ToDeviceUnits(value));
+                    thicknessSetter.SetThickness((float)ToDeviceUnits(value));
                 });
             }
             else if (thicknessAttributeValue is JObject)
@@ -710,19 +710,19 @@ namespace MaaasClientIOS.Controls
 
                 processElementProperty(marginObject.GetValue("left"), value =>
                 {
-                    thicknessSetter.SetThicknessLeft((int)ToDeviceUnits(value));
+                    thicknessSetter.SetThicknessLeft((float)ToDeviceUnits(value));
                 });
                 processElementProperty(marginObject.GetValue("top"), value =>
                 {
-                    thicknessSetter.SetThicknessTop((int)ToDeviceUnits(value));
+                    thicknessSetter.SetThicknessTop((float)ToDeviceUnits(value));
                 });
                 processElementProperty(marginObject.GetValue("right"), value =>
                 {
-                    thicknessSetter.SetThicknessRight((int)ToDeviceUnits(value));
+                    thicknessSetter.SetThicknessRight((float)ToDeviceUnits(value));
                 });
                 processElementProperty(marginObject.GetValue("bottom"), value =>
                 {
-                    thicknessSetter.SetThicknessBottom((int)ToDeviceUnits(value));
+                    thicknessSetter.SetThicknessBottom((float)ToDeviceUnits(value));
                 });
             }
         }

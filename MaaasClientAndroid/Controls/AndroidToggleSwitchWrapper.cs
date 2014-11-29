@@ -38,7 +38,7 @@ namespace SynchroClientAndroid.Controls
                 processElementProperty(controlSpec["value"], value => toggleSwitch.Checked = ToBoolean(value));
             }
 
-            processElementProperty(controlSpec["header"], value => toggleSwitch.Text = ToString(value));
+            processElementProperty(controlSpec["caption"], value => toggleSwitch.Text = ToString(value));
             processElementProperty(controlSpec["onLabel"], value => toggleSwitch.TextOn = ToString(value));
             processElementProperty(controlSpec["offLabel"], value => toggleSwitch.TextOff = ToString(value));
 

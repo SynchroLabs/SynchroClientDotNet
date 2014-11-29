@@ -78,22 +78,22 @@ namespace MaaasClientIOS.Controls
             _paddedView = paddedView;
         }
 
-        public override void SetThicknessLeft(int thickness)
+        public override void SetThicknessLeft(float thickness)
         {
             _paddedView.PaddingLeft = thickness;
         }
 
-        public override void SetThicknessTop(int thickness)
+        public override void SetThicknessTop(float thickness)
         {
             _paddedView.PaddingTop = thickness;
         }
 
-        public override void SetThicknessRight(int thickness)
+        public override void SetThicknessRight(float thickness)
         {
             _paddedView.PaddingRight = thickness;
         }
 
-        public override void SetThicknessBottom(int thickness)
+        public override void SetThicknessBottom(float thickness)
         {
             _paddedView.PaddingBottom = thickness;
         }

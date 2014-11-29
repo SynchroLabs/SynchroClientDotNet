@@ -49,7 +49,6 @@ namespace MaaasClientIOS.Controls
 
         protected iOSControlWrapper _controlWrapper;
         protected Orientation _orientation;
-        protected float _spacing = 10;
 
         public StackPanelView(iOSControlWrapper controlWrapper)
             : base()
