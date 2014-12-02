@@ -460,7 +460,7 @@ namespace MaaasCore
                     logger.Debug("Exception parsing hex value in color specification, details: {0}", e.Message);
                 }
             }
-            else
+            else if (colorValue.Length > 0)
             {
                 ColorNames color = (ColorNames)Enum.Parse(typeof(ColorNames), colorValue);
                 if (Enum.IsDefined(typeof(ColorNames), colorValue))
@@ -473,7 +473,7 @@ namespace MaaasCore
                 }
             }
 
-            // !!! Should we do something other than return null for a bad color name/spec?
+            // !!! Should we do something other than return null for an empty/bad color name/spec?
             return null;
         }
 
