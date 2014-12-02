@@ -106,7 +106,7 @@ namespace MaaasClientWin.Controls
                 _updateOnChange = true;
             }
 
-            // This triggers the viewModel update so the initial status gets back to the server
+            // This triggers the viewModel update
             //
             updateValueBindingForAttribute("value");
         }
@@ -128,7 +128,7 @@ namespace MaaasClientWin.Controls
             base.Unregister();
         }
         
-        void geo_StatusChanged(Geolocator sender, StatusChangedEventArgs args)
+        async void geo_StatusChanged(Geolocator sender, StatusChangedEventArgs args)
         {
             // When it's going to work we see:
             //
@@ -140,10 +140,19 @@ namespace MaaasClientWin.Controls
 
             if ((_geo.LocationStatus == PositionStatus.Disabled) || (_geo.LocationStatus == PositionStatus.NotAvailable))
             {
-                // !!! No location for you!
-                //
                 _status = LocationStatus.NotAvailable;
                 this.stopLocationServices();
+
+                // Update the viewModel, and the server (if update on change specified)
+                //
+                await _dispatcher.RunAsync(CoreDispatcherPriority.Normal, async () =>
+                {
+                    updateValueBindingForAttribute("value");
+                    if (_updateOnChange)
+                    {
+                        await this.StateManager.sendUpdateRequestAsync();
+                    }
+                });
             }
         }
 

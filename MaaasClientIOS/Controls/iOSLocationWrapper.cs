@@ -136,13 +136,18 @@ namespace MaaasClientIOS.Controls
             base.Unregister();
         }
 
-        void locMgr_Failed(object sender, MonoTouch.Foundation.NSErrorEventArgs e)
+        async void locMgr_Failed(object sender, MonoTouch.Foundation.NSErrorEventArgs e)
         {
-            // !!! No location for you?
-            //
             logger.Info("Location manager failed: {0}", e.Error);
             _status = LocationStatus.Failed;
+
+            // Update the viewModel, and the server (if update on change specified)
+            //
             updateValueBindingForAttribute("value");
+            if (_updateOnChange)
+            {
+                await this.StateManager.sendUpdateRequestAsync();
+            }
         }
 
         protected LocationStatus fromNativeStatus(CLAuthorizationStatus status)
@@ -175,11 +180,18 @@ namespace MaaasClientIOS.Controls
             return LocationStatus.Unknown;
         }
 
-        void locMgr_AuthorizationChanged(object sender, CLAuthorizationChangedEventArgs e)
+        async void locMgr_AuthorizationChanged(object sender, CLAuthorizationChangedEventArgs e)
         {
             logger.Info("Location manager authorization change: {0}", e.Status);
             _status = fromNativeStatus(e.Status);
+
+            // Update the viewModel, and the server (if update on change specified)
+            //
             updateValueBindingForAttribute("value");
+            if (_updateOnChange)
+            {
+                await this.StateManager.sendUpdateRequestAsync();
+            }
         }
 
         async void locMgr_LocationsUpdated(object sender, CLLocationsUpdatedEventArgs e)

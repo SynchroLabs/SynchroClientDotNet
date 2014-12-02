@@ -111,7 +111,7 @@ namespace MaaasClientIOS
             // this.InterfaceOrientation == UIInterfaceOrientation.
             base.WillAnimateRotation(toInterfaceOrientation, duration);
 
-            // !!! Do our own rotation handling here
+            // Do our own rotation handling here
             if (normalizeOrientation(toInterfaceOrientation) == UIInterfaceOrientation.Portrait)
             {
                 logger.Debug("Screen oriented to Portrait");

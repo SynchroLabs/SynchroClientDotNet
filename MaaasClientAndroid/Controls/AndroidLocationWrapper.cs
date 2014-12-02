@@ -181,13 +181,13 @@ namespace SynchroClientAndroid.Controls
             logger.Info("Provider disabled: {0}", provider);
         }
 
-        public void OnStatusChanged(string provider, Availability status, Bundle extras)
+        async public void OnStatusChanged(string provider, Availability status, Bundle extras)
         {
             // !!! Are we going to get these for providers other than the one we're using?
             //
-            // Availability.Available;
-            // Availability.OutOfService;
-            // Availability.TemporarilyUnavailable''
+            // Availability.Available
+            // Availability.OutOfService
+            // Availability.TemporarilyUnavailable
             //
             logger.Info("Status change: {0}", status);
             if (status == Availability.Available)
@@ -200,6 +200,14 @@ namespace SynchroClientAndroid.Controls
             else if ((status == Availability.OutOfService) || (status == Availability.TemporarilyUnavailable))
             {
                 _status = LocationStatus.NotAvailable;
+            }
+
+            // Update the viewModel, and the server (if update on change specified)
+            //
+            updateValueBindingForAttribute("value");
+            if (_updateOnChange)
+            {
+                await this.StateManager.sendUpdateRequestAsync();
             }
         }
 

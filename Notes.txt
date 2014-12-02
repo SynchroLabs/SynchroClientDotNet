@@ -74,15 +74,9 @@ Summary:
 Text
     What if width unspecified or star, but control is still constrained horizontally at some width by parent, how do we detect/handle that (we don't right now)?
 
-Client
-
-    View/resource caching
-
 Server
 
     Test on iPad, Kindle Fire
-
-    Implement PropertyCross (more)
 
 Misc
 
