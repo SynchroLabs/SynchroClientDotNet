@@ -181,7 +181,7 @@ namespace MaaasCore
         {
             bool bReplaced = false;
 
-            if (Parent != null)
+            if ((Parent != null) && (token != this))
             {
                 if (Parent is JObject)
                 {
@@ -206,6 +206,37 @@ namespace MaaasCore
             }
 
             return bReplaced;
+        }
+
+        // If a complex assignment takes place, then the token itself will be replaced.  In that case, this method
+        // will return true and will update the passed in token.
+        //
+        public static Boolean UpdateTokenValue(ref JToken token, object value)
+        {
+            if (!(value is JToken))
+            {
+                // This will convert standard value types (string, bool, int, double, etc) to JValue for assignment
+                //
+                value = new JValue(value);
+            }
+
+            // If the bound item value and the value being set are both primitive values, then we just do a value assignment,
+            // otherwise we have to do a token replace (which may modify the object graph and trigger rebinding).
+            //
+            if ((token is JValue) && (value is JValue))
+            {
+                ((JValue)token).Value = ((JValue)value).Value;
+            }
+            else
+            {
+                JToken newValue = (JToken)value;
+                if (token.Replace(newValue))
+                {
+                    token = newValue;
+                    return true; // Token change
+                }
+            }
+            return false; // Value-only change, or no change
         }
 
         public static bool DeepEquals(JToken token1, JToken token2)

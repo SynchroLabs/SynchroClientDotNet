@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace MaaasCore
 {
+    public delegate void ResponseHandler(JObject response);
+    public delegate void RequestFailureHandler(JObject request, Exception exception);
+
     public abstract class Transport
     {
         public static string SessionIdHeader = "synchro-api-session-id";

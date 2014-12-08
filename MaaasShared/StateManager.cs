@@ -11,9 +11,6 @@ namespace MaaasCore
     public delegate void ProcessPageView(JObject pageView);
     public delegate void ProcessMessageBox(JObject messageBox, CommandHandler commandHandler);
 
-    public delegate void ResponseHandler(JObject response);
-    public delegate void RequestFailureHandler(JObject request, Exception exception);
-
     public class StateManager
     {
         static Logger logger = Logger.GetLogger("StateManager");

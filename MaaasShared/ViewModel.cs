@@ -22,7 +22,7 @@ namespace MaaasCore
 
         public ViewModel()
         {
-            _rootBindingContext = new BindingContext(this);
+            _rootBindingContext = new BindingContext(_rootObject);
         }
 
         public BindingContext RootBindingContext { get { return _rootBindingContext; } }
@@ -78,43 +78,7 @@ namespace MaaasCore
             _rootObject = viewModel;
             _valueBindings.Clear();
             _propertyBindings.Clear();
-            _rootBindingContext.Rebind();
-        }
-
-        // If a complex assignment takes place, then the token itself will be replaced.  In that case, this method
-        // will return true and will update the passed in token.
-        //
-        public static Boolean UpdateTokenValue(ref JToken token, object value)
-        {
-            if (!(value is JToken))
-            {
-                // This will convert standard value types (string, bool, int, double, etc) to JValue for assignment
-                //
-                value = new JValue(value);
-            }
-
-            // If the bound item value and the value being set are both primitive values, then we just do a value assignment,
-            // otherwise we have to do a token replace (which may modify the object graph and trigger rebinding).
-            //
-            if ((token is JValue) && (value is JValue))
-            {
-                ((JValue)token).Value = ((JValue)value).Value;
-            }
-            else
-            {
-                JToken newValue = (JToken)value;
-                token.Replace(newValue);
-                if (newValue.Parent != null)
-                {
-                    // Replace has a shortcut that doesn't actually do the replace if the new value is equal to the 
-                    // current value.  The only way we can really know if the replace happened is to see if the new
-                    // value has its parent set (it is null before the replace, and on an actual replace, is set to
-                    // the parent of the replaced token).
-                    token = newValue;
-                    return true; // Rebinding is required (token change)
-                }
-            }
-            return false; // Rebinding is not required (value-only change, or no change)
+            _rootBindingContext.BindingRoot = _rootObject;
         }
 
         // This object represents a binding update (the path of the bound item and an indication of whether rebinding is required)
@@ -257,7 +221,7 @@ namespace MaaasCore
                         {
                             logger.Debug("Updating view model item for path: {0} to value: {1}", path, viewModelDelta["value"]);
 
-                            bool rebindRequired = UpdateTokenValue(ref vmItemValue, viewModelDelta["value"]);
+                            bool rebindRequired = JToken.UpdateTokenValue(ref vmItemValue, viewModelDelta["value"]);
                             bindingUpdates.Add(new BindingUpdate(path, rebindRequired));
                         }
                         else

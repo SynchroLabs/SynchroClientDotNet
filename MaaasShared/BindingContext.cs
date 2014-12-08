@@ -13,26 +13,39 @@ namespace MaaasCore
     {
         static Logger logger = Logger.GetLogger("BindingContext");
 
-        ViewModel _viewModel;
+        JObject _bindingRoot;
 
         string _bindingPath;
         JToken _boundToken;
         bool _isIndex = false;
 
+        public JObject BindingRoot
+        {
+            get { return _bindingRoot; }
+            set
+            {
+                if (value != _bindingRoot)
+                {
+                    _bindingRoot = value;
+                    this.Rebind();
+                }
+            }
+        }
+
         // Creates the root binding context, from which all other binding contexts will be created (only created from ViewModel)
         //
-        public BindingContext(ViewModel viewModel)
+        public BindingContext(JObject bindingRoot)
         {
-            _viewModel = viewModel;
+            _bindingRoot = bindingRoot;
             _bindingPath = "";
-            _boundToken = viewModel.RootObject;
+            _boundToken = _bindingRoot;
         }
 
         private void attemptToBindTokenIfNeeded()
         {
             if (_boundToken == null)
             {
-                _boundToken = _viewModel.RootObject.SelectToken(_bindingPath);
+                _boundToken = _bindingRoot.SelectToken(_bindingPath);
             }
         }
 
@@ -96,14 +109,14 @@ namespace MaaasCore
 
         private BindingContext(BindingContext context, string bindingPath)
         {
-            _viewModel = context._viewModel;
+            _bindingRoot = context._bindingRoot;
             resolveBinding(context._bindingPath, bindingPath);
             this.attemptToBindTokenIfNeeded();
         }
 
         private BindingContext(BindingContext context, JToken parentToken, string bindingPath)
         {
-            _viewModel = context._viewModel;
+            _bindingRoot = context._bindingRoot;
             resolveBinding(ViewModel.GetTokenPath(parentToken), bindingPath);
             this.attemptToBindTokenIfNeeded();
         }
@@ -202,7 +215,7 @@ namespace MaaasCore
             {
                 if (!_isIndex)
                 {
-                    return ViewModel.UpdateTokenValue(ref _boundToken, value);
+                    return JToken.UpdateTokenValue(ref _boundToken, value);
                 }
             }
 
@@ -212,7 +225,7 @@ namespace MaaasCore
 
         public void Rebind()
         {
-            _boundToken = _viewModel.RootObject.SelectToken(_bindingPath);
+            _boundToken = _bindingRoot.SelectToken(_bindingPath);
         }
     }
 }
