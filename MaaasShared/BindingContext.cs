@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace MaaasCore
 {
-    // Corresponds to a specific location in the view model (which may or may not exist at the time the BindingContext is created).
+    // Corresponds to a specific location in a JSON oject (which may or may not exist at the time the BindingContext is created).
     //
     public class BindingContext
     {
@@ -32,7 +32,7 @@ namespace MaaasCore
             }
         }
 
-        // Creates the root binding context, from which all other binding contexts will be created (only created from ViewModel)
+        // Creates the root binding context, from which all other binding contexts will be created
         //
         public BindingContext(JObject bindingRoot)
         {
@@ -114,10 +114,10 @@ namespace MaaasCore
             this.attemptToBindTokenIfNeeded();
         }
 
-        private BindingContext(BindingContext context, JToken parentToken, string bindingPath)
+        private BindingContext(BindingContext context, int index, string bindingPath)
         {
             _bindingRoot = context._bindingRoot;
-            resolveBinding(ViewModel.GetTokenPath(parentToken), bindingPath);
+            resolveBinding(context._bindingPath + "[" + index + "]", bindingPath);
             this.attemptToBindTokenIfNeeded();
         }
 
@@ -125,7 +125,7 @@ namespace MaaasCore
         // Public interface starts here...
         //
 
-        // Given a path to a changed view model element, determine if the binding is impacted.
+        // Given a path to a changed element, determine if the binding is impacted.
         //
         public Boolean IsBindingUpdated(string updatedElementPath, Boolean objectChange)
         {
@@ -159,9 +159,11 @@ namespace MaaasCore
 
             if ((_boundToken != null) && (_boundToken.Type == JTokenType.Array))
             {
+                int index = 0;
                 foreach (JToken arrayElement in (JArray)_boundToken)
                 {
-                    bindingContexts.Add(new BindingContext(this, arrayElement, bindingPath));
+                    bindingContexts.Add(new BindingContext(this, index, bindingPath));
+                    index++;
                 }
             }
 
@@ -202,7 +204,7 @@ namespace MaaasCore
                 }
             }
 
-            // Token could not be bound at this time (no corresponding view model item) - no value returned!
+            // Token could not be bound at this time (no corresponding token) - no value returned!
             return null;
         }
 
@@ -219,7 +221,7 @@ namespace MaaasCore
                 }
             }
 
-            // Token could not be bound at this time (no corresponding view model item) - value not set!
+            // Token could not be bound at this time (no corresponding token) - value not set!
             return false;
         }
 
