@@ -149,89 +149,44 @@ namespace MaaasCore
             return starCnt;
         }
 
-        public static Double ToDouble(object value, double defaultValue = 0)
+        // Basic token conversions
+        //
+
+        public String ToString(JToken token, String defaultValue = "")
         {
-            if (value == null)
-            {
-                return defaultValue;
-            }
-            else if (value is JValue)
-            {
-                JValue jValue = value as JValue;
-                if (jValue.Type == JTokenType.String)
-                {
-                    value = (string)jValue;
-                }
-                else
-                {
-                    return (double)jValue;
-                }
-            }
-            return Convert.ToDouble(value);
+            return TokenConverter.ToString(token, defaultValue);
         }
 
-        public static String ToString(object value, string defaultValue = "")
+        public Boolean ToBoolean(JToken token, Boolean defaultValue = false)
         {
-            string result = defaultValue;
-
-            if (value != null)
-            {
-                if (value is JToken)
-                {
-                    if (((JToken)value).Type != JTokenType.Null)
-                    {
-                        result = TokenConverter.ToString((JToken)value);
-                    }
-                }
-                else
-                {
-                    result = value.ToString();
-                }
-            }
-
-            return result;
+            return TokenConverter.ToBoolean(token, defaultValue);
         }
 
-        public static Boolean ToBoolean(object value, Boolean defaultValue = false)
+        public Double ToDouble(JToken value, double defaultValue = 0)
         {
-            Boolean result = defaultValue;
-
-            if (value is JToken)
-            {
-                result = TokenConverter.ToBoolean((JToken)value);
-            }
-            else if (value is String)
-            {
-                result = ((string)value).Length > 0;
-            }
-            else if (value != null)
-            {
-                result = Convert.ToBoolean(value);
-            }
-
-            return result;
+            return TokenConverter.ToDouble(value, defaultValue);
         }
 
         // Conversion functions to go from Maaas units or typographic points to device units
         //
 
-        public double ToDeviceUnits(object value)
+        public double ToDeviceUnits(Double value)
         {
-            return StateManager.DeviceMetrics.MaaasUnitsToDeviceUnits(ToDouble(value));
+            return StateManager.DeviceMetrics.MaaasUnitsToDeviceUnits(value);
         }
 
-        public double ToDeviceUnitsFromTypographicPoints(object value)
+        public double ToDeviceUnits(JToken value)
+        {
+            return ToDeviceUnits(ToDouble(value));
+        }
+
+        public double ToDeviceUnitsFromTypographicPoints(JToken value)
         {
             return ToDeviceUnits(StateManager.DeviceMetrics.TypographicPointsToMaaasUnits(ToDouble(value)));
         }
 
-        static public ListSelectionMode ToListSelectionMode(object value, ListSelectionMode defaultSelectionMode = ListSelectionMode.Single)
+        public ListSelectionMode ToListSelectionMode(JToken value, ListSelectionMode defaultSelectionMode = ListSelectionMode.Single)
         {
-            if (value is ListSelectionMode)
-            {
-                return (ListSelectionMode)value;
-            }
-
             ListSelectionMode selectionMode = defaultSelectionMode;
             string selectionModeValue = ToString(value);
             if (selectionModeValue == "None")
@@ -553,14 +508,10 @@ namespace MaaasCore
         //
         // This is "public" because there are cases when a parent element needs to process properties on its children after creation.
         //
-        public void processElementProperty(JToken value, SetViewValue setValue, object defaultValue = null)
+        public void processElementProperty(JToken value, SetViewValue setValue)
         {
             if (value == null)
             {
-                if (defaultValue != null)
-                {
-                    setValue(defaultValue);
-                }
                 return;
             }
             else if ((value.Type == JTokenType.String) && PropertyValue.ContainsBindingTokens((string)value))

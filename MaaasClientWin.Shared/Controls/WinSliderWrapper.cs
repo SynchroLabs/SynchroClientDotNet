@@ -33,7 +33,7 @@ namespace MaaasClientWin.Controls
             applyFrameworkElementDefaults(rangeControl);
 
             JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "value");
-            if (!processElementBoundValue("value", (string)bindingSpec["value"], () => { return rangeControl.Value; }, value => rangeControl.Value = ToDouble(value)))
+            if (!processElementBoundValue("value", (string)bindingSpec["value"], () => { return new JValue(rangeControl.Value); }, value => rangeControl.Value = ToDouble(value)))
             {
                 processElementProperty(controlSpec["value"], value => rangeControl.Value = ToDouble(value));
             }

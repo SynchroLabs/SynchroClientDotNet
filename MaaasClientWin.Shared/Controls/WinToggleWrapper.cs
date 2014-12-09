@@ -26,7 +26,7 @@ namespace MaaasClientWin.Controls
             JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "value", Commands);
             ProcessCommands(bindingSpec, Commands);
 
-            if (!processElementBoundValue("value", (string)bindingSpec["value"], () => { return button.IsChecked; }, value => button.IsChecked = ToBoolean(value)))
+            if (!processElementBoundValue("value", (string)bindingSpec["value"], () => { return new JValue(button.IsChecked); }, value => button.IsChecked = ToBoolean(value)))
             {
                 processElementProperty(controlSpec["value"], value => button.IsChecked = ToBoolean(value));
             }

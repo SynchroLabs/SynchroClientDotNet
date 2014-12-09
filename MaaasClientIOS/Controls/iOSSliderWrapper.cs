@@ -26,7 +26,7 @@ namespace MaaasClientIOS.Controls
             applyFrameworkElementDefaults(slider);
 
             JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "value");
-            if (!processElementBoundValue("value", (string)bindingSpec["value"], () => { return slider.Value; }, value => setValue((float)ToDouble(value))))
+            if (!processElementBoundValue("value", (string)bindingSpec["value"], () => { return new JValue(slider.Value); }, value => setValue((float)ToDouble(value))))
             {
                 processElementProperty(controlSpec["value"], value => setValue((float)ToDouble(value)));
             }

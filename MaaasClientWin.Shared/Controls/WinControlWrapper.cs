@@ -100,13 +100,8 @@ namespace MaaasClientWin.Controls
             _control = control;
         }
 
-        public Orientation ToOrientation(object value, Orientation defaultOrientation = Orientation.Horizontal)
+        public Orientation ToOrientation(JToken value, Orientation defaultOrientation = Orientation.Horizontal)
         {
-            if (value is Orientation)
-            {
-                return (Orientation)value;
-            }
-
             Orientation orientation = defaultOrientation;
             string orientationValue = ToString(value);
             if (orientationValue == "Horizontal")
@@ -120,13 +115,8 @@ namespace MaaasClientWin.Controls
             return orientation;
         }
 
-        public HorizontalAlignment ToHorizontalAlignment(object value, HorizontalAlignment defaultAlignment = HorizontalAlignment.Left)
+        public HorizontalAlignment ToHorizontalAlignment(JToken value, HorizontalAlignment defaultAlignment = HorizontalAlignment.Left)
         {
-            if (value is HorizontalAlignment)
-            {
-                return (HorizontalAlignment)value;
-            }
-
             HorizontalAlignment alignment = defaultAlignment;
             string alignmentValue = ToString(value);
             if (alignmentValue == "Left")
@@ -148,13 +138,8 @@ namespace MaaasClientWin.Controls
             return alignment;
         }
 
-        public VerticalAlignment ToVerticalAlignment(object value, VerticalAlignment defaultAlignment = VerticalAlignment.Top)
+        public VerticalAlignment ToVerticalAlignment(JToken value, VerticalAlignment defaultAlignment = VerticalAlignment.Top)
         {
-            if (value is VerticalAlignment)
-            {
-                return (VerticalAlignment)value;
-            }
-
             VerticalAlignment alignment = defaultAlignment;
             string alignmentValue = ToString(value);
             if (alignmentValue == "Top")
@@ -176,7 +161,7 @@ namespace MaaasClientWin.Controls
             return alignment;
         }
 
-        public static SolidColorBrush ToBrush(object value)
+        public SolidColorBrush ToBrush(JToken value)
         {
             ColorARGB color = ControlWrapper.getColor(ToString(value));
             if (color != null)
@@ -189,7 +174,7 @@ namespace MaaasClientWin.Controls
             }
         }
 
-        public static FontWeight ToFontWeight(object value)
+        public FontWeight ToFontWeight(JToken value)
         {
             String weight = ToString(value);
 
@@ -201,7 +186,7 @@ namespace MaaasClientWin.Controls
             return FontWeights.Normal;
         }
 
-        public delegate object ConvertValue(object value);
+        public delegate object ConvertValue(JToken value);
 
         // This method allows us to do some runtime reflection to see if a property exists on an element, and if so, to bind to it.  This
         // is needed because there are common properties of FrameworkElement instances that are repeated in different class trees.  For
@@ -224,7 +209,10 @@ namespace MaaasClientWin.Controls
             }
         }
 
-        public void processThicknessProperty(JToken thicknessAttributeValue, GetViewValue getThickness, SetViewValue setThickness)
+        public delegate void SetViewThickness(Thickness thickness);
+        public delegate Thickness GetViewThickness();
+
+        public void processThicknessProperty(JToken thicknessAttributeValue, GetViewThickness getThickness, SetViewThickness setThickness)
         {
             if (thicknessAttributeValue is JValue)
             {
@@ -277,7 +265,7 @@ namespace MaaasClientWin.Controls
             element.VerticalAlignment = VerticalAlignment.Top;
         }
 
-        protected void setHeight(FrameworkElement control, object value)
+        protected void setHeight(FrameworkElement control, JToken value)
         {
             string heightString = ToString(value);
             if (heightString.IndexOf("*") >= 0)
@@ -291,7 +279,7 @@ namespace MaaasClientWin.Controls
             }
         }
 
-        protected void setWidth(FrameworkElement control, object value)
+        protected void setWidth(FrameworkElement control, JToken value)
         {
             string widthString = ToString(value);
             if (widthString.IndexOf("*") >= 0)

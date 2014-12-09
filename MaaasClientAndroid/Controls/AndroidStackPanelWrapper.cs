@@ -33,7 +33,14 @@ namespace SynchroClientAndroid.Controls
             //
             layout.BaselineAligned = false;
 
-            processElementProperty(controlSpec["orientation"], value => layout.Orientation = ToOrientation(value, Orientation.Vertical), Orientation.Vertical);
+            if (controlSpec["orientation"] == null)
+            {
+                layout.Orientation = Orientation.Vertical;
+            }
+            else
+            {
+                processElementProperty(controlSpec["orientation"], value => layout.Orientation = ToOrientation(value, Orientation.Vertical));
+            }
 
             processThicknessProperty(controlSpec["padding"], new PaddingThicknessSetter(this.Control));
 

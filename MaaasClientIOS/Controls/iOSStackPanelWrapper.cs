@@ -366,7 +366,14 @@ namespace MaaasClientIOS.Controls
             processElementDimensions(controlSpec, 0, 0);
             applyFrameworkElementDefaults(stackPanel, false);
 
-            processElementProperty(controlSpec["orientation"], value => stackPanel.Orientation = ToOrientation(value, Orientation.Vertical), Orientation.Vertical);
+            if (controlSpec["orientation"] == null)
+            {
+                stackPanel.Orientation = Orientation.Vertical;
+            }
+            else
+            {
+                processElementProperty(controlSpec["orientation"], value => stackPanel.Orientation = ToOrientation(value, Orientation.Vertical));
+            }
 
             processThicknessProperty(controlSpec["padding"], new PaddedViewThicknessSetter(stackPanel));
 

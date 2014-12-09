@@ -208,7 +208,7 @@ namespace MaaasCore
 
         // Return boolean indicating whether the bound token was changed (and rebinding needs to be triggered)
         //
-        public Boolean SetValue(object value)
+        public Boolean SetValue(JToken value)
         {
             this.attemptToBindTokenIfNeeded();
             if (_boundToken != null)

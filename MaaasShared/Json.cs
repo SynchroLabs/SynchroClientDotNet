@@ -183,6 +183,8 @@ namespace MaaasCore
 
             if ((Parent != null) && (token != this))
             {
+                // Find ourself in our parent, and replace...
+                //
                 if (Parent is JObject)
                 {
                     JObject parentObject = Parent as JObject;
@@ -208,32 +210,28 @@ namespace MaaasCore
             return bReplaced;
         }
 
-        // If a complex assignment takes place, then the token itself will be replaced.  In that case, this method
-        // will return true and will update the passed in token.
+        // Update a token to a new value, attempting to preserve the object graph to the extent possible
         //
-        public static Boolean UpdateTokenValue(ref JToken token, object value)
+        public static Boolean UpdateTokenValue(ref JToken currentToken, JToken newToken)
         {
-            if (!(value is JToken))
+            if (currentToken != newToken)
             {
-                // This will convert standard value types (string, bool, int, double, etc) to JValue for assignment
-                //
-                value = new JValue(value);
-            }
-
-            // If the bound item value and the value being set are both primitive values, then we just do a value assignment,
-            // otherwise we have to do a token replace (which may modify the object graph and trigger rebinding).
-            //
-            if ((token is JValue) && (value is JValue))
-            {
-                ((JValue)token).Value = ((JValue)value).Value;
-            }
-            else
-            {
-                JToken newValue = (JToken)value;
-                if (token.Replace(newValue))
+                if ((currentToken is JValue) && (newToken is JValue))
                 {
-                    token = newValue;
-                    return true; // Token change
+                    // If the current token and the new token are both primitive values, then we just do a 
+                    // value assignment...
+                    //
+                    ((JValue)currentToken).Value = ((JValue)newToken).Value;
+                }
+                else
+                {
+                    // Otherwise we have to replace the current token with the new token in the current token's parent...
+                    //
+                    if (currentToken.Replace(newToken))
+                    {
+                        currentToken = newToken;
+                        return true; // Token change
+                    }
                 }
             }
             return false; // Value-only change, or no change

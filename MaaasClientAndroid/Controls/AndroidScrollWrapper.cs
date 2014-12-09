@@ -30,7 +30,7 @@ namespace SynchroClientAndroid.Controls
             //
             // Vertical scroll is default...
             //
-            Orientation orientation = ToOrientation((string)controlSpec["orientation"], Orientation.Vertical);
+            Orientation orientation = ToOrientation(controlSpec["orientation"], Orientation.Vertical);
             if (orientation == Orientation.Vertical)
             {
                 ScrollView vScroller = new ScrollView(((AndroidControlWrapper)parent).Control.Context);

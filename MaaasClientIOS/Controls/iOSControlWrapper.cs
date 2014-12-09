@@ -614,13 +614,8 @@ namespace MaaasClientIOS.Controls
             }
         }
 
-        public Orientation ToOrientation(object value, Orientation defaultOrientation = Orientation.Horizontal)
+        public Orientation ToOrientation(JToken value, Orientation defaultOrientation = Orientation.Horizontal)
         {
-            if (value is Orientation)
-            {
-                return (Orientation)value;
-            }
-
             Orientation orientation = defaultOrientation;
             string orientationValue = ToString(value);
             if (orientationValue == "Horizontal")
@@ -634,13 +629,8 @@ namespace MaaasClientIOS.Controls
             return orientation;
         }
 
-        public HorizontalAlignment ToHorizontalAlignment(object value, HorizontalAlignment defaultAlignment = HorizontalAlignment.Left)
+        public HorizontalAlignment ToHorizontalAlignment(JToken value, HorizontalAlignment defaultAlignment = HorizontalAlignment.Left)
         {
-            if (value is HorizontalAlignment)
-            {
-                return (HorizontalAlignment)value;
-            }
-
             HorizontalAlignment alignment = defaultAlignment;
             string alignmentValue = ToString(value);
             if (alignmentValue == "Left")
@@ -658,13 +648,8 @@ namespace MaaasClientIOS.Controls
             return alignment;
         }
 
-        public VerticalAlignment ToVerticalAlignment(object value, VerticalAlignment defaultAlignment = VerticalAlignment.Top)
+        public VerticalAlignment ToVerticalAlignment(JToken value, VerticalAlignment defaultAlignment = VerticalAlignment.Top)
         {
-            if (value is VerticalAlignment)
-            {
-                return (VerticalAlignment)value;
-            }
-
             VerticalAlignment alignment = defaultAlignment;
             string alignmentValue = ToString(value);
             if (alignmentValue == "Top")
@@ -682,7 +667,7 @@ namespace MaaasClientIOS.Controls
             return alignment;
         }
 
-        protected static UIColor ToColor(object value)
+        protected UIColor ToColor(JToken value)
         {
             ColorARGB color = ControlWrapper.getColor(ToString(value));
             if (color != null)

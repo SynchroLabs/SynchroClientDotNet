@@ -23,7 +23,7 @@ namespace MaaasClientWin.Controls
             applyFrameworkElementDefaults(passwordBox);
 
             JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "value");
-            if (!processElementBoundValue("value", (string)bindingSpec["value"], () => { return passwordBox.Password; }, value => passwordBox.Password = ToString(value)))
+            if (!processElementBoundValue("value", (string)bindingSpec["value"], () => { return new JValue(passwordBox.Password); }, value => passwordBox.Password = ToString(value)))
             {
                 processElementProperty(controlSpec["value"], value => passwordBox.Password = ToString(value));
             }

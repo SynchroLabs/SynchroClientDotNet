@@ -25,7 +25,7 @@ namespace MaaasClientWin.Controls
             applyFrameworkElementDefaults(textBox);
 
             JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "value");
-            if (!processElementBoundValue("value", (string)bindingSpec["value"], () => { return textBox.Text; }, value => textBox.Text = ToString(value)))
+            if (!processElementBoundValue("value", (string)bindingSpec["value"], () => { return new JValue(textBox.Text); }, value => textBox.Text = ToString(value)))
             {
                 processElementProperty(controlSpec["value"], value => textBox.Text = ToString(value));
             }

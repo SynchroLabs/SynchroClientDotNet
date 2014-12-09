@@ -97,7 +97,7 @@ namespace MaaasClientIOS.Controls
         {
             logger.Debug("Creating scroll element");
 
-            Orientation orientation = ToOrientation((string)controlSpec["orientation"], Orientation.Vertical);
+            Orientation orientation = ToOrientation(controlSpec["orientation"], Orientation.Vertical);
 
             // https://developer.apple.com/library/ios/documentation/WindowsViews/Conceptual/UIScrollView_pg/Introduction/Introduction.html
             //

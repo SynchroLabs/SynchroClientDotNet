@@ -216,7 +216,7 @@ namespace MaaasClientIOS.Controls
 
             // Switch
             //
-            if (!processElementBoundValue("value", (string)bindingSpec["value"], () => { return toggleSwitch.On; }, value => toggleSwitch.On = ToBoolean(value)))
+            if (!processElementBoundValue("value", (string)bindingSpec["value"], () => { return new JValue(toggleSwitch.On); }, value => toggleSwitch.On = ToBoolean(value)))
             {
                 processElementProperty(controlSpec["value"], value => toggleSwitch.On = ToBoolean(value));
             }

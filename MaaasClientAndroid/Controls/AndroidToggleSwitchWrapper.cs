@@ -33,7 +33,7 @@ namespace SynchroClientAndroid.Controls
             JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "value", Commands);
             ProcessCommands(bindingSpec, Commands);
 
-            if (!processElementBoundValue("value", (string)bindingSpec["value"], () => { return toggleSwitch.Checked; }, value => toggleSwitch.Checked = ToBoolean(value)))
+            if (!processElementBoundValue("value", (string)bindingSpec["value"], () => { return new MaaasCore.JValue(toggleSwitch.Checked); }, value => toggleSwitch.Checked = ToBoolean(value)))
             {
                 processElementProperty(controlSpec["value"], value => toggleSwitch.Checked = ToBoolean(value));
             }

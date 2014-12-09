@@ -310,7 +310,7 @@ namespace MaaasClientIOS.Controls
             //
             // table.RegisterClassForCellReuse(typeof(TableCell), TableCell.CellIdentifier);
 
-            ListSelectionMode selectionMode = ToListSelectionMode((string)controlSpec["select"]);
+            ListSelectionMode selectionMode = ToListSelectionMode(controlSpec["select"]);
             table.Source = new BindingContextAsCheckableStringTableSource(selectionMode, listbox_SelectionChanged, listbox_ItemClicked);
 
             processElementDimensions(controlSpec, 150, 50);

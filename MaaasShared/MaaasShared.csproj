@@ -50,6 +50,7 @@
     <Compile Include="Logger.cs" />
     <Compile Include="PageView.cs" />
     <Compile Include="StateManager.cs" />
+    <Compile Include="TokenConverter.cs" />
     <Compile Include="Transport.cs" />
     <Compile Include="TransportHttp.cs" />
     <Compile Include="Util.cs" />

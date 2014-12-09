@@ -140,6 +140,9 @@
     <Compile Include="..\MaaasShared\StateManager.cs">
       <Link>Linked\StateManager.cs</Link>
     </Compile>
+    <Compile Include="..\MaaasShared\TokenConverter.cs">
+      <Link>Linked\TokenConverter.cs</Link>
+    </Compile>
     <Compile Include="..\MaaasShared\Transport.cs">
       <Link>Linked\Transport.cs</Link>
     </Compile>

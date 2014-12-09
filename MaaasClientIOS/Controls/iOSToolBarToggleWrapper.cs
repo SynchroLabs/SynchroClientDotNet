@@ -128,7 +128,7 @@ namespace MaaasClientIOS.Controls
             //
             _buttonItem = new UIBarButtonItem("", UIBarButtonItemStyle.Plain, buttonItem_Clicked);
 
-            if (!processElementBoundValue("value", (string)bindingSpec["value"], () => { return this.IsChecked; }, value => this.IsChecked = ToBoolean(value)))
+            if (!processElementBoundValue("value", (string)bindingSpec["value"], () => { return new JValue(this.IsChecked); }, value => this.IsChecked = ToBoolean(value)))
             {
                 processElementProperty(controlSpec["value"], value => this.IsChecked = ToBoolean(value));
             }

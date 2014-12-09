@@ -27,7 +27,7 @@ namespace MaaasClientWin.Controls
             JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "value", Commands);
             ProcessCommands(bindingSpec, Commands);
 
-            if (!processElementBoundValue("value", (string)bindingSpec["value"], () => { return toggleSwitch.IsOn; }, value => toggleSwitch.IsOn = ToBoolean(value)))
+            if (!processElementBoundValue("value", (string)bindingSpec["value"], () => { return new JValue(toggleSwitch.IsOn); }, value => toggleSwitch.IsOn = ToBoolean(value)))
             {
                 processElementProperty(controlSpec["value"], value => toggleSwitch.IsOn = ToBoolean(value));
             }

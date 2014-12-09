@@ -38,7 +38,7 @@ namespace SynchroClientAndroid.Controls
             applyFrameworkElementDefaults(editText);
 
             JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "value");
-            if (!processElementBoundValue("value", (string)bindingSpec["value"], () => { return editText.Text; }, value => editText.Text = ToString(value)))
+            if (!processElementBoundValue("value", (string)bindingSpec["value"], () => { return new MaaasCore.JValue(editText.Text); }, value => editText.Text = ToString(value)))
             {
                 processElementProperty(controlSpec["value"], value => editText.Text = ToString(value));
             }

@@ -23,7 +23,14 @@ namespace MaaasClientWin.Controls
             _scroller = new ScrollViewer();
             this._control = _scroller;
 
-            processElementProperty(controlSpec["orientation"], value => setOrientation(ToOrientation(value, Orientation.Vertical)), Orientation.Vertical);
+            if (controlSpec["orientation"] == null)
+            {
+                setOrientation(Orientation.Vertical);
+            }
+            else
+            {
+                processElementProperty(controlSpec["orientation"], value => setOrientation(ToOrientation(value, Orientation.Vertical)));
+            }
 
             applyFrameworkElementDefaults(_scroller);
 

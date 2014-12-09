@@ -444,13 +444,8 @@ namespace SynchroClientAndroid.Controls
             }
         }
 
-        public Orientation ToOrientation(object value, Orientation defaultOrientation = Orientation.Horizontal)
+        public Orientation ToOrientation(JToken value, Orientation defaultOrientation = Orientation.Horizontal)
         {
-            if (value is Orientation)
-            {
-                return (Orientation)value;
-            }
-
             Orientation orientation = defaultOrientation;
             string orientationValue = ToString(value);
             if (orientationValue == "Horizontal")
@@ -464,13 +459,8 @@ namespace SynchroClientAndroid.Controls
             return orientation;
         }
 
-        public GravityFlags ToHorizontalAlignment(object value, GravityFlags defaultAlignment = GravityFlags.Left)
+        public GravityFlags ToHorizontalAlignment(JToken value, GravityFlags defaultAlignment = GravityFlags.Left)
         {
-            if (value is GravityFlags)
-            {
-                return (GravityFlags)value;
-            }
-
             GravityFlags alignment = defaultAlignment;
             string alignmentValue = ToString(value);
             if (alignmentValue == "Left")
@@ -492,13 +482,8 @@ namespace SynchroClientAndroid.Controls
             return alignment;
         }
 
-        public GravityFlags ToVerticalAlignment(object value, GravityFlags defaultAlignment = GravityFlags.Top)
+        public GravityFlags ToVerticalAlignment(JToken value, GravityFlags defaultAlignment = GravityFlags.Top)
         {
-            if (value is GravityFlags)
-            {
-                return (GravityFlags)value;
-            }
-
             GravityFlags alignment = defaultAlignment;
             string alignmentValue = ToString(value);
             if (alignmentValue == "Top")
@@ -520,7 +505,7 @@ namespace SynchroClientAndroid.Controls
             return alignment;
         }
 
-        public static Color ToColor(object value)
+        public Color ToColor(JToken value)
         {
             ColorARGB color = ControlWrapper.getColor(ToString(value));
             if (color != null)
@@ -538,7 +523,7 @@ namespace SynchroClientAndroid.Controls
             // !!! This could be a little more thourough ;)
         }
 
-        public double ToAndroidDpFromTypographicPoints(object value)
+        public double ToAndroidDpFromTypographicPoints(JToken value)
         {
             // A typographic point is 1/72 of an inch.  Convert to logical pixel value for device.
             //
@@ -550,35 +535,73 @@ namespace SynchroClientAndroid.Controls
         {
             if (thicknessAttributeValue is MaaasCore.JValue)
             {
-                processElementProperty(thicknessAttributeValue, value =>
+                if (thicknessAttributeValue == null)
                 {
-                    thicknessSetter.SetThickness((int)ToDeviceUnits(value));
-                }, "0");
+                    thicknessSetter.SetThickness(0);
+                }
+                else
+                {
+                    processElementProperty(thicknessAttributeValue, value =>
+                    {
+                        thicknessSetter.SetThickness((int)ToDeviceUnits(value));
+                    });
+                }
             }
             else if (thicknessAttributeValue is JObject)
             {
                 JObject marginObject = thicknessAttributeValue as JObject;
 
-                processElementProperty(marginObject.GetValue("left"), value =>
+                if (marginObject.GetValue("left") == null)
                 {
-                    thicknessSetter.SetThicknessLeft((int)ToDeviceUnits(value));
-                }, "0");
-                processElementProperty(marginObject.GetValue("top"), value =>
+                    thicknessSetter.SetThicknessLeft(0);
+                }
+                else
                 {
-                    thicknessSetter.SetThicknessTop((int)ToDeviceUnits(value));
-                }, "0");
-                processElementProperty(marginObject.GetValue("right"), value =>
+                    processElementProperty(marginObject.GetValue("left"), value =>
+                    {
+                        thicknessSetter.SetThicknessLeft((int)ToDeviceUnits(value));
+                    });
+                }
+
+                if (marginObject.GetValue("top") == null)
                 {
-                    thicknessSetter.SetThicknessRight((int)ToDeviceUnits(value));
-                }, "0");
-                processElementProperty(marginObject.GetValue("bottom"), value =>
+                    thicknessSetter.SetThicknessTop(0);
+                }
+                else
                 {
-                    thicknessSetter.SetThicknessBottom((int)ToDeviceUnits(value));
-                }, "0");
+                    processElementProperty(marginObject.GetValue("top"), value =>
+                    {
+                        thicknessSetter.SetThicknessTop((int)ToDeviceUnits(value));
+                    });
+                }
+
+                if (marginObject.GetValue("right") == null)
+                {
+                    thicknessSetter.SetThicknessRight(0);
+                }
+                else
+                {
+                    processElementProperty(marginObject.GetValue("right"), value =>
+                    {
+                        thicknessSetter.SetThicknessRight((int)ToDeviceUnits(value));
+                    });
+                }
+
+                if (marginObject.GetValue("bottom") == null)
+                {
+                    thicknessSetter.SetThicknessBottom(0);
+                }
+                else
+                {
+                    processElementProperty(marginObject.GetValue("bottom"), value =>
+                    {
+                        thicknessSetter.SetThicknessBottom((int)ToDeviceUnits(value));
+                    });
+                }
             }
         }
 
-        protected void setHeight(object value)
+        protected void setHeight(JToken value)
         {
             string heightString = ToString(value);
             if (heightString.IndexOf("*") >= 0)
@@ -592,7 +615,7 @@ namespace SynchroClientAndroid.Controls
             }
         }
 
-        protected void setWidth(object value)
+        protected void setWidth(JToken value)
         {
             string widthString = ToString(value);
             if (widthString.IndexOf("*") >= 0)
