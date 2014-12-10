@@ -97,15 +97,6 @@ namespace MaaasCore
                 //
                 if (commandAttributes != null)
                 {
-                    List<string> commandKeys = new List<string>();
-                    foreach (var attribute in bindingObject)
-                    {
-                        if (commandAttributes.Contains(attribute.Key))
-                        {
-                            commandKeys.Add(attribute.Key);
-                        }
-                    }
-
                     foreach (var commandAttribute in commandAttributes)
                     {
                         // Processing a command (attribute name corresponds to a command)
@@ -113,6 +104,10 @@ namespace MaaasCore
                         if (bindingObject[commandAttribute] is JValue)
                         {
                             // If attribute value is simple value type, promote "attributeValue" to { command: "attributeValue" }
+                            //
+                            // !!! The creation of the wrapper object below failed on the iOS port because the bindingObject[commandAttribute]
+                            //     already had a parent.  Fix was to wrap in JValue copy constructor.  Verify and fix as needed once we port
+                            //     the unit tests back.
                             //
                             bindingObject[commandAttribute] = new JObject(){ { "command", bindingObject[commandAttribute] } };
                         }
