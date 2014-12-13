@@ -11,7 +11,7 @@ namespace MaaasClientWin.Controls
     {
         static Logger logger = Logger.GetLogger("WinLocationWrapper");
 
-        static string[] Commands = new string[] { CommandName.OnUpdate };
+        static string[] Commands = new string[] { CommandName.OnUpdate.Attribute };
 
         bool _updateOnChange = false;
 

@@ -17,7 +17,7 @@ namespace MaaasClientWin.Controls
 
         bool _selectionModeNone = false;
 
-        static string[] Commands = new string[] { CommandName.OnItemClick, CommandName.OnSelectionChange };
+        static string[] Commands = new string[] { CommandName.OnItemClick.Attribute, CommandName.OnSelectionChange.Attribute };
 
         public WinListBoxWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)

@@ -14,7 +14,7 @@ namespace MaaasCore
 
         public override string ToString() { return Attribute; }
 
-        public static implicit operator String(CommandName commandName) { return commandName.Attribute; }
+        //public static implicit operator String(CommandName commandName) { return commandName.Attribute; }
 
         public static CommandName OnClick { get { return new CommandName("onClick"); } }
         public static CommandName OnItemClick { get { return new CommandName("onItemClick"); } }

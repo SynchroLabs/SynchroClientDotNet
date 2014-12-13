@@ -45,7 +45,7 @@ namespace MaaasClientWin.Controls
         bool _selectionChangingProgramatically = false;
         JToken _localSelection;
 
-        static string[] Commands = new string[] { CommandName.OnSelectionChange };
+        static string[] Commands = new string[] { CommandName.OnSelectionChange.Attribute };
 
         public WinPickerWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)

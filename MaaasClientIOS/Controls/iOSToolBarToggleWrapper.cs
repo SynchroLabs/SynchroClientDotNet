@@ -14,7 +14,7 @@ namespace MaaasClientIOS.Controls
     {
         static Logger logger = Logger.GetLogger("iOSToolBarToggleWrapper");
 
-        static string[] Commands = new string[] { CommandName.OnToggle };
+        static string[] Commands = new string[] { CommandName.OnToggle.Attribute };
 
         protected UIBarButtonItem _buttonItem;
 
@@ -121,7 +121,7 @@ namespace MaaasClientIOS.Controls
         {
             logger.Debug("Creating tool bar toggle button element");
 
-            JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, CommandName.OnClick, Commands);
+            JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, CommandName.OnClick.Attribute, Commands);
             ProcessCommands(bindingSpec, Commands);
 
             // Custom items, can specify text, icon, or both

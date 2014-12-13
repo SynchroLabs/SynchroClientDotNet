@@ -185,7 +185,7 @@ namespace SynchroClientAndroid.Controls
         JToken _localSelection;
         int _listStart = 0;
 
-        static string[] Commands = new string[] { CommandName.OnItemClick, CommandName.OnSelectionChange };
+        static string[] Commands = new string[] { CommandName.OnItemClick.Attribute, CommandName.OnSelectionChange.Attribute };
 
         public AndroidListViewWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)

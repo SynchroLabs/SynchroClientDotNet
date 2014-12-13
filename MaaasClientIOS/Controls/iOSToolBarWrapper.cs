@@ -14,7 +14,7 @@ namespace MaaasClientIOS.Controls
     {
         static Logger logger = Logger.GetLogger("iOSToolBarWrapper");
 
-        static string[] Commands = new string[] { CommandName.OnClick };
+        static string[] Commands = new string[] { CommandName.OnClick.Attribute };
 
         public iOSToolBarWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
@@ -66,7 +66,7 @@ namespace MaaasClientIOS.Controls
 
             _isVisualElement = false;
 
-            JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, CommandName.OnClick, Commands);
+            JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, CommandName.OnClick.Attribute, Commands);
             ProcessCommands(bindingSpec, Commands);
         }
 

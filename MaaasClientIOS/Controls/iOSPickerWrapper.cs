@@ -101,7 +101,7 @@ namespace MaaasClientIOS.Controls
 
         PickerTextField _textBox;
 
-        static string[] Commands = new string[] { CommandName.OnSelectionChange };
+        static string[] Commands = new string[] { CommandName.OnSelectionChange.Attribute };
 
         public iOSPickerWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)

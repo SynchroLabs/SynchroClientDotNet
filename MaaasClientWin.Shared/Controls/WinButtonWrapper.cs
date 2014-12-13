@@ -13,7 +13,7 @@ namespace MaaasClientWin.Controls
     {
         static Logger logger = Logger.GetLogger("WinButtonWrapper");
 
-        static string[] Commands = new string[] { CommandName.OnClick };
+        static string[] Commands = new string[] { CommandName.OnClick.Attribute };
 
         public WinButtonWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
@@ -26,7 +26,7 @@ namespace MaaasClientWin.Controls
  
             processElementProperty(controlSpec["caption"], value => button.Content = ToString(value));
 
-            JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, CommandName.OnClick, Commands);
+            JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, CommandName.OnClick.Attribute, Commands);
             ProcessCommands(bindingSpec, Commands);
 
             if (GetCommand(CommandName.OnClick) != null)

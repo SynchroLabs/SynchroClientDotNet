@@ -382,7 +382,7 @@ namespace MaaasClientIOS.Controls
         bool _selectionChangingProgramatically = false;
         JToken _localSelection;
 
-        static string[] Commands = new string[] { CommandName.OnItemClick, CommandName.OnSelectionChange };
+        static string[] Commands = new string[] { CommandName.OnItemClick.Attribute, CommandName.OnSelectionChange.Attribute };
 
         public iOSListViewWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)

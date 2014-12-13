@@ -15,7 +15,7 @@ namespace MaaasClientIOS.Controls
     {
         static Logger logger = Logger.GetLogger("iOSButtonWrapper");
 
-        static string[] Commands = new string[] { CommandName.OnClick };
+        static string[] Commands = new string[] { CommandName.OnClick.Attribute };
 
         public iOSButtonWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
@@ -34,7 +34,7 @@ namespace MaaasClientIOS.Controls
                 this.SizeToFit();
             });
 
-            JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, CommandName.OnClick, Commands);
+            JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, CommandName.OnClick.Attribute, Commands);
             ProcessCommands(bindingSpec, Commands);
 
             if (GetCommand(CommandName.OnClick) != null)

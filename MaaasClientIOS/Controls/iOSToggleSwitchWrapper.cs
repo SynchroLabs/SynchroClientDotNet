@@ -191,7 +191,7 @@ namespace MaaasClientIOS.Controls
     {
         static Logger logger = Logger.GetLogger("iOSToggleSwitchWrapper");
 
-        static string[] Commands = new string[] { CommandName.OnToggle };
+        static string[] Commands = new string[] { CommandName.OnToggle.Attribute };
 
         public iOSToggleSwitchWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)

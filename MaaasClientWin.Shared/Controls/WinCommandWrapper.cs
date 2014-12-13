@@ -16,7 +16,7 @@ namespace MaaasClientWin.Controls
     {
         static Logger logger = Logger.GetLogger("WinCommandWrapper");
 
-        static string[] Commands = new string[] { CommandName.OnClick };
+        static string[] Commands = new string[] { CommandName.OnClick.Attribute };
 
         public WinCommandWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
@@ -80,7 +80,7 @@ namespace MaaasClientWin.Controls
 #endif
             }
 
-            JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, CommandName.OnClick, Commands);
+            JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, CommandName.OnClick.Attribute, Commands);
             ProcessCommands(bindingSpec, Commands);
 
             if (GetCommand(CommandName.OnClick) != null)

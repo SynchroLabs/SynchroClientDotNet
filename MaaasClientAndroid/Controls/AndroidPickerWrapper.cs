@@ -143,7 +143,7 @@ namespace SynchroClientAndroid.Controls
 
         int _lastProgramaticallySelectedPosition = Spinner.InvalidPosition;
 
-        static string[] Commands = new string[] { CommandName.OnSelectionChange };
+        static string[] Commands = new string[] { CommandName.OnSelectionChange.Attribute };
 
         public AndroidPickerWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)

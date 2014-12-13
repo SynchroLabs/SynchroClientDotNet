@@ -18,7 +18,7 @@ namespace SynchroClientAndroid.Controls
     {
         static Logger logger = Logger.GetLogger("AndroidToggleSwitchWrapper");
 
-        static string[] Commands = new string[] { CommandName.OnToggle };
+        static string[] Commands = new string[] { CommandName.OnToggle.Attribute };
 
         public AndroidToggleSwitchWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)

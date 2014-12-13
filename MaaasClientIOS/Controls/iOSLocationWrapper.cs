@@ -10,7 +10,7 @@ namespace MaaasClientIOS.Controls
     {
         static Logger logger = Logger.GetLogger("iOSLocationWrapper");
 
-        static string[] Commands = new string[] { CommandName.OnUpdate };
+        static string[] Commands = new string[] { CommandName.OnUpdate.Attribute };
 
         bool _updateOnChange = false;
 

@@ -18,7 +18,7 @@ namespace SynchroClientAndroid.Controls
     {
         static Logger logger = Logger.GetLogger("AndroidButtonWrapper");
 
-        static string[] Commands = new string[] { CommandName.OnClick };
+        static string[] Commands = new string[] { CommandName.OnClick.Attribute };
 
         public AndroidButtonWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
@@ -31,7 +31,7 @@ namespace SynchroClientAndroid.Controls
 
             processElementProperty(controlSpec["caption"], value => button.Text = ToString(value));
 
-            JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, CommandName.OnClick, Commands);
+            JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, CommandName.OnClick.Attribute, Commands);
             ProcessCommands(bindingSpec, Commands);
 
             if (GetCommand(CommandName.OnClick) != null)

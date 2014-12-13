@@ -13,7 +13,7 @@ namespace MaaasClientWin.Controls
     {
         static Logger logger = Logger.GetLogger("WinToggleSwitchWrapper");
 
-        static string[] Commands = new string[] { CommandName.OnToggle };
+        static string[] Commands = new string[] { CommandName.OnToggle.Attribute };
 
         public WinToggleSwitchWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)

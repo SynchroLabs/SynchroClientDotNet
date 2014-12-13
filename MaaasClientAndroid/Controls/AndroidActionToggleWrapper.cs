@@ -18,7 +18,7 @@ namespace SynchroClientAndroid.Controls
     {
         static Logger logger = Logger.GetLogger("AndroidActionToggleWrapper");
 
-        static string[] Commands = new string[] { CommandName.OnToggle };
+        static string[] Commands = new string[] { CommandName.OnToggle.Attribute };
 
         protected AndroidActionBarItem _actionBarItem;
 

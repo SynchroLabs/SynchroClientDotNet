@@ -50,7 +50,7 @@ namespace SynchroClientAndroid.Controls
     {
         static Logger logger = Logger.GetLogger("AndroidLocationWrapper");
 
-        static string[] Commands = new string[] { CommandName.OnUpdate };
+        static string[] Commands = new string[] { CommandName.OnUpdate.Attribute };
 
         bool _updateOnChange = false;
 
