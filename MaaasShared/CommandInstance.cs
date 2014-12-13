@@ -14,8 +14,6 @@ namespace MaaasCore
 
         public override string ToString() { return Attribute; }
 
-        //public static implicit operator String(CommandName commandName) { return commandName.Attribute; }
-
         public static CommandName OnClick { get { return new CommandName("onClick"); } }
         public static CommandName OnItemClick { get { return new CommandName("onItemClick"); } }
         public static CommandName OnSelectionChange { get { return new CommandName("onSelectionChange"); } }
@@ -57,14 +55,7 @@ namespace MaaasCore
                 if (parameter.Value.Type == JTokenType.String)
                 {
                     var expanded = PropertyValue.Expand((string)parameter.Value, bindingContext);
-                    if (expanded is JToken)
-                    {
-                        value = ((JToken)expanded).DeepClone();
-                    }
-                    else
-                    {
-                        value = new JValue(expanded);
-                    }
+                    value = ((JToken)expanded).DeepClone();
                 } 
 
                 obj.Add(parameter.Key, value);
