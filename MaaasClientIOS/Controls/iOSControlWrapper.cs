@@ -248,7 +248,6 @@ namespace MaaasClientIOS.Controls
     public class FontFamilyFromName : FontFamily
     {
         string _familyName;
-        List<FontMetrics> _fonts = new List<FontMetrics>();
 
         protected FontMetrics _plainFont;
         protected FontMetrics _boldFont;
@@ -258,24 +257,25 @@ namespace MaaasClientIOS.Controls
         public FontFamilyFromName(string familyName)
         {
             _familyName = familyName;
+            List<FontMetrics> fonts = new List<FontMetrics>();
             string[] fontNames = UIFont.FontNamesForFamilyName(_familyName);
             foreach (string fontName in fontNames)
             {
-                _fonts.Add(new FontMetrics(fontName));
+                fonts.Add(new FontMetrics(fontName));
             }
 
-            _plainFont = GetBestMatch(FontSlope.Roman, FontWeight.Normal, FontWidth.Normal);
-            _boldFont = GetBestMatch(FontSlope.Roman, FontWeight.Bold, FontWidth.Normal);
-            _italicFont = GetBestMatch(FontSlope.Italic, FontWeight.Normal, FontWidth.Normal);
-            _boldItalicFont = GetBestMatch(FontSlope.Italic, FontWeight.Bold, FontWidth.Normal);
+            _plainFont = GetBestMatch(fonts, FontSlope.Roman, FontWeight.Normal, FontWidth.Normal);
+            _boldFont = GetBestMatch(fonts, FontSlope.Roman, FontWeight.Bold, FontWidth.Normal);
+            _italicFont = GetBestMatch(fonts, FontSlope.Italic, FontWeight.Normal, FontWidth.Normal);
+            _boldItalicFont = GetBestMatch(fonts, FontSlope.Italic, FontWeight.Bold, FontWidth.Normal);
         }
         
-        public FontMetrics GetBestMatch(FontSlope slope, FontWeight weight, FontWidth width)
+        private static FontMetrics GetBestMatch(List<FontMetrics> fonts, FontSlope slope, FontWeight weight, FontWidth width)
         {
             FontMetrics bestMatch = null;
             float bestMatchScore = -1;
 
-            foreach(FontMetrics fontMetrics in _fonts)
+            foreach(FontMetrics fontMetrics in fonts)
             {
                 float matchScore = fontMetrics.MatchQuality(slope, weight, width);
                 if (matchScore > bestMatchScore)
