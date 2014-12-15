@@ -57,7 +57,7 @@ namespace MaaasClientWin
 
         async void backButton_Click(object sender, RoutedEventArgs e)
         {
-            await _pageView.OnBackCommand();
+            await _pageView.GoBack();
         }
 
         protected override async void LoadState(LoadStateEventArgs args)

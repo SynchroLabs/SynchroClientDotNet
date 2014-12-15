@@ -199,7 +199,7 @@ namespace SynchroClientAndroid
         public bool OnCommandBarUp(IMenuItem item)
         {
             logger.Debug("Command bar Up button pushed");
-            Util.DontWait(this.OnBackCommand());
+            Util.DontWait(this.GoBack());
             return true;
         }
 

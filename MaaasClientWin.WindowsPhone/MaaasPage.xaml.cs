@@ -97,7 +97,7 @@ namespace MaaasClientWin
         {
             logger.Info("Back button pressed");
             e.Handled = true;
-            await _pageView.OnBackCommand();
+            await _pageView.GoBack();
         }
     }
 }

@@ -35,10 +35,7 @@ namespace MaaasClientIOS
         public override bool ShouldPopItem(UINavigationBar navigationBar, UINavigationItem item)
         {
             logger.Debug("Should pop item got called!");
-            if (_pageView != null)
-            {
-                Util.DontWait(_pageView.OnBackCommand());
-            }
+            Util.DontWait(_pageView.GoBack());
             return false;
         }
     }
@@ -243,8 +240,8 @@ namespace MaaasClientIOS
             if (_toolBar != null)
             {
                 _toolBar.SizeToFit();
-                _toolBar.Frame = new RectangleF(contentRect.Left, contentRect.Top + contentRect.Height - _toolBar.Frame.Height, contentRect.Width, _toolBar.Frame.Height);
-                contentRect = new RectangleF(contentRect.Left, contentRect.Top, contentRect.Width, contentRect.Height - _toolBar.Bounds.Height);
+                _toolBar.Frame = new RectangleF(contentRect.X, contentRect.Y + contentRect.Height - _toolBar.Frame.Height, contentRect.Width, _toolBar.Frame.Height);
+                contentRect = new RectangleF(contentRect.X, contentRect.Y, contentRect.Width, contentRect.Height - _toolBar.Bounds.Height);
             }
 
             _contentScrollView.Frame = contentRect;
@@ -326,7 +323,7 @@ namespace MaaasClientIOS
 
             // Adjust content rect based on navbar.
             //
-            contentRect = new RectangleF(contentRect.Left, contentRect.Top + _navBar.Bounds.Height, contentRect.Width, contentRect.Height - _navBar.Bounds.Height);
+            contentRect = new RectangleF(contentRect.X, contentRect.Y + _navBar.Bounds.Height, contentRect.Width, contentRect.Height - _navBar.Bounds.Height);
 
             _toolBar = null;
             if (_toolBarButtons.Count > 0)
@@ -335,8 +332,8 @@ namespace MaaasClientIOS
                 //
                 _toolBar = new UIToolbar() { BarStyle = UIBarStyle.Default };
                 _toolBar.SizeToFit();
-                _toolBar.Frame = new RectangleF(contentRect.Left, contentRect.Top + contentRect.Height - _toolBar.Frame.Height, contentRect.Width, _toolBar.Frame.Height);
-                contentRect = new RectangleF(contentRect.Left, contentRect.Top, contentRect.Width, contentRect.Height - _toolBar.Bounds.Height);
+                _toolBar.Frame = new RectangleF(contentRect.X, contentRect.Y + contentRect.Height - _toolBar.Frame.Height, contentRect.Width, _toolBar.Frame.Height);
+                contentRect = new RectangleF(contentRect.X, contentRect.Y, contentRect.Width, contentRect.Height - _toolBar.Bounds.Height);
 
                 // Create a new colection of toolbar buttons with flexible space surrounding and between them, then add to toolbar
                 //

@@ -64,7 +64,7 @@ namespace MaaasCore
             } 
         }
 
-        public async Task<bool> OnBackCommand()
+        public async Task<bool> GoBack()
         {
             if (_stateManager.IsBackSupported())
             {

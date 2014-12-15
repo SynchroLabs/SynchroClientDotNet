@@ -189,7 +189,7 @@ namespace SynchroClientAndroid
         {
             if (_pageView.HasBackCommand)
             {
-                await _pageView.OnBackCommand();
+                await _pageView.GoBack();
             }
             else
             {
