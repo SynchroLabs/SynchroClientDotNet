@@ -267,8 +267,20 @@ namespace MaaasClientIOS.Controls
             // If border thickness or padding change, need to resize view to child...
             //
             processElementProperty(controlSpec["border"], value => border.Layer.BorderColor = ToColor(value).CGColor);
-            processElementProperty(controlSpec["borderThickness"], value => border.BorderWidth = (float)ToDeviceUnits(value));
-            processElementProperty(controlSpec["cornerRadius"], value => border.Layer.CornerRadius = (float)ToDeviceUnits(value));
+            processElementProperty(controlSpec["borderThickness"], value => 
+            {
+                if (value != null)
+                {
+                    border.BorderWidth = (float)ToDeviceUnits(value);
+                }
+            });
+            processElementProperty(controlSpec["cornerRadius"], value => 
+            {
+                if (value != null)
+                {
+                    border.Layer.CornerRadius = (float)ToDeviceUnits(value);
+                }
+            });
             processThicknessProperty(controlSpec["padding"], new PaddedViewThicknessSetter(border));
 
             // "background" color handled by base class

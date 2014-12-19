@@ -138,8 +138,23 @@ namespace MaaasClientIOS.Controls
 
         async void locMgr_Failed(object sender, MonoTouch.Foundation.NSErrorEventArgs e)
         {
-            logger.Info("Location manager failed: {0}", e.Error);
-            _status = LocationStatus.Failed;
+            _location = null;
+
+            if (e.Error.Code == (int)CLError.LocationUnknown)
+            {
+                // "Location unknown" is not really an error.  It just indicates that the location couldn't be determined
+                // immediately (it's going to keep trying), per...
+                //
+                // https://developer.apple.com/library/ios/documentation/CoreLocation/Reference/CLLocationManagerDelegate_Protocol/#//apple_ref/occ/intfm/CLLocationManagerDelegate/locationManager:didFailWithError:
+                //
+                logger.Info("Location manager could not immediately determine location, still trying");
+                _status = LocationStatus.Available;
+            }
+            else
+            {
+                logger.Info("Location manager failed: {0}", e.Error);
+                _status = LocationStatus.Failed;
+            }
 
             // Update the viewModel, and the server (if update on change specified)
             //

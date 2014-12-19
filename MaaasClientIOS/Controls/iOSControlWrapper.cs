@@ -686,7 +686,10 @@ namespace MaaasClientIOS.Controls
             {
                 processElementProperty(thicknessAttributeValue, value =>
                 {
-                    thicknessSetter.SetThickness((float)ToDeviceUnits(value));
+                    if (value != null)
+                    {
+                        thicknessSetter.SetThickness((float)ToDeviceUnits(value));
+                    }
                 });
             }
             else if (thicknessAttributeValue is JObject)
@@ -695,19 +698,31 @@ namespace MaaasClientIOS.Controls
 
                 processElementProperty(marginObject.GetValue("left"), value =>
                 {
-                    thicknessSetter.SetThicknessLeft((float)ToDeviceUnits(value));
+                    if (value != null)
+                    {
+                        thicknessSetter.SetThicknessLeft((float)ToDeviceUnits(value));
+                    }
                 });
                 processElementProperty(marginObject.GetValue("top"), value =>
                 {
-                    thicknessSetter.SetThicknessTop((float)ToDeviceUnits(value));
+                    if (value != null)
+                    {
+                        thicknessSetter.SetThicknessTop((float)ToDeviceUnits(value));
+                    }
                 });
                 processElementProperty(marginObject.GetValue("right"), value =>
                 {
-                    thicknessSetter.SetThicknessRight((float)ToDeviceUnits(value));
+                    if (value != null)
+                    {
+                        thicknessSetter.SetThicknessRight((float)ToDeviceUnits(value));
+                    }
                 });
                 processElementProperty(marginObject.GetValue("bottom"), value =>
                 {
-                    thicknessSetter.SetThicknessBottom((float)ToDeviceUnits(value));
+                    if (value != null)
+                    {
+                        thicknessSetter.SetThicknessBottom((float)ToDeviceUnits(value));
+                    }
                 });
             }
         }
@@ -810,15 +825,19 @@ namespace MaaasClientIOS.Controls
                 }
                 processElementProperty(controlSpec["height"], value =>
                 {
-                    RectangleF frame = this.Control.Frame;
-                    frame.Height = (float)ToDeviceUnits(value);
-                    this.Control.Frame = frame;
-                    if (this.Control.Superview != null)
+                    if (value != null)
                     {
-                        this.Control.Superview.SetNeedsLayout();
+                        RectangleF frame = this.Control.Frame;
+                        frame.Height = (float)ToDeviceUnits(value);
+                        this.Control.Frame = frame;
+                        if (this.Control.Superview != null)
+                        {
+                            this.Control.Superview.SetNeedsLayout();
+                        }
+                        //this.SizeToFit();
                     }
-                    //this.SizeToFit();
                 });
+
             }
 
             int widthStarCount = GetStarCount((string)controlSpec["width"]);
@@ -835,14 +854,17 @@ namespace MaaasClientIOS.Controls
                 }
                 processElementProperty(controlSpec["width"], value =>
                 {
-                    RectangleF frame = this.Control.Frame;
-                    frame.Width = (float)ToDeviceUnits(value);
-                    this.Control.Frame = frame;
-                    if (this.Control.Superview != null)
+                    if (value != null)
                     {
-                        this.Control.Superview.SetNeedsLayout();
+                        RectangleF frame = this.Control.Frame;
+                        frame.Width = (float)ToDeviceUnits(value);
+                        this.Control.Frame = frame;
+                        if (this.Control.Superview != null)
+                        {
+                            this.Control.Superview.SetNeedsLayout();
+                        }
+                        //this.SizeToFit();
                     }
-                    //this.SizeToFit();
                 });
             }
 

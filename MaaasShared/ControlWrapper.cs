@@ -459,7 +459,10 @@ namespace MaaasCore
 
                 processElementProperty(fontObject.GetValue("size"), value =>
                 {
-                    fontSetter.SetSize(ToDeviceUnitsFromTypographicPoints(value));
+                    if (value != null)
+                    {
+                        fontSetter.SetSize(ToDeviceUnitsFromTypographicPoints(value));
+                    }
                 });
 
                 processElementProperty(fontObject.GetValue("bold"), value =>
@@ -478,7 +481,10 @@ namespace MaaasCore
             //
             processElementProperty(controlSpec["fontsize"], value =>
             {
-                fontSetter.SetSize(ToDeviceUnitsFromTypographicPoints(value));
+                if (value != null)
+                {
+                    fontSetter.SetSize(ToDeviceUnitsFromTypographicPoints(value));
+                }
             });
         }
 

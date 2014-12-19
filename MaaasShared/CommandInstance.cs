@@ -56,7 +56,12 @@ namespace MaaasCore
                 {
                     var expanded = PropertyValue.Expand((string)parameter.Value, bindingContext);
                     value = ((JToken)expanded).DeepClone();
-                } 
+                }
+ 
+                if (value == null)
+                {
+                    value = new JValue(null);
+                }
 
                 obj.Add(parameter.Key, value);
             }

@@ -36,7 +36,7 @@ namespace MaaasClientIOS.Controls
                 }
                 else if (!animate && progress.IsAnimating)
                 {
-                    progress.StartAnimating();
+                    progress.StopAnimating();
                 }
             });
         }
