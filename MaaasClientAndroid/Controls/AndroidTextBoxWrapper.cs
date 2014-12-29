@@ -9,7 +9,7 @@ using Android.OS;
 using Android.Runtime;
 using Android.Views;
 using Android.Widget;
-using MaaasCore;
+using SynchroCore;
 using Android.Text;
 using System.Threading.Tasks;
 
@@ -38,7 +38,7 @@ namespace SynchroClientAndroid.Controls
             applyFrameworkElementDefaults(editText);
 
             JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "value");
-            if (!processElementBoundValue("value", (string)bindingSpec["value"], () => { return new MaaasCore.JValue(editText.Text); }, value => editText.Text = ToString(value)))
+            if (!processElementBoundValue("value", (string)bindingSpec["value"], () => { return new SynchroCore.JValue(editText.Text); }, value => editText.Text = ToString(value)))
             {
                 processElementProperty(controlSpec["value"], value => editText.Text = ToString(value));
             }

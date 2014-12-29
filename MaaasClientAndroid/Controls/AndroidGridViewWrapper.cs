@@ -9,8 +9,8 @@ using Android.OS;
 using Android.Runtime;
 using Android.Views;
 using Android.Widget;
-using MaaasCore;
 using Android.Webkit;
+using SynchroCore;
 
 namespace SynchroClientAndroid.Controls
 {

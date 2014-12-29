@@ -4,7 +4,7 @@ using System.Drawing;
 using MonoTouch.CoreFoundation;
 using MonoTouch.UIKit;
 using MonoTouch.Foundation;
-using MaaasCore;
+using SynchroCore;
 
 namespace MaaasClientIOS
 {

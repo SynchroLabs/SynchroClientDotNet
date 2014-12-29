@@ -9,13 +9,13 @@ using Android.OS;
 using Android.Runtime;
 using Android.Views;
 using Android.Widget;
-using MaaasCore;
 using SynchroClientAndroid.Controls;
 using Android.Util;
 using Android.Graphics;
 using Android.Graphics.Drawables;
-using System.Threading.Tasks;
 using Android.Views.InputMethods;
+using SynchroCore;
+using System.Threading.Tasks;
 
 namespace SynchroClientAndroid
 {

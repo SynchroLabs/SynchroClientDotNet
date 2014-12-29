@@ -1,10 +1,11 @@
-﻿using System;
+﻿using SynchroCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MaaasCore
+namespace SynchroCore
 {
     public enum ListSelectionMode : uint
     {

@@ -9,8 +9,9 @@ using Android.OS;
 using Android.Runtime;
 using Android.Views;
 using Android.Widget;
-using MaaasCore;
 using Android.Graphics;
+using SynchroCore;
+using JValue = SynchroCore.JValue;
 using System.Threading.Tasks;
 
 namespace SynchroClientAndroid.Controls
@@ -378,7 +379,7 @@ namespace SynchroClientAndroid.Controls
                     //     
                     return selectedBindingContexts[0].Select(selectionItem).GetValue().DeepClone();
                 }
-                return new MaaasCore.JValue(false); // This is a "null" selection
+                return new JValue(false); // This is a "null" selection
             }
 
             return null;

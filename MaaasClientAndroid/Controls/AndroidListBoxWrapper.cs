@@ -9,8 +9,9 @@ using Android.OS;
 using Android.Runtime;
 using Android.Views;
 using Android.Widget;
-using MaaasCore;
 using Android.Graphics;
+using SynchroCore;
+using JValue = SynchroCore.JValue;
 using System.Threading.Tasks;
 
 namespace SynchroClientAndroid.Controls
@@ -200,7 +201,7 @@ namespace SynchroClientAndroid.Controls
             JArray array = new JArray();
             for (int n = 0; n < listView.Count; n++)
             {
-                array.Add(new MaaasCore.JValue(listView.GetItemAtPosition(n).ToString()));
+                array.Add(new JValue(listView.GetItemAtPosition(n).ToString()));
             }
             return array;
         }
@@ -261,7 +262,7 @@ namespace SynchroClientAndroid.Controls
                 {
                     return selectedListItems[0].GetSelection(selectionItem);
                 }
-                return new MaaasCore.JValue(false); // This is a "null" selection
+                return new JValue(false); // This is a "null" selection
             }
 
             return null;

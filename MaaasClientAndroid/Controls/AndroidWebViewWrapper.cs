@@ -9,7 +9,7 @@ using Android.OS;
 using Android.Runtime;
 using Android.Views;
 using Android.Widget;
-using MaaasCore;
+using SynchroCore;
 using Android.Webkit;
 
 namespace SynchroClientAndroid.Controls

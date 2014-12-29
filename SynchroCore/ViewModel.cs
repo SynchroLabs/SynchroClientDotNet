@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MaaasCore
+namespace SynchroCore
 {
     // The ViewModel will manage the client view model data (initialize and update it).  It will also manage all bindings
     // to view model data, including managing updates on changes.

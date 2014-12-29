@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MaaasCore
+namespace SynchroCore
 {
     // The AppDefinition is provided by the Maaas server (it is the contents of the maaas.json file in the Maaas app directory).
     // This is a JSON object that is modeled more or less after the NPM package structure.  For now we store it in the 

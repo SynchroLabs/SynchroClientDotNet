@@ -9,7 +9,7 @@ using Android.OS;
 using Android.Runtime;
 using Android.Views;
 using Android.Widget;
-using MaaasCore;
+using SynchroCore;
 
 namespace SynchroClientAndroid.Controls
 {
@@ -77,7 +77,7 @@ namespace SynchroClientAndroid.Controls
             applyFrameworkElementDefaults(bar);
 
             JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "value");
-            if (!processElementBoundValue("value", (string)bindingSpec["value"], () => { return new MaaasCore.JValue(getProgress()); }, value => setProgress(ToDouble(value))))
+            if (!processElementBoundValue("value", (string)bindingSpec["value"], () => { return new SynchroCore.JValue(getProgress()); }, value => setProgress(ToDouble(value))))
             {
                 processElementProperty(controlSpec["value"], value => setProgress(ToDouble(value)));
             }

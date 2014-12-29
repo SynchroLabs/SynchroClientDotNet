@@ -5,7 +5,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace MaaasCore
+namespace SynchroCore
 {
     // Corresponds to a specific location in a JSON oject (which may or may not exist at the time the BindingContext is created).
     //

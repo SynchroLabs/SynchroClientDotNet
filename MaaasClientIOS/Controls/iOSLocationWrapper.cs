@@ -1,5 +1,5 @@
-﻿using MaaasCore;
-using MonoTouch.CoreLocation;
+﻿using MonoTouch.CoreLocation;
+using SynchroCore;
 using System;
 using System.Collections.Generic;
 using System.Text;

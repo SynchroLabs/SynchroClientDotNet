@@ -9,8 +9,9 @@ using Android.OS;
 using Android.Runtime;
 using Android.Views;
 using Android.Widget;
-using MaaasCore;
 using Android.Locations;
+using SynchroCore;
+using JValue = SynchroCore.JValue;
 
 namespace SynchroClientAndroid.Controls
 {
@@ -108,21 +109,21 @@ namespace SynchroClientAndroid.Controls
             {
                 JObject obj = new JObject()
                 {
-                    { "available", new MaaasCore.JValue((_status == LocationStatus.Available) || (_status == LocationStatus.Active)) },
-                    { "status", new MaaasCore.JValue(_status.ToString()) }
+                    { "available", new JValue((_status == LocationStatus.Available) || (_status == LocationStatus.Active)) },
+                    { "status", new JValue(_status.ToString()) }
                 };
 
                 if (_location != null)
                 {
                     obj.Add("coordinate", new JObject()
                     {
-                        { "latitude", new MaaasCore.JValue(_location.Latitude) },
-                        { "longitude", new MaaasCore.JValue(_location.Longitude) }
+                        { "latitude", new JValue(_location.Latitude) },
+                        { "longitude", new JValue(_location.Longitude) }
                     });
 
                     if (_location.HasAccuracy)
                     {
-                        obj.Add("accuracy", new MaaasCore.JValue(_location.Accuracy));
+                        obj.Add("accuracy", new JValue(_location.Accuracy));
                     }
 
                     /* Altitude, when provided, represents meters above the WGS 84 reference ellipsoid,
@@ -137,12 +138,12 @@ namespace SynchroClientAndroid.Controls
 
                     if (_location.HasBearing)
                     {
-                        obj.Add("heading", new MaaasCore.JValue(_location.Bearing));
+                        obj.Add("heading", new JValue(_location.Bearing));
                     }
 
                     if (_location.HasSpeed)
                     {
-                        obj.Add("speed", new MaaasCore.JValue(_location.Speed));
+                        obj.Add("speed", new JValue(_location.Speed));
                     }
 
                     //_location.Time // UTC time, seconds since 1970

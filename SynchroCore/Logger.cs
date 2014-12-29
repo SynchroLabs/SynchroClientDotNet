@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MaaasCore
+namespace SynchroCore
 {
     // There are appropriate static public interfaces provided below to do logging configuration (default, and per class).
     //

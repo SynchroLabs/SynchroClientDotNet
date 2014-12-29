@@ -5,7 +5,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace MaaasCore
+namespace SynchroCore
 {
     public static class BindingHelper
     {
@@ -244,7 +244,7 @@ namespace MaaasCore
                 //
                 string token = m.Groups[1].ToString();
                 string format = null;
-                if (token.Contains(':'))
+                if (token.Contains(":"))
                 {
                     string[] result = token.Split(':');
                     token = result[0];

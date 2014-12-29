@@ -1,14 +1,13 @@
-﻿using MaaasCore;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MaaasCore
+namespace SynchroCore
 {
-    class TransportHttp : Transport
+    public class TransportHttp : Transport
     {
         static Logger logger = Logger.GetLogger("TransportHttp");
 

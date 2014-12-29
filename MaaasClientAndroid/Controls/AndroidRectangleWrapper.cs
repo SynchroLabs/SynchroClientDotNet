@@ -9,11 +9,11 @@ using Android.OS;
 using Android.Runtime;
 using Android.Views;
 using Android.Widget;
-using MaaasCore;
 using Android.Graphics.Drawables;
 using Android.Graphics.Drawables.Shapes;
 using Android.Graphics;
 using Java.Lang;
+using SynchroCore;
 
 namespace SynchroClientAndroid.Controls
 {

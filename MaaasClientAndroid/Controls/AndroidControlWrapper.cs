@@ -9,9 +9,10 @@ using Android.OS;
 using Android.Runtime;
 using Android.Views;
 using Android.Widget;
-using MaaasCore;
 using Android.Util;
 using Android.Graphics;
+using SynchroCore;
+using JValue = SynchroCore.JValue;
 
 namespace SynchroClientAndroid.Controls
 {
@@ -533,7 +534,7 @@ namespace SynchroClientAndroid.Controls
 
         public void processThicknessProperty(JToken thicknessAttributeValue, ThicknessSetter thicknessSetter)
         {
-            if (thicknessAttributeValue is MaaasCore.JValue)
+            if (thicknessAttributeValue is JValue)
             {
                 if (thicknessAttributeValue == null)
                 {

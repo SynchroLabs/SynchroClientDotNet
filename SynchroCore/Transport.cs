@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MaaasCore
+namespace SynchroCore
 {
     public delegate void ResponseHandler(JObject response);
     public delegate void RequestFailureHandler(JObject request, Exception exception);

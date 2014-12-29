@@ -9,7 +9,7 @@ using Android.OS;
 using Android.Runtime;
 using Android.Views;
 using Android.Widget;
-using MaaasCore;
+using SynchroCore;
 using System.Threading.Tasks;
 
 namespace SynchroClientAndroid.Controls
@@ -33,7 +33,7 @@ namespace SynchroClientAndroid.Controls
             JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "value", Commands);
             ProcessCommands(bindingSpec, Commands);
 
-            if (!processElementBoundValue("value", (string)bindingSpec["value"], () => { return new MaaasCore.JValue(toggleSwitch.Checked); }, value => toggleSwitch.Checked = ToBoolean(value)))
+            if (!processElementBoundValue("value", (string)bindingSpec["value"], () => { return new SynchroCore.JValue(toggleSwitch.Checked); }, value => toggleSwitch.Checked = ToBoolean(value)))
             {
                 processElementProperty(controlSpec["value"], value => toggleSwitch.Checked = ToBoolean(value));
             }

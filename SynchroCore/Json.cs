@@ -7,7 +7,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 
-namespace MaaasCore
+namespace SynchroCore
 {
     public enum JTokenType
     {
@@ -803,6 +803,10 @@ namespace MaaasCore
             else if (other == null)
             {
                 return false;
+            }
+            else if ((this.Value == null) || (other.Value == null))
+            {
+                return this.Value == other.Value;
             }
             return this.Value.Equals(other.Value);
         }

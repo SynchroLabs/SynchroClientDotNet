@@ -6,7 +6,7 @@ using System.Text;
 using AFNetworking;
 using MonoTouch.Foundation;
 using MonoTouch.UIKit;
-using MaaasCore;
+using SynchroCore;
 //using System.Drawing;
 //using MonoTouch.CoreGraphics;
 

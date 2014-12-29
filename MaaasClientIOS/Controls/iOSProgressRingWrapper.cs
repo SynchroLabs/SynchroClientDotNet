@@ -5,7 +5,7 @@ using System.Text;
 
 using MonoTouch.Foundation;
 using MonoTouch.UIKit;
-using MaaasCore;
+using SynchroCore;
 
 namespace MaaasClientIOS.Controls
 {
