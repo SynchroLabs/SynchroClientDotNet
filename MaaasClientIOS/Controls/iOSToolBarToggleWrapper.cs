@@ -24,10 +24,21 @@ namespace MaaasClientIOS.Controls
         protected string _uncheckedIcon;
         protected string _checkedIcon;
 
+        protected void setText(string value)
+        {
+            if (value != null)
+            {
+                _buttonItem.Title = value;
+            }
+        }
+
         protected void setImage(string value)
         {
-            _buttonItem.Image = UIImage.FromBundle("icons/blue/" + value);
-            this._pageView.SetNavBarButton(_buttonItem);
+            if (value != null)
+            {
+                _buttonItem.Image = iOSToolBarWrapper.LoadIconImage(value);
+                this._pageView.SetNavBarButton(_buttonItem);
+            }
         }
 
         public bool IsChecked
@@ -40,25 +51,13 @@ namespace MaaasClientIOS.Controls
                     _isChecked = value;
                     if (_isChecked)
                     {
-                        if (_checkedText != null)
-                        {
-                            _buttonItem.Title = _checkedText;
-                        }
-                        if (_checkedIcon != null)
-                        {
-                            setImage(_checkedIcon);
-                        }
+                        _buttonItem.Title = _checkedText;
+                        setImage(_checkedIcon);
                     }
                     else
                     {
-                        if (_uncheckedText != null)
-                        {
-                            _buttonItem.Title = _uncheckedText;
-                        }
-                        if (_uncheckedIcon != null)
-                        {
-                            setImage(_uncheckedIcon);
-                        }
+                        _buttonItem.Title = _uncheckedText;
+                        setImage(_uncheckedIcon);
                     }
                 }
             }
@@ -72,7 +71,7 @@ namespace MaaasClientIOS.Controls
                 _uncheckedText = value;
                 if (!_isChecked)
                 {
-                    _buttonItem.Title = _uncheckedText;
+                    setText(_uncheckedText);
                 }
             }
         }
@@ -85,7 +84,7 @@ namespace MaaasClientIOS.Controls
                 _checkedText = value;
                 if (_isChecked)
                 {
-                    _buttonItem.Title = _checkedText;
+                    setText(_checkedText);
                 }
             }
         }

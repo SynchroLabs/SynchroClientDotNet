@@ -16,6 +16,11 @@ namespace MaaasClientIOS.Controls
 
         static string[] Commands = new string[] { CommandName.OnClick.Attribute };
 
+        public static UIImage LoadIconImage(String named)
+        {
+            return UIImage.FromBundle("icons/blue/" + named);
+        }
+
         public iOSToolBarWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
@@ -45,7 +50,7 @@ namespace MaaasClientIOS.Controls
                 //
                 buttonItem = new UIBarButtonItem("", UIBarButtonItemStyle.Plain, buttonItem_Clicked);
                 processElementProperty(controlSpec["text"], value => buttonItem.Title = ToString(value));
-                processElementProperty(controlSpec["icon"], value => buttonItem.Image = UIImage.FromBundle("icons/blue/" + ToString(value)));
+                processElementProperty(controlSpec["icon"], value => buttonItem.Image = iOSToolBarWrapper.LoadIconImage(ToString(value)));
             }
             
             processElementProperty(controlSpec["enabled"], value => buttonItem.Enabled = ToBoolean(value));
