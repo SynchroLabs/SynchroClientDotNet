@@ -165,7 +165,7 @@ namespace SynchroCore
 
         public Double ToDouble(JToken value, double defaultValue = 0)
         {
-            return TokenConverter.ToDouble(value, defaultValue);
+            return TokenConverter.ToDouble(value, defaultValue).Value;
         }
 
         // Conversion functions to go from Maaas units or typographic points to device units

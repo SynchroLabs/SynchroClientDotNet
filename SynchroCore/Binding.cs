@@ -135,6 +135,8 @@ namespace SynchroCore
     //
     public class BoundAndPossiblyResolvedToken
     {
+        static Logger logger = Logger.GetLogger("BoundAndPossiblyResolvedToken");
+
         BindingContext _bindingContext;
         JToken _resolvedValue;
 
@@ -145,10 +147,17 @@ namespace SynchroCore
         //
         bool _negated;
 
-        public BoundAndPossiblyResolvedToken(BindingContext bindingContext, bool oneTime, bool negated)
+        // Here is the list of .NET number format specifiers: http://msdn.microsoft.com/en-us/library/dwhawy9k(v=vs.110).aspx
+        //
+        // In pratice I think D, E, F, N, P, and X are what we support.
+        //
+        String _formatSpec; // If present, this is the .NET format specifier (whatever came after the colon)
+
+        public BoundAndPossiblyResolvedToken(BindingContext bindingContext, bool oneTime, bool negated, string formatSpec = null)
         {
             _bindingContext = bindingContext;
             _negated = negated;
+            _formatSpec = formatSpec;
 
             if (oneTime)
             {
@@ -184,6 +193,70 @@ namespace SynchroCore
                     }
                     return resolvedValue;
                 }
+            }
+        }
+
+        public string ResolvedValueAsString
+        {
+            get
+            {
+                if (_formatSpec != null)
+                {
+                    double? numericValue = TokenConverter.ToDouble(this.ResolvedValue);
+                    if (numericValue != null)
+                    {
+                        var formatSpecifier = _formatSpec[0];
+                        switch (formatSpecifier)
+                        {
+                            case 'C': // Currency
+                            case 'c':
+                            {
+                                logger.Error("Currency formatting not supported");
+                            }
+                            break;
+
+                            case 'G': // General
+                            case 'g': 
+                            {
+                                logger.Error("General formatting not supported");
+                            }
+                            break;
+
+                            case 'R': // Round-trip
+                            case 'r':
+                            {
+                                logger.Error("Round-trip formatting not supported");
+                            }
+                            break;
+
+                            case 'D': // Decimal (int)
+                            case 'd':
+                            {
+                                return String.Format("{0:" + _formatSpec + "}", (int)numericValue);
+                            }
+
+                            case 'X': // Hex (uint)
+                            case 'x':
+                            {
+                                return String.Format("{0:" + _formatSpec + "}", (uint)(int)numericValue);
+                            }
+
+                            case 'E': // Exponential
+                            case 'e':
+                            case 'F': // Fixed-point
+                            case 'f':
+                            case 'N': // Number
+                            case 'n':
+                            case 'P': // Percent
+                            case 'p':
+                            {
+                                return String.Format("{0:" + _formatSpec + "}", numericValue);
+                            }
+                        }
+                    }
+                }
+
+                return TokenConverter.ToString(this.ResolvedValue);
             }
         }
     }
@@ -269,17 +342,10 @@ namespace SynchroCore
                     negated = true;
                 }
 
-                BoundAndPossiblyResolvedToken boundToken = new BoundAndPossiblyResolvedToken(bindingContext.Select(token), oneTimeBinding, negated);
+                BoundAndPossiblyResolvedToken boundToken = new BoundAndPossiblyResolvedToken(bindingContext.Select(token), oneTimeBinding, negated, format);
                 _boundTokens.Add(boundToken);
 
-                if (format != null)
-                {
-                    return "{" + tokenIndex++ + ":" + format + "}";
-                }
-                else
-                {
-                    return "{" + tokenIndex++ + "}";
-                }
+                return "{" + tokenIndex++ + "}";
             });
         }
 
@@ -296,31 +362,12 @@ namespace SynchroCore
             }
             else
             {
-                // Otherwise we replace all tokens with their values.  We convert numbers to their appropriate
-                // types so that any format specifiers can be applied.  Note that we could easily add date support
-                // here for data/time/timespan formatting if needed.
+                // Otherwise we replace all tokens with the string representations of the values.
                 //
                 object[] resolvedTokens = new object[_boundTokens.Count];
                 for (var i = 0; i < _boundTokens.Count; i++)
                 {
-                    BoundAndPossiblyResolvedToken token = _boundTokens[i];
-                    JToken value = token.ResolvedValue;
-                    if (value == null)
-                    {
-                        resolvedTokens[i] = "";
-                    }
-                    else if (value.Type == JTokenType.Float)
-                    {
-                        resolvedTokens[i] = (double)value;
-                    }
-                    else if (value.Type == JTokenType.Integer)
-                    {
-                        resolvedTokens[i] = (int)value;
-                    }
-                    else
-                    {
-                        resolvedTokens[i] = TokenConverter.ToString(value);
-                    }
+                    resolvedTokens[i] = _boundTokens[i].ResolvedValueAsString;
                 }
 
                 return new JValue(String.Format(_formatString, resolvedTokens));

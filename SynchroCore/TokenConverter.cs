@@ -63,9 +63,9 @@ namespace SynchroCore
             return result;
         }
 
-        public static Double ToDouble(JToken value, double defaultValue = 0)
+        public static double? ToDouble(JToken value, double? defaultValue = null)
         {
-            Double result = defaultValue;
+            double? result = defaultValue;
 
             if (value != null)
             {
@@ -74,7 +74,14 @@ namespace SynchroCore
                     JValue jValue = value as JValue;
                     if (jValue.Type == JTokenType.String)
                     {
-                        result = Convert.ToDouble((string)jValue);
+                        try
+                        {
+                            result = Convert.ToDouble((string)jValue);
+                        }
+                        catch (FormatException)
+                        {
+                            // Not formatted as a number, no biggie...
+                        }
                     }
                     else
                     {
