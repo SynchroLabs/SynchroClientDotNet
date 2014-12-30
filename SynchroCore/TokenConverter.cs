@@ -20,8 +20,27 @@ namespace SynchroCore
                         JArray array = token as JArray;
                         result = array.Count.ToString();
                         break;
+                    case JTokenType.String:
+                        result = (string)token;
+                        break;
+                    case JTokenType.Integer:
+                        result = ((int)token).ToString();
+                        break;
+                    case JTokenType.Float:
+                        result = ((double)token).ToString();
+                        break;
+                    case JTokenType.Boolean:
+                        result = ((bool)token) ? "true" : "false";
+                        break;
                     default:
-                        result = (string)token; //.ToString();
+                        try 
+                        {
+                            result = (string)token;
+                        }
+                        catch (Exception)
+                        {
+                            // Can't convert to string.  No big deal.
+                        }
                         break;
                 }
             }
@@ -87,6 +106,10 @@ namespace SynchroCore
                     {
                         result = (double)jValue;
                     }
+                }
+                else if (value is JArray)
+                {
+                    return ((JArray)value).Count;
                 }
             }
 
