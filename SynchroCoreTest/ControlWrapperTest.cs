@@ -10,11 +10,6 @@ namespace SynchroCoreTest
     public class ControlWrapperTest
     {
         [TestMethod]
-        public void TestControlWrapper_NOTIMPLEMENTED()
-        {
-        }
-
-        [TestMethod]
         public void TestGetColorByName()
         {
             var color = ControlWrapper.getColor("NavajoWhite");

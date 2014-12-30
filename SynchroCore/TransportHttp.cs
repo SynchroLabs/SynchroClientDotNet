@@ -72,10 +72,18 @@ namespace SynchroCore
                 }
             }
 
+            int statusCode = -1;
+
             try
             {
                 StringContent jsonContent = new StringContent(requestObject.ToJson(), System.Text.Encoding.UTF8, "application/json");
                 var response = await _httpClient.PostAsync(_uri, jsonContent);
+
+                // This is going to cause an exception to be thrown if the status code is not success, which will in turn trigger
+                // the requestFailureHandler to be called.  The status code will not be made available in the exception (it can only
+                // be gotten from the response).  So we record the status code here in order to jam it into the exception data later.
+                //
+                statusCode = (int)response.StatusCode;
                 response.EnsureSuccessStatusCode();
 
                 var responseMessage = await response.Content.ReadAsStringAsync();
@@ -89,6 +97,7 @@ namespace SynchroCore
             catch (Exception e)
             {
                 logger.Error("HTTP Transport exceptioon caught, details: {0}", e.Message);
+                e.Data["statusCode"] = statusCode;
                 requestFailureHandler(requestObject, e);
             }
         }
