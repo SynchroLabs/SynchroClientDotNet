@@ -11,20 +11,22 @@ namespace MaaasClientIOS
 {
     public class AppTableSource : UITableViewSource
     {
-        public delegate void AppSelectedHandler(MaaasApp app);
-        public event AppSelectedHandler AppSelectedEvent;
+        static Logger logger = Logger.GetLogger("AppTableSource");
 
-        protected List<MaaasApp> Items;
+        static string cellIdentifier = "SynchroAppTableCell";
 
-        string cellIdentifier = "MaaasAppTableCell";
-        public AppTableSource(List<MaaasApp> items)
+        UINavigationController _navigationController;
+        MaaasAppManager _appManager;
+
+        public AppTableSource(UINavigationController navigationController, MaaasAppManager appManager)
         {
-            Items = items;
+            _navigationController = navigationController;
+            _appManager = appManager;
         }
 
         public override int RowsInSection(UITableView tableview, int section)
         {
-            return Items.Count;
+            return _appManager.Apps.Count;
         }
 
         public override UITableViewCell GetCell(UITableView tableView, MonoTouch.Foundation.NSIndexPath indexPath)
@@ -36,18 +38,62 @@ namespace MaaasClientIOS
                 cell = new UITableViewCell(UITableViewCellStyle.Subtitle, cellIdentifier);
             }
 
-            MaaasApp maaasApp = Items[indexPath.Row];
+            MaaasApp maaasApp = _appManager.Apps[indexPath.Row];
             cell.TextLabel.Text = maaasApp.Name + " - " + maaasApp.Description;
             cell.DetailTextLabel.Text = maaasApp.Endpoint;
+            cell.Accessory = UITableViewCellAccessory.DetailDisclosureButton;
+
             return cell;
+        }
+
+        public override bool CanEditRow(UITableView tableView, NSIndexPath indexPath)
+        {
+            return true;
+        }
+
+        public void AddClicked()
+        {
+            logger.Info("Add clicked...");
+            AppDetailViewController detailView = new AppDetailViewController(_appManager, null);
+            _navigationController.PushViewController(detailView, false);
         }
 
         public override void RowSelected(UITableView tableView, NSIndexPath indexPath)
         {
+            logger.Info("Item selected at row #" + indexPath.Row);
+            
             tableView.DeselectRow(indexPath, true); // normal iOS behaviour is to remove the blue highlight
-            if (AppSelectedEvent != null)
+
+            MaaasApp app = _appManager.Apps[indexPath.Row];
+
+            logger.Info("Launching page at enpoint: " + app.Endpoint);
+            MaaasPageViewController view = new MaaasPageViewController(_appManager, app);
+
+            // Hide the nav controller, since the Synchro page view has its own...
+            _navigationController.SetNavigationBarHidden(true, false);
+            _navigationController.PushViewController(view, false);
+        }
+
+        public override void AccessoryButtonTapped(UITableView tableView, NSIndexPath indexPath)
+        {
+            logger.Info("Disclosure button tapped for row #" + indexPath.Row);
+
+            MaaasApp app = _appManager.Apps[indexPath.Row];
+            AppDetailViewController view = new AppDetailViewController(_appManager, app);
+
+            _navigationController.PushViewController(view, false);
+        }
+
+        public async override void CommitEditingStyle(UITableView tableView, UITableViewCellEditingStyle editingStyle, NSIndexPath indexPath)
+        {
+            if (editingStyle == UITableViewCellEditingStyle.Delete)
             {
-                AppSelectedEvent(Items[indexPath.Row]);
+                logger.Info("Item deleted at row #" + indexPath.Row);
+
+                MaaasApp app = _appManager.Apps[indexPath.Row];
+                _appManager.Apps.Remove(app);
+                await _appManager.saveState();
+                tableView.DeleteRows(new NSIndexPath[1]{indexPath}, UITableViewRowAnimation.Automatic);
             }
         }
     }
@@ -89,15 +135,13 @@ namespace MaaasClientIOS
     {
         static Logger logger = Logger.GetLogger("LaunchViewController");
 
-        MaaasAppManager _maaasAppManager;
-        List<MaaasApp> tableItems = new List<MaaasApp>();
+        MaaasAppManager _appManager;
+        AppTableSource _source;
 
-        LauncherView _view;
-
-        public LauncherViewController(MaaasAppManager maaasAppManager)
+        public LauncherViewController(MaaasAppManager appManager)
         {
             this.Title = "Synchro";
-            _maaasAppManager = maaasAppManager;
+            _appManager = appManager;
         }
 
         public override void ViewDidLoad()
@@ -109,40 +153,29 @@ namespace MaaasClientIOS
                 this.EdgesForExtendedLayout = UIRectEdge.None;
             }
 
-            _view = new LauncherView();
-            View = _view;
+            View = new LauncherView();
 
-            AppTableSource source = new AppTableSource(tableItems);
-            source.AppSelectedEvent += source_AppSelectedEvent;
-            _view.table.Source = source;
+            _source = new AppTableSource(this.NavigationController, _appManager);
+            ((LauncherView)View).table.Source = _source;
 
             // Here is the "Add" toolbar button...
             UIBarButtonSystemItem item = (UIBarButtonSystemItem)typeof(UIBarButtonSystemItem).GetField("Add").GetValue(null);
             UIBarButtonItem addButton = new UIBarButtonItem(item, (s, e) => 
             {
                 logger.Debug("Launcher Add button pushed");
-                AppDetailViewController detailView = new AppDetailViewController(_maaasAppManager, null);
-                this.NavigationController.PushViewController(detailView, false);
+                _source.AddClicked();                
             });
             NavigationItem.RightBarButtonItem = addButton;
         }
 
         public override void ViewWillAppear(bool animated)
         {
-            tableItems.Clear();
-            foreach (MaaasApp app in _maaasAppManager.Apps)
-            {
-                tableItems.Add(app);
-            }
-            _view.table.ReloadData();
+            // We hide this when navigating to app, so we need to show it here in case we're navigating
+            // back from the app.
+            //
+            this.NavigationController.SetNavigationBarHidden(false, false);
 
             base.ViewWillAppear(animated);
-        }
-
-        void source_AppSelectedEvent(MaaasApp app)
-        {
-            AppDetailViewController view = new AppDetailViewController(_maaasAppManager, app);
-            this.NavigationController.PushViewController(view, false);
         }
     }
 }

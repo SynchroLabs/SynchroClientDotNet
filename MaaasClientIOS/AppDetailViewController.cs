@@ -15,13 +15,9 @@ namespace MaaasClientIOS
     {
         public delegate void AppFindHandler(string endpoint);
         public delegate void AppSaveHandler();
-        public delegate void AppLaunchHandler();
-        public delegate void AppDeleteHandler();
 
         public event AppFindHandler AppFindEvent;
         public event AppSaveHandler AppSaveEvent;
-        public event AppLaunchHandler AppLaunchEvent;
-        public event AppDeleteHandler AppDeleteEvent;
 
         protected UILabel capEndpoint;
         protected UITextField editEndpoint;
@@ -32,8 +28,6 @@ namespace MaaasClientIOS
         protected UILabel capDesc;
         protected UILabel valDesc;
         protected UIButton btnSave;
-        protected UIButton btnLaunch;
-        protected UIButton btnDelete;
 
         public AppDetailView(MaaasApp app)
         {
@@ -61,8 +55,6 @@ namespace MaaasClientIOS
             valDesc.Hidden = mode == DisplayMode.Find;
 
             btnSave.Hidden = mode != DisplayMode.Add;
-            btnLaunch.Hidden = mode != DisplayMode.View;
-            btnDelete.Hidden = mode != DisplayMode.View;
         }
 
         public void Populate(MaaasApp app)
@@ -174,18 +166,6 @@ namespace MaaasClientIOS
             btnSave.SetTitle("Save", UIControlState.Normal);
             btnSave.TouchUpInside += btnSave_TouchUpInside;
             this.Add(btnSave);
-
-            btnLaunch = UIButton.FromType(UIButtonType.RoundedRect);
-            btnLaunch.Frame = new RectangleF(leftMargin, x, 100, 40);
-            btnLaunch.SetTitle("Launch", UIControlState.Normal);
-            btnLaunch.TouchUpInside += btnLaunch_TouchUpInside;
-            this.Add(btnLaunch);
-
-            btnDelete = UIButton.FromType(UIButtonType.RoundedRect);
-            btnDelete.Frame = new RectangleF(btnLaunch.Frame.Right + spacing, x, 100, 40);
-            btnDelete.SetTitle("Delete", UIControlState.Normal);
-            btnDelete.TouchUpInside += btnDelete_TouchUpInside;
-            this.Add(btnDelete);
         }
 
         void btnFind_TouchUpInside(object sender, EventArgs e)
@@ -203,38 +183,6 @@ namespace MaaasClientIOS
             {
                 AppSaveEvent();
             }
-        }
-
-        void btnLaunch_TouchUpInside(object sender, EventArgs e)
-        {
-            if (AppLaunchEvent != null)
-            {
-                AppLaunchEvent();
-            }
-        }
-
-        void btnDelete_TouchUpInside(object sender, EventArgs e)
-        {
-            UIAlertView alertView = new UIAlertView();
-
-            alertView.Title = "Synchro Application Delete";
-            alertView.Message = "Are you sure you want to remove this Synchro application from your list";
-
-            int idYes = alertView.AddButton("Yes");
-            alertView.AddButton("No");
-
-            alertView.Clicked += (s, b) =>
-            {
-                if (b.ButtonIndex == idYes)
-                {
-                    if (AppDeleteEvent != null)
-                    {
-                        AppDeleteEvent();
-                    }
-                }
-            };
-
-            alertView.Show();
         }
     }
 
@@ -261,14 +209,6 @@ namespace MaaasClientIOS
             // Release any cached data, images, etc that aren't in use.
         }
 
-        public override void ViewWillAppear(bool animated)
-        {
-            // We hide this when navigating to app, so we need to show it here in case we're navigating
-            // back from the app.
-            //
-            this.NavigationController.SetNavigationBarHidden(false, false);
-        }
-
         public override void ViewDidLoad()
         {
             if (iOSUtil.IsiOS7)
@@ -286,8 +226,6 @@ namespace MaaasClientIOS
 
             _view.AppFindEvent += view_AppFindEvent;
             _view.AppSaveEvent += view_AppSaveEvent;
-            _view.AppLaunchEvent += view_AppLaunchEvent;
-            _view.AppDeleteEvent += view_AppDeleteEvent;
 
             base.ViewDidLoad();
         }
@@ -348,20 +286,6 @@ namespace MaaasClientIOS
         async void view_AppSaveEvent()
         {
             _appManager.Apps.Add(_app);
-            await _appManager.saveState();
-            this.NavigationController.PopViewControllerAnimated(true);
-        }
-
-        void view_AppLaunchEvent()
-        {
-            MaaasPageViewController view = new MaaasPageViewController(_appManager, _app);
-            this.NavigationController.SetNavigationBarHidden(true, false);
-            this.NavigationController.PushViewController(view, false);
-        }
-
-        async void view_AppDeleteEvent()
-        {
-            _appManager.Apps.Remove(_app);
             await _appManager.saveState();
             this.NavigationController.PopViewControllerAnimated(true);
         }
