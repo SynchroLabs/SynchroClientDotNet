@@ -279,6 +279,28 @@ namespace SynchroCoreTest
         }
 
         [TestMethod]
+        public void TestEscapedCurlyBrackets()
+        {
+            var viewModel = new JObject();
+            var bindingCtx = new BindingContext(viewModel);
+
+            var propVal = new PropertyValue("This is how you indicate a token: {{serial}}", bindingContext: bindingCtx);
+
+            Assert.AreEqual("This is how you indicate a token: {serial}", (string)propVal.Expand());
+        }
+
+        [TestMethod]
+        public void TestContainsBindingToken()
+        {
+            Assert.IsFalse(PropertyValue.ContainsBindingTokens(""));
+            Assert.IsFalse(PropertyValue.ContainsBindingTokens("{{foo}}"));
+            Assert.IsFalse(PropertyValue.ContainsBindingTokens("Foo {{bar}} baz"));
+            Assert.IsTrue(PropertyValue.ContainsBindingTokens("{bar}"));
+            Assert.IsTrue(PropertyValue.ContainsBindingTokens("Foo {bar} baz"));
+            Assert.IsTrue(PropertyValue.ContainsBindingTokens("Foo {bar} {baz}"));
+        }
+
+        [TestMethod]
         public void TestNumericFormattingIntNoSpec()
         {
             var viewModel = new JObject()

@@ -282,7 +282,13 @@ namespace SynchroCore
     {
         static Logger logger = Logger.GetLogger("PropertyValue");
 
-        private static Regex _braceContentsRE = new Regex(@"{([^}]*)}");
+        // To deal with "escaped" braces (double open braces), our brace contents regex checks around our potential open brace
+        // to see if another one precedes or follows is using:
+        //
+        //    Negative lookbehind (zero length assertion to make sure brace not preceded by brace) = (?!<[}])
+        //    Negative lookahead (zero length assertion to make sure brace not followed by brace) = {?![}])
+        //
+        private static Regex _braceContentsRE = new Regex(@"(?<![{])[{](?![{])([^}]*)[}]");
 
         private string _formatString;
         private List<BoundAndPossiblyResolvedToken> _boundTokens;
@@ -376,7 +382,7 @@ namespace SynchroCore
 
         public static bool ContainsBindingTokens(string value)
         {
-            return value.Contains("{");
+            return _braceContentsRE.IsMatch(value);
         }
 
         public static JToken Expand(string tokenString, BindingContext bindingContext)
