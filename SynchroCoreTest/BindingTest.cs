@@ -285,8 +285,16 @@ namespace SynchroCoreTest
             var bindingCtx = new BindingContext(viewModel);
 
             var propVal = new PropertyValue("This is how you indicate a token: {{serial}}", bindingContext: bindingCtx);
-
             Assert.AreEqual("This is how you indicate a token: {serial}", (string)propVal.Expand());
+
+            propVal = new PropertyValue("Open {{ only", bindingContext: bindingCtx);
+            Assert.AreEqual("Open { only", (string)propVal.Expand());
+
+            propVal = new PropertyValue("Close }} only", bindingContext: bindingCtx);
+            Assert.AreEqual("Close } only", (string)propVal.Expand());
+
+            propVal = new PropertyValue("{{{{Double}}}}", bindingContext: bindingCtx);
+            Assert.AreEqual("{{Double}}", (string)propVal.Expand());
         }
 
         [TestMethod]
