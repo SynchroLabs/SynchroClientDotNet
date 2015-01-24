@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -52,10 +53,10 @@ namespace SynchroCore
     public abstract class MaaasAppManager
     {
         protected MaaasApp _appSeed = null;
-        protected List<MaaasApp> _apps = new List<MaaasApp>();
+        protected ObservableCollection<MaaasApp> _apps = new ObservableCollection<MaaasApp>();
 
         public MaaasApp AppSeed { get { return _appSeed; } }
-        public List<MaaasApp> Apps { get { return _apps; } }
+        public ObservableCollection<MaaasApp> Apps { get { return _apps; } }
 
         public MaaasApp GetApp(string endpoint)
         {
@@ -84,7 +85,13 @@ namespace SynchroCore
             }
             else
             {
-                _apps.RemoveAll(theApp => theApp.Endpoint == app.Endpoint);
+                for (int i = _apps.Count - 1; i >= 0; i--)
+                {
+                    if (app.Endpoint == _apps[i].Endpoint)
+                    {
+                        _apps.RemoveAt(i);
+                    }
+                }
                 _apps.Add(app);
             }
         }

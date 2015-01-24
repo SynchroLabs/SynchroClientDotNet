@@ -81,8 +81,6 @@
                 </Grid.ColumnDefinitions>
                 <StackPanel Grid.Column="1" Margin="0" Orientation="Horizontal">
                     <Button x:Name="BtnSave" Content="Save" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Height="38" Width="100" Margin="10,0"/>
-                    <Button x:Name="BtnLaunch" Content="Launch" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Height="38" Width="100" Margin="10,0"/>
-                    <Button x:Name="BtnDelete" Content="Delete" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Height="38" Width="100" Margin="10,0"/>
                 </StackPanel>
             </Grid>
         </StackPanel>

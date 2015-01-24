@@ -15,12 +15,14 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using System.Collections.ObjectModel;
 using SynchroCore;
+using Windows.UI.Popups;
 
 namespace MaaasClientWin
 {
     public sealed partial class LauncherPage : BasicPage
     {
         static Logger logger = Logger.GetLogger("LauncherPage");
+        MaaasAppManager appManager = new WinAppManager();
 
         public LauncherPage()
         {
@@ -29,7 +31,6 @@ namespace MaaasClientWin
 
         protected override async void LoadState(LoadStateEventArgs args)
         { 
-            MaaasAppManager appManager = new WinAppManager();
             await appManager.loadState();
             this.DefaultViewModel["Title"] = "Synchro Applications";
             this.DefaultViewModel["Items"] = appManager.Apps;
@@ -45,12 +46,51 @@ namespace MaaasClientWin
         {
             MaaasApp maaasApp = (MaaasApp)e.ClickedItem;
             logger.Debug("Item click, endpoint: {0}", maaasApp.Endpoint);
-            this.Frame.Navigate(typeof(AppDetailPage), maaasApp.Endpoint);
+            this.Frame.Navigate(typeof(MaaasPage), maaasApp.Endpoint);
         }
 
         void AddMaaasAppButton_Click(object sender, RoutedEventArgs e)
         {
             this.Frame.Navigate(typeof(AppDetailPage), null);
+        }
+
+        private void GridViewItem_RightTapped(object sender, RightTappedRoutedEventArgs e)
+        {
+            FrameworkElement senderElement = sender as FrameworkElement;
+            FlyoutBase flyoutBase = FlyoutBase.GetAttachedFlyout(senderElement);
+            flyoutBase.ShowAt(senderElement);
+            e.Handled = true;
+        }
+
+        private void GridViewItem_Holding(object sender, HoldingRoutedEventArgs e)
+        {
+            FrameworkElement senderElement = sender as FrameworkElement;
+            FlyoutBase flyoutBase = FlyoutBase.GetAttachedFlyout(senderElement);
+            flyoutBase.ShowAt(senderElement);
+        }
+
+        private void Details_Click(object sender, RoutedEventArgs e)
+        {
+            logger.Info("Details clicked");
+            MenuFlyoutItem item = sender as MenuFlyoutItem;
+            MaaasApp maaasApp = (MaaasApp)item.DataContext;
+            this.Frame.Navigate(typeof(AppDetailPage), maaasApp.Endpoint);
+        }
+
+        async private void Delete_Click(object sender, RoutedEventArgs e)
+        {
+            logger.Info("Delete clicked");
+            MenuFlyoutItem item = sender as MenuFlyoutItem;
+            MaaasApp maaasApp = (MaaasApp)item.DataContext;
+
+            var confirmMessage = new MessageDialog("Are you sure you want to remove this Synchro application from your list", "Synchro Application Delete");
+            confirmMessage.Commands.Add(new Windows.UI.Popups.UICommand("Yes", async (command) =>
+            {
+                appManager.Apps.Remove(maaasApp);
+                await appManager.saveState();
+            }));
+            confirmMessage.Commands.Add(new Windows.UI.Popups.UICommand("No"));
+            await confirmMessage.ShowAsync();
         }
     }
 }

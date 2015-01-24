@@ -11,11 +11,6 @@
     mc:Ignorable="d">
 
     <Page.Resources>
-        <!-- Collection of items displayed by this page -->
-        <CollectionViewSource
-            x:Name="itemsViewSource"
-            Source="{Binding Items}"/>
-        <Flyout x:Key="AddAppFlyout" Placement="Full"/>
     </Page.Resources>
     <Page.BottomAppBar>
         <CommandBar>
@@ -47,16 +42,22 @@
             TabIndex="1"
             Grid.RowSpan="2"
             Padding="120,126,120,50"
-            ItemsSource="{Binding Source={StaticResource itemsViewSource}}"
+            ItemsSource="{Binding Items}"
             SelectionMode="None"
             IsSwipeEnabled="false" SelectionChanged="itemGridView_SelectionChanged" ItemClick="itemGridView_ItemClick" IsItemClickEnabled="True">
             <GridView.ItemTemplate>
                 <DataTemplate>
-                    <Grid Height="110" Width="480" Margin="10">
+                    <Grid Height="110" Width="480" Margin="10" Holding="GridViewItem_Holding" RightTapped="GridViewItem_RightTapped" Background="Transparent">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
+                        <FlyoutBase.AttachedFlyout>
+                            <MenuFlyout Placement="Left">
+                                <MenuFlyoutItem Text="Details..." Click="Details_Click" />
+                                <MenuFlyoutItem Text="Delete"  Click="Delete_Click"/>
+                            </MenuFlyout>
+                        </FlyoutBase.AttachedFlyout>
                         <Border Background="{ThemeResource ListViewItemPlaceholderBackgroundThemeBrush}" Width="110" Height="110">
                             <Image Source="{Binding ImagePath}" Stretch="UniformToFill" AutomationProperties.Name="{Binding Title}"/>
                         </Border>

@@ -47,8 +47,6 @@ namespace MaaasClientWin
         {
             this.BtnFind.Click += BtnFind_Click;
             this.BtnSave.Click += BtnSave_Click;
-            this.BtnLaunch.Click += BtnLaunch_Click;
-            this.BtnDelete.Click += BtnDelete_Click;
 
             await appManager.loadState();
 
@@ -61,8 +59,6 @@ namespace MaaasClientWin
                 this.DetailsGrid.Visibility = Visibility.Visible;
                 this.ActionsGrid.Visibility = Visibility.Visible;
                 this.BtnSave.Visibility = Visibility.Collapsed;
-                this.BtnLaunch.Visibility = Visibility.Visible;
-                this.BtnDelete.Visibility = Visibility.Visible;
             }
             else
             {
@@ -104,8 +100,6 @@ namespace MaaasClientWin
                     this.DetailsGrid.Visibility = Visibility.Visible;
                     this.ActionsGrid.Visibility = Visibility.Visible;
                     this.BtnSave.Visibility = Visibility.Visible;
-                    this.BtnLaunch.Visibility = Visibility.Collapsed;
-                    this.BtnDelete.Visibility = Visibility.Collapsed;
                 }
             }
             catch (FormatException)
@@ -127,25 +121,6 @@ namespace MaaasClientWin
             appManager.Apps.Add(this.App);
             await appManager.saveState();
             this.Frame.GoBack();
-        }
-
-        void BtnLaunch_Click(object sender, RoutedEventArgs e)
-        {
-            this.Frame.Navigate(typeof(MaaasPage), this.App.Endpoint);
-        }
-
-        async void BtnDelete_Click(object sender, RoutedEventArgs e)
-        {
-            var confirmMessage = new MessageDialog("Are you sure you want to remove this Synchro application from your list", "Synchro Application Delete");
-            confirmMessage.Commands.Add(new Windows.UI.Popups.UICommand("Yes", async (command) =>
-            {
-                MaaasApp app = appManager.GetApp(this.App.Endpoint);
-                appManager.Apps.Remove(app);
-                await appManager.saveState();
-                this.Frame.GoBack();
-            }));
-            confirmMessage.Commands.Add(new Windows.UI.Popups.UICommand("No"));
-            await confirmMessage.ShowAsync();
         }
     }
 }
