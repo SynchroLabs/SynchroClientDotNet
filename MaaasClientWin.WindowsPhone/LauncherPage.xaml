@@ -12,7 +12,13 @@
 
     <Page.Resources>
         <DataTemplate x:Key="DataTemplate1">
-            <StackPanel Grid.Column="1" VerticalAlignment="Top" Margin="10,0,0,0">
+            <StackPanel Grid.Column="1" VerticalAlignment="Top" Margin="10,0,0,0" Holding="appListControl_Holding">
+                <FlyoutBase.AttachedFlyout>
+                    <MenuFlyout Placement="Left">
+                        <MenuFlyoutItem Text="Details..." Click="Details_Click" />
+                        <MenuFlyoutItem Text="Delete"  Click="Delete_Click"/>
+                    </MenuFlyout>
+                </FlyoutBase.AttachedFlyout>
                 <TextBlock Text="{Binding Description}" MaxHeight="60" Style="{StaticResource ListViewItemTextBlockStyle}"/>
                 <TextBlock Text="{Binding Name}" TextWrapping="NoWrap" Style="{StaticResource ListViewItemSubheaderTextBlockStyle}"/>
                 <TextBlock Text="{Binding Endpoint}" TextWrapping="NoWrap" Style="{StaticResource ListViewItemSubheaderTextBlockStyle}"/>
@@ -47,7 +53,7 @@
 
         <!--TODO: Content should be placed within the following grid-->
         <Grid Grid.Row="1" x:Name="ContentPanel" Margin="19,9.5,19,0">
-            <ListView x:Name="appListControl" Margin="0" ItemsSource="{Binding Items}" ItemTemplate="{StaticResource DataTemplate1}" IsItemClickEnabled="True" ItemClick="appListControl_ItemClick"/>
+            <ListView x:Name="appListControl" Margin="0" ItemsSource="{Binding Items}" ItemTemplate="{StaticResource DataTemplate1}" IsItemClickEnabled="True" ItemClick="appListControl_ItemClick" IsDoubleTapEnabled="False"/>
         </Grid>
     </Grid>
 </common:BasicPage>

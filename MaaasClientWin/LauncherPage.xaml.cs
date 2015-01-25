@@ -22,7 +22,7 @@ namespace MaaasClientWin
     public sealed partial class LauncherPage : BasicPage
     {
         static Logger logger = Logger.GetLogger("LauncherPage");
-        MaaasAppManager appManager = new WinAppManager();
+        MaaasAppManager _appManager = new WinAppManager();
 
         public LauncherPage()
         {
@@ -31,9 +31,9 @@ namespace MaaasClientWin
 
         protected override async void LoadState(LoadStateEventArgs args)
         { 
-            await appManager.loadState();
+            await _appManager.loadState();
             this.DefaultViewModel["Title"] = "Synchro Applications";
-            this.DefaultViewModel["Items"] = appManager.Apps;
+            this.DefaultViewModel["Items"] = _appManager.Apps;
 
             this.AddMaaasAppButton.Click += AddMaaasAppButton_Click;
         }
@@ -86,8 +86,8 @@ namespace MaaasClientWin
             var confirmMessage = new MessageDialog("Are you sure you want to remove this Synchro application from your list", "Synchro Application Delete");
             confirmMessage.Commands.Add(new Windows.UI.Popups.UICommand("Yes", async (command) =>
             {
-                appManager.Apps.Remove(maaasApp);
-                await appManager.saveState();
+                _appManager.Apps.Remove(maaasApp);
+                await _appManager.saveState();
             }));
             confirmMessage.Commands.Add(new Windows.UI.Popups.UICommand("No"));
             await confirmMessage.ShowAsync();
