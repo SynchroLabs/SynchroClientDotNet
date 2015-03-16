@@ -21,8 +21,14 @@ namespace SynchroCoreTest
                 { "name", new JValue("synchro-samples") },
                 { "version", new JValue("0.0.0") },
                 { "description", new JValue("Synchro API Samples") },
-                { "mainPage", new JValue("menu") },
-                { "author", new JValue("Bob Dickinson <bob@synchro.io> (http://synchro.io/)") }
+                { "main", new JValue("menu") },
+                { "author", new JValue("Bob Dickinson <bob@synchro.io> (http://synchro.io/)") },
+                { "private", new JValue(true) },
+                { "engines", new JObject()
+                    {
+                        { "synchro", new JValue("*") }
+                    }
+                }
             };
     
             var transport = new TransportHttp(uri: new Uri(testEndpoint));

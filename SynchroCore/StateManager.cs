@@ -56,7 +56,7 @@ namespace SynchroCore
 
         public bool IsOnMainPath()
         {
-            return ((_path != null) && (_appDefinition != null) && _path.Equals((string)_appDefinition["mainPage"], StringComparison.Ordinal));
+            return ((_path != null) && (_appDefinition != null) && _path.Equals((string)_appDefinition["main"], StringComparison.Ordinal));
         }
 
         public ViewModel ViewModel { get { return _viewModel; } }
@@ -397,7 +397,7 @@ namespace SynchroCore
 
         private async Task sendAppStartPageRequestAsync()
         {
-            this._path = (string)_appDefinition["mainPage"];
+            this._path = (string)_appDefinition["main"];
 
             logger.Info("Request app start page at path: '{0}'", this._path);
 
