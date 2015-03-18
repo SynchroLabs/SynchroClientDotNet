@@ -32,6 +32,9 @@ namespace SynchroCore
                     case JTokenType.Boolean:
                         result = ((bool)token) ? "true" : "false";
                         break;
+                    case JTokenType.Null:
+                        // Null token should return default value
+                        break;
                     default:
                         try 
                         {
@@ -86,7 +89,7 @@ namespace SynchroCore
         {
             double? result = defaultValue;
 
-            if (value != null)
+            if ((value != null) && (value.Type != JTokenType.Null))
             {
                 if (value is JValue)
                 {
