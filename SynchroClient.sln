@@ -1,13 +1,14 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.30723.0
+VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SynchroClientWin", "SynchroClientWin\SynchroClientWin.csproj", "{B80825FA-E75B-4E55-86F8-08D5FA0954B9}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{B6E5B653-1586-4159-96BC-CEAE61E1BA1F}"
 	ProjectSection(SolutionItems) = preProject
 		Notes.txt = Notes.txt
+		README.md = README.md
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SynchroClientAndroid", "SynchroClientAndroid\SynchroClientAndroid.csproj", "{0E61C099-F528-4CBB-A580-AC07D2E6D890}"

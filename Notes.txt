@@ -1,5 +1,5 @@
 
-Mobile Application As A Service (MAAAS) - Client
+Synchro Client - misc notes
 =================================================
 
 

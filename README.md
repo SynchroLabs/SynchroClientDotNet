@@ -1,4 +1,3 @@
-Maas
-====
+# Synchro Clients for DotNet
 
-Mobile Application as a Service
+This project includes the Synchro client applications for Windows and Windows Phone, as well as the Xamarin-based clients for Android and iOS.
