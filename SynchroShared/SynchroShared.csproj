@@ -7,8 +7,8 @@
     <ProjectGuid>{BDDFC401-097B-4FCB-B01D-12023B62DDEE}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>MaaasCore</RootNamespace>
-    <AssemblyName>MaaasCore</AssemblyName>
+    <RootNamespace>SynchroCore</RootNamespace>
+    <AssemblyName>SynchroCore</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>

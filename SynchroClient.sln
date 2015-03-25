@@ -3,24 +3,24 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.30723.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MaaasClientWin", "MaaasClientWin\MaaasClientWin.csproj", "{B80825FA-E75B-4E55-86F8-08D5FA0954B9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SynchroClientWin", "SynchroClientWin\SynchroClientWin.csproj", "{B80825FA-E75B-4E55-86F8-08D5FA0954B9}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{B6E5B653-1586-4159-96BC-CEAE61E1BA1F}"
 	ProjectSection(SolutionItems) = preProject
 		Notes.txt = Notes.txt
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MaaasClientAndroid", "MaaasClientAndroid\MaaasClientAndroid.csproj", "{0E61C099-F528-4CBB-A580-AC07D2E6D890}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SynchroClientAndroid", "SynchroClientAndroid\SynchroClientAndroid.csproj", "{0E61C099-F528-4CBB-A580-AC07D2E6D890}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MaaasShared", "MaaasShared\MaaasShared.csproj", "{BDDFC401-097B-4FCB-B01D-12023B62DDEE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SynchroShared", "SynchroShared\SynchroShared.csproj", "{BDDFC401-097B-4FCB-B01D-12023B62DDEE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MaaasClientIOS", "MaaasClientIOS\MaaasClientIOS.csproj", "{463FF541-F091-48EC-B555-5F10C2EE5500}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SynchroClientIOS", "SynchroClientIOS\SynchroClientIOS.csproj", "{463FF541-F091-48EC-B555-5F10C2EE5500}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MaaasClientWin", "MaaasClientWin", "{BF7B059F-6187-45AB-8526-C6D2D8F1F34D}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SynchroClientWin", "SynchroClientWin", "{BF7B059F-6187-45AB-8526-C6D2D8F1F34D}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "MaaasClientWin.Shared", "MaaasClientWin.Shared\MaaasClientWin.Shared.shproj", "{F0B9B20F-DAF2-428B-87B7-58D0BBAD3BCB}"
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "SynchroClientWin.Shared", "SynchroClientWin.Shared\SynchroClientWin.Shared.shproj", "{F0B9B20F-DAF2-428B-87B7-58D0BBAD3BCB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MaaasClientWin.WindowsPhone", "MaaasClientWin.WindowsPhone\MaaasClientWin.WindowsPhone.csproj", "{F75440B2-DFB5-4E78-832F-D1BEA3E33CDA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SynchroClientWin.WindowsPhone", "SynchroClientWin.WindowsPhone\SynchroClientWin.WindowsPhone.csproj", "{F75440B2-DFB5-4E78-832F-D1BEA3E33CDA}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SynchroCore", "SynchroCore\SynchroCore.csproj", "{A9C18BF3-BA6E-49AC-BD4B-4005B1434D7A}"
 EndProject
@@ -28,9 +28,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SynchroCoreTest", "SynchroC
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		MaaasClientWin.Shared\MaaasClientWin.Shared.projitems*{f75440b2-dfb5-4e78-832f-d1bea3e33cda}*SharedItemsImports = 4
-		MaaasClientWin.Shared\MaaasClientWin.Shared.projitems*{b80825fa-e75b-4e55-86f8-08d5fa0954b9}*SharedItemsImports = 4
-		MaaasClientWin.Shared\MaaasClientWin.Shared.projitems*{f0b9b20f-daf2-428b-87b7-58d0bbad3bcb}*SharedItemsImports = 13
+		SynchroClientWin.Shared\SynchroClientWin.Shared.projitems*{f75440b2-dfb5-4e78-832f-d1bea3e33cda}*SharedItemsImports = 4
+		SynchroClientWin.Shared\SynchroClientWin.Shared.projitems*{b80825fa-e75b-4e55-86f8-08d5fa0954b9}*SharedItemsImports = 4
+		SynchroClientWin.Shared\SynchroClientWin.Shared.projitems*{f0b9b20f-daf2-428b-87b7-58d0bbad3bcb}*SharedItemsImports = 13
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Ad-Hoc|Any CPU = Ad-Hoc|Any CPU

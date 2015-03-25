@@ -104,7 +104,7 @@
     <Compile Include="SplashActivity.cs" />
   </ItemGroup>
   <ItemGroup>
-    <AndroidAsset Include="..\MaaasShared\Assets\seed.json">
+    <AndroidAsset Include="..\SynchroShared\Assets\seed.json">
       <Link>Assets\seed.json</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </AndroidAsset>

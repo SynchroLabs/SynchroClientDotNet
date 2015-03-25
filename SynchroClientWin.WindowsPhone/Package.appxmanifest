@@ -3,7 +3,7 @@
   <Identity Name="7050e25c-4b8d-4f57-955a-5a305e5123b8" Publisher="CN=Bob" Version="1.0.0.0" />
   <mp:PhoneIdentity PhoneProductId="7050e25c-4b8d-4f57-955a-5a305e5123b8" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
   <Properties>
-    <DisplayName>MaaasClientWin.WindowsPhone</DisplayName>
+    <DisplayName>SynchroClientWin.WindowsPhone</DisplayName>
     <PublisherDisplayName>Synchro Labs, Inc.</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
