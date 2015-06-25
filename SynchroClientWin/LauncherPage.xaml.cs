@@ -32,7 +32,7 @@ namespace MaaasClientWin
         protected override async void LoadState(LoadStateEventArgs args)
         { 
             await _appManager.loadState();
-            this.DefaultViewModel["Title"] = "Synchro Applications";
+            this.DefaultViewModel["Title"] = "Synchro Explorer";
             this.DefaultViewModel["Items"] = _appManager.Apps;
 
             this.AddMaaasAppButton.Click += AddMaaasAppButton_Click;

@@ -210,5 +210,13 @@ namespace SynchroCoreTest
             //
             Assert.AreEqual(-1, theError.Data["statusCode"]);
         }
+
+        [TestMethod]
+        public void TestUriFromHostString()
+        {
+            Assert.AreEqual(TransportHttp.UriFromHostString("foo/app"), "http://foo/app");
+            Assert.AreEqual(TransportHttp.UriFromHostString("http://foo/app"), "http://foo/app");
+            Assert.AreEqual(TransportHttp.UriFromHostString("https://foo/app"), "https://foo/app");
+        }
     }
 }

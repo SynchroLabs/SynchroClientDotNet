@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace SynchroCore
@@ -37,9 +38,18 @@ namespace SynchroCore
             _httpClient.DefaultRequestHeaders.ExpectContinue = false;
         }
 
+        private static Regex schemeRegex = new Regex(@"^https?://.*");
+
         static public Uri UriFromHostString(string host, string protocol = "http")
         {
-            return  new Uri(protocol + "://" + host);
+            var uri = host;
+            if (!schemeRegex.IsMatch(host))
+            {
+                uri = protocol + "://" + host;
+            }
+            logger.Debug("URI from host string - host: {0}, uri: {1}", host, uri);
+            
+            return new Uri(uri);
         }
 
         public override async Task sendMessage(string sessionId, JObject requestObject, ResponseHandler responseHandler, RequestFailureHandler requestFailureHandler)

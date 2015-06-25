@@ -12,7 +12,7 @@
     <DefaultLanguage>en-US</DefaultLanguage>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{BC8A1FFA-BEE3-4634-8014-F334798102B3};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <PackageCertificateKeyFile>SynchroClientWin_TemporaryKey.pfx</PackageCertificateKeyFile>
+    <PackageCertificateKeyFile>SynchroClientWin_StoreKey.pfx</PackageCertificateKeyFile>
     <SccProjectName>SAK</SccProjectName>
     <SccLocalPath>SAK</SccLocalPath>
     <SccAuxPath>SAK</SccAuxPath>
@@ -20,8 +20,10 @@
     <TargetPlatformVersion>8.1</TargetPlatformVersion>
     <MinimumVisualStudioVersion>12</MinimumVisualStudioVersion>
     <TargetFrameworkVersion />
-    <PackageCertificateThumbprint>807CB211FB8322B8A7D0D47EDBC8DC4BDFA337E1</PackageCertificateThumbprint>
+    <PackageCertificateThumbprint>69726C5645F91429871AD3724863704FE3CDF52E</PackageCertificateThumbprint>
     <NuGetPackageImportStamp>0849c26f</NuGetPackageImportStamp>
+    <AppxAutoIncrementPackageRevision>True</AppxAutoIncrementPackageRevision>
+    <AppxBundlePlatforms>neutral</AppxBundlePlatforms>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -132,6 +134,8 @@
       <Link>Assets\seed.json</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <None Include="Package.StoreAssociation.xml" />
+    <None Include="SynchroClientWin_StoreKey.pfx" />
     <None Include="SynchroClientWin_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
