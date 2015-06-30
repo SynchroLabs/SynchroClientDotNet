@@ -41,18 +41,18 @@
         </Grid.ChildrenTransitions>
 
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto" MinHeight="85"/>
+            <RowDefinition/>
         </Grid.RowDefinitions>
 
         <!-- Title Panel -->
-        <StackPanel Grid.Row="0" Margin="19,0,0,0">
-            <TextBlock Text="Synchro" Style="{ThemeResource TitleTextBlockStyle}" Margin="0,12,0,0"/>
-            <TextBlock Text="Applications" Margin="0,-6.5,0,26.5" Style="{ThemeResource HeaderTextBlockStyle}" CharacterSpacing="{ThemeResource PivotHeaderItemCharacterSpacing}"/>
+        <StackPanel Grid.Row="0" Margin="19,0,0,474" Grid.RowSpan="2">
+            <TextBlock Text="Synchro Explorer" Style="{ThemeResource TitleTextBlockStyle}" Margin="0,12,0,0"/>
+            <TextBlock Text="Applications" Margin="0,-6.5,0,26.5" Style="{ThemeResource HeaderTextBlockStyle}" CharacterSpacing="{ThemeResource PivotHeaderItemCharacterSpacing}" FontSize="36"/>
         </StackPanel>
 
         <!--TODO: Content should be placed within the following grid-->
-        <Grid Grid.Row="1" x:Name="ContentPanel" Margin="19,9.5,19,0">
+        <Grid Grid.Row="1" x:Name="ContentPanel" Margin="19,10,19,0">
             <ListView x:Name="appListControl" Margin="0" ItemsSource="{Binding Items}" ItemTemplate="{StaticResource DataTemplate1}" IsItemClickEnabled="True" ItemClick="appListControl_ItemClick" IsDoubleTapEnabled="False"/>
         </Grid>
     </Grid>

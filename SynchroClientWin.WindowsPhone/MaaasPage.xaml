@@ -12,15 +12,15 @@
     <!--LayoutRoot is the root grid where all page content is placed-->
     <Grid x:Name="LayoutRoot" Background="Transparent">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto" MinHeight="70"/>
+            <RowDefinition/>
         </Grid.RowDefinitions>
 
         <!--TitlePanel contains the name of the application and page title-->
-        <StackPanel x:Name="TitlePanel" Grid.Row="0" Margin="12,17,0,28">
-            <TextBlock x:Name="pageTitle" Text="Loading..." Margin="9,-7,0,0" Style="{StaticResource HeaderTextBlockStyle}" FontFamily="Global User Interface"/>
+        <StackPanel x:Name="TitlePanel" Grid.Row="0" Margin="12,17,0,10">
+            <TextBlock x:Name="pageTitle" Text="Loading..." Margin="9,-7,0,0" Style="{StaticResource HeaderTextBlockStyle}" FontFamily="Global User Interface" FontSize="36"/>
         </StackPanel>
-        <ScrollViewer x:Name="mainScroll" Margin="12,0,12,0" Grid.Row="1" />
+        <ScrollViewer x:Name="mainScroll" Margin="12,0" Grid.Row="1" />
     </Grid>
 
 </common:BasicPage>

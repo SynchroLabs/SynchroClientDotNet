@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Package xmlns="http://schemas.microsoft.com/appx/2010/manifest" xmlns:m2="http://schemas.microsoft.com/appx/2013/manifest" xmlns:m3="http://schemas.microsoft.com/appx/2014/manifest" xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest">
-  <Identity Name="6FD2E372.SynchroExplorer" Publisher="CN=F3A322D3-EEC0-4745-9604-42B43773CDA7" Version="1.1.0.0" />
+  <Identity Name="6FD2E372.SynchroExplorer" Publisher="CN=F3A322D3-EEC0-4745-9604-42B43773CDA7" Version="1.1.0.5" />
   <mp:PhoneIdentity PhoneProductId="87358560-b907-4a4e-af62-2c72222b3abf" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
   <Properties>
     <DisplayName>Synchro Explorer</DisplayName>

@@ -19,7 +19,7 @@
 
         <!--TitlePanel contains the name of the application and page title-->
         <StackPanel x:Name="TitlePanel" Grid.Row="0" Margin="12,17,0,28">
-            <TextBlock x:Name="pageTitle" Text="Application" Margin="9,-7,0,0" Style="{StaticResource HeaderTextBlockStyle}"/>
+            <TextBlock x:Name="pageTitle" Text="Synchro Application" Margin="0,-7,-0.667,0" Style="{StaticResource HeaderTextBlockStyle}" FontFamily="Global User Interface" FontSize="36"/>
         </StackPanel>
 
 

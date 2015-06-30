@@ -36,6 +36,7 @@
   </PropertyGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <Content Include="..\SynchroClientWin.WindowsPhone\Store\AppTitleIcon.png" />
     <Content Include="Assets\seed.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -52,7 +53,6 @@
     <Content Include="icons\cloud_system_256.png" />
     <Content Include="icons\cloud_system_32.png" />
     <Content Include="icons\cloud_system_48.png" />
-    <Content Include="icons\cloud_system_512.png" />
     <Content Include="icons\cloud_system_64.png" />
     <Content Include="icons\cloud_system_72.png" />
     <Content Include="icons\cloud_system_96.png" />
