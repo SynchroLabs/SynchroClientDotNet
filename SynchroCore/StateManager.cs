@@ -10,6 +10,7 @@ namespace SynchroCore
 
     public delegate void ProcessPageView(JObject pageView);
     public delegate void ProcessMessageBox(JObject messageBox, CommandHandler commandHandler);
+    public delegate void ProcessLaunchUrl(String appUrl, String webUrl);
 
     public class StateManager
     {
@@ -34,6 +35,7 @@ namespace SynchroCore
         ViewModel _viewModel;
         ProcessPageView _onProcessPageView;
         ProcessMessageBox _onProcessMessageBox;
+        ProcessLaunchUrl _onProcessLaunchUrl;
 
         MaaasDeviceMetrics _deviceMetrics;
 
@@ -63,16 +65,19 @@ namespace SynchroCore
 
         public MaaasDeviceMetrics DeviceMetrics { get { return _deviceMetrics; } }
 
-        public void SetProcessingHandlers(ProcessPageView OnProcessPageView, ProcessMessageBox OnProcessMessageBox)
+        public void SetProcessingHandlers(ProcessPageView OnProcessPageView, ProcessMessageBox OnProcessMessageBox, ProcessLaunchUrl OnProcessLaunchUrl)
         {
             _onProcessPageView = OnProcessPageView;
             _onProcessMessageBox = OnProcessMessageBox;
+            _onProcessLaunchUrl = OnProcessLaunchUrl;
         }
 
         JObject PackageDeviceMetrics()
         {
             return new JObject()
             {
+                { "clientName", new JValue(this.DeviceMetrics.ClientName) },
+                { "clientVersion", new JValue(this.DeviceMetrics.ClientVersion) },
                 { "os", new JValue(this.DeviceMetrics.OS) },
                 { "osName", new JValue(this.DeviceMetrics.OSName) },
                 { "deviceName", new JValue(this.DeviceMetrics.DeviceName) },
@@ -353,6 +358,8 @@ namespace SynchroCore
                 }
             }
 
+            // Commands
+            //
             if (responseAsJSON["MessageBox"] != null)
             {
                 logger.Info("Launching message box...");
@@ -362,6 +369,11 @@ namespace SynchroCore
                     logger.Info("Message box completed with command: '{0}'", command);
                     await this.sendCommandRequestAsync(command);
                 });
+            }
+            else if (responseAsJSON["LaunchUrl"] != null)
+            {
+                JObject jsonLaunchUrl = (JObject)responseAsJSON["LaunchUrl"];
+                _onProcessLaunchUrl((string)jsonLaunchUrl["primaryUrl"], (string)jsonLaunchUrl["secondaryUrl"]);
             }
 
             if (responseAsJSON["NextRequest"] != null)

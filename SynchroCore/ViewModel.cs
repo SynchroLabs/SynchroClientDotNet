@@ -385,8 +385,15 @@ namespace SynchroCore
                 {
                     string path = valueBinding.BindingContext.BindingPath;
                     JToken value = valueBinding.BindingContext.GetValue();
-                    logger.Debug("Changed view model item - path: {0} - value: {1}", path, value);
-                    vmDeltas[path] = value;
+                    if (value != null)
+                    {
+                        logger.Debug("Changed view model item - path: {0} - value: {1}", path, value);
+                        vmDeltas[path] = value;
+                    }
+                    else
+                    {
+                        logger.Info("No binding context value for element at path: {0}, change ignored", path);
+                    }
                     valueBinding.IsDirty = false;
                 }
             }

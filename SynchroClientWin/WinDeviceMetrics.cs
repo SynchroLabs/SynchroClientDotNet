@@ -15,6 +15,12 @@ namespace MaaasClientWin
 
         public WinDeviceMetrics() : base()
         {
+            var package = Windows.ApplicationModel.Package.Current;
+            var version = package.Id.Version;
+
+            _clientName = package.DisplayName;
+            _clientVersion = String.Format("{0}.{1}.{2}", version.Major, version.Minor, version.Build);
+
             _os = "Windows";
             _osName = "Windows";
             _deviceName = "Windows Device";

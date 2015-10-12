@@ -74,12 +74,13 @@ namespace MaaasClientWin
             }
 
             _stateManager = new StateManager(appManager, app, transport, deviceMetrics);
+
             _pageView = new WinPageView(_stateManager, _stateManager.ViewModel, this, this.mainScroll, backToMenu);
 
             _pageView.setPageTitle = title => this.pageTitle.Text = title;
             // Note: No on screen back button to enable/disable via _pageView.setBackEnabled on Windows Phone
 
-            _stateManager.SetProcessingHandlers(_pageView.ProcessPageView, _pageView.ProcessMessageBox);
+            _stateManager.SetProcessingHandlers(_pageView.ProcessPageView, _pageView.ProcessMessageBox, _pageView.ProcessLaunchUrl);
 
             logger.Debug("Connecting orientation change listener");
             DisplayInformation.GetForCurrentView().OrientationChanged += MaaasPage_OrientationChanged;

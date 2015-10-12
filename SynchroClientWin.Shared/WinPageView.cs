@@ -177,5 +177,16 @@ namespace MaaasClientWin
 
             await messageDialog.ShowAsync();
         }
+
+        public override async void ProcessLaunchUrl(string primaryUrl, string secondaryUrl)
+        {
+            var uri = new Uri(primaryUrl, UriKind.Absolute);
+            var options = new Windows.System.LauncherOptions();
+            if ((secondaryUrl != null) && (secondaryUrl.Length > 0))
+            {
+                options.FallbackUri = new Uri(secondaryUrl);
+            }
+            await Windows.System.Launcher.LaunchUriAsync(uri, options);
+        }
     }
 }

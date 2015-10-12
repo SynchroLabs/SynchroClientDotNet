@@ -28,6 +28,9 @@ namespace SynchroCore
 
     public abstract class MaaasDeviceMetrics
     {
+        protected string _clientName = "Unknown";
+        protected string _clientVersion = "Unknown";
+
         protected MaaasDeviceClass _deviceClass = MaaasDeviceClass.Phone;
 
         protected MaaasOrientation _naturalOrientation = MaaasOrientation.Portrait;
@@ -50,6 +53,11 @@ namespace SynchroCore
         public MaaasDeviceMetrics()
         {
         }
+
+        // Client details
+        //
+        public string ClientName { get { return _clientName; } }
+        public string ClientVersion { get { return _clientVersion; } }
 
         // Device details
         //

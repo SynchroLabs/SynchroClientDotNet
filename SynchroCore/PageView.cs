@@ -42,6 +42,7 @@ namespace SynchroCore
         public abstract void SetContent(ControlWrapper content);
 
         public abstract void ProcessMessageBox(JObject messageBox, CommandHandler onCommand);
+        public abstract void ProcessLaunchUrl(string primaryUrl, string secondaryUrl);
 
         public bool HasBackCommand 
         { 

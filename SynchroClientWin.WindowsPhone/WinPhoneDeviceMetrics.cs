@@ -17,6 +17,23 @@ namespace MaaasClientWin
 
         public WinPhoneDeviceMetrics() : base()
         {
+            // Since there's no easy way to get the display name in Win Phone, we're doing to do
+            // it the hard way (loading and parsing the app manifest, where the display name lives).
+            //
+            var doc = System.Xml.Linq.XDocument.Load("AppxManifest.xml", System.Xml.Linq.LoadOptions.None);
+
+            // Define the default namespace to be used
+            var xname = System.Xml.Linq.XNamespace.Get("http://schemas.microsoft.com/appx/2010/manifest");
+
+            // Get the DisplayName node located at Package/Properties/DisplayName
+            var displayNameElement = doc.Descendants(xname + "DisplayName").First();
+
+            var package = Windows.ApplicationModel.Package.Current;
+            var version = package.Id.Version;
+
+            _clientName = displayNameElement.Value;
+            _clientVersion = String.Format("{0}.{1}.{2}", version.Major, version.Minor, version.Build);
+
             _os = "WinPhone";
             _osName = "Windows Phone";
             _deviceName = "Windows Phone Device"; // !!! Actual device manufaturer/model would be nice

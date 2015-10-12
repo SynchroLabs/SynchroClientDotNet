@@ -215,13 +215,25 @@ namespace SynchroCore
             this.attemptToBindTokenIfNeeded();
             if (_boundToken != null)
             {
-                if (!_isIndex)
+                if (_isIndex)
+                {
+                    return false;
+                }
+                else
                 {
                     return JToken.UpdateTokenValue(ref _boundToken, value);
                 }
             }
 
             // Token could not be bound at this time (no corresponding token) - value not set!
+            //
+            // !!! This happens when you bind a control to a ViewModel path that is not initialized to a value.  In
+            //     this case, any changes to that value will not be recorded (there is no place to record the value
+            //     in the local ViewModel).  Maybe it would be better to try to create the ViewModel item locally, or
+            //     to have a mechanism for recording the value so it could still be sent (and result in an "Add" coming
+            //     back from the server after diff processing).
+            //
+            logger.Info("Unable to store new value {0} for element: {1}, element not initialized by app", value, this._bindingPath);
             return false;
         }
 

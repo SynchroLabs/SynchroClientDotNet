@@ -94,7 +94,7 @@ namespace MaaasClientWin
             _pageView.setPageTitle = title => this.pageTitle.Text = title;
             _pageView.setBackEnabled = isEnabled => this.backButton.IsEnabled = isEnabled;
 
-            _stateManager.SetProcessingHandlers(_pageView.ProcessPageView, _pageView.ProcessMessageBox);
+            _stateManager.SetProcessingHandlers(_pageView.ProcessPageView, _pageView.ProcessMessageBox, _pageView.ProcessLaunchUrl);
 
             logger.Debug("Connecting orientation change listener");
             DisplayInformation.GetForCurrentView().OrientationChanged += MaaasPage_OrientationChanged;
