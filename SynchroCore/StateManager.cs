@@ -222,13 +222,29 @@ namespace SynchroCore
                 }
                 else
                 {
-                    // Some other kind of error (ClientError or UserCodeError).
+                    // Some other kind of error (ClientError, ClientVersionError, or UserCodeError).
                     //
-                    // !!! Maybe we should allow them to choose an option to get more details?  Configurable on the server?
-                    //
-                    messageBox("Application Error", "The application experienced an error.  Please contact your administrator.", "Close", "close", (command) =>
+                    var userMessage = (string)jsonError.GetValue("userMessage");
+                    var userMessageCaption = (string)jsonError.GetValue("userMessageCaption") || "Synchro";
+
+                    if (userMessage != null)
                     {
-                    });
+                        // The server indicated a message to be displayed to the end user, so do that...
+                        //
+                        messageBox(userMessageCaption, userMessage, "Close", "close", (command) =>
+                        {
+                        });
+                    }
+                    else
+                    {
+                        // Error with no specified user-appropriate message. 
+                        //
+                        // !!! Maybe we should allow the user to choose an option/button to click to get more details?
+                        //
+                        messageBox("Application Error", "The application experienced an error.  Please contact your administrator.", "Close", "close", (command) =>
+                        {
+                        });
+                    }
                 }
 
                 return;
