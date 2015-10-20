@@ -382,5 +382,10 @@ namespace SynchroClientAndroid
 
             dialog.Show();
         }
+
+        public override void ProcessLaunchUrl(string primaryUrl, string secondaryUrl)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

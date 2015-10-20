@@ -59,7 +59,7 @@ namespace MaaasClientIOS
             _stateManager = new StateManager(_appManager, _maaasApp, transport, deviceMetrics);
             _pageView = new iOSPageView(_stateManager, _stateManager.ViewModel, View, backToMenu);
 
-            _stateManager.SetProcessingHandlers(_pageView.ProcessPageView, _pageView.ProcessMessageBox);
+            _stateManager.SetProcessingHandlers(_pageView.ProcessPageView, _pageView.ProcessMessageBox, _pageView.ProcessLaunchUrl);
             await _stateManager.startApplicationAsync();
         }
 

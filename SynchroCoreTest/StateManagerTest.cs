@@ -13,6 +13,11 @@ namespace SynchroCoreTest
     {
         public class TestDeviceMetrics : MaaasDeviceMetrics
         {
+            public TestDeviceMetrics() : base()
+            {
+                _clientVersion = "1.1.0";
+            }
+
             public override MaaasOrientation CurrentOrientation
             {
                 get { return MaaasOrientation.Portrait; }
@@ -58,7 +63,12 @@ namespace SynchroCoreTest
                Assert.Fail("Unexpected message box call in test");
             };
 
-            stateManager.SetProcessingHandlers(processPageView, processMessageBox);
+            ProcessLaunchUrl processLaunchUrl = (String primaryUrl, String secondaryUrl) =>
+            {
+                Assert.Fail("Unexpected processLaunchUrl call in test");
+            };
+
+            stateManager.SetProcessingHandlers(processPageView, processMessageBox, processLaunchUrl);
             await stateManager.startApplicationAsync();
 
             AsyncCallComplete.WaitOne();

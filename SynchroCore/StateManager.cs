@@ -225,7 +225,7 @@ namespace SynchroCore
                     // Some other kind of error (ClientError, ClientVersionError, or UserCodeError).
                     //
                     var userMessage = (string)jsonError.GetValue("userMessage");
-                    var userMessageCaption = (string)jsonError.GetValue("userMessageCaption") || "Synchro";
+                    var userMessageCaption = (string)jsonError.GetValue("userMessageCaption") ?? "Synchro";
 
                     if (userMessage != null)
                     {

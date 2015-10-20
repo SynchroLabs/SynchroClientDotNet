@@ -163,7 +163,7 @@ namespace SynchroClientAndroid
 
             SetContentView(layout);
 
-            _stateManager.SetProcessingHandlers(_pageView.ProcessPageView,_pageView.ProcessMessageBox);
+            _stateManager.SetProcessingHandlers(_pageView.ProcessPageView,_pageView.ProcessMessageBox, _pageView.ProcessLaunchUrl);
             await _stateManager.startApplicationAsync();
         }
 

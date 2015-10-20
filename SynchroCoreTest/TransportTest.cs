@@ -19,7 +19,7 @@ namespace SynchroCoreTest
             var expected = new JObject()
             {
                 { "name", new JValue("synchro-samples") },
-                { "version", new JValue("0.0.0") },
+                { "version", new JValue("0.0.1") },
                 { "description", new JValue("Synchro API Samples") },
                 { "main", new JValue("menu") },
                 { "author", new JValue("Bob Dickinson <bob@synchro.io> (http://synchro.io/)") },
@@ -88,7 +88,8 @@ namespace SynchroCoreTest
                 {
                     { "Mode", new JValue("Page") },
                     { "Path", new JValue("menu") },
-                    { "TransactionId", new JValue(1) }
+                    { "TransactionId", new JValue(1)},
+                    { "DeviceMetrics", new JObject(){{"clientVersion", new JValue("1.1.0")}}}
                 },
                 responseHandler: (response) =>
                 {
