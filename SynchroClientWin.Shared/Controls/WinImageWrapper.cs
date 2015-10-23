@@ -14,6 +14,25 @@ namespace MaaasClientWin.Controls
     {
         static Logger logger = Logger.GetLogger("WinImageWrapper");
 
+        public Stretch ToImageScaleMode(JToken value, Stretch defaultMode = Stretch.Uniform)
+        {
+            Stretch scaleMode = defaultMode;
+            string scaleModeValue = ToString(value);
+            if (scaleModeValue == "Stretch")
+            {
+                scaleMode = Stretch.Fill;
+            }
+            else if (scaleModeValue == "Fit")
+            {
+                scaleMode = Stretch.Uniform;
+            }
+            else if (scaleModeValue == "Fill")
+            {
+                scaleMode = Stretch.UniformToFill;
+            }
+            return scaleMode;
+        }
+
         public WinImageWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
@@ -21,26 +40,63 @@ namespace MaaasClientWin.Controls
             Image image = new Image();
             this._control = image;
 
-            // !!! Image scaling
+            // Image scaling via image.stretch
             //
-            // image.Stretch = Stretch.Fill;          // Stretch to fill 
-            // image.Stretch = Stretch.Uniform;       // Fit preserving aspect
-            // image.Stretch = Stretch.UniformToFill; // Fill preserving aspect
+            //     Stretch.Fill;         -  "Stretch" to fill 
+            //     Stretch.Uniform;      -  "Fit" preserving aspect
+            //     Stretch.UniformToFill -  "Fill" preserving aspect
+            //
+            // Note: When using Fit, the horizontal and vertical alignment on the control will determine how the
+            //       images is positioned withing the control space.  When using Fill, it *should* work the same way,
+            //       but does not (the docs and past examples indicate that setting h/v align to "center" would center
+            //       the image and clip the edges on the sides that overflow, but in practice the image is always
+            //       anchored at the top/left).  We could probably work around this with another viewport control containing
+            //       the image, but that's more complexity than it's worth.
+            //
+            processElementProperty(controlSpec["scale"], value => image.Stretch = ToImageScaleMode(value));
 
             applyFrameworkElementDefaults(image);
             image.Height = 128; // Sizes will be overriden by the generic height/width property handlers, but
-            image.Width = 128;  // we have to set these here (as defaults) in case the sizes aren't specified. 
+            image.Width = 128;  // we have to set these here (as defaults) in case the sizes aren't specified.
+ 
             processElementProperty(controlSpec["resource"], value => 
             {
-                if (value == null)
+                String img = ToString(value);
+                if (String.IsNullOrEmpty(img))
                 {
                     image.Source = null;
                 }
                 else
                 {
-                    image.Source = new BitmapImage(new Uri(ToString(value)));
+                    image.Source = new BitmapImage(new Uri(img));
                 }
             });
+
+            image.ImageOpened += (sender, e) =>
+            {
+                BitmapImage bitmap = (image.Source as BitmapImage);
+                logger.Debug("Image Loaded - h: {0}, w: {1}", bitmap.PixelHeight, bitmap.PixelWidth);
+
+                // The idea is that if the size of the control was only specified in one dimension, then we will use
+                // the aspect ratio of the loaded image to determine and set the size in the other dimension appropriately.
+                // In this case, it doesn't really matter what the scale is set to, since the image will fit exactly.
+                //
+                if (image.Stretch == Stretch.Uniform)
+                {
+                    if (_heightSpecified && !_widthSpecified)
+                    {
+                        // Only height specified, set width based on image aspect
+                        //
+                        image.Width = bitmap.PixelWidth / (double)bitmap.PixelHeight * image.Height;
+                    }
+                    else if (_widthSpecified && !_heightSpecified)
+                    {
+                        // Only width specified, set height based on image aspect
+                        //
+                        image.Height = bitmap.PixelHeight / (double)bitmap.PixelWidth * image.Width;
+                    }
+                }
+            };
         }
     }
 }

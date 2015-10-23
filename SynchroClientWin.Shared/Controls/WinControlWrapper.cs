@@ -86,6 +86,9 @@ namespace MaaasClientWin.Controls
         protected WinPageView _pageView;
         public WinPageView PageView { get { return _pageView; } }
 
+        protected Boolean _heightSpecified = false;
+        protected Boolean _widthSpecified = false;
+
         public WinControlWrapper(WinPageView pageView, StateManager stateManager, ViewModel viewModel, BindingContext bindingContext, FrameworkElement control) :
             base(stateManager, viewModel, bindingContext)
         {
@@ -277,6 +280,7 @@ namespace MaaasClientWin.Controls
             {
                 control.Height = ToDeviceUnits(value);
             }
+            _heightSpecified = true;
         }
 
         protected void setWidth(FrameworkElement control, JToken value)
@@ -291,6 +295,7 @@ namespace MaaasClientWin.Controls
             {
                 control.Width = ToDeviceUnits(value);
             }
+            _widthSpecified = true;
         }
 
         protected void processCommonFrameworkElementProperies(JObject controlSpec)
