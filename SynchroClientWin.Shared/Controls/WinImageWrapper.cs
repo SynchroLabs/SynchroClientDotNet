@@ -81,20 +81,17 @@ namespace MaaasClientWin.Controls
                 // the aspect ratio of the loaded image to determine and set the size in the other dimension appropriately.
                 // In this case, it doesn't really matter what the scale is set to, since the image will fit exactly.
                 //
-                if (image.Stretch == Stretch.Uniform)
+                if (_heightSpecified && !_widthSpecified)
                 {
-                    if (_heightSpecified && !_widthSpecified)
-                    {
-                        // Only height specified, set width based on image aspect
-                        //
-                        image.Width = bitmap.PixelWidth / (double)bitmap.PixelHeight * image.Height;
-                    }
-                    else if (_widthSpecified && !_heightSpecified)
-                    {
-                        // Only width specified, set height based on image aspect
-                        //
-                        image.Height = bitmap.PixelHeight / (double)bitmap.PixelWidth * image.Width;
-                    }
+                    // Only height specified, set width based on image aspect
+                    //
+                    image.Width = bitmap.PixelWidth / (double)bitmap.PixelHeight * image.Height;
+                }
+                else if (_widthSpecified && !_heightSpecified)
+                {
+                    // Only width specified, set height based on image aspect
+                    //
+                    image.Height = bitmap.PixelHeight / (double)bitmap.PixelWidth * image.Width;
                 }
             };
         }
