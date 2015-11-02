@@ -37,6 +37,23 @@
     <Compile Include="$(MSBuildThisFileDirectory)Controls\WinToggleWrapper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Controls\WinWebViewWrapper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Controls\WinWrapPanelWrapper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Core\AppManager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Core\Binding.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Core\BindingContext.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Core\CommandInstance.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Core\ControlWrapper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Core\DeviceMetrics.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Core\Json.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Core\JsonParser.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Core\JsonWriter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Core\Logger.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Core\PageView.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Core\StateManager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Core\TokenConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Core\Transport.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Core\TransportHttp.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Core\Util.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Core\ViewModel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WinAppManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WinPageView.cs" />
   </ItemGroup>

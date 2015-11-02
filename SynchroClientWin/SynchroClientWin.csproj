@@ -172,12 +172,6 @@
   <ItemGroup>
     <WCFMetadata Include="Service References\" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\SynchroCore\SynchroCore.csproj">
-      <Project>{a9c18bf3-ba6e-49ac-bd4b-4005b1434d7a}</Project>
-      <Name>SynchroCore</Name>
-    </ProjectReference>
-  </ItemGroup>
   <ItemGroup />
   <Import Project="..\SynchroClientWin.Shared\SynchroClientWin.Shared.projitems" Label="Shared" />
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '12.0' ">
