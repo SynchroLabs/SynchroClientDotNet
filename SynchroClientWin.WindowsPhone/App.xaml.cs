@@ -97,7 +97,7 @@ namespace MaaasClientWin
 
                 if (appManager.AppSeed != null)
                 {
-                    if (!rootFrame.Navigate(typeof(MaaasPage), appManager.AppSeed))
+                    if (!rootFrame.Navigate(typeof(MaaasPage), appManager.AppSeed.Endpoint))
                     {
                         throw new Exception("Failed to create initial page");
                     }
