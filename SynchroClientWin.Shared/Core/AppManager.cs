@@ -161,32 +161,18 @@ namespace SynchroCore
 
         public async Task<bool> loadState()
         {
-            string bundledState = await this.loadBundledState();
-            JObject parsedBundledState = (JObject)JToken.Parse(bundledState);
-
-            JObject seed = parsedBundledState["seed"] as JObject;
-            if (seed != null)
+            // Load the local state...
+            //
+            string localState = await this.loadLocalState();
+            if (localState == null)
             {
-                // If the bundled state contains a "seed", then we're just going to use that as the
-                // app state (we'll launch the app inidicated by the seed and suppress the launcher).
+                // If there is no local state, initialize the local state from the bundled state and serialize
                 //
-                serializeFromJson(parsedBundledState);
+                localState = await this.loadBundledState();
+                await this.saveLocalState(localState);
             }
-            else
-            {
-                // If the bundled state doesn't contain a seed, load the local state...
-                //
-                string localState = await this.loadLocalState();
-                if (localState == null)
-                {
-                    // If there is no local state, initialize the local state from the bundled state.
-                    //
-                    localState = bundledState;
-                    await this.saveLocalState(localState);
-                }
-                JObject parsedLocalState = (JObject)JToken.Parse(localState);
-                serializeFromJson(parsedLocalState);
-            }
+            JObject parsedLocalState = (JObject)JToken.Parse(localState);
+            serializeFromJson(parsedLocalState);
 
             return true;
         }
