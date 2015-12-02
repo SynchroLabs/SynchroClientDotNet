@@ -358,17 +358,13 @@
     <Language Code="zu-za" InMinimumRequirementSet="true" />
   </SupportedLocales>
   <ProductReservedInfo>
-    <MainPackageIdentityName>6FD2E372.SynchroExplorer</MainPackageIdentityName>
+    <MainPackageIdentityName>6FD2E372.SynchroCivics</MainPackageIdentityName>
     <ReservedNames>
-      <ReservedName>Synchro Explorer</ReservedName>
+      <ReservedName>Synchro Civics</ReservedName>
     </ReservedNames>
   </ProductReservedInfo>
-  <AccountPackageIdentityNames />
-  <PackageInfoList LandingUrl="https://dev.windows.com/dashboard/Application?appId=9NBLGGH38QQW">
-    <PackageInfo>
-      <OsMinVersion>6.3.0.0</OsMinVersion>
-      <PackageArchitecture>neutral</PackageArchitecture>
-      <PackageMaxArchitectureVersion>1.1.0.8</PackageMaxArchitectureVersion>
-    </PackageInfo>
-  </PackageInfoList>
+  <AccountPackageIdentityNames>
+    <MainPackageIdentityName>6FD2E372.SynchroExplorer</MainPackageIdentityName>
+  </AccountPackageIdentityNames>
+  <PackageInfoList LandingUrl="https://dev.windows.com/dashboard/Application?appId=9NBLGGH6GXFX" />
 </StoreAssociation>

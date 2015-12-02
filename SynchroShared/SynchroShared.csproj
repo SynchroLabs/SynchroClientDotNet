@@ -37,6 +37,7 @@
   <ItemGroup>
     <None Include="App.config" />
     <Content Include="..\SynchroClientWin.WindowsPhone\Store\AppTitleIcon.png" />
+    <Content Include="Assets\AppIconTitle.png" />
     <Content Include="Assets\seed.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
