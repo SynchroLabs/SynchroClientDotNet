@@ -13,6 +13,8 @@ namespace MaaasClientWin.Controls
     {
         static Logger logger = Logger.GetLogger("WinRectangleWrapper");
 
+        static string[] Commands = new string[] { CommandName.OnTap.Attribute };
+
         public WinRectangleWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext)
         {
@@ -29,6 +31,23 @@ namespace MaaasClientWin.Controls
                 rect.RadiusY = (float)ToDeviceUnits(value);
             });
             processElementProperty(controlSpec["fill"], value => rect.Fill = ToBrush(value));
+            JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, CommandName.OnTap.Attribute, Commands);
+            ProcessCommands(bindingSpec, Commands);
+
+            if (GetCommand(CommandName.OnTap) != null)
+            {
+                rect.Tapped += rect_Tapped;
+            }
+        }
+
+        async void rect_Tapped(object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs e)
+        {
+            CommandInstance command = GetCommand(CommandName.OnTap);
+            if (command != null)
+            {
+                logger.Debug("Rectangle tapped with command: {0}", command);
+                await this.StateManager.sendCommandRequestAsync(command.Command, command.GetResolvedParameters(BindingContext));
+            }
         }
     }
 }

@@ -19,6 +19,7 @@ namespace SynchroCore
         public static CommandName OnSelectionChange { get { return new CommandName("onSelectionChange"); } }
         public static CommandName OnToggle { get { return new CommandName("onToggle"); } }
         public static CommandName OnUpdate { get { return new CommandName("onUpdate"); } }
+        public static CommandName OnTap { get { return new CommandName("onTap"); } }
     }
 
     // This class corresponds to an instance of a command in a view

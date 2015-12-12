@@ -14,6 +14,8 @@ namespace MaaasClientWin.Controls
     {
         static Logger logger = Logger.GetLogger("WinImageWrapper");
 
+        static string[] Commands = new string[] { CommandName.OnTap.Attribute };
+
         public Stretch ToImageScaleMode(JToken value, Stretch defaultMode = Stretch.Uniform)
         {
             Stretch scaleMode = defaultMode;
@@ -94,6 +96,25 @@ namespace MaaasClientWin.Controls
                     image.Height = bitmap.PixelHeight / (double)bitmap.PixelWidth * image.Width;
                 }
             };
+
+            JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, CommandName.OnTap.Attribute, Commands);
+            ProcessCommands(bindingSpec, Commands);
+
+            if (GetCommand(CommandName.OnTap) != null)
+            {
+                image.Tapped += image_Tapped;
+            }
+
+        }
+
+        async void image_Tapped(object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs e)
+        {
+            CommandInstance command = GetCommand(CommandName.OnTap);
+            if (command != null)
+            {
+                logger.Debug("Image tapped with command: {0}", command);
+                await this.StateManager.sendCommandRequestAsync(command.Command, command.GetResolvedParameters(BindingContext));
+            }
         }
     }
 }
