@@ -45,6 +45,7 @@ namespace SynchroCore
 
             _appManager = appManager;
             _app = app;
+            _appDefinition = app.AppDefinition;
             _transport = transport;
             _transport.setDefaultHandlers(this.ProcessResponseAsync, this.ProcessRequestFailure);
 
@@ -217,7 +218,7 @@ namespace SynchroCore
                         // The best option in this situation is to request a Resync with the server...
                         //
                         logger.Warn("ERROR - client state out of sync - need resync");
-                        await this.sendResyncRequestAsync();
+                        await this.sendResyncInstanceRequestAsync();
                     }
                 }
                 else
@@ -334,7 +335,7 @@ namespace SynchroCore
                             // Instance version was not one more than current version on view model update
                             //
                             logger.Warn("ERROR - instance version mismatch, updates not applied - need resync");
-                            await this.sendResyncRequestAsync();
+                            await this.sendResyncInstanceRequestAsync();
                             return;
                         }
                     }
@@ -355,7 +356,7 @@ namespace SynchroCore
                             // Instance version was not correct on view update
                             //
                             logger.Warn("ERROR - instance version mismatch on view update - need resync");
-                            await this.sendResyncRequestAsync();
+                            await this.sendResyncInstanceRequestAsync();
                             return;
                         }
                     }
@@ -369,7 +370,7 @@ namespace SynchroCore
                     // Incorrect instance id
                     //
                     logger.Warn("ERROR - instance id mismatch (response instance id > local instance id), updates not applied - need resync");
-                    await this.sendResyncRequestAsync();
+                    await this.sendResyncInstanceRequestAsync();
                     return;
                 }
             }
@@ -441,7 +442,7 @@ namespace SynchroCore
             await _transport.sendMessage(_app.SessionId, requestObject);
         }
 
-        private async Task sendResyncRequestAsync()
+        private async Task sendResyncInstanceRequestAsync()
         {
             logger.Info("Sending resync for path: '{0}'", this._path);
 
@@ -560,6 +561,28 @@ namespace SynchroCore
                 { "InstanceId", new JValue(this._instanceId) },
                 { "InstanceVersion", new JValue(this._instanceVersion) },
                 { "ViewMetrics", this.PackageViewMetrics(orientation) }
+            };
+
+            await _transport.sendMessage(_app.SessionId, requestObject);
+        }
+
+        // If your app has a session, but no other state, such as on recovery from tombstoning, you 
+        // can call this method instead of startApplicationAsync().  The server will respond with the
+        // full state required to resume your app.
+        //
+        // This method should only be called in a restart from tombstoning state.  For example, if a 
+        // user had navigated into the app and then shut it down via the operating system, when they 
+        // restart they do not expect to return to where they were (as they would with this method), 
+        // they expect to return to the entry sreen of the app.
+        //
+        public async Task sendResyncRequestAsync()
+        {
+            logger.Info("Sending resync (no path/instance)");
+
+            JObject requestObject = new JObject()
+            {
+                { "Mode", new JValue("Resync") },
+                { "TransactionId", new JValue(getNewTransactionId()) }
             };
 
             await _transport.sendMessage(_app.SessionId, requestObject);
