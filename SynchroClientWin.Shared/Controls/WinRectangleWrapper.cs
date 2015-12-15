@@ -16,21 +16,21 @@ namespace MaaasClientWin.Controls
         static string[] Commands = new string[] { CommandName.OnTap.Attribute };
 
         public WinRectangleWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
-            base(parent, bindingContext)
+            base(parent, bindingContext, controlSpec)
         {
             logger.Debug("Creating rectangle element");
             Rectangle rect = new Rectangle();
             this._control = rect;
 
             applyFrameworkElementDefaults(rect);
-            processElementProperty(controlSpec["border"], value => rect.Stroke = ToBrush(value));
-            processElementProperty(controlSpec["borderThickness"], value => rect.StrokeThickness = (float)ToDeviceUnits(value));
-            processElementProperty(controlSpec["cornerRadius"], value => 
+            processElementProperty(controlSpec, "border", value => rect.Stroke = ToBrush(value));
+            processElementProperty(controlSpec, "borderThickness", value => rect.StrokeThickness = (float)ToDeviceUnits(value));
+            processElementProperty(controlSpec, "cornerRadius", value => 
             {
                 rect.RadiusX = (float)ToDeviceUnits(value);
                 rect.RadiusY = (float)ToDeviceUnits(value);
             });
-            processElementProperty(controlSpec["fill"], value => rect.Fill = ToBrush(value));
+            processElementProperty(controlSpec, "fill", value => rect.Fill = ToBrush(value));
             JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, CommandName.OnTap.Attribute, Commands);
             ProcessCommands(bindingSpec, Commands);
 

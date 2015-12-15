@@ -18,7 +18,7 @@ namespace MaaasClientWin.Controls
         static string[] Commands = new string[] { CommandName.OnClick.Attribute };
 
         public WinButtonWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
-            base(parent, bindingContext)
+            base(parent, bindingContext, controlSpec)
         {
             logger.Debug("Creating button element with caption of: {0}", controlSpec["caption"]);
             Button button = new Button();
@@ -36,8 +36,8 @@ namespace MaaasClientWin.Controls
             //       disappeared) on push (WinPhone) or pointerover (Win), and that was pretty ugly.  The fix to that,
             //       overriding the entire button styling, is also ugly.  So I gave up on that (for now anyway).
             //
-            processElementProperty(controlSpec["caption"], value => button.Content = ToString(value));
-            processElementProperty(controlSpec["resource"], value =>
+            processElementProperty(controlSpec, "caption", value => button.Content = ToString(value));
+            processElementProperty(controlSpec, "resource", value =>
             {
                 String img = ToString(value);
                 if (String.IsNullOrEmpty(img))

@@ -15,7 +15,7 @@ namespace MaaasClientWin.Controls
         protected ScrollViewer _scroller;
 
         public WinScrollWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
-            base(parent, bindingContext)
+            base(parent, bindingContext, controlSpec)
         {
             // ScrollViewer - http://msdn.microsoft.com/en-us/library/windows/apps/windows.ui.xaml.controls.scrollviewer.aspx
             //
@@ -29,7 +29,7 @@ namespace MaaasClientWin.Controls
             }
             else
             {
-                processElementProperty(controlSpec["orientation"], value => setOrientation(ToOrientation(value, Orientation.Vertical)));
+                processElementProperty(controlSpec, "orientation", value => setOrientation(ToOrientation(value, Orientation.Vertical)));
             }
 
             applyFrameworkElementDefaults(_scroller);

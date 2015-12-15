@@ -49,6 +49,7 @@ namespace SynchroCore
         StateManager _stateManager;
         ViewModel _viewModel;
         BindingContext _bindingContext;
+        String[] _styles;
 
         Dictionary<string, CommandInstance> _commands = new Dictionary<string, CommandInstance>();
         Dictionary<string, ValueBinding> _valueBindings = new Dictionary<string, ValueBinding>();
@@ -65,11 +66,16 @@ namespace SynchroCore
             _bindingContext = bindingContext;
         }
 
-        public ControlWrapper(ControlWrapper parent, BindingContext bindingContext)
+        public ControlWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec)
         {
             _stateManager = parent.StateManager;
             _viewModel = parent.ViewModel;
             _bindingContext = bindingContext;
+
+            if (controlSpec["style"] != null)
+            {
+                _styles = controlSpec["style"].ToString().Split(new[]{' ',','}, StringSplitOptions.RemoveEmptyEntries);
+            }
         }
 
         public StateManager StateManager { get { return _stateManager; } }
@@ -183,7 +189,15 @@ namespace SynchroCore
 
         public double ToDeviceUnitsFromTypographicPoints(JToken value)
         {
-            return ToDeviceUnits(StateManager.DeviceMetrics.TypographicPointsToMaaasUnits(ToDouble(value)));
+            if (StateManager != null)
+            {
+                return ToDeviceUnits(StateManager.DeviceMetrics.TypographicPointsToMaaasUnits(ToDouble(value)));
+            }
+            else
+            {
+                // For test cases where we don't have a StateManager, just return the raw size
+                return ToDouble(value);
+            }
         }
 
         public ListSelectionMode ToListSelectionMode(JToken value, ListSelectionMode defaultSelectionMode = ListSelectionMode.Single)
@@ -434,58 +448,44 @@ namespace SynchroCore
 
         public void processFontAttribute(JObject controlSpec, FontSetter fontSetter)
         {
-            JToken fontAttributeValue = controlSpec["font"];
-            if (fontAttributeValue is JObject)
+            processElementProperty(controlSpec, "font.face", value =>
             {
-                JObject fontObject = fontAttributeValue as JObject;
-
-                processElementProperty(fontObject.GetValue("face"), value =>
+                FontFaceType faceType = FontFaceType.FONT_DEFAULT;
+                string faceTypeString = ToString(value);
+                switch (faceTypeString)
                 {
-                    FontFaceType faceType = FontFaceType.FONT_DEFAULT;
-                    string faceTypeString = ToString(value);
-                    switch (faceTypeString)
-                    {
-                        case "Serif":
-                            faceType = FontFaceType.FONT_SERIF;
-                            break;
-                        case "SanSerif":
-                            faceType = FontFaceType.FONT_SANSERIF;
-                            break;
-                        case "Monospace":
-                            faceType = FontFaceType.FONT_MONOSPACE;
-                            break;
-                    }
-                    fontSetter.SetFaceType(faceType);
-                });
-
-                processElementProperty(fontObject.GetValue("size"), value =>
-                {
-                    if (value != null)
-                    {
-                        fontSetter.SetSize(ToDeviceUnitsFromTypographicPoints(value));
-                    }
-                });
-
-                processElementProperty(fontObject.GetValue("bold"), value =>
-                {
-                    fontSetter.SetBold(ToBoolean(value));
-                });
-
-                processElementProperty(fontObject.GetValue("italic"), value =>
-                {
-                    fontSetter.SetItalic(ToBoolean(value));
-                });
-            }
+                    case "Serif":
+                        faceType = FontFaceType.FONT_SERIF;
+                        break;
+                    case "SanSerif":
+                        faceType = FontFaceType.FONT_SANSERIF;
+                        break;
+                    case "Monospace":
+                        faceType = FontFaceType.FONT_MONOSPACE;
+                        break;
+                }
+                fontSetter.SetFaceType(faceType);
+            });
 
             // This will handle the simple style "fontsize" attribute (this is the most common font attribute and is
             // very often used by itself, so we'll support this alternate syntax).
             //
-            processElementProperty(controlSpec["fontsize"], value =>
+            processElementProperty(controlSpec, "font.size", "fontsize", value =>
             {
                 if (value != null)
                 {
                     fontSetter.SetSize(ToDeviceUnitsFromTypographicPoints(value));
                 }
+            });
+
+            processElementProperty(controlSpec, "font.bold", value =>
+            {
+                fontSetter.SetBold(ToBoolean(value));
+            });
+
+            processElementProperty(controlSpec, "font.italic", value =>
+            {
+                fontSetter.SetItalic(ToBoolean(value));
             });
         }
 
@@ -508,16 +508,61 @@ namespace SynchroCore
             return false;
         }
 
+        private bool attemptStyleBinding(String style, String attributeName, SetViewValue setValue)
+        {
+            // See if [style].[attributeName] is defined, and if so, bind to it
+            //
+            var styleBinding = style + "." + attributeName;
+            BindingContext styleBindingContext = _viewModel.RootBindingContext.Select(styleBinding);
+            var value = styleBindingContext.GetValue();
+            if ((value != null) && (value.Type != JTokenType.Object))
+            {
+                PropertyBinding binding = ViewModel.CreateAndRegisterPropertyBinding(this.BindingContext, "{$root." + styleBinding + "}", setValue);
+                _propertyBindings.Add(binding);
+
+                // Immediate content update during configuration.
+                binding.UpdateViewFromViewModel();
+
+                return true;
+            }
+
+            return false;
+        }
+
         // Process an element property, which can contain a plain value, a property binding token string, or no value at all,
         // in which case any optionally supplied defaultValue will be used.  This call *may* result in a property binding to
         // the element property, or it may not.
         //
         // This is "public" because there are cases when a parent element needs to process properties on its children after creation.
         //
-        public void processElementProperty(JToken value, SetViewValue setValue)
+        public void processElementProperty(JObject controlSpec, String attributeName, String altAttributeName, SetViewValue setValue)
         {
+            var value = controlSpec.SelectToken(attributeName);
+            if ((value == null) && (altAttributeName != null))
+            {
+                value = controlSpec.SelectToken(altAttributeName);
+                if ((value != null) && (value.Type == JTokenType.Object))
+                {
+                    value = null;
+                }
+            }
+
             if (value == null)
             {
+                if (_styles != null)
+                {
+                    foreach (string style in _styles)
+                    {
+                        if (attemptStyleBinding(style, attributeName, setValue))
+                        {
+                            break;
+                        }
+                        else if (attemptStyleBinding(style, altAttributeName, setValue))
+                        {
+                            break;
+                        }
+                    }
+                }
                 return;
             }
             else if ((value.Type == JTokenType.String) && PropertyValue.ContainsBindingTokens((string)value))
@@ -536,6 +581,10 @@ namespace SynchroCore
             }
         }
 
+        public void processElementProperty(JObject controlSpec, String attributeName, SetViewValue setValue)
+        {
+            processElementProperty(controlSpec, attributeName, null, setValue);
+        }
         // This helper is used by control update handlers.
         //
         protected void updateValueBindingForAttribute(string attributeName)

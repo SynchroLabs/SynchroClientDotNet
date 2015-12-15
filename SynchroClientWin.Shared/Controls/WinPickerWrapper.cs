@@ -48,7 +48,7 @@ namespace MaaasClientWin.Controls
         static string[] Commands = new string[] { CommandName.OnSelectionChange.Attribute };
 
         public WinPickerWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
-            base(parent, bindingContext)
+            base(parent, bindingContext, controlSpec)
         {
             logger.Debug("Creating picker element");
             ComboBox picker = new ComboBox();

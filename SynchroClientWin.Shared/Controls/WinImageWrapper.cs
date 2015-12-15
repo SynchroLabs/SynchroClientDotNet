@@ -36,7 +36,7 @@ namespace MaaasClientWin.Controls
         }
 
         public WinImageWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
-            base(parent, bindingContext)
+            base(parent, bindingContext, controlSpec)
         {
             logger.Debug("Creating image element");
             Image image = new Image();
@@ -55,13 +55,13 @@ namespace MaaasClientWin.Controls
             //       anchored at the top/left).  We could probably work around this with another viewport control containing
             //       the image, but that's more complexity than it's worth.
             //
-            processElementProperty(controlSpec["scale"], value => image.Stretch = ToImageScaleMode(value));
+            processElementProperty(controlSpec, "scale", value => image.Stretch = ToImageScaleMode(value));
 
             applyFrameworkElementDefaults(image);
             image.Height = 128; // Sizes will be overriden by the generic height/width property handlers, but
             image.Width = 128;  // we have to set these here (as defaults) in case the sizes aren't specified.
  
-            processElementProperty(controlSpec["resource"], value => 
+            processElementProperty(controlSpec, "resource", value => 
             {
                 String img = ToString(value);
                 if (String.IsNullOrEmpty(img))

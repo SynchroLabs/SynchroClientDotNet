@@ -93,7 +93,7 @@ namespace MaaasClientWin.Controls
         Orientation _orientation;
 
         public WinStackPanelWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
-            base(parent, bindingContext)
+            base(parent, bindingContext, controlSpec)
         {
             logger.Debug("Creating stackpanel element");
 
@@ -111,7 +111,7 @@ namespace MaaasClientWin.Controls
 
             applyFrameworkElementDefaults(_border, false);
 
-            processThicknessProperty(controlSpec["padding"], () => _border.Padding, value => _border.Padding = (Thickness)value);
+            processThicknessProperty(controlSpec, "padding", () => _border.Padding, value => _border.Padding = (Thickness)value);
 
             // This is a little weird.  We're going to attempt to resolve the orientation value now, because we must have a default orientation to use
             // in the initial layout code below (as we add child controls).  Below all of this we will *also* bind to the orientation so that it can be
@@ -168,7 +168,7 @@ namespace MaaasClientWin.Controls
                     index++;
                 });
 
-                processElementProperty(controlSpec["orientation"], value => UpdateOrientation(ToOrientation(value, _orientation)));
+                processElementProperty(controlSpec, "orientation", value => UpdateOrientation(ToOrientation(value, _orientation)));
             }
         }
 

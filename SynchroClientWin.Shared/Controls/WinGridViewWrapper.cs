@@ -14,7 +14,7 @@ namespace MaaasClientWin.Controls
         static Logger logger = Logger.GetLogger("WinGridViewWrapper");
 
         public WinGridViewWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
-            base(parent, bindingContext)
+            base(parent, bindingContext, controlSpec)
         {
             GridView gridView = new GridView();
             this._control = gridView;

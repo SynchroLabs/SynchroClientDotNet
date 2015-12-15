@@ -16,7 +16,7 @@ namespace MaaasClientWin.Controls
         static Logger logger = Logger.GetLogger("WinWebViewWrapper");
 
         public WinWebViewWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
-            base(parent, bindingContext)
+            base(parent, bindingContext, controlSpec)
         {
             logger.Debug("Creating web view element");
             WebView webView = new WebView();
@@ -25,8 +25,8 @@ namespace MaaasClientWin.Controls
             applyFrameworkElementDefaults(webView);
 
             // !!! TODO - Windows Web View
-            processElementProperty(controlSpec["contents"], value => webView.NavigateToString(ToString(value)));
-            processElementProperty(controlSpec["url"], value => webView.Navigate(new Uri(ToString(value))));
+            processElementProperty(controlSpec, "contents", value => webView.NavigateToString(ToString(value)));
+            processElementProperty(controlSpec, "url", value => webView.Navigate(new Uri(ToString(value))));
         }
     }
 }

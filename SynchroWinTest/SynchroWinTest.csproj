@@ -124,6 +124,7 @@
     <Compile Include="TokenConverterTest.cs" />
     <Compile Include="TransportTest.cs" />
     <Compile Include="ViewModelTest.cs" />
+    <Compile Include="WinControlWrapperTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">

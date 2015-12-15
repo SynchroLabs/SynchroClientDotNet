@@ -16,7 +16,7 @@ namespace MaaasClientWin.Controls
         static string[] Commands = new string[] { CommandName.OnToggle.Attribute };
 
         public WinToggleSwitchWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
-            base(parent, bindingContext)
+            base(parent, bindingContext, controlSpec)
         {
             logger.Debug("Creating toggle element with caption of: " + controlSpec["caption"]);
             ToggleSwitch toggleSwitch = new ToggleSwitch();
@@ -29,12 +29,12 @@ namespace MaaasClientWin.Controls
 
             if (!processElementBoundValue("value", (string)bindingSpec["value"], () => { return new JValue(toggleSwitch.IsOn); }, value => toggleSwitch.IsOn = ToBoolean(value)))
             {
-                processElementProperty(controlSpec["value"], value => toggleSwitch.IsOn = ToBoolean(value));
+                processElementProperty(controlSpec, "value", value => toggleSwitch.IsOn = ToBoolean(value));
             }
 
-            processElementProperty(controlSpec["caption"], value => toggleSwitch.Header = ToString(value));
-            processElementProperty(controlSpec["onLabel"], value => toggleSwitch.OnContent = ToString(value));
-            processElementProperty(controlSpec["offLabel"], value => toggleSwitch.OffContent = ToString(value));
+            processElementProperty(controlSpec, "caption", value => toggleSwitch.Header = ToString(value));
+            processElementProperty(controlSpec, "onLabel", value => toggleSwitch.OnContent = ToString(value));
+            processElementProperty(controlSpec, "offLabel", value => toggleSwitch.OffContent = ToString(value));
 
             // Since the Toggled handler both updates the view model (locally) and may potentially have a command associated, 
             // we have to add handler in all cases (even when there is no command).

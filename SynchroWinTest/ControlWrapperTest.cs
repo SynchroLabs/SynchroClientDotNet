@@ -72,6 +72,6 @@ namespace SynchroCoreTest
         {
             var stars = ControlWrapper.GetStarCount(null);
             Assert.AreEqual(0, stars);
-        }   
+        }
     }
 }

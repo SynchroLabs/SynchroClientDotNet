@@ -14,7 +14,7 @@ namespace MaaasClientWin.Controls
         static Logger logger = Logger.GetLogger("WinSliderWrapper");
 
         public WinSliderWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
-            base(parent, bindingContext)
+            base(parent, bindingContext, controlSpec)
         {
             RangeBase rangeControl = null;
 
@@ -35,11 +35,11 @@ namespace MaaasClientWin.Controls
             JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "value");
             if (!processElementBoundValue("value", (string)bindingSpec["value"], () => { return new JValue(rangeControl.Value); }, value => rangeControl.Value = ToDouble(value)))
             {
-                processElementProperty(controlSpec["value"], value => rangeControl.Value = ToDouble(value));
+                processElementProperty(controlSpec, "value", value => rangeControl.Value = ToDouble(value));
             }
 
-            processElementProperty(controlSpec["minimum"], value => rangeControl.Minimum = ToDouble(value));
-            processElementProperty(controlSpec["maximum"], value => rangeControl.Maximum = ToDouble(value));
+            processElementProperty(controlSpec, "minimum", value => rangeControl.Minimum = ToDouble(value));
+            processElementProperty(controlSpec, "maximum", value => rangeControl.Maximum = ToDouble(value));
 
             rangeControl.ValueChanged += slider_ValueChanged;  
         }
