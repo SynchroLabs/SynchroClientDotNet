@@ -557,7 +557,7 @@ namespace SynchroCore
                         {
                             break;
                         }
-                        else if (attemptStyleBinding(style, altAttributeName, setValue))
+                        else if ((altAttributeName != null) && attemptStyleBinding(style, altAttributeName, setValue))
                         {
                             break;
                         }
