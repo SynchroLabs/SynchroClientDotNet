@@ -197,18 +197,14 @@ namespace MaaasClientWin.Controls
         //
         protected void processElementPropertyIfPresent(JObject controlSpec, String attributeName, string propertyName, ConvertValue convertValue = null)
         {
-            JToken attributeValue = controlSpec[attributeName];
-            if (attributeValue != null)
+            var property = this.Control.GetType().GetRuntimeProperty(propertyName);
+            if (property != null)
             {
                 if (convertValue == null)
                 {
                     convertValue = value => value;
                 }
-                var property = this.Control.GetType().GetRuntimeProperty(propertyName);
-                if (property != null)
-                {
-                    processElementProperty(controlSpec, attributeName, value => property.SetValue(this.Control, convertValue(value), null));
-                }
+                processElementProperty(controlSpec, attributeName, value => property.SetValue(this.Control, convertValue(value), null));
             }
         }
 
@@ -220,25 +216,25 @@ namespace MaaasClientWin.Controls
             processElementProperty(controlSpec, attributeName + ".left", attributeName, value =>
             {
                 Thickness thickness = (Thickness)getThickness();
-                thickness.Left = ToDouble(value);
+                thickness.Left = this.ToDeviceUnits(ToDouble(value));
                 setThickness(thickness);
             });
             processElementProperty(controlSpec, attributeName + ".top", attributeName, value =>
             {
                 Thickness thickness = (Thickness)getThickness();
-                thickness.Top = ToDouble(value);
+                thickness.Top = this.ToDeviceUnits(ToDouble(value));
                 setThickness(thickness);
             });
             processElementProperty(controlSpec, attributeName + ".right", attributeName, value =>
             {
                 Thickness thickness = (Thickness)getThickness();
-                thickness.Right = ToDouble(value);
+                thickness.Right = this.ToDeviceUnits(ToDouble(value));
                 setThickness(thickness);
             });
             processElementProperty(controlSpec, attributeName + ".bottom", attributeName, value =>
             {
                 Thickness thickness = (Thickness)getThickness();
-                thickness.Bottom = ToDouble(value);
+                thickness.Bottom = this.ToDeviceUnits(ToDouble(value));
                 setThickness(thickness);
             });
         }
