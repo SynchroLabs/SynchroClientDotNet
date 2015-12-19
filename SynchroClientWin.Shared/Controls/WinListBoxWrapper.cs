@@ -27,7 +27,7 @@ namespace MaaasClientWin.Controls
 
             applyFrameworkElementDefaults(listbox);
 
-            ListSelectionMode mode = ToListSelectionMode(controlSpec["select"]);
+            ListSelectionMode mode = ToListSelectionMode(processElementProperty(controlSpec, "select", null));
             switch (mode)
             {
                 case ListSelectionMode.None:
