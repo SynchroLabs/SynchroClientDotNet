@@ -197,14 +197,17 @@ namespace MaaasClientWin.Controls
         //
         protected void processElementPropertyIfPresent(JObject controlSpec, String attributeName, string propertyName, ConvertValue convertValue = null)
         {
-            var property = this.Control.GetType().GetRuntimeProperty(propertyName);
-            if (property != null)
+            if (this.Control != null)
             {
-                if (convertValue == null)
+                var property = this.Control.GetType().GetRuntimeProperty(propertyName);
+                if (property != null)
                 {
-                    convertValue = value => value;
+                    if (convertValue == null)
+                    {
+                        convertValue = value => value;
+                    }
+                    processElementProperty(controlSpec, attributeName, value => property.SetValue(this.Control, convertValue(value), null));
                 }
-                processElementProperty(controlSpec, attributeName, value => property.SetValue(this.Control, convertValue(value), null));
             }
         }
 
