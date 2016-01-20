@@ -267,7 +267,7 @@ namespace SynchroCore
                 await this.sendAppStartPageRequestAsync();
                 return;
             }
-            else if (responseAsJSON["ViewModel"] != null) // This means we have a new page/screen
+            else if ((responseAsJSON["ViewModel"] != null) && (responseAsJSON["View"] != null)) // ViewModel and View - means we have a new page/screen
             {
                 this._instanceId = (uint)responseAsJSON["InstanceId"];
                 this._instanceVersion = (uint)responseAsJSON["InstanceVersion"];
@@ -276,29 +276,48 @@ namespace SynchroCore
 
                 this._viewModel.InitializeViewModelData((JObject)jsonViewModel);
 
-                // In certain situations, like a resync where the instance matched but the version
-                // was out of date, you might get only the ViewModel (and not the View).
+                this._path = (string)responseAsJSON["Path"];
+                logger.Info("Got ViewModel for new view - path: '{0}', instanceId: {1}, instanceVersion: {2}", this._path, this._instanceId, this._instanceVersion);
+
+                this._isBackSupported = (bool)responseAsJSON["Back"];
+
+                JObject jsonPageView = (JObject)responseAsJSON["View"];
+                _onProcessPageView(jsonPageView);
+
+                // If the view model is dirty after rendering the page, then the changes are going to have been
+                // written by new view controls that produced initial output (such as location or sensor controls).
+                // We need to signal than a viewModel "Update" is required to get these changes to the server.
                 //
-                if (responseAsJSON["View"] != null)
+                updateRequired = this._viewModel.IsDirty();
+            }
+            else if (responseAsJSON["ViewModel"] != null) // ViewModel without View (resync)
+            {
+                uint responseInstanceId = (uint)responseAsJSON["InstanceId"];
+                if (responseInstanceId == this._instanceId)
                 {
-                    this._path = (string)responseAsJSON["Path"];
-                    logger.Info("Got ViewModel for new view - path: '{0}', instanceId: {1}, instanceVersion: {2}", this._path, this._instanceId, this._instanceVersion);
+                    this._instanceVersion = (uint)responseAsJSON["InstanceVersion"];
 
-                    this._isBackSupported = (bool)responseAsJSON["Back"];
+                    JObject jsonViewModel = responseAsJSON["ViewModel"] as JObject;
 
-                    JObject jsonPageView = (JObject)responseAsJSON["View"];
-                    _onProcessPageView(jsonPageView);
+                    this._viewModel.SetViewModelData((JObject)jsonViewModel);
 
-                    // If the view model is dirty after rendering the page, then the changes are going to have been
-                    // written by new view controls that produced initial output (such as location or sensor controls).
-                    // We need to signal than a viewModel "Update" is required to get these changes to the server.
-                    //
-                    updateRequired = this._viewModel.IsDirty();
+                    logger.Info("Got ViewModel resync for existing view - path: '{0}', instanceId: {1}, instanceVersion: {2}", this._path, this._instanceId, this._instanceVersion);
+                    this._viewModel.UpdateViewFromViewModel();
+                }
+                else if (responseInstanceId < this._instanceId)
+                {
+                    // Resync response was for a previous instance, so we can safely ignore it (we've moved on).
                 }
                 else
                 {
-                    logger.Info("Got ViewModel for existing view - path: '{0}', instanceId: {1}, instanceVersion: {2}", this._path, this._instanceId, this._instanceVersion);
-                    this._viewModel.UpdateViewFromViewModel();
+                    // Incorrect instance id on resync - For this to happen, we'd have to get a resync for a "future" instance (meaning one for which
+                    // we haven't seen the initial view/viewModel).  This should never happen, but if it does, it's not clear how to recover from it.
+                    // Requesting an "instance" resync might very well result in just hitting this case again repeatedy.  The only potential way out of
+                    // this (if it ever does happen) is to request the "big" resync.
+                    //
+                    logger.Warn("ERROR - instance id mismatch (response instance id > local instance id), updates not applied - app resync requested");
+                    await this.sendResyncRequestAsync();
+                    return;
                 }
             }
             else // Updating existing page/screen

@@ -76,9 +76,35 @@ namespace SynchroCore
                 viewModel = new JObject();
             }
             _rootObject = viewModel;
+            _rootBindingContext = new BindingContext(_rootObject);
+
+            // Clear bindings
             _valueBindings.Clear();
             _propertyBindings.Clear();
-            _rootBindingContext.BindingRoot = _rootObject;
+        }
+
+        public void SetViewModelData(JObject viewModel)
+        {
+            if (viewModel == null)
+            {
+                viewModel = new JObject();
+            }
+            _rootObject = viewModel;
+            _rootBindingContext = new BindingContext(_rootObject);
+
+            // Update bindings (setting BindingRoot to a new value will cause rebind)
+            //
+            foreach (ValueBinding valueBinding in _valueBindings)
+            {
+                valueBinding.BindingContext.BindingRoot = _rootBindingContext.BindingRoot;
+            }
+            foreach (PropertyBinding propertyBinding in _propertyBindings)
+            {
+                foreach (BindingContext propBinding in propertyBinding.BindingContexts)
+                {
+                    propBinding.BindingRoot = _rootBindingContext.BindingRoot;
+                }
+            }
         }
 
         // This object represents a binding update (the path of the bound item and an indication of whether rebinding is required)
