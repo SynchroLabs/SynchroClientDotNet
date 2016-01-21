@@ -15,8 +15,42 @@ namespace SynchroCoreTest
     [TestClass]
     public class WinControlWrapperTest
     {
+        public class TestDeviceMetrics : MaaasDeviceMetrics
+        {
+            public TestDeviceMetrics() : base()
+            {
+                _clientVersion = "1.1.0";
+            }
+
+            public override MaaasOrientation CurrentOrientation
+            {
+                get { return MaaasOrientation.Portrait; }
+            }
+
+            public override double MaaasUnitsToDeviceUnits(double maaasUnits)
+            {
+                // Return maaasUnits unmollested to make testing easier
+                return maaasUnits;
+            }
+
+            public override double TypographicPointsToMaaasUnits(double points)
+            {
+                // Return points unmollested to make testing easier
+                return points;
+            }
+        }
+
         WinPageView pageView = null;
-        StateManager stateManager = null;
+        StateManager stateManager = new StateManager(
+            appManager: new TestAppManager(), 
+            app: new MaaasApp(
+                endpoint: TransportTest.GetSamplesTestEndpoint(),
+                appDefinition: new JObject() { { "name", new JValue("synchro-samples") }, { "description", new JValue("Synchro API Samples") } },
+                sessionId: null
+            ), 
+            transport: new TransportHttp(uri: new Uri(TransportTest.GetSamplesTestEndpoint())), 
+            deviceMetrics: new TestDeviceMetrics()
+            );
 
         JObject viewModelObj = new JObject()
         {
