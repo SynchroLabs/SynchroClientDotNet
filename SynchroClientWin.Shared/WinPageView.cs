@@ -12,7 +12,7 @@ using Windows.UI.Xaml.Controls;
 
 namespace MaaasClientWin
 {
-    class WinPageView : PageView
+    public class WinPageView : PageView
     {
         static Logger logger = Logger.GetLogger("WinPageView");
 

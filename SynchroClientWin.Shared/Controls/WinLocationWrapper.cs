@@ -23,7 +23,7 @@ namespace MaaasClientWin.Controls
         CoreDispatcher _dispatcher;
 
         public WinLocationWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
-            base(parent, bindingContext)
+            base(parent, bindingContext, controlSpec)
         {
             logger.Debug("Creating location element");
             this._isVisualElement = false;

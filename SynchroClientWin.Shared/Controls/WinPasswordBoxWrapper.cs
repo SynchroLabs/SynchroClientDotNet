@@ -14,7 +14,7 @@ namespace MaaasClientWin.Controls
         static Logger logger = Logger.GetLogger("WinPasswordBoxWrapper");
 
         public WinPasswordBoxWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
-            base(parent, bindingContext)
+            base(parent, bindingContext, controlSpec)
         {
             logger.Debug("Creating password box element with value of: {0}", controlSpec["value"]);
             PasswordBox passwordBox = new PasswordBox();
@@ -25,10 +25,10 @@ namespace MaaasClientWin.Controls
             JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "value");
             if (!processElementBoundValue("value", (string)bindingSpec["value"], () => { return new JValue(passwordBox.Password); }, value => passwordBox.Password = ToString(value)))
             {
-                processElementProperty(controlSpec["value"], value => passwordBox.Password = ToString(value));
+                processElementProperty(controlSpec, "value", value => passwordBox.Password = ToString(value));
             }
 
-            processElementProperty(controlSpec["placeholder"], value => passwordBox.PlaceholderText = ToString(value));
+            processElementProperty(controlSpec, "placeholder", value => passwordBox.PlaceholderText = ToString(value));
 
             passwordBox.PasswordChanged += passwordBox_PasswordChanged;
         }

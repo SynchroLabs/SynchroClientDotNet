@@ -16,7 +16,7 @@ namespace MaaasClientWin.Controls
         bool _updateOnChange = false;
 
         public WinTextBoxWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
-            base(parent, bindingContext)
+            base(parent, bindingContext, controlSpec)
         {
             logger.Debug("Creating text box element with value of: {0}", controlSpec["value"]);
             TextBox textBox = new TextBox();
@@ -27,7 +27,7 @@ namespace MaaasClientWin.Controls
             JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "value");
             if (!processElementBoundValue("value", (string)bindingSpec["value"], () => { return new JValue(textBox.Text); }, value => textBox.Text = ToString(value)))
             {
-                processElementProperty(controlSpec["value"], value => textBox.Text = ToString(value));
+                processElementProperty(controlSpec, "value", value => textBox.Text = ToString(value));
             }
 
             if ((string)bindingSpec["sync"] == "change")
@@ -35,7 +35,7 @@ namespace MaaasClientWin.Controls
                 _updateOnChange = true;
             }
 
-            processElementProperty(controlSpec["placeholder"], value => textBox.PlaceholderText = ToString(value));
+            processElementProperty(controlSpec, "placeholder", value => textBox.PlaceholderText = ToString(value));
 
             textBox.TextChanged += textBox_TextChanged;
         }

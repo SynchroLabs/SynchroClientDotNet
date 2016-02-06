@@ -93,7 +93,7 @@ namespace MaaasClientWin.Controls
         Orientation _orientation;
 
         public WinStackPanelWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
-            base(parent, bindingContext)
+            base(parent, bindingContext, controlSpec)
         {
             logger.Debug("Creating stackpanel element");
 
@@ -111,7 +111,7 @@ namespace MaaasClientWin.Controls
 
             applyFrameworkElementDefaults(_border, false);
 
-            processThicknessProperty(controlSpec["padding"], () => _border.Padding, value => _border.Padding = (Thickness)value);
+            processThicknessProperty(controlSpec, "padding", () => _border.Padding, value => _border.Padding = (Thickness)value);
 
             // This is a little weird.  We're going to attempt to resolve the orientation value now, because we must have a default orientation to use
             // in the initial layout code below (as we add child controls).  Below all of this we will *also* bind to the orientation so that it can be
@@ -128,7 +128,14 @@ namespace MaaasClientWin.Controls
                     {
                         ColumnDefinition colDef = new ColumnDefinition();
 
-                        int starCount = GetStarCount((string)childControlSpec["width"]);
+                        // !!! 
+                        //
+                        // OK, this is creepy.  This has to be updated to use processElementProperty in order to take advantage of a
+                        // width value stored in a style.  The problem is that if the child width is updated later, then the parent
+                        // won't be notified or make any adjustment.  The old code worked the same way.  This would only be an issue
+                        // in the case where there is a star sizing that later changes (which seem like a pretty unusual case).
+                        // 
+                        int starCount = GetStarCount(ToString(processElementProperty(childControlSpec, "width", null)));
                         if (starCount > 0)
                         {
                             colDef.Width = new GridLength(starCount, GridUnitType.Star);
@@ -147,7 +154,9 @@ namespace MaaasClientWin.Controls
                     {
                         RowDefinition rowDef = new RowDefinition();
 
-                        int starCount = GetStarCount((string)childControlSpec["height"]);
+                        // !!! See comment in width sizing logic above...
+                        //
+                        int starCount = GetStarCount(ToString(processElementProperty(childControlSpec, "height", null)));
                         if (starCount > 0)
                         {
                             rowDef.Height = new GridLength(starCount, GridUnitType.Star);
@@ -168,7 +177,7 @@ namespace MaaasClientWin.Controls
                     index++;
                 });
 
-                processElementProperty(controlSpec["orientation"], value => UpdateOrientation(ToOrientation(value, _orientation)));
+                processElementProperty(controlSpec, "orientation", value => UpdateOrientation(ToOrientation(value, _orientation)));
             }
         }
 

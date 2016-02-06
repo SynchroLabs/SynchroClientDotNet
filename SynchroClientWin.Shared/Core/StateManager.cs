@@ -45,6 +45,7 @@ namespace SynchroCore
 
             _appManager = appManager;
             _app = app;
+            _appDefinition = app.AppDefinition;
             _transport = transport;
             _transport.setDefaultHandlers(this.ProcessResponseAsync, this.ProcessRequestFailure);
 
@@ -217,7 +218,7 @@ namespace SynchroCore
                         // The best option in this situation is to request a Resync with the server...
                         //
                         logger.Warn("ERROR - client state out of sync - need resync");
-                        await this.sendResyncRequestAsync();
+                        await this.sendResyncInstanceRequestAsync();
                     }
                 }
                 else
@@ -266,7 +267,7 @@ namespace SynchroCore
                 await this.sendAppStartPageRequestAsync();
                 return;
             }
-            else if (responseAsJSON["ViewModel"] != null) // This means we have a new page/screen
+            else if ((responseAsJSON["ViewModel"] != null) && (responseAsJSON["View"] != null)) // ViewModel and View - means we have a new page/screen
             {
                 this._instanceId = (uint)responseAsJSON["InstanceId"];
                 this._instanceVersion = (uint)responseAsJSON["InstanceVersion"];
@@ -275,29 +276,48 @@ namespace SynchroCore
 
                 this._viewModel.InitializeViewModelData((JObject)jsonViewModel);
 
-                // In certain situations, like a resync where the instance matched but the version
-                // was out of date, you might get only the ViewModel (and not the View).
+                this._path = (string)responseAsJSON["Path"];
+                logger.Info("Got ViewModel for new view - path: '{0}', instanceId: {1}, instanceVersion: {2}", this._path, this._instanceId, this._instanceVersion);
+
+                this._isBackSupported = (bool)responseAsJSON["Back"];
+
+                JObject jsonPageView = (JObject)responseAsJSON["View"];
+                _onProcessPageView(jsonPageView);
+
+                // If the view model is dirty after rendering the page, then the changes are going to have been
+                // written by new view controls that produced initial output (such as location or sensor controls).
+                // We need to signal than a viewModel "Update" is required to get these changes to the server.
                 //
-                if (responseAsJSON["View"] != null)
+                updateRequired = this._viewModel.IsDirty();
+            }
+            else if (responseAsJSON["ViewModel"] != null) // ViewModel without View (resync)
+            {
+                uint responseInstanceId = (uint)responseAsJSON["InstanceId"];
+                if (responseInstanceId == this._instanceId)
                 {
-                    this._path = (string)responseAsJSON["Path"];
-                    logger.Info("Got ViewModel for new view - path: '{0}', instanceId: {1}, instanceVersion: {2}", this._path, this._instanceId, this._instanceVersion);
+                    this._instanceVersion = (uint)responseAsJSON["InstanceVersion"];
 
-                    this._isBackSupported = (bool)responseAsJSON["Back"];
+                    JObject jsonViewModel = responseAsJSON["ViewModel"] as JObject;
 
-                    JObject jsonPageView = (JObject)responseAsJSON["View"];
-                    _onProcessPageView(jsonPageView);
+                    this._viewModel.SetViewModelData((JObject)jsonViewModel);
 
-                    // If the view model is dirty after rendering the page, then the changes are going to have been
-                    // written by new view controls that produced initial output (such as location or sensor controls).
-                    // We need to signal than a viewModel "Update" is required to get these changes to the server.
-                    //
-                    updateRequired = this._viewModel.IsDirty();
+                    logger.Info("Got ViewModel resync for existing view - path: '{0}', instanceId: {1}, instanceVersion: {2}", this._path, this._instanceId, this._instanceVersion);
+                    this._viewModel.UpdateViewFromViewModel();
+                }
+                else if (responseInstanceId < this._instanceId)
+                {
+                    // Resync response was for a previous instance, so we can safely ignore it (we've moved on).
                 }
                 else
                 {
-                    logger.Info("Got ViewModel for existing view - path: '{0}', instanceId: {1}, instanceVersion: {2}", this._path, this._instanceId, this._instanceVersion);
-                    this._viewModel.UpdateViewFromViewModel();
+                    // Incorrect instance id on resync - For this to happen, we'd have to get a resync for a "future" instance (meaning one for which
+                    // we haven't seen the initial view/viewModel).  This should never happen, but if it does, it's not clear how to recover from it.
+                    // Requesting an "instance" resync might very well result in just hitting this case again repeatedy.  The only potential way out of
+                    // this (if it ever does happen) is to request the "big" resync.
+                    //
+                    logger.Warn("ERROR - instance id mismatch (response instance id > local instance id), updates not applied - app resync requested");
+                    await this.sendResyncRequestAsync();
+                    return;
                 }
             }
             else // Updating existing page/screen
@@ -334,7 +354,7 @@ namespace SynchroCore
                             // Instance version was not one more than current version on view model update
                             //
                             logger.Warn("ERROR - instance version mismatch, updates not applied - need resync");
-                            await this.sendResyncRequestAsync();
+                            await this.sendResyncInstanceRequestAsync();
                             return;
                         }
                     }
@@ -355,7 +375,7 @@ namespace SynchroCore
                             // Instance version was not correct on view update
                             //
                             logger.Warn("ERROR - instance version mismatch on view update - need resync");
-                            await this.sendResyncRequestAsync();
+                            await this.sendResyncInstanceRequestAsync();
                             return;
                         }
                     }
@@ -369,7 +389,7 @@ namespace SynchroCore
                     // Incorrect instance id
                     //
                     logger.Warn("ERROR - instance id mismatch (response instance id > local instance id), updates not applied - need resync");
-                    await this.sendResyncRequestAsync();
+                    await this.sendResyncInstanceRequestAsync();
                     return;
                 }
             }
@@ -441,7 +461,7 @@ namespace SynchroCore
             await _transport.sendMessage(_app.SessionId, requestObject);
         }
 
-        private async Task sendResyncRequestAsync()
+        private async Task sendResyncInstanceRequestAsync()
         {
             logger.Info("Sending resync for path: '{0}'", this._path);
 
@@ -560,6 +580,28 @@ namespace SynchroCore
                 { "InstanceId", new JValue(this._instanceId) },
                 { "InstanceVersion", new JValue(this._instanceVersion) },
                 { "ViewMetrics", this.PackageViewMetrics(orientation) }
+            };
+
+            await _transport.sendMessage(_app.SessionId, requestObject);
+        }
+
+        // If your app has a session, but no other state, such as on recovery from tombstoning, you 
+        // can call this method instead of startApplicationAsync().  The server will respond with the
+        // full state required to resume your app.
+        //
+        // This method should only be called in a restart from tombstoning state.  For example, if a 
+        // user had navigated into the app and then shut it down via the operating system, when they 
+        // restart they do not expect to return to where they were (as they would with this method), 
+        // they expect to return to the entry sreen of the app.
+        //
+        public async Task sendResyncRequestAsync()
+        {
+            logger.Info("Sending resync (no path/instance)");
+
+            JObject requestObject = new JObject()
+            {
+                { "Mode", new JValue("Resync") },
+                { "TransactionId", new JValue(getNewTransactionId()) }
             };
 
             await _transport.sendMessage(_app.SessionId, requestObject);

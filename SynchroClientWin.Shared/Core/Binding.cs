@@ -417,9 +417,14 @@ namespace SynchroCore
             _setViewValue = setViewValue;
         }
 
-        public void UpdateViewFromViewModel()
+        public JToken UpdateViewFromViewModel()
         {
-            this._setViewValue(_propertyValue.Expand());
+            var value = _propertyValue.Expand();
+            if (_setViewValue != null)
+            {
+                this._setViewValue(value);
+            }
+            return value;
         }
 
         public List<BindingContext> BindingContexts { get { return _propertyValue.BindingContexts; } }

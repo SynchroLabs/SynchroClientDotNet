@@ -15,19 +15,23 @@ namespace MaaasClientWin.Controls
         static Logger logger = Logger.GetLogger("WinTextBlockWrapper");
 
         public WinTextBlockWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
-            base(parent, bindingContext)
+            base(parent, bindingContext, controlSpec)
         {
             logger.Debug("Creating text element with value of: {0}", controlSpec["value"]);
             TextBlock textBlock = new TextBlock();
             textBlock.TextWrapping = TextWrapping.Wrap;
 
+            // We're going to set a default size, since the platform default is really small.
+            // 
+            textBlock.FontSize = ToDeviceUnitsFromTypographicPoints(new JValue(10.0f)); 
+
             this._control = textBlock;
 
             applyFrameworkElementDefaults(textBlock);
 
-            processElementProperty(controlSpec["value"], value => textBlock.Text = ToString(value));
+            processElementProperty(controlSpec, "value", value => textBlock.Text = ToString(value));
 
-            processElementProperty(controlSpec["ellipsize"], value =>
+            processElementProperty(controlSpec, "ellipsize", value =>
             {
                 // Other trimming options:
                 //
@@ -47,7 +51,7 @@ namespace MaaasClientWin.Controls
                 }
             });
 
-            processElementProperty(controlSpec["textAlignment"], value =>
+            processElementProperty(controlSpec, "textAlignment", value =>
             {
                 String alignString = ToString(value);
                 if (alignString == "Left")

@@ -11,7 +11,7 @@ namespace MaaasClientWin.Controls
         static Logger logger = Logger.GetLogger("WinProgressRingWrapper");
 
         public WinProgressRingWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
-            base(parent, bindingContext)
+            base(parent, bindingContext, controlSpec)
         {
             logger.Debug("Creating button element with caption of: {0}", controlSpec["caption"]);
             ProgressRing ring = new ProgressRing();
@@ -19,7 +19,7 @@ namespace MaaasClientWin.Controls
 
             applyFrameworkElementDefaults(ring);
  
-            processElementProperty(controlSpec["value"], value => ring.IsActive = ToBoolean(value));
+            processElementProperty(controlSpec, "value", value => ring.IsActive = ToBoolean(value));
         }
     }
 }

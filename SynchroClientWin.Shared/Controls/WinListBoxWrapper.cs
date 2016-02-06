@@ -20,14 +20,14 @@ namespace MaaasClientWin.Controls
         static string[] Commands = new string[] { CommandName.OnItemClick.Attribute, CommandName.OnSelectionChange.Attribute };
 
         public WinListBoxWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
-            base(parent, bindingContext)
+            base(parent, bindingContext, controlSpec)
         {
             ListBox listbox = new ListBox();
             this._control = listbox;
 
             applyFrameworkElementDefaults(listbox);
 
-            ListSelectionMode mode = ToListSelectionMode(controlSpec["select"]);
+            ListSelectionMode mode = ToListSelectionMode(processElementProperty(controlSpec, "select", null));
             switch (mode)
             {
                 case ListSelectionMode.None:

@@ -19,7 +19,7 @@ namespace MaaasClientWin.Controls
         static string[] Commands = new string[] { CommandName.OnClick.Attribute };
 
         public WinCommandWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
-            base(parent, bindingContext)
+            base(parent, bindingContext, controlSpec)
         {
             logger.Debug("Creating command element with label of: {0}", controlSpec["text"]);
 
@@ -27,8 +27,8 @@ namespace MaaasClientWin.Controls
 
             this._control = button;
 
-            processElementProperty(controlSpec["text"], value => button.Label = ToString(value));
-            processElementProperty(controlSpec["icon"], value => 
+            processElementProperty(controlSpec, "text", value => button.Label = ToString(value));
+            processElementProperty(controlSpec, "icon", value => 
             {   
                 Symbol iconSymbol;
                 if (Enum.TryParse(ToString(value), out iconSymbol))

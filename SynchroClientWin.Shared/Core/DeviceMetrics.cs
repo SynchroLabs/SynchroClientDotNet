@@ -150,7 +150,7 @@ namespace SynchroCore
             }
         }
 
-        public double MaaasUnitsToDeviceUnits(double maaasUnits)
+        public virtual double MaaasUnitsToDeviceUnits(double maaasUnits)
         {
             return maaasUnits * _scalingFactor;
         }
@@ -169,7 +169,7 @@ namespace SynchroCore
         //     we're just going to use a factor of 3x to convert from typographic points to Maaas units (this will also
         //     make it easy for Maaas UX designers to understand the relationship of typographic points to Maaas units).
         //
-        public double TypographicPointsToMaaasUnits(double points)
+        public virtual double TypographicPointsToMaaasUnits(double points)
         {
             // Convert typographic point values (72pt/inch) to Maaas units (219.52units/inch on model phone)
             //
