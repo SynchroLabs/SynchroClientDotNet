@@ -17,7 +17,21 @@ namespace SynchroCoreTest
                     new JObject(){ {"name", new JValue("Green") }, {"color", new JValue("green") }, {"value", new JValue("0x00ff00")} },
                     new JObject(){ {"name", new JValue("Blue") }, {"color", new JValue("blue") }, {"value", new JValue("0x0000ff")} }
                 }
-            }
+            },
+            { "board", new JArray() // A 2x2 array
+                {
+                    new JArray()
+                    {
+                        new JObject(){ {"name", new JValue("s00") } },
+                        new JObject(){ {"name", new JValue("s01") } },
+                    },
+                    new JArray()
+                    {
+                        new JObject(){ {"name", new JValue("s10") } },
+                        new JObject(){ {"name", new JValue("s11") } },
+                    }
+                }
+            },
         };
 
         [TestMethod]
@@ -59,8 +73,19 @@ namespace SynchroCoreTest
         public void testParentElement()
         {
             var bindingCtx = new BindingContext(viewModel);
-        
-            Assert.AreEqual("Colors", (string)bindingCtx.Select("colors[1].name").Select("$parent.$parent.title").GetValue());
+
+            Assert.AreEqual("Green", (string)bindingCtx.Select("colors[1].name").Select("$parent.name").GetValue());
+            Assert.AreEqual("Red", (string)bindingCtx.Select("colors[1].name").Select("$parent.$parent[0].name").GetValue());
+            Assert.AreEqual("Colors", (string)bindingCtx.Select("colors[1].name").Select("$parent.$parent.$parent.title").GetValue());
+            Assert.AreEqual(null, (string)bindingCtx.Select("colors[1].name").Select("$parent.$parent.$parent.$parent").GetValue());
+        }
+
+        [TestMethod]
+        public void testParentElementInArrayOfArray()
+        {
+            var bindingCtx = new BindingContext(viewModel);
+
+            Assert.AreEqual(1, (int)bindingCtx.Select("board[1][0]").Select("$parent.$index").GetValue());
         }
 
         [TestMethod]

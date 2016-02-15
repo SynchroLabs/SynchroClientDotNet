@@ -34,14 +34,14 @@ namespace SynchroCoreTest
             var expected = new JObject()
             {
                 { "name", new JValue("synchro-samples") },
-                { "version", new JValue("0.1.0") },
+                { "version", new JValue("1.3.0") },
                 { "description", new JValue("Synchro API Samples") },
                 { "main", new JValue("menu") },
                 { "author", new JValue("Bob Dickinson <bob@synchro.io> (http://synchro.io/)") },
                 { "private", new JValue(true) },
                 { "engines", new JObject()
                     {
-                        { "synchro", new JValue("*") }
+                        { "synchro", new JValue(">= 1.3.0") }
                     }
                 }
             };

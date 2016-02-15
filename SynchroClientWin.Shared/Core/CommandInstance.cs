@@ -55,11 +55,14 @@ namespace SynchroCore
                 JToken value = parameter.Value;
                 if (parameter.Value.Type == JTokenType.String)
                 {
-                    var expanded = PropertyValue.Expand((string)parameter.Value, bindingContext);
-                    value = ((JToken)expanded).DeepClone();
+                    value = PropertyValue.Expand((string)parameter.Value, bindingContext);
                 }
  
-                if (value == null)
+                if (value != null)
+                {
+                    value = value.DeepClone();
+                }
+                else
                 {
                     value = new JValue(null);
                 }

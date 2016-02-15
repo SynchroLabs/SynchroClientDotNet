@@ -49,7 +49,9 @@ namespace SynchroCore
             }
         }
 
-        private static Regex _bindingTokensRE = new Regex(@"[$]([^.]*)[.]?"); // Token starts with $, separated by dot
+        // Token starts with $, separated by dot or square bracket
+        //
+        private static Regex _bindingTokensRE = new Regex(@"[$]([^.[]*)[.]?"); // Break on dot or open square bracket, only consume dot
 
         private void resolveBinding(string parentPath, string bindingPath)
         {
@@ -72,7 +74,9 @@ namespace SynchroCore
                 {
                     if (parentPath.Length != 0)
                     {
-                        var lastDot = parentPath.LastIndexOf(".");
+                        // We need to remove the last segment whether it is dot-separated or an array notation
+                        //
+                        var lastDot = Math.Max(parentPath.LastIndexOf("."), parentPath.LastIndexOf("["));
                         if (lastDot == -1)
                         {
                             // Remove the only remaining path segment
@@ -99,7 +103,11 @@ namespace SynchroCore
 
             if ((parentPath.Length > 0) && (_bindingPath.Length > 0))
             {
-                _bindingPath = parentPath + "." + _bindingPath;
+                if (_bindingPath[0] != '[')
+                {
+                    parentPath += '.';
+                }
+                _bindingPath = parentPath + _bindingPath;
             }
             else if (parentPath.Length > 0)
             {
