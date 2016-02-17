@@ -13,6 +13,8 @@ namespace MaaasClientWin.Controls
     {
         static Logger logger = Logger.GetLogger("WinBorderWrapper");
 
+        static string[] Commands = new string[] { CommandName.OnTap.Attribute };
+
         protected Border _border;
 
         public WinBorderWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
@@ -35,6 +37,24 @@ namespace MaaasClientWin.Controls
                 {
                     _border.Child = childControlWrapper.Control;
                 });
+            }
+
+            JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, CommandName.OnTap.Attribute, Commands);
+            ProcessCommands(bindingSpec, Commands);
+
+            if (GetCommand(CommandName.OnTap) != null)
+            {
+                _border.Tapped += _border_Tapped;
+            }
+        }
+
+        private async void _border_Tapped(object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs e)
+        {
+            CommandInstance command = GetCommand(CommandName.OnTap);
+            if (command != null)
+            {
+                logger.Debug("Border tapped with command: {0}", command);
+                await this.StateManager.sendCommandRequestAsync(command.Command, command.GetResolvedParameters(BindingContext));
             }
         }
     }

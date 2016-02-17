@@ -104,7 +104,6 @@ namespace MaaasClientWin.Controls
             {
                 image.Tapped += image_Tapped;
             }
-
         }
 
         async void image_Tapped(object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs e)
