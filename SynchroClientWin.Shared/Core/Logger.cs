@@ -125,22 +125,10 @@ namespace SynchroCore
         {
             if (level.Ordinal >= this.Level.Ordinal)
             {
-                // !!! Timestamp would be nice, but some environments already provide it, so we wouldn't just want
-                //     to jam it in there.  May need to switch based on environment and do the right thing on a case
-                //     by case basis.
-                //
+                string time = System.DateTime.Now.ToString("yyyy-mm-dd hh:mm:ss.fff");
                 string logEventDetails = string.Format(format, args);
-                string logEventFormat = "[{0}] {1} - {2}";
-                string logEvent = string.Format(logEventFormat, level.Name, this._className, logEventDetails);
-
-                // !!! The current implementation below using System.Diagnostics.Debug.WriteLine will write to
-                //     NSLog or android.util.Log as appropriate, but ONLY in debug builds.  In release builds,
-                //     there will be no log output at all (which is not ideal - we'd like to at least see WARN
-                //     and above even on release builds).  Made a brief attempt at using Console.WriteLine
-                //     instead, but couldn't get that to even compile.  Need a solution to this at some point.
-                //
-                //     Console.WriteLine(logEvent);
-                //
+                string logEventFormat = "[{0}] [{1}] {2} - {3}";
+                string logEvent = string.Format(logEventFormat, time, level.Name, this._className, logEventDetails);
                 System.Diagnostics.Debug.WriteLine(logEvent);
             }
         }
