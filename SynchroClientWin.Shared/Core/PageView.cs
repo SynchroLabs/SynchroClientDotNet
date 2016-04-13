@@ -125,7 +125,6 @@ namespace SynchroCore
                 {
                     { "control", new JValue("stackpanel") },
                     { "orientation", new JValue("vertical") },
-                    { "height", new JValue("*") },
                     { "width", new JValue("*") },
                     { "contents", elements }
                 };

@@ -13,7 +13,9 @@ namespace MaaasClientWin.Controls
     {
         static Logger logger = Logger.GetLogger("WinTextBoxWrapper");
 
-        bool _updateOnChange = false;
+        bool   _updateOnChange = false;
+        bool   _multiline = false;
+        double _lines = 0;
 
         public WinTextBoxWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext, controlSpec)
@@ -21,6 +23,20 @@ namespace MaaasClientWin.Controls
             logger.Debug("Creating text box element with value of: {0}", controlSpec["value"]);
             TextBox textBox = new TextBox();
             this._control = textBox;
+
+            if ((controlSpec["multiline"] != null) && (bool)controlSpec["multiline"])
+            {
+                // Mutliline...
+                _multiline = true;
+                textBox.TextWrapping = TextWrapping.Wrap;
+                textBox.AcceptsReturn = true;
+
+                processElementProperty(controlSpec, "lines", value => 
+                {
+                    _lines = ToDouble(value);
+                    this.OnFontChange(_control); 
+                });
+            }
 
             applyFrameworkElementDefaults(textBox);
 
@@ -38,6 +54,23 @@ namespace MaaasClientWin.Controls
             processElementProperty(controlSpec, "placeholder", value => textBox.PlaceholderText = ToString(value));
 
             textBox.TextChanged += textBox_TextChanged;
+        }
+
+        public override void OnFontChange(FrameworkElement control)
+        {
+            if (!_heightSpecified && (_lines >= 1))
+            {
+                var textBox = (TextBox)control;
+
+                // !!! The reported FontSize doesn't return the baseline-to-baseline font size.  There is also no way
+                //     to get any font metrics (from the control or the system at large) that would help determine
+                //     how tall you have to make the TextBox to accomodated a certain numbers of lines of text in
+                //     a given font.  After a lot of research, I gave up and came up with this value through trial and
+                //     error that works for number of lines 1-5 with the standard system font.  Fuck you Microsoft.
+                //
+                var fudge = 1.4; 
+                textBox.Height = (textBox.FontSize * _lines * fudge) + textBox.Padding.Top + textBox.Padding.Bottom;
+            }
         }
 
         async void textBox_TextChanged(object sender, TextChangedEventArgs e)

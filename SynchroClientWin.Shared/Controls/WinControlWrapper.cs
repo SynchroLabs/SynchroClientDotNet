@@ -16,9 +16,11 @@ namespace MaaasClientWin.Controls
 {
     public class WinFontSetter : FontSetter
     {
+        WinControlWrapper _controlWrapper;
         FrameworkElement _control;
-        public WinFontSetter(FrameworkElement control)
+        public WinFontSetter(WinControlWrapper controlWrapper, FrameworkElement control)
         {
+            _controlWrapper = controlWrapper;
             _control = control;
         }
 
@@ -43,6 +45,7 @@ namespace MaaasClientWin.Controls
             if (property != null)
             {
                 property.SetValue(_control, fontFamily);
+                _controlWrapper.OnFontChange(_control);
             }
         }
 
@@ -52,6 +55,7 @@ namespace MaaasClientWin.Controls
             if (property != null)
             {
                 property.SetValue(_control, size);
+                _controlWrapper.OnFontChange(_control);
             }
         }
 
@@ -62,6 +66,7 @@ namespace MaaasClientWin.Controls
             if (property != null)
             {
                 property.SetValue(_control, fontWeight);
+                _controlWrapper.OnFontChange(_control);
             }
         }
 
@@ -72,6 +77,7 @@ namespace MaaasClientWin.Controls
             if (property != null)
             {
                 property.SetValue(_control, fontStyle);
+                _controlWrapper.OnFontChange(_control);
             }
         }
     }
@@ -100,6 +106,10 @@ namespace MaaasClientWin.Controls
             base(parent, bindingContext, controlSpec)
         {
             _pageView = ((WinControlWrapper)parent).PageView;
+        }
+
+        public virtual void OnFontChange(FrameworkElement control)
+        {
         }
 
         public Orientation ToOrientation(JToken value, Orientation defaultOrientation = Orientation.Horizontal)
@@ -321,7 +331,7 @@ namespace MaaasClientWin.Controls
                 }
             });
             processThicknessProperty(controlSpec, "margin", () => this.Control.Margin, value => this.Control.Margin = (Thickness)value);
-            processFontAttribute(controlSpec, new WinFontSetter(this.Control));
+            processFontAttribute(controlSpec, new WinFontSetter(this, this.Control));
 
             // These elements are very common among derived classes, so we'll do some runtime reflection...
             processElementPropertyIfPresent(controlSpec, "enabled", "IsEnabled", value => ToBoolean(value));
