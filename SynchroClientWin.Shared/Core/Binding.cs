@@ -291,6 +291,8 @@ namespace SynchroCore
         private static Regex _braceContentsRE = new Regex(@"(?<![{])[{](?![{])([^}]*)[}]");
 
         private string _formatString;
+        private bool _isExpression = false;
+
         private List<BoundAndPossiblyResolvedToken> _boundTokens;
 
         // Construct and return the unresolved binding contexts (the one-way bindings, excluding the one-time bindings)
@@ -315,6 +317,16 @@ namespace SynchroCore
         {
             _boundTokens = new List<BoundAndPossiblyResolvedToken>();
             int tokenIndex = 0;
+
+            var prefix = "eval(";
+            var suffix = ")";
+            if (tokenString.StartsWith(prefix) && tokenString.EndsWith(suffix))
+            {
+                _isExpression = true;
+                tokenString = tokenString.Substring(prefix.Length, tokenString.Length - prefix.Length - suffix.Length);
+                logger.Debug("Property value string is expression: {0}", tokenString);
+            }
+
             _formatString = _braceContentsRE.Replace(tokenString, delegate(Match m)
             {
                 logger.Debug("Found boundtoken: {0}", m.Groups[1]);
@@ -351,13 +363,66 @@ namespace SynchroCore
                 BoundAndPossiblyResolvedToken boundToken = new BoundAndPossiblyResolvedToken(bindingContext.Select(token), oneTimeBinding, negated, format);
                 _boundTokens.Add(boundToken);
 
-                return "{" + tokenIndex++ + "}";
+                // Expressions get var0, var1, etc, whereas format string gets {0}, {1}, etc.
+                //
+                var replacementToken = _isExpression ? "var" + tokenIndex : "{" + tokenIndex + "}";
+                tokenIndex++;
+
+                return replacementToken;
             });
+
+            logger.Debug("PropertyValue - isExpression: {0}, formatString: {1}", _isExpression, _formatString);
         }
 
         public JToken Expand()
         {
-            if (_formatString == "{0}")
+            if (_isExpression)
+            {
+                Jint.Engine engine = new Jint.Engine();
+
+                // Set up our bound tokens as JS variables
+                //
+                for (var i = 0; i < _boundTokens.Count; i++)
+                {
+                    var resolvedValue = _boundTokens[i].ResolvedValue;
+                    if (resolvedValue.Type == JTokenType.Boolean)
+                    {
+                        engine.SetValue("var" + i, (bool)resolvedValue);
+                    }
+                    else if ((resolvedValue.Type == JTokenType.Integer) || (resolvedValue.Type == JTokenType.Float))
+                    {
+                        engine.SetValue("var" + i, (double)resolvedValue);
+                    }
+                    else if (resolvedValue.Type == JTokenType.Null)
+                    {
+                        engine.SetValue("var" + i, Jint.Native.JsValue.Null);
+                    }
+                    else
+                    {
+                        engine.SetValue("var" + i, _boundTokens[i].ResolvedValueAsString);
+                    }
+                }
+
+                var result = engine.Execute(_formatString).GetCompletionValue();
+
+                if (result.IsBoolean())
+                {
+                    return new JValue(result.AsBoolean());
+                }
+                else if (result.IsNumber())
+                {
+                    return new JValue(result.AsNumber());
+                }
+                else if (result.IsNull())
+                {
+                    return new JValue(null);
+                }
+                else
+                {
+                    return new JValue(result.AsString());
+                }
+            }
+            else if (_formatString == "{0}")
             {
                 // If there is a binding containing exactly a single token, then that token may resolve to
                 // a value of any type (not just string), and we want to preserve that type, so we process
