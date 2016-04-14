@@ -403,23 +403,34 @@ namespace SynchroCore
                     }
                 }
 
-                var result = engine.Execute(_formatString).GetCompletionValue();
+                try
+                {
+                    var result = engine.Execute(_formatString).GetCompletionValue();
 
-                if (result.IsBoolean())
-                {
-                    return new JValue(result.AsBoolean());
+                    if (result.IsBoolean())
+                    {
+                        return new JValue(result.AsBoolean());
+                    }
+                    else if (result.IsNumber())
+                    {
+                        return new JValue(result.AsNumber());
+                    }
+                    else if (result.IsNull())
+                    {
+                        return new JValue(null);
+                    }
+                    else
+                    {
+                        return new JValue(result.ToString());
+                    }
                 }
-                else if (result.IsNumber())
+                catch (Jint.Parser.ParserException e)
                 {
-                    return new JValue(result.AsNumber());
-                }
-                else if (result.IsNull())
-                {
-                    return new JValue(null);
-                }
-                else
-                {
-                    return new JValue(result.AsString());
+                    // On iOS there are no parse exceptions, the script just resolves to "undefined" (so you literally get back
+                    // the string "undefined" on iOS.  Here we have some details about why your script sucked.  I guess that's fine
+                    // and worth passing along.
+                    //
+                    return new JValue(e.Message);
                 }
             }
             else if (_formatString == "{0}")

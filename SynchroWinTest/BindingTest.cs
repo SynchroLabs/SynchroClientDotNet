@@ -461,5 +461,97 @@ namespace SynchroCoreTest
         
             Assert.AreEqual("The numeric value is 13.00", (string)propVal.Expand());
         }
+
+        [TestMethod]
+        public void TestEvalStringResult()
+        {
+            var viewModel = new JObject()
+            {
+                {"strVal", new JValue("hello")},
+            };
+
+            var bindingCtx = new BindingContext(viewModel);
+
+            var propVal = new PropertyValue("eval({strVal} + ' world')", bindingContext: bindingCtx);
+
+            Assert.AreEqual("hello world", (string)propVal.Expand());
+        }
+
+        [TestMethod]
+        public void TestEvalNumericResult()
+        {
+            var viewModel = new JObject()
+            {
+                {"strVal", new JValue("hello")},
+                {"intVal", new JValue(10) }
+            };
+
+            var bindingCtx = new BindingContext(viewModel);
+
+            var propVal = new PropertyValue("eval({strVal}.length + {intVal})", bindingContext: bindingCtx);
+
+            Assert.AreEqual(15, (double)propVal.Expand());
+        }
+
+        [TestMethod]
+        public void TestEvalBoolResult()
+        {
+            var viewModel = new JObject()
+            {
+                {"intVal", new JValue(10) }
+            };
+
+            var bindingCtx = new BindingContext(viewModel);
+
+            var propVal = new PropertyValue("eval({intVal} == 10)", bindingContext: bindingCtx);
+
+            Assert.AreEqual(true, (bool)propVal.Expand());
+        }
+
+        [TestMethod]
+        public void TestEvalNullResult()
+        {
+            var viewModel = new JObject()
+            {
+                {"intVal", new JValue(10) }
+            };
+
+            var bindingCtx = new BindingContext(viewModel);
+
+            var propVal = new PropertyValue("eval(null)", bindingContext: bindingCtx);
+
+            Assert.AreEqual(JTokenType.Null, propVal.Expand().Type);
+        }
+
+        [TestMethod]
+        public void TestEvalUnsupportResultType()
+        {
+            var viewModel = new JObject()
+            {
+                {"intVal", new JValue(10) }
+            };
+
+            var bindingCtx = new BindingContext(viewModel);
+
+            var propVal = new PropertyValue("eval(['foo', 'bar'])", bindingContext: bindingCtx);
+
+            // Expected result is toString() of actual result when not of support type (Boolean, Number, String, Null)
+            Assert.AreEqual("foo,bar", (string)propVal.Expand());
+        }
+
+        [TestMethod]
+        public void TestEvalBadScript()
+        {
+            var viewModel = new JObject()
+            {
+                {"intVal", new JValue(10) }
+            };
+
+            var bindingCtx = new BindingContext(viewModel);
+
+            var propVal = new PropertyValue("eval()foo)", bindingContext: bindingCtx);
+
+            Assert.AreEqual("Line 1: Unexpected token )", (string)propVal.Expand());
+        }
     }
 }
