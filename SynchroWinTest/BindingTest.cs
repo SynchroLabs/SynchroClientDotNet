@@ -509,6 +509,60 @@ namespace SynchroCoreTest
         }
 
         [TestMethod]
+        public void TestEvalBoolParam()
+        {
+            var viewModel = new JObject()
+            {
+                {"boolVal", new JValue(true) }
+            };
+
+            var bindingCtx = new BindingContext(viewModel);
+
+            var propVal = new PropertyValue("eval(false || {boolVal})", bindingContext: bindingCtx);
+
+            Assert.AreEqual(true, (bool)propVal.Expand());
+        }
+
+        [TestMethod]
+        public void TestEvalNullParam()
+        {
+            var viewModel = new JObject()
+            {
+                {"nullVal", new JValue(null) }
+            };
+
+            var bindingCtx = new BindingContext(viewModel);
+
+            var propVal = new PropertyValue("eval(null === {nullVal})", bindingContext: bindingCtx);
+
+            Assert.AreEqual(true, (bool)propVal.Expand());
+        }
+
+        [TestMethod]
+        public void TestEvalUnsupportedParamType()
+        {
+            var viewModel = new JObject()
+            {
+                {"colors", new JArray()
+                    {
+                        new JObject(){ {"name", new JValue("Red")}, {"color", new JValue("red")}, {"value", new JValue("0xff0000")} },
+                        new JObject(){ {"name", new JValue("Green")}, {"color", new JValue("green")}, {"value", new JValue("0x00ff00")} },
+                        new JObject(){ {"name", new JValue("Blue")}, {"color", new JValue("blue")}, {"value", new JValue("0x0000ff")} }
+                    }
+                }
+            };
+
+            var bindingCtx = new BindingContext(viewModel);
+
+            var propVal = new PropertyValue("eval({colors})", bindingContext: bindingCtx);
+
+            // Unsupport JValue type will be converted to string in the Synchro way (array will get converted to string value representing
+            // length of the array).
+            //
+            Assert.AreEqual("3", (string)propVal.Expand());
+        }
+
+        [TestMethod]
         public void TestEvalNullResult()
         {
             var viewModel = new JObject()
