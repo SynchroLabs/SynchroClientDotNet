@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <StoreAssociation xmlns="http://schemas.microsoft.com/appx/2010/storeassociation">
   <Publisher>CN=F3A322D3-EEC0-4745-9604-42B43773CDA7</Publisher>
-  <PublisherDisplayName>Synchro Labs, Inc.</PublisherDisplayName>
+  <PublisherDisplayName>Synchro Labs Inc.</PublisherDisplayName>
   <GeneratePackageHash>http://www.w3.org/2001/04/xmlenc#sha256</GeneratePackageHash>
   <SupportedLocales>
     <Language Code="af" InMinimumRequirementSet="true" />
@@ -370,12 +370,12 @@
     <PackageInfo>
       <OsMinVersion>6.3.1.0</OsMinVersion>
       <PackageArchitecture>Neutral</PackageArchitecture>
-      <PackageMaxArchitectureVersion>1.2.2.2</PackageMaxArchitectureVersion>
+      <PackageMaxArchitectureVersion>1.2.3.1</PackageMaxArchitectureVersion>
     </PackageInfo>
     <PackageInfo>
       <OsMinVersion>6.3.1.0</OsMinVersion>
       <PackageArchitecture>Neutral</PackageArchitecture>
-      <PackageMaxArchitectureVersion>1.2.2.2</PackageMaxArchitectureVersion>
+      <PackageMaxArchitectureVersion>1.2.3.1</PackageMaxArchitectureVersion>
     </PackageInfo>
   </PackageInfoList>
 </StoreAssociation>

@@ -95,6 +95,9 @@ namespace MaaasClientWin.Controls
         protected Boolean _heightSpecified = false;
         protected Boolean _widthSpecified = false;
 
+        protected Brush _defaultForeground = null;
+        protected Brush _defaultBackground = null;
+
         public WinControlWrapper(WinPageView pageView, StateManager stateManager, ViewModel viewModel, BindingContext bindingContext, FrameworkElement control) :
             base(stateManager, viewModel, bindingContext)
         {
@@ -196,29 +199,6 @@ namespace MaaasClientWin.Controls
                 return (FontWeight)property.GetValue(null);
             }
             return FontWeights.Normal;
-        }
-
-        public delegate object ConvertValue(JToken value);
-
-        // This method allows us to do some runtime reflection to see if a property exists on an element, and if so, to bind to it.  This
-        // is needed because there are common properties of FrameworkElement instances that are repeated in different class trees.  For
-        // example, "IsEnabled" exists as a property on most instances of FrameworkElement objects, though it is not defined in a single
-        // common base class.
-        //
-        protected void processElementPropertyIfPresent(JObject controlSpec, String attributeName, string propertyName, ConvertValue convertValue = null)
-        {
-            if (this.Control != null)
-            {
-                var property = this.Control.GetType().GetRuntimeProperty(propertyName);
-                if (property != null)
-                {
-                    if (convertValue == null)
-                    {
-                        convertValue = value => value;
-                    }
-                    processElementProperty(controlSpec, attributeName, value => property.SetValue(this.Control, convertValue(value), null));
-                }
-            }
         }
 
         public delegate void SetViewThickness(Thickness thickness);
@@ -333,10 +313,56 @@ namespace MaaasClientWin.Controls
             processThicknessProperty(controlSpec, "margin", () => this.Control.Margin, value => this.Control.Margin = (Thickness)value);
             processFontAttribute(controlSpec, new WinFontSetter(this, this.Control));
 
-            // These elements are very common among derived classes, so we'll do some runtime reflection...
-            processElementPropertyIfPresent(controlSpec, "enabled", "IsEnabled", value => ToBoolean(value));
-            processElementPropertyIfPresent(controlSpec, "background", "Background", value => ToBrush(value));
-            processElementPropertyIfPresent(controlSpec, "foreground", "Foreground", value => ToBrush(value));
+            // There are groups of controls which share some properties (IsEnabled, Foreground, and Background), but those properties are
+            // all implemented in various derived classes.  We'll handle them all here semi-centrally.
+            //
+            // Note: For Foreground and Background, our intent is that setting these values to null should revert them to their
+            //       default values.  If those values had been set via XAML, we could use ClearValue.  Since they weren't, we have
+            //       to record the default value when we set it to another value for the first time, then restore it if we ever set
+            //       the value back to null.
+            //
+            if (this.Control is Control)
+            {
+                var control = this.Control as Control;
+                processElementProperty(controlSpec, "enabled", value => control.IsEnabled = ToBoolean(value));
+                processElementProperty(controlSpec, "foreground", value =>
+                {
+                    _defaultForeground = _defaultForeground ?? control.Foreground;
+                    control.Foreground = ToBrush(value) ?? _defaultForeground;
+                });
+                processElementProperty(controlSpec, "background", value =>
+                {
+                    _defaultBackground = _defaultBackground ?? control.Background;
+                    control.Background = ToBrush(value) ?? _defaultBackground;
+                });
+            }
+            else if (this.Control is Panel)
+            {
+                var control = this.Control as Panel;
+                processElementProperty(controlSpec, "background", value =>
+                {
+                    _defaultBackground = _defaultBackground ?? control.Background;
+                    control.Background = ToBrush(value) ?? _defaultBackground;
+                });
+            }
+            else if (this.Control is Border)
+            {
+                var control = this.Control as Border;
+                processElementProperty(controlSpec, "background", value =>
+                {
+                    _defaultBackground = _defaultBackground ?? control.Background;
+                    control.Background = ToBrush(value) ?? _defaultBackground;
+                });
+            }
+            else if (this.Control is TextBlock)
+            {
+                var control = this.Control as TextBlock;
+                processElementProperty(controlSpec, "foreground", value =>
+                {
+                    _defaultForeground = _defaultForeground ?? control.Foreground;
+                    control.Foreground = ToBrush(value) ?? _defaultForeground;
+                });
+            }
         }
 
         public WinControlWrapper getChildControlWrapper(FrameworkElement control)
