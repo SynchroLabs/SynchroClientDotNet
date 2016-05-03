@@ -71,11 +71,17 @@ namespace MaaasClientWin.Controls
 
             if (bindingSpec["items"] != null)
             {
+                // To make ListView compatible with ListBox confi
+                var itemContent = (string)bindingSpec["itemContent"] ?? "{$data}"; // Only used in case where itemTemplate not provided
+                var itemTemplate = 
+                    (JObject)controlSpec["itemTemplate"] ?? 
+                    new JObject() { { "control", new JValue("text") }, { "value", new JValue(itemContent) }, { "margin", new JValue(5) } };
+
                 processElementBoundValue(
                     "items",
                     (string)bindingSpec["items"],
                     () => getListViewContents(listView),
-                    value => this.setListViewContents(listView, (JObject)controlSpec["itemTemplate"], GetValueBinding("items").BindingContext));
+                    value => this.setListViewContents(listView, itemTemplate, GetValueBinding("items").BindingContext));
             }
 
             if (bindingSpec["selection"] != null)
