@@ -23,6 +23,7 @@ namespace MaaasClientWin.Controls
         {
             logger.Debug("Creating listview element");
             ListView listView = new ListView();
+            listView.HorizontalContentAlignment = HorizontalAlignment.Stretch;
             this._control = listView;
 
             applyFrameworkElementDefaults(listView);
