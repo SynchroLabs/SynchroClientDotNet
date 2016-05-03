@@ -4,6 +4,7 @@ using SynchroCore;
 using System.Globalization;
 using System.Threading;
 using System.IO;
+using System.Diagnostics;
 
 namespace SynchroCoreTest
 {
@@ -49,8 +50,6 @@ namespace SynchroCoreTest
 		public void TestParseInteger()
 		{
 			ValidateRoundTrip("0", new JValue(0));
-			ValidateRoundTrip(string.Format("{0}", int.MaxValue), new JValue(int.MaxValue));
-			ValidateRoundTrip(string.Format("{0}", int.MinValue), new JValue(int.MinValue));
 		}
 
 		[TestMethod]
@@ -166,7 +165,13 @@ namespace SynchroCoreTest
 			ValidateRoundTrip("6.02E+23", new JValue(6.02E+23));
 		}
 
-		[TestMethod]
+        [TestMethod]
+        public void TestParseBigInt()
+        {
+            ValidateRoundTrip("1461445025212", new JValue(1461445025212));
+        }
+
+        [TestMethod]
 		public void TestParseDoubleCrazyLocale()
 		{
             // !!! No threads in Win app...

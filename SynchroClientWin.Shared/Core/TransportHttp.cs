@@ -27,6 +27,7 @@ namespace SynchroCore
             else
             {
                 _httpClient = new HttpClient();
+                _httpClient.Timeout = TimeSpan.FromSeconds(60);
             }
 
             // Not supported on WinPhone (persistent connection is automatic in HTTP 1.1, so not clear if
@@ -106,7 +107,7 @@ namespace SynchroCore
             }
             catch (Exception e)
             {
-                logger.Error("HTTP Transport exceptioon caught, details: {0}", e.Message);
+                logger.Error("HTTP Transport exception caught, details: {0}", e);
                 e.Data["statusCode"] = statusCode;
                 requestFailureHandler(requestObject, e);
             }

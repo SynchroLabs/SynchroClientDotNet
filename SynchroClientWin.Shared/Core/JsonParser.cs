@@ -140,7 +140,7 @@ namespace SynchroCore
             }
             else
             {
-                return int.Parse(numberData);
+                return long.Parse(numberData);
             }
         }
 

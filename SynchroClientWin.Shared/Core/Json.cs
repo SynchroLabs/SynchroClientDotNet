@@ -6,7 +6,6 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-
 namespace SynchroCore
 {
     public enum JTokenType
@@ -259,12 +258,12 @@ namespace SynchroCore
             throw new ArgumentException(String.Format("Can not convert {0} to Boolean", token));
         }
 
-        public static explicit operator int(JToken token)
+        public static explicit operator long(JToken token)
         {
             JValue value = token as JValue;
             if (value != null)
             {
-                return (int)value;
+                return (long)value;
             }
 
             throw new ArgumentException(String.Format("Can not convert {0} to Int", value));
@@ -272,12 +271,12 @@ namespace SynchroCore
 
         // See comment on JValue uint converter.
         //
-        public static explicit operator uint(JToken token)
+        public static explicit operator ulong(JToken token)
         {
             JValue value = token as JValue;
             if (value != null)
             {
-                return (uint)value;
+                return (ulong)value;
             }
 
             throw new ArgumentException(String.Format("Can not convert {0} to UInt", value));
@@ -753,6 +752,15 @@ namespace SynchroCore
                 // Copy constructor
                 Value = ((JValue)value).Value;
             }
+            else if (value is int || value is long || value is short || value is sbyte ||
+                     value is ulong || value is uint || value is ushort || value is byte)
+            {
+                Value = Convert.ToInt64(value);
+            }
+            else if (value is double || value is float || value is decimal)
+            {
+                Value = Convert.ToDouble(value);
+            }
             else if ((value == null) || (value is ValueType) || (value is String))
             {
                 Value = value;
@@ -775,19 +783,18 @@ namespace SynchroCore
                 {
                     return JTokenType.Boolean;
                 }
-                else if (Value is int || Value is long || Value is short || Value is sbyte ||
-                         Value is ulong || Value is uint || Value is ushort || Value is byte)
+                else if (Value is long)
                 {
                     return JTokenType.Integer;
                 }
-                else if (Value is double || Value is float || Value is decimal)
+                else if (Value is double)
                 {
                     return JTokenType.Float;
                 }
                 else if (Value is string)
                 {
                     return JTokenType.String;
-                }
+                }                
 
                 return JTokenType.Undefined;
             }
@@ -826,11 +833,11 @@ namespace SynchroCore
             throw new ArgumentException(String.Format("Can not convert {0} to Boolean", value));
         }
 
-        public static explicit operator int(JValue value)
+        public static explicit operator long(JValue value)
         {
             if (value.Type == JTokenType.Integer)
             {
-                return Convert.ToInt32(value.Value);
+                return Convert.ToInt64(value.Value);
             }
 
             throw new ArgumentException(String.Format("Can not convert {0} to Int", value));
@@ -843,11 +850,13 @@ namespace SynchroCore
         // half makes sense).  Anyway, we want to make sure uint casts work on integer values, so we 
         // implement this to make that happen.
         //
-        public static explicit operator uint(JValue value)
+        // !!! Do we need a ulong / ToUint64 version?
+        //
+        public static explicit operator ulong(JValue value)
         {
             if (value.Type == JTokenType.Integer)
             {
-                return Convert.ToUInt32(value.Value);
+                return Convert.ToUInt64(value.Value);
             }
 
             throw new ArgumentException(String.Format("Can not convert {0} to UInt", value));

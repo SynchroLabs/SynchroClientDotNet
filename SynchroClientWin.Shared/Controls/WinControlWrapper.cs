@@ -327,12 +327,12 @@ namespace MaaasClientWin.Controls
                 processElementProperty(controlSpec, "enabled", value => control.IsEnabled = ToBoolean(value));
                 processElementProperty(controlSpec, "foreground", value =>
                 {
-                    _defaultForeground = _defaultForeground ?? control.Foreground;
+                    _defaultForeground = _defaultForeground ?? control.Foreground ?? new SolidColorBrush(); // Transparent brush
                     control.Foreground = ToBrush(value) ?? _defaultForeground;
                 });
                 processElementProperty(controlSpec, "background", value =>
                 {
-                    _defaultBackground = _defaultBackground ?? control.Background;
+                    _defaultBackground = _defaultBackground ?? control.Background ?? new SolidColorBrush(); // Transparent brush
                     control.Background = ToBrush(value) ?? _defaultBackground;
                 });
             }
@@ -341,7 +341,7 @@ namespace MaaasClientWin.Controls
                 var control = this.Control as Panel;
                 processElementProperty(controlSpec, "background", value =>
                 {
-                    _defaultBackground = _defaultBackground ?? control.Background;
+                    _defaultBackground = _defaultBackground ?? control.Background ?? new SolidColorBrush(); // Transparent brush
                     control.Background = ToBrush(value) ?? _defaultBackground;
                 });
             }
@@ -350,7 +350,7 @@ namespace MaaasClientWin.Controls
                 var control = this.Control as Border;
                 processElementProperty(controlSpec, "background", value =>
                 {
-                    _defaultBackground = _defaultBackground ?? control.Background;
+                    _defaultBackground = _defaultBackground ?? control.Background ?? new SolidColorBrush(); // Transparent brush
                     control.Background = ToBrush(value) ?? _defaultBackground;
                 });
             }
@@ -359,7 +359,7 @@ namespace MaaasClientWin.Controls
                 var control = this.Control as TextBlock;
                 processElementProperty(controlSpec, "foreground", value =>
                 {
-                    _defaultForeground = _defaultForeground ?? control.Foreground;
+                    _defaultForeground = _defaultForeground ?? control.Foreground ?? new SolidColorBrush(); // Transparent brush
                     control.Foreground = ToBrush(value) ?? _defaultForeground;
                 });
             }

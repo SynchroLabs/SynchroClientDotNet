@@ -87,7 +87,7 @@ namespace SynchroCore
 			{ JTokenType.Object, (writer, value) => { WriteObject(writer, (JObject) value); } },
 			{ JTokenType.Array, (writer, value) => { WriteArray(writer, (JArray)value); } },
 			{ JTokenType.String, (writer, value) => { WriteString(writer, (string)value); } },
-			{ JTokenType.Integer, (writer, value) => { WriteNumber(writer, (int)value); } },
+			{ JTokenType.Integer, (writer, value) => { WriteNumber(writer, (long)value); } },
 			{ JTokenType.Float, (writer, value) => { WriteNumber(writer, (double)value); } },
 			{ JTokenType.Boolean, (writer, value) => { WriteBoolean(writer, (bool)value); } },
 		};

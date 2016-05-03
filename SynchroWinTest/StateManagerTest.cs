@@ -13,11 +13,13 @@ namespace SynchroCoreTest
     [TestClass]
     public class StateManagerTest
     {
+        static SynchroCore.Logger logger = SynchroCore.Logger.GetLogger("StateManagerTest");
+
         public class TestDeviceMetrics : MaaasDeviceMetrics
         {
             public TestDeviceMetrics() : base()
             {
-                _clientVersion = "1.1.0";
+                _clientVersion = "1.2.5";
             }
 
             public override MaaasOrientation CurrentOrientation
@@ -62,7 +64,7 @@ namespace SynchroCoreTest
 
             ProcessMessageBox processMessageBox = (JObject messageBox, CommandHandler commandHandler) =>
             {
-               Assert.Fail("Unexpected message box call in test");
+               Assert.Fail("Unexpected message box call in test: " + messageBox);
             };
 
             ProcessLaunchUrl processLaunchUrl = (String primaryUrl, String secondaryUrl) =>

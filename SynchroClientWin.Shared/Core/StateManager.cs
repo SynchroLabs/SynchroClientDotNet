@@ -28,8 +28,8 @@ namespace SynchroCore
         }
 
         string _path;
-        uint   _instanceId;
-        uint   _instanceVersion;
+        ulong  _instanceId;
+        ulong  _instanceVersion;
         bool   _isBackSupported;
 
         ViewModel _viewModel;
@@ -147,7 +147,7 @@ namespace SynchroCore
 
         void ProcessRequestFailure(JObject request, Exception ex)
         {            
-            logger.Warn("Got request failure for request: {0}", request);
+            logger.Warn("Got request failure for request: {0}, exception: {1}", request, ex);
 
             messageBox("Connection Error", "Error connecting to application server", "Retry", "retry", (command) =>
             {
@@ -201,7 +201,7 @@ namespace SynchroCore
                         });
 
                     }
-                    else if (this._instanceId == (uint)responseAsJSON["InstanceId"])
+                    else if (this._instanceId == (ulong)responseAsJSON["InstanceId"])
                     {
                         // The instance that we're on now matches the server instance, so we can safely ignore
                         // the sync error (the request that caused it was sent against a previous instance).
@@ -269,8 +269,8 @@ namespace SynchroCore
             }
             else if ((responseAsJSON["ViewModel"] != null) && (responseAsJSON["View"] != null)) // ViewModel and View - means we have a new page/screen
             {
-                this._instanceId = (uint)responseAsJSON["InstanceId"];
-                this._instanceVersion = (uint)responseAsJSON["InstanceVersion"];
+                this._instanceId = (ulong)responseAsJSON["InstanceId"];
+                this._instanceVersion = (ulong)responseAsJSON["InstanceVersion"];
 
                 JObject jsonViewModel = responseAsJSON["ViewModel"] as JObject;
 
@@ -292,10 +292,10 @@ namespace SynchroCore
             }
             else if (responseAsJSON["ViewModel"] != null) // ViewModel without View (resync)
             {
-                uint responseInstanceId = (uint)responseAsJSON["InstanceId"];
+                ulong responseInstanceId = (ulong)responseAsJSON["InstanceId"];
                 if (responseInstanceId == this._instanceId)
                 {
-                    this._instanceVersion = (uint)responseAsJSON["InstanceVersion"];
+                    this._instanceVersion = (ulong)responseAsJSON["InstanceVersion"];
 
                     JObject jsonViewModel = responseAsJSON["ViewModel"] as JObject;
 
@@ -322,10 +322,10 @@ namespace SynchroCore
             }
             else // Updating existing page/screen
             {
-                uint responseInstanceId = (uint)responseAsJSON["InstanceId"];
+                ulong responseInstanceId = (ulong)responseAsJSON["InstanceId"];
                 if (responseInstanceId == this._instanceId)
                 {
-                    uint responseInstanceVersion = (uint)responseAsJSON["InstanceVersion"];
+                    ulong responseInstanceVersion = (ulong)responseAsJSON["InstanceVersion"];
 
                     // You can get a new view on a view model update if the view is dynamic and was updated
                     // based on the previous command/update.

@@ -11,6 +11,8 @@ namespace SynchroCoreTest
     [TestClass]
     public class TransportTest
     {
+        static SynchroCore.Logger logger = SynchroCore.Logger.GetLogger("TransportTest");
+
         // OK, there is a problem with Windows Store apps talking to the local host (whether via localhost, 127.0.0.1, or even an externally
         // accessible non-loopback address).  There is potentially some black magic voodoo that VS does for you to exempt an actual Win Store
         // app from this restriciton, but it does not such magic for a test app.  The loopback exception is supposed to only work when an
@@ -34,21 +36,29 @@ namespace SynchroCoreTest
             var expected = new JObject()
             {
                 { "name", new JValue("synchro-samples") },
-                { "version", new JValue("1.3.0") },
+                { "version", new JValue("1.3.3") },
                 { "description", new JValue("Synchro API Samples") },
                 { "main", new JValue("menu") },
                 { "author", new JValue("Bob Dickinson <bob@synchro.io> (http://synchro.io/)") },
                 { "private", new JValue(true) },
                 { "engines", new JObject()
                     {
-                        { "synchro", new JValue(">= 1.3.0") }
+                        { "synchro", new JValue(">= 1.3.3") }
                     }
-                }
+                },
+                { "synchro", new JObject()
+                    {
+                        { "clientVersion", new JValue(">=1.2.3") }
+                    }
+                },
+                { "synchroArchiveUrl", new JValue("https://github.com/SynchroLabs/SynchroSamples/archive/master.zip") },
             };
     
             var transport = new TransportHttp(uri: new Uri(GetSamplesTestEndpoint()));
         
             var actual = await transport.getAppDefinition();
+
+            logger.Info("Actual: {0}", actual);
 
             Assert.IsTrue(expected.DeepEquals(actual));
         }
@@ -104,7 +114,7 @@ namespace SynchroCoreTest
                     { "Mode", new JValue("Page") },
                     { "Path", new JValue("menu") },
                     { "TransactionId", new JValue(1)},
-                    { "DeviceMetrics", new JObject(){{"clientVersion", new JValue("1.1.0")}}}
+                    { "DeviceMetrics", new JObject(){{"clientVersion", new JValue("1.2.5")}}}
                 },
                 responseHandler: (response) =>
                 {
@@ -123,8 +133,8 @@ namespace SynchroCoreTest
             Assert.AreEqual("menu", (string)theResponse["Path"]);
 
             var sessionId = (string)theResponse["NewSessionId"];
-            var instanceId = (int)theResponse["InstanceId"];
-            var instanceVersion = (int)theResponse["InstanceVersion"];
+            var instanceId = (long)theResponse["InstanceId"];
+            var instanceVersion = (long)theResponse["InstanceVersion"];
 
             AsyncCallComplete.Reset();
 
