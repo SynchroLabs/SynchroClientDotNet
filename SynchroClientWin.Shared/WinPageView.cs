@@ -129,7 +129,11 @@ namespace MaaasClientWin
 
         public override async void ProcessMessageBox(JObject messageBox, CommandHandler onCommand)
         {
-            string message = PropertyValue.ExpandAsString((string)messageBox["message"], _viewModel.RootBindingContext);
+            var message = "";
+            if (messageBox["message"] != null)
+            {
+                message = PropertyValue.ExpandAsString((string)messageBox["message"], _viewModel.RootBindingContext);
+            }
 
             var messageDialog = new MessageDialog(message);
 
