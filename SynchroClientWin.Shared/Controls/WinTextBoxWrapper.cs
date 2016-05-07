@@ -16,6 +16,7 @@ namespace MaaasClientWin.Controls
         bool   _updateOnChange = false;
         bool   _multiline = false;
         double _lines = 0;
+        bool   _loaded = false;
 
         public WinTextBoxWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext, controlSpec)
@@ -38,6 +39,8 @@ namespace MaaasClientWin.Controls
                 });
             }
 
+            textBox.Loaded += TextBox_Loaded;
+
             applyFrameworkElementDefaults(textBox);
 
             JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, "value");
@@ -58,24 +61,32 @@ namespace MaaasClientWin.Controls
 
         public override void OnFontChange(FrameworkElement control)
         {
-            if (!_heightSpecified && (_lines >= 1))
+            if (_loaded && !_heightSpecified && (_lines >= 1))
             {
                 var textBox = (TextBox)control;
 
-                // !!! If you don't set a FontSize value, the default FontSize returned is always "11" (which is fucking
-                //     horseshit).  I don't see any easy way around this, so just always specify a size if you want this
-                //     to work on Windows.  Fuck you Microsoft.
-                //
                 // !!! When you do set the FontSize, the reported FontSize (that size) doesn't equal the baseline-to-baseline
                 //     font size.  There is also no way to get any font metrics (from the control or the system at large) that
                 //     would help determine how tall you have to make the TextBox to accomodated a certain numbers of lines of
                 //     text in a given font.  After a lot of research, I gave up and came up with this value through trial and
-                //     error that works for number of lines 1-5 with the standard system font.  Again, fuck you Microsoft.
+                //     error that works for number of lines 1-5 with the standard system font.  Fuck you Microsoft.
                 //
                 var fudge = 1.4;
 
                 textBox.Height = (textBox.FontSize * _lines * fudge) + textBox.Padding.Top + textBox.Padding.Bottom;
                 logger.Debug("Textbox height set to: {0}", textBox.Height);
+            }
+        }
+
+        private void TextBox_Loaded(object sender, RoutedEventArgs e)
+        {
+            _loaded = true;
+            if (!_heightSpecified && (_lines >= 1))
+            {
+                // The textBox.FontSize value is nonsense until we get the loaded notification.  We simulate a font
+                // change when loading is complete so any line-based height may be computed correctly.
+                //
+                this.OnFontChange(this._control);
             }
         }
 
