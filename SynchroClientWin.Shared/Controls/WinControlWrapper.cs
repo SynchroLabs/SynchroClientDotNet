@@ -86,6 +86,8 @@ namespace MaaasClientWin.Controls
     {
         static Logger logger = Logger.GetLogger("WinControlWrapper");
 
+        static public Double DEFAULT_MARGIN = 5;
+
         protected FrameworkElement _control;
         public FrameworkElement Control { get { return _control; } }
 
@@ -232,13 +234,11 @@ namespace MaaasClientWin.Controls
             });
         }
 
-        // static Thickness defaultThickness = new Thickness(0, 0, 10, 10);
-
         protected void applyFrameworkElementDefaults(FrameworkElement element, bool applyMargins = true)
         {
             if (applyMargins)
             {
-                element.Margin = new Thickness(0, 0, ToDeviceUnits(10), ToDeviceUnits(10));
+                element.Margin = new Thickness(ToDeviceUnits(DEFAULT_MARGIN), ToDeviceUnits(DEFAULT_MARGIN), ToDeviceUnits(DEFAULT_MARGIN), ToDeviceUnits(DEFAULT_MARGIN));
             }
             element.HorizontalAlignment = HorizontalAlignment.Left;
             element.VerticalAlignment = VerticalAlignment.Top;

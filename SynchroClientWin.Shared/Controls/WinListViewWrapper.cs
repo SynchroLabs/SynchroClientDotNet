@@ -75,7 +75,7 @@ namespace MaaasClientWin.Controls
                 var itemContent = (string)bindingSpec["itemContent"] ?? "{$data}"; // Only used in case where itemTemplate not provided
                 var itemTemplate = 
                     (JObject)controlSpec["itemTemplate"] ?? 
-                    new JObject() { { "control", new JValue("text") }, { "value", new JValue(itemContent) }, { "margin", new JValue(5) } };
+                    new JObject() { { "control", new JValue("text") }, { "value", new JValue(itemContent) }, { "margin", new JValue(DEFAULT_MARGIN) } };
 
                 processElementBoundValue(
                     "items",
