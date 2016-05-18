@@ -24,6 +24,14 @@ namespace MaaasClientWin
         public MaaasPage()
         {
             this.InitializeComponent();
+
+            this.SizeChanged += MaaasPage_SizeChanged;
+        }
+
+        private void MaaasPage_SizeChanged(object sender, Windows.UI.Xaml.SizeChangedEventArgs e)
+        {
+            // !!! Update PageMetrics
+            logger.Info("Window size changed: {0}", e.NewSize);
         }
 
         async void MaaasPage_OrientationChanged(DisplayInformation sender, object args)
@@ -92,6 +100,12 @@ namespace MaaasClientWin
         {
             logger.Debug("Disconnecting orientation change listener");
             DisplayInformation.GetForCurrentView().OrientationChanged -= MaaasPage_OrientationChanged;
+        }
+
+        protected override void OnNavigatedFrom(NavigationEventArgs e)
+        {
+            logger.Info("Navigating away from Synchro app");
+            base.OnNavigatedFrom(e);
         }
 
         public override async void OnHardwareBackPressed(object sender, BackPressedEventArgs e) 
