@@ -34,6 +34,14 @@ namespace MaaasClientWin.Controls
                 if (Enum.TryParse(ToString(value), out iconSymbol))
                 {
                     button.Icon = new SymbolIcon(iconSymbol);
+
+                    // Or, for Material Design icons...
+                    /* 
+                    var fontIcon = new FontIcon();
+                    fontIcon.FontFamily = SynchroClientWin.GlyphMapper.getFontFamily();
+                    fontIcon.Glyph = SynchroClientWin.GlyphMapper.getGlyph("add_a_photo");
+                    button.Icon = fontIcon;
+                    */
                 }
                 else
                 {

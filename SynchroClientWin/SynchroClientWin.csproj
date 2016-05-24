@@ -134,6 +134,9 @@
       <Link>Assets\seed.json</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="Assets\MaterialIcons-Regular.ttf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <None Include="Package.StoreAssociation.xml" />
     <None Include="packages.config" />
     <None Include="SynchroClientWin_StoreKey.pfx" />

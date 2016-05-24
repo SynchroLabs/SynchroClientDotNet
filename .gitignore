@@ -158,3 +158,4 @@ $RECYCLE.BIN/
 
 # Xamarin userprefs
 *.userprefs
+.vs/config/applicationhost.config

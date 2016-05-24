@@ -54,6 +54,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Core\TransportHttp.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Core\Util.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Core\ViewModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)GlyphMapper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WinAppManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WinPageView.cs" />
   </ItemGroup>
