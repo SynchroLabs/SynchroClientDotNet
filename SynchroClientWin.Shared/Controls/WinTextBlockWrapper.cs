@@ -23,7 +23,7 @@ namespace MaaasClientWin.Controls
 
             // We're going to set a default size, since the platform default is really small.
             // 
-            textBlock.FontSize = ToDeviceUnitsFromTypographicPoints(new JValue(10.0f)); 
+            textBlock.FontSize = ToDeviceUnitsFromTypographicPoints(new JValue(10.0f));
 
             this._control = textBlock;
 
