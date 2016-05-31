@@ -958,7 +958,21 @@ namespace SynchroClientWin
 
         static public String getGlyph(String name)
         {
-            return _glyphs[name]; // !!! Exception if not found?
+            // Backward compat for Civics (which uses icon: "Favorite", referring to the winIcon).
+            // We'll just return the "star" Glyph in this case...
+            //
+            if (name == "Favorite")
+            {
+                name = "star";
+            }
+
+            String glyph;
+            if (!_glyphs.TryGetValue(name, out glyph))
+            {
+                // Default to the "no" sign if not found
+                glyph = _glyphs["do_not_disturb"];
+            }
+            return glyph;
         }
     }
 }

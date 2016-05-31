@@ -28,24 +28,30 @@ namespace MaaasClientWin.Controls
             this._control = button;
 
             processElementProperty(controlSpec, "text", value => button.Label = ToString(value));
-            processElementProperty(controlSpec, "icon", value => 
+
+            processElementProperty(controlSpec, "winIcon", value => 
             {   
                 Symbol iconSymbol;
                 if (Enum.TryParse(ToString(value), out iconSymbol))
                 {
                     button.Icon = new SymbolIcon(iconSymbol);
-
-                    // Or, for Material Design icons...
-                    /* 
-                    var fontIcon = new FontIcon();
-                    fontIcon.FontFamily = SynchroClientWin.GlyphMapper.getFontFamily();
-                    fontIcon.Glyph = SynchroClientWin.GlyphMapper.getGlyph("add_a_photo");
-                    button.Icon = fontIcon;
-                    */
                 }
                 else
                 {
                     logger.Warn("Warning - command bar button icon not found for: {0}", ToString(value));
+                }
+            });
+
+            processElementProperty(controlSpec, "icon", value =>
+            {
+                // Material Design icon (only set this if no winIcon specified)
+                //
+                if (controlSpec["winIcon"] == null)
+                {
+                    var fontIcon = new FontIcon();
+                    fontIcon.FontFamily = SynchroClientWin.GlyphMapper.getFontFamily();
+                    fontIcon.Glyph = SynchroClientWin.GlyphMapper.getGlyph(ToString(value));
+                    button.Icon = fontIcon;
                 }
             });
 
