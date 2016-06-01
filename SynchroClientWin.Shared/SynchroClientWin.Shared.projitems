@@ -33,6 +33,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Controls\WinStackPanelWrapper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Controls\WinTextBlockWrapper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Controls\WinTextBoxWrapper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Controls\WinToggleButtonWrapper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Controls\WinToggleSwitchWrapper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Controls\WinToggleWrapper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Controls\WinWebViewWrapper.cs" />

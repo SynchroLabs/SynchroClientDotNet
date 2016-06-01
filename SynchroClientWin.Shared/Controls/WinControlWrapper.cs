@@ -325,7 +325,7 @@ namespace MaaasClientWin.Controls
             {
                 var control = this.Control as Control;
                 processElementProperty(controlSpec, "enabled", value => control.IsEnabled = ToBoolean(value));
-                processElementProperty(controlSpec, "foreground", value =>
+                processElementProperty(controlSpec, "color", "foreground", value =>
                 {
                     _defaultForeground = _defaultForeground ?? control.Foreground ?? new SolidColorBrush(); // Transparent brush
                     control.Foreground = ToBrush(value) ?? _defaultForeground;
@@ -357,7 +357,7 @@ namespace MaaasClientWin.Controls
             else if (this.Control is TextBlock)
             {
                 var control = this.Control as TextBlock;
-                processElementProperty(controlSpec, "foreground", value =>
+                processElementProperty(controlSpec, "color", "foreground", value =>
                 {
                     _defaultForeground = _defaultForeground ?? control.Foreground ?? new SolidColorBrush(); // Transparent brush
                     control.Foreground = ToBrush(value) ?? _defaultForeground;
@@ -452,6 +452,9 @@ namespace MaaasClientWin.Controls
                     break;
                 case "toggle":
                     controlWrapper = new WinToggleSwitchWrapper(parent, bindingContext, controlSpec);
+                    break;
+                case "togglebutton":
+                    controlWrapper = new WinToggleButtonWrapper(parent, bindingContext, controlSpec);
                     break;
                 case "webview":
                     controlWrapper = new WinWebViewWrapper(parent, bindingContext, controlSpec);

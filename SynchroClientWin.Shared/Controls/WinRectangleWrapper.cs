@@ -30,7 +30,7 @@ namespace MaaasClientWin.Controls
                 rect.RadiusX = (float)ToDeviceUnits(value);
                 rect.RadiusY = (float)ToDeviceUnits(value);
             });
-            processElementProperty(controlSpec, "fill", value => rect.Fill = ToBrush(value));
+            processElementProperty(controlSpec, "color", "fill", value => rect.Fill = ToBrush(value));
             JObject bindingSpec = BindingHelper.GetCanonicalBindingSpec(controlSpec, CommandName.OnTap.Attribute, Commands);
             ProcessCommands(bindingSpec, Commands);
 
