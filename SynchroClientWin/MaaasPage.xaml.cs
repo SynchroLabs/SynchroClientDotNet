@@ -84,25 +84,20 @@ namespace MaaasClientWin
             Transport transport = new TransportHttp(TransportHttp.UriFromHostString(endpoint));
             //Transport transport = new TransportWs(endpoint);
 
-            Action backToMenu = null;
-            if (appManager.AppSeed == null)
+            bool launchedFromMenu = (appManager.AppSeed == null);
+
+            ProcessAppExit appExit = () =>
             {
-                // If we are't nailed to a predefined app, then we'll allow the app to navigate back to
-                // this page from its top level page.
-                //
-                backToMenu = new Action(delegate()
-                {
-                    this.Frame.GoBack();
-                });
-            }
+                this.Frame.GoBack();
+            };
 
             _stateManager = new StateManager(appManager, app, transport, deviceMetrics);
-            _pageView = new WinPageView(_stateManager, _stateManager.ViewModel, this, this.mainScroll, backToMenu);
+            _pageView = new WinPageView(_stateManager, _stateManager.ViewModel, this, this.mainScroll, launchedFromMenu);
 
             _pageView.setPageTitle = title => this.pageTitle.Text = title;
             _pageView.setBackEnabled = isEnabled => this.backButton.IsEnabled = isEnabled;
 
-            _stateManager.SetProcessingHandlers(_pageView.ProcessPageView, _pageView.ProcessMessageBox, _pageView.ProcessLaunchUrl);
+            _stateManager.SetProcessingHandlers(_pageView.ProcessPageView, appExit, _pageView.ProcessMessageBox, _pageView.ProcessLaunchUrl);
 
             logger.Debug("Connecting orientation change listener");
             DisplayInformation.GetForCurrentView().OrientationChanged += MaaasPage_OrientationChanged;

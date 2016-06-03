@@ -9,6 +9,7 @@ namespace SynchroCore
     public delegate void CommandHandler(string command);
 
     public delegate void ProcessPageView(JObject pageView);
+    public delegate void ProcessAppExit();
     public delegate void ProcessMessageBox(JObject messageBox, CommandHandler commandHandler);
     public delegate void ProcessLaunchUrl(String appUrl, String webUrl);
 
@@ -30,10 +31,12 @@ namespace SynchroCore
         string _path;
         ulong  _instanceId;
         ulong  _instanceVersion;
-        bool   _isBackSupported;
+        bool   _isBackSupported = false;
+        bool   _isExited = false;
 
         ViewModel _viewModel;
         ProcessPageView _onProcessPageView;
+        ProcessAppExit _onProcessAppExit;
         ProcessMessageBox _onProcessMessageBox;
         ProcessLaunchUrl _onProcessLaunchUrl;
 
@@ -66,9 +69,15 @@ namespace SynchroCore
 
         public MaaasDeviceMetrics DeviceMetrics { get { return _deviceMetrics; } }
 
-        public void SetProcessingHandlers(ProcessPageView OnProcessPageView, ProcessMessageBox OnProcessMessageBox, ProcessLaunchUrl OnProcessLaunchUrl)
+        public void SetProcessingHandlers(
+            ProcessPageView OnProcessPageView, 
+            ProcessAppExit OnProcessAppExit,
+            ProcessMessageBox OnProcessMessageBox, 
+            ProcessLaunchUrl OnProcessLaunchUrl
+            )
         {
             _onProcessPageView = OnProcessPageView;
+            _onProcessAppExit = OnProcessAppExit;
             _onProcessMessageBox = OnProcessMessageBox;
             _onProcessLaunchUrl = OnProcessLaunchUrl;
         }
@@ -159,6 +168,12 @@ namespace SynchroCore
         async void ProcessResponseAsync(JObject responseAsJSON)
         {
             // logger.Info("Got response: {0}", (string)responseAsJSON);
+
+            if (_isExited)
+            {
+                logger.Error("StateManager called after exit, ignoring");
+                return;
+            }
 
             if (responseAsJSON["NewSessionId"] != null)
             {
@@ -253,7 +268,19 @@ namespace SynchroCore
 
             bool updateRequired = false;
 
-            if (responseAsJSON["App"] != null) // This means we have a new app
+            if (responseAsJSON["Exit"] != null) // Navigation back out of the app
+            {
+                // Return to launcher (if there is one).  Disable StateManager (so it won't keep processing responses).
+                //
+                logger.Info("Navigated back out of the app");
+                if (this._onProcessAppExit != null)
+                {
+                    _isExited = true;
+                    this._onProcessAppExit();
+                }
+                return;
+            }
+            else if (responseAsJSON["App"] != null) // This means we have a new app
             {
                 // Note that we already have an app definition from the MaaasApp that was passed in.  The App in this
                 // response was triggered by a request at app startup for the current version of the app metadata 

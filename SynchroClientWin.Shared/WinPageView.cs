@@ -21,8 +21,8 @@ namespace MaaasClientWin
 
         public Page Page { get { return _page; } }
 
-        public WinPageView(StateManager stateManager, ViewModel viewModel, Page page, ContentControl contentControl, Action doBackToMenu = null) :
-            base(stateManager, viewModel, doBackToMenu)
+        public WinPageView(StateManager stateManager, ViewModel viewModel, Page page, ContentControl contentControl, bool launchedFromMenu = false) :
+            base(stateManager, viewModel, launchedFromMenu)
         {
             _page = page;
             _rootControlWrapper = new WinControlWrapper(this, _stateManager, _viewModel, _viewModel.RootBindingContext, contentControl);

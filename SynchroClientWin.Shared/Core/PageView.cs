@@ -15,7 +15,7 @@ namespace SynchroCore
 
         protected StateManager _stateManager;
         protected ViewModel _viewModel;
-        protected Action _doBackToMenu;
+        protected bool _launchedFromMenu = false;
 
         // This is the top level container of controls for a page.  If the page specifies a single top level
         // element, then this represents that element.  If not, then this is a container control that we 
@@ -30,11 +30,11 @@ namespace SynchroCore
 
         protected string onBackCommand = null;
 
-        public PageView(StateManager stateManager, ViewModel viewModel, Action doBackToMenu)
+        public PageView(StateManager stateManager, ViewModel viewModel, bool launchedFromMenu)
         {
             _stateManager = stateManager;
             _viewModel = viewModel;
-            _doBackToMenu = doBackToMenu;
+            _launchedFromMenu = launchedFromMenu;
         }
 
         public abstract ControlWrapper CreateRootContainerControl(JObject controlSpec);
@@ -54,7 +54,7 @@ namespace SynchroCore
                     //
                     return true;
                 }
-                else if ((_doBackToMenu != null) && _stateManager.IsOnMainPath())
+                else if (_launchedFromMenu && _stateManager.IsOnMainPath())
                 {
                     // No page-specified back command, launched from menu, and is main (top-level) page...
                     //
@@ -67,25 +67,15 @@ namespace SynchroCore
 
         public async Task<bool> GoBack()
         {
-            if (_stateManager.IsBackSupported())
+            if (_launchedFromMenu ||_stateManager.IsBackSupported())
             {
                 logger.Debug("Back navigation");
                 await _stateManager.sendBackRequestAsync();
                 return true;
             }
-            else if ((_doBackToMenu != null) && _stateManager.IsOnMainPath())
-            {
-                logger.Debug("Back navigation - returning to menu");
-                if (_rootContainerControlWrapper != null)
-                {
-                    _rootContainerControlWrapper.Unregister();
-                }
-                _doBackToMenu();
-                return true;
-            }
             else
             {
-                logger.Warn("OnBackCommand called with no back command, ignoring");
+                logger.Warn("OnBackCommand called when no back navigation avilable");
                 return false; // Not handled
             }
         }
