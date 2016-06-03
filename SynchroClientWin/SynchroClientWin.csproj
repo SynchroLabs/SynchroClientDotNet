@@ -20,7 +20,7 @@
     <TargetPlatformVersion>8.1</TargetPlatformVersion>
     <MinimumVisualStudioVersion>12</MinimumVisualStudioVersion>
     <TargetFrameworkVersion />
-    <PackageCertificateThumbprint>69726C5645F91429871AD3724863704FE3CDF52E</PackageCertificateThumbprint>
+    <PackageCertificateThumbprint>A9CFD3B2D02F524B85BD81DDAFBF38CE124FE411</PackageCertificateThumbprint>
     <NuGetPackageImportStamp>0849c26f</NuGetPackageImportStamp>
     <AppxAutoIncrementPackageRevision>True</AppxAutoIncrementPackageRevision>
     <AppxBundlePlatforms>neutral</AppxBundlePlatforms>

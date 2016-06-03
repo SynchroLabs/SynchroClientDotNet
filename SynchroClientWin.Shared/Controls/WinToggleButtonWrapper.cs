@@ -152,6 +152,10 @@ namespace MaaasClientWin.Controls
             Button button = new Button();
             this._control = button;
 
+            // We're going to set a default size, since the platform default is really small.
+            // 
+            button.FontSize = ToDeviceUnitsFromTypographicPoints(new JValue(10.0f));
+
             _color = button.Foreground;
 
             applyFrameworkElementDefaults(button);

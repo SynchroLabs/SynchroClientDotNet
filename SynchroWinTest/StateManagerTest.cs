@@ -62,6 +62,11 @@ namespace SynchroCoreTest
                 AsyncCallComplete.Set();
             };
 
+            ProcessAppExit processAppExit = () =>
+            {
+                Assert.Fail("Unexpected app exit in test");
+            };
+
             ProcessMessageBox processMessageBox = (JObject messageBox, CommandHandler commandHandler) =>
             {
                Assert.Fail("Unexpected message box call in test: " + messageBox);
@@ -72,7 +77,7 @@ namespace SynchroCoreTest
                 Assert.Fail("Unexpected processLaunchUrl call in test");
             };
 
-            stateManager.SetProcessingHandlers(processPageView, processMessageBox, processLaunchUrl);
+            stateManager.SetProcessingHandlers(processPageView, processAppExit, processMessageBox, processLaunchUrl);
             await stateManager.startApplicationAsync();
 
             AsyncCallComplete.WaitOne();
