@@ -17,6 +17,17 @@ namespace MaaasClientWin.Controls
         JToken _localSelection;
 
         static string[] Commands = new string[] { CommandName.OnItemClick.Attribute, CommandName.OnSelectionChange.Attribute };
+        
+        private JToken getContents(JObject controlSpec, String attribute)
+        {
+            var contents = controlSpec[attribute];
+            if (contents.Type == JTokenType.Array)
+            {
+                var contentsArray = (JArray)contents;
+                contents = (contentsArray.Count > 0) ? contentsArray[0] : null;
+            }
+            return contents;
+        }
 
         public WinListViewWrapper(ControlWrapper parent, BindingContext bindingContext, JObject controlSpec) :
             base(parent, bindingContext, controlSpec)
@@ -44,7 +55,7 @@ namespace MaaasClientWin.Controls
 
             if (controlSpec["header"] != null)
             {
-                createControls(new JArray(){ controlSpec["header"] }, (childControlSpec, childControlWrapper) =>
+                createControls(new JArray(){ getContents(controlSpec, "header") }, (childControlSpec, childControlWrapper) =>
                 {
                     listView.Header = childControlWrapper.Control;
                 });
@@ -60,7 +71,7 @@ namespace MaaasClientWin.Controls
                 //
                 listView.ItemContainerTransitions = new Windows.UI.Xaml.Media.Animation.TransitionCollection();
 
-                createControls(new JArray(){ controlSpec["footer"] }, (childControlSpec, childControlWrapper) =>
+                createControls(new JArray(){ getContents(controlSpec, "footer") }, (childControlSpec, childControlWrapper) =>
                 {
                     listView.Footer = childControlWrapper.Control;
                 });
@@ -74,7 +85,7 @@ namespace MaaasClientWin.Controls
                 // To make ListView compatible with ListBox confi
                 var itemContent = (string)bindingSpec["itemContent"] ?? "{$data}"; // Only used in case where itemTemplate not provided
                 var itemTemplate = 
-                    (JObject)controlSpec["itemTemplate"] ?? 
+                    (JObject)getContents(controlSpec, "itemTemplate") ?? 
                     new JObject() { { "control", new JValue("text") }, { "value", new JValue(itemContent) }, { "margin", new JValue(DEFAULT_MARGIN) } };
 
                 processElementBoundValue(
